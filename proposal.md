@@ -2,51 +2,46 @@
 
 ## Grupo
 ### Integrantes
-* legajo - Apellido(s), Nombre(s)
-
+·        Morici, Matías – 52171 <br>
+·        Rufine, Tadeo – 52064 <br>
+·        Dominguez, Dolores – 52072<br>
 ### Repositorios
 * [frontend app](http://hyperlinkToGihubOrGitlab)
 * [backend app](http://hyperlinkToGihubOrGitlab)
-*Nota*: si utiliza un monorepo indicar un solo link con fullstack app.
 
 ## Tema
 ### Descripción
-*2 a 6 líneas describiendo el negocio (menos es más)*
+Sistema de gestión de turnos de una barbería que cuenta con varias sucursales y barberos. El sistema deberá registrar a los clientes quienes podrán solicitar turnos con los diferentes barberos a los cuales podrá calificar para luego mostrar su valoración. Por otro lado, el barbero será capaz de gestionar los turnos solicitados. Los clientes tendrán diferentes categorías que les permitirán acceder a descuentos, y para eso se llevará un historial de todos los turnos solicitados por cada cliente. El sistema ofrecerá la opción de realizar el pago previo al corte o al finalizarlo mediante Mercado Pago.
 
 ### Modelo
-![imagen del modelo]()
+![image](https://github.com/user-attachments/assets/a12d6f49-9e6f-48b2-93dd-02db4d63cd49)
 
-*Nota*: incluir un link con la imagen de un modelo, puede ser modelo de dominio, diagrama de clases, DER. Si lo prefieren pueden utilizar diagramas con [Mermaid](https://mermaid.js.org) en lugar de imágenes.
 
 ## Alcance Funcional 
 
 ### Alcance Mínimo
 
-*Nota*: el siguiente es un ejemplo para un grupo de 3 integrantes para un sistema de hotel. El 
-
 Regularidad:
 |Req|Detalle|
 |:-|:-|
-|CRUD simple|1. CRUD Tipo Habitacion<br>2. CRUD Servicio<br>3. CRUD Localidad|
-|CRUD dependiente|1. CRUD Habitación {depende de} CRUD Tipo Habitacion<br>2. CRUD Cliente {depende de} CRUD Localidad|
-|Listado<br>+<br>detalle| 1. Listado de habitaciones filtrado por tipo de habitación, muestra nro y tipo de habitación => detalle CRUD Habitacion<br> 2. Listado de reservas filtrado por rango de fecha, muestra nro de habitación, fecha inicio y fin estadía, estado y nombre del cliente => detalle muestra datos completos de la reserva y del cliente|
-|CUU/Epic|1. Reservar una habitación para la estadía<br>2. Realizar el check-in de una reserva|
+|CRUD simple|1. CRUD Sucursal<br>2. CRUD Tipo Corte<br>3. CRUD Categoría<br>4. CRUD Barbero|
+|CRUD dependiente|1. CRUD Turno {depende de} CRUD Tipo Corte<br>2. CRUD Cliente {depende de} CRUD Categoría|
+|Listado<br>+<br>detalle| 1. Listado de clientes filtrado por categoría, muestra fecha de registro, cantidad de cortes, DNI y nombre => detalle CRUD Cliente.<br>2. Listado de rentabilidad de cada sucursal => detalle CRUD Sucursal.|
+|CUU/Epic|1. Reservar Turno<br>2. Modificar Turno|
 
 
 Adicionales para Aprobación
 |Req|Detalle|
 |:-|:-|
-|CRUD |1. CRUD Tipo Habitacion<br>2. CRUD Servicio<br>3. CRUD Localidad<br>4. CRUD Provincia<br>5. CRUD Habitación<br>6. CRUD Empleado<br>7. CRUD Cliente|
-|CUU/Epic|1. Reservar una habitación para la estadía<br>2. Realizar el check-in de una reserva<br>3. Realizar el check-out y facturación de estadía y servicios|
+|CRUD |1. CRUD Cliente<br>2. CRUD Sucursal<br>3. CRUD Tipo Corte<br>4. CRUD Categoría<br>5. CRUD Estado Turno<br>6. CRUD Barbero|
+|CUU/Epic|1. Reservar Turno<br>2. Modificar Turno<br>3. Calificar Barbero<br>4. Realizar Pago|
 
 
 ### Alcance Adicional Voluntario
 
-*Nota*: El Alcance Adicional Voluntario es opcional, pero ayuda a que la funcionalidad del sistema esté completa y será considerado en la nota en función de su complejidad y esfuerzo.
-
 |Req|Detalle|
 |:-|:-|
-|Listados |1. Estadía del día filtrado por fecha muestra, cliente, habitaciones y estado <br>2. Reservas filtradas por cliente muestra datos del cliente y de cada reserve fechas, estado cantidad de habitaciones y huespedes|
-|CUU/Epic|1. Consumir servicios<br>2. Cancelación de reserva|
-|Otros|1. Envío de recordatorio de reserva por email|
+|Listados |1. Listado de historial de cortes para clientes<br>2. Listado de historial de cortes para barberos|
+|CUU/Epic|1. Cancelación de turno|
+|Otros|1. Envío de recordatorio de turno por mail/wpp|
 
