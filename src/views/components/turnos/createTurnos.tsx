@@ -6,20 +6,22 @@ const CreateTurnos: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/turnos", {
+      const response = await fetch("/createTurnos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ fechaTurno }),
       });
+      const data = await response.json(); // Parse the JSON response
+
       if (response.ok) {
-        alert("Turno creado correctamente");
+        alert(data.message); // Access the message from the JSON response
         setFechaTurno("");
       } else {
-        alert("Error al crear el turno");
+        alert(data.message); // Access the message from the JSON response
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       alert("Error de conexión");
     }

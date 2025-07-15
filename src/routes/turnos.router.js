@@ -3,7 +3,7 @@ const router = express.Router();
 
 const controller = require("../controllers/turnos.controller");
 
-router.get("/create", controller.create);
+router.get("/createTurnos", controller.create);
 router.post("/", controller.store);
 
 // router.get("/", controller.index);
