@@ -28,51 +28,51 @@ const store = async (req, res) => {
 //   }
 // };
 
-// const show = async (req, res) => {
-//   const { id } = req.params;
+const show = async (req, res) => {
+  const { codTurno } = req.params;
 
-//   try {
-//     const turnos = await model.findById(id);
-//     console.log(turnos);
-//     if (!turnos) {
-//       return res.status(404).send("Turno no encontrado");
-//     }
-//     res.render("turnos/show", { producto });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send("Internal Server Error");
-//   }
-// };
+  try {
+    const turno = await model.findById(codTurno);
+    console.log(turno);
+    if (!turno) {
+      return res.status(404).json({ message: "Turno no encontrado" });
+    }
+    res.json(turno);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
-// const edit = async (req, res) => {
-//   const { id } = req.params;
+const edit = async (req, res) => {
+  const { codTurno } = req.params;
 
-//   try {
-//     const producto = await model.findById(id);
-//     console.log(producto);
-//     if (!producto) {
-//       return res.status(404).send("Turno no encontrado");
-//     }
-//     res.render("turnos/edit", { turno });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send("Internal Server Error");
-//   }
-// };
+  try {
+    const turno = await model.findById(codTurno);
+    console.log(turno);
+    if (!turno) {
+      return res.status(404).json({ message: "Turno no encontrado" });
+    }
+    res.json(turno);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
-// const update = async (req, res) => {
-//   const { id } = req.params;
-//   const { name } = req.body;
+const update = async (req, res) => {
+  const { codTurno } = req.params;
+  const { fechaTurno } = req.body;
 
-//   try {
-//     const result = await model.update(id, name);
-//     console.log(result);
-//     res.redirect("/turnos");
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send("Internal Server Error");
-//   }
-// };
+  try {
+    const result = await model.update(codTurno, fechaTurno);
+    console.log(result);
+    res.json({ message: "Turno updated successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 // const destroy = async (req, res) => {
 //   const { id } = req.params;
@@ -91,8 +91,8 @@ module.exports = {
   create,
   store,
   // index,
-  // show,
-  // edit,
-  // update,
+  show,
+  edit,
+  update,
   // destroy,
 };
