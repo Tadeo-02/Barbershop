@@ -54,6 +54,9 @@ function MainTurnos() {
         <Link to="/createTurnos" className={styles.link}>
           CREAR TURNOS
         </Link>
+        <Link to="/indexTurnos" className={styles.link}>
+          VER TURNOS
+        </Link>
         <br />
         {/* Replace the single link with a list of links */}
         {turnos && turnos.length > 0 ? (

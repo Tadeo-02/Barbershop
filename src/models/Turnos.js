@@ -11,16 +11,16 @@ const store = async (fechaTurno) => {
   }
 };
 
-// const findAll = async () => {
-//   const sql = "SELECT * FROM turnos";
+const findAll = async () => {
+  const sql = "SELECT * FROM turnos";
 
-//   try {
-//     const [rows] = await pool.query(sql);
-//     return rows;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+  try {
+    const [rows] = await pool.query(sql);
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+};
 
 const findById = async (codTurno) => {
   const sql = `SELECT * FROM turnos WHERE codTurno = ?`;
