@@ -45,21 +45,21 @@ const store = async (fechaTurno) => {
 //   }
 // };
 
-// const destroy = async (codTurno) => {
-//   const sql = `DELETE FROM turnos WHERE codTurno = ?`;
+const destroy = async (codTurno) => {
+  const sql = `DELETE FROM turnos WHERE codTurno = ?`;
 
-//   try {
-//     const [result] = await pool.query(sql, [codTurno]);
-//     return result;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+  try {
+    const [result] = await pool.query(sql, [codTurno]);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
 
 module.exports = {
   store,
   // findAll,
   // findById,
   // update,
-  // destroy,
+  destroy
 };
