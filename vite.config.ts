@@ -5,10 +5,16 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [
     react(),
+    
     // Use dynamic import for tailwindcss
     (async () => {
       const tailwindcss = await import("@tailwindcss/vite").then((m) => m.default);
       return tailwindcss();
     })(),
   ],
+  server: {
+    proxy: {
+      '/turnos': 'http://localhost:3000' // o el puerto donde corre tu backend,
+      }
+  }
 })
