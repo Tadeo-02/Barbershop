@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import styles from './mainTurnos.module.css';
+import React, { useState, useEffect } from "react";
 
 // function TurnoNuevo() {
 //   return <div>Formulario para solicitar un turno nuevo</div>;
@@ -9,6 +10,26 @@ import styles from './mainTurnos.module.css';
 // }
 
 function MainTurnos() {
+  const [turnos, setTurnos] = useState([]); // Initialize as an empty array
+
+  useEffect(() => {
+    const fetchTurnos = async () => {
+      try {
+        const response = await fetch("/turnos"); // Fetch all turnos from the backend
+        if (response.ok) {
+          const data = await response.json();
+          setTurnos(data);
+        } else {
+          console.error("Failed to fetch turnos");
+        }
+      } catch (error) {
+        console.error("Error fetching turnos:", error);
+      }
+    };
+
+    fetchTurnos();
+  }, []);
+
   return (
     /*
     <div className={styles.container}>
@@ -36,6 +57,21 @@ function MainTurnos() {
         <Link to="/indexTurnos" className={styles.link}>
           VER TURNOS
         </Link>
+        <br />
+        {/* Replace the single link with a list of links */}
+        {turnos && turnos.length > 0 ? (
+          turnos.map((turno) => (
+            <Link
+              key={turno.codTurno}
+              to={`/turnos/modificarTurno/${turno.codTurno}`}
+              className={styles.link}
+            >
+              MODIFICAR TURNO {turno.codTurno}
+            </Link>
+          ))
+        ) : (
+          <div>No hay turnos disponibles.</div>
+        )}
         <h2 className={styles.title}>Sucursal Centro</h2>
         <div className={styles.branchGallery}>
           <img
@@ -50,6 +86,9 @@ function MainTurnos() {
         >
           Dirección: Mendoza 2774, Rosario{" "}
         </a>
+        <Link to="/deleteTurnos" className={styles.link}>
+          ANIQUILAR TURNOS
+        </Link>
       </div>
       <div className={styles.container}>
         <h2 className={styles.title}>Sucursal Norte</h2>
