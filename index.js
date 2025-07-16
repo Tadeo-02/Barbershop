@@ -24,7 +24,7 @@ app.set("views", path.join(__dirname, "src/views"));
 const mainRouter = require("./src/routes/main.router");
 app.use(mainRouter);
 
-app.use("/components/turnos", require("./src/routes/turnos.router"));
+app.use("/turnos", require("./src/routes/turnos.router"));
 // app.use("/productos", require("./src/routes/productos.router"));
 // app.use("/contacto", require("./src/routes/contacto.router"));
 

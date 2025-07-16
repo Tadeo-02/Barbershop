@@ -6,23 +6,42 @@ const CreateTurnos: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/createTurnos", {
+      console.log("Enviando POST a /turnos con fechaTurno:", fechaTurno);
+      const response = await fetch("/turnos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ fechaTurno }),
       });
-      const data = await response.json(); // Parse the JSON response
+      console.log("Después de fetch, status:", response.status);
+
+      const text = await response.text();
+      console.log("Respuesta cruda del backend:", text);
+
+      let data;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+          console.log("Después de JSON.parse, data:", data);
+        } catch (parseError) {
+          console.error("Error al parsear JSON:", parseError);
+          throw parseError;
+        }
+      } else {
+        console.error("Respuesta vacía del backend");
+        alert("El servidor no devolvió respuesta.");
+        return;
+      }
 
       if (response.ok) {
-        alert(data.message); // Access the message from the JSON response
+        alert(data.message);
         setFechaTurno("");
       } else {
-        alert(data.message); // Access the message from the JSON response
+        alert(data.message);
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
+      console.error("Error en handleSubmit:", error);
       alert("Error de conexión");
     }
   };
