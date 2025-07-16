@@ -1,13 +1,13 @@
-import { Link, Routes, Route } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styles from './mainTurnos.module.css';
 import React, { useState, useEffect } from "react";
 
-function TurnoNuevo() {
-  return <div>Formulario para solicitar un turno nuevo</div>;
-}
-function TurnosHistorial() {
-  return <div>Historial de turnos</div>;
-}
+// function TurnoNuevo() {
+//   return <div>Formulario para solicitar un turno nuevo</div>;
+// }
+// function TurnosHistorial() {
+//   return <div>Historial de turnos</div>;
+// }
 
 function MainTurnos() {
   const [turnos, setTurnos] = useState([]); // Initialize as an empty array
@@ -83,6 +83,9 @@ function MainTurnos() {
         >
           Dirección: Mendoza 2774, Rosario{" "}
         </a>
+        <Link to="/deleteTurnos" className={styles.link}>
+          ANIQUILAR TURNOS
+        </Link>
       </div>
       <div className={styles.container}>
         <h2 className={styles.title}>Sucursal Norte</h2>

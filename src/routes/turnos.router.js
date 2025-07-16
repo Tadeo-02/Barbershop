@@ -12,6 +12,6 @@ router.get("/:codTurno", controller.show);
 router.get("/:codTurno/modificarTurno", controller.edit);
 router.put("/:codTurno", controller.update);
 
-// router.delete("/:id", controller.destroy);
-
+router.delete("/:codTurno", controller.destroy);
+// 
 module.exports = router;
