@@ -12,6 +12,6 @@ router.post("/", controller.store);
 // router.get("/:id/edit", controller.edit);
 // router.put("/:id", controller.update);
 
-// router.delete("/:id", controller.destroy);
-
+router.delete("/:codTurno", controller.destroy);
+// 
 module.exports = router;
