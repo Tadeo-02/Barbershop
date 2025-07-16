@@ -18,29 +18,31 @@ const store = async (req, res) => {
   }
 };
 
-// const index = async (req, res) => {
-//   try {
-//     const turnos = await model.findAll();
-//     res.render("turnos/index", { turnos });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send("Internal Server Error");
-//   }
-// };
+const index = async (req, res) => {
+  try {
+    const turnos = await model.findAll();
+    res.status(200).json(turnos); // <-- Aquí va el res.status
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
 
 const show = async (req, res) => {
+  console.log(req.params);
+
   const { codTurno } = req.params;
 
   try {
     const turno = await model.findById(codTurno);
-    console.log(turno);
+    // console.log(turno);
     if (!turno) {
-      return res.status(404).json({ message: "Turno no encontrado" });
+      return res.status(404).send("Turno no encontrado");
     }
-    res.json(turno);
+    res.status(200).json(turno);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).send("Internal Server Error");
   }
 };
 
@@ -92,9 +94,10 @@ const destroy = async (req, res) => {
 module.exports = {
   create,
   store,
-  // index,
+  index,
   show,
   edit,
   update,
   destroy
+
 };
