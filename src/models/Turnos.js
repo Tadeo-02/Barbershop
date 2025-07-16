@@ -34,32 +34,32 @@ const findById = async (codTurno) => {
   }
 };
 
-// const update = async (codTurno, fechaTurno) => {
-//   const sql = `UPDATE turnos SET fechaTurno = ? WHERE codTurno = ?`;
+const update = async (codTurno, fechaTurno) => {
+  const sql = `UPDATE turnos SET fechaTurno = ? WHERE codTurno = ?`;
 
-//   try {
-//     const [result] = await pool.query(sql, [fechaTurno, codTurno]);
-//     return result;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+  try {
+    const [result] = await pool.query(sql, [fechaTurno, codTurno]);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
 
-// const destroy = async (codTurno) => {
-//   const sql = `DELETE FROM turnos WHERE codTurno = ?`;
+const destroy = async (codTurno) => {
+  const sql = `DELETE FROM turnos WHERE codTurno = ?`;
 
-//   try {
-//     const [result] = await pool.query(sql, [codTurno]);
-//     return result;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+  try {
+    const [result] = await pool.query(sql, [codTurno]);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
 
 module.exports = {
   store,
   findAll,
   findById,
-  // update,
-  // destroy,
+  update,
+  destroy
 };

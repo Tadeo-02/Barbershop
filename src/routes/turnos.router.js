@@ -9,9 +9,9 @@ router.post("/", controller.store);
 router.get("/", controller.index);
 router.get("/:codTurno", controller.show);
 
-// router.get("/:id/edit", controller.edit);
-// router.put("/:id", controller.update);
+router.get("/:codTurno/modificarTurno", controller.edit);
+router.put("/:codTurno", controller.update);
 
-// router.delete("/:id", controller.destroy);
-
+router.delete("/:codTurno", controller.destroy);
+// 
 module.exports = router;
