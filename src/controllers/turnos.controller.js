@@ -74,18 +74,20 @@ const update = async (req, res) => {
   }
 };
 
-// const destroy = async (req, res) => {
-//   const { id } = req.params;
+const destroy = async (req, res) => {
+  const { codTurno } = req.params;
 
-//   try {
-//     const result = await model.destroy(id);
-//     console.log(result);
-//     res.redirect("/turnos");
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send("Internal Server Error");
-//   }
-// };
+  try {
+    const result = await model.destroy(codTurno);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Turno no encontrado" });
+    }
+    res.status(200).json({ message: "Turno eliminado correctamente" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 module.exports = {
   create,
@@ -94,5 +96,5 @@ module.exports = {
   show,
   edit,
   update,
-  // destroy,
+  destroy
 };
