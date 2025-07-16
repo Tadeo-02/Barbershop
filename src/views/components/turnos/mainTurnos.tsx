@@ -1,12 +1,12 @@
-import { Link, Routes, Route } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styles from './mainTurnos.module.css';
 
-function TurnoNuevo() {
-  return <div>Formulario para solicitar un turno nuevo</div>;
-}
-function TurnosHistorial() {
-  return <div>Historial de turnos</div>;
-}
+// function TurnoNuevo() {
+//   return <div>Formulario para solicitar un turno nuevo</div>;
+// }
+// function TurnosHistorial() {
+//   return <div>Historial de turnos</div>;
+// }
 
 function MainTurnos() {
   return (
@@ -32,6 +32,9 @@ function MainTurnos() {
       <div className={styles.container}>
         <Link to="/createTurnos" className={styles.link}>
           CREAR TURNOS
+        </Link>
+        <Link to="/indexTurnos" className={styles.link}>
+          VER TURNOS
         </Link>
         <h2 className={styles.title}>Sucursal Centro</h2>
         <div className={styles.branchGallery}>
