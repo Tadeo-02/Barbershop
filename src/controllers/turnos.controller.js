@@ -18,29 +18,53 @@ const store = async (req, res) => {
   }
 };
 
-// const index = async (req, res) => {
-//   try {
-//     const turnos = await model.findAll();
-//     res.render("turnos/index", { turnos });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send("Internal Server Error");
-//   }
-// };
+const index = async (req, res) => {
+  try {
+    const turnos = await model.findAll();
+    res.status(200).json(turnos); // <-- Aquí va el res.status
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
 
+const show = async (req, res) => {
+  console.log(req.params);
+
+  const { codTurno } = req.params;
+
+  try {
+    const turno = await model.findById(codTurno);
+    // console.log(turno);
+    if (!turno) {
+      return res.status(404).send("Turno no encontrado");
+    }
+    res.status(200).json(turno);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+// Replace your existing 'show' function with this for the test
 // const show = async (req, res) => {
-//   const { id } = req.params;
+//   const { codTurno } = req.params;
+//   const pool = require("../models/mysql"); // IMPORTANT: Make sure this path is correct
 
 //   try {
-//     const turnos = await model.findById(id);
-//     console.log(turnos);
-//     if (!turnos) {
-//       return res.status(404).send("Turno no encontrado");
+//     const updateSql = "UPDATE turnos SET precioTurno = 999 WHERE codTurno = ?";
+//     const [result] = await pool.query(updateSql, [codTurno]);
+
+//     // This will tell us if the UPDATE query found and changed a row
+//     if (result.affectedRows > 0) {
+//       res.send("SUCCESS: The row was found and updated!");
+//     } else {
+//       res.send("FAILURE: The row was NOT found. The update did nothing.");
 //     }
-//     res.render("turnos/show", { producto });
+
 //   } catch (error) {
 //     console.log(error);
-//     return res.status(500).send("Internal Server Error");
+//     return res.status(500).send("Internal Server Error during update test.");
 //   }
 // };
 
@@ -90,8 +114,8 @@ const store = async (req, res) => {
 module.exports = {
   create,
   store,
-  // index,
-  // show,
+  index,
+  show,
   // edit,
   // update,
   // destroy,

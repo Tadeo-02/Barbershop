@@ -5,6 +5,8 @@ import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import MainTurnos from "./components/turnos/mainTurnos.tsx";
 import CreateTurnos from "./components/turnos/createTurnos.tsx";
+import IndexTurnos from "./components/turnos/indexTurnos.tsx";
+import ShowTurno from "./components/turnos/showTurnos.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
             <Route path="/turnos/mainTurnos" element={<MainTurnos />} />{" "}
             <Route path="/createTurnos" element={<CreateTurnos />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/indexTurnos" element={<IndexTurnos />} />
+            <Route path="/turnos/:codTurno" element={<ShowTurno />} />
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>
