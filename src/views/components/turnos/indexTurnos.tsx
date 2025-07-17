@@ -22,6 +22,32 @@ const IndexTurnos = () => {
       });
   }, []);
 
+  
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      "¿Estás seguro de que querés borrar este turno?"
+    );
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/turnos/${codTurno}`, {
+        method: "delete",
+      });
+
+      if (response.ok) {
+        alert("Turno eliminado correctamente.");
+        // Acá podrías actualizar la lista de turnos o redirigir
+      } else if (response.status === 404) {
+        alert("Turno no encontrado.");
+      } else {
+        alert("Error al borrar el turno.");
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      alert("Error de conexión con el servidor.");
+    }
+  };
+
   return (
     <div className="index-turnos">
       <h1>Listado de turnos</h1>
@@ -36,9 +62,15 @@ const IndexTurnos = () => {
               </Link>
               ; - Fecha: {new Date(turno.fechaTurno).toLocaleDateString()}
               <br />
-              <Link to={`/turnos/modificarTurno/${turno.codTurno}`} style={{marginLeft: "20px", color: "blue"}}>
+              <Link
+                to={`/turnos/modificarTurno/${turno.codTurno}`}
+                style={{ marginLeft: "20px", color: "blue" }}
+              >
                 Modificar
               </Link>
+              <button className="button button--danger" onClick={handleDelete}>
+                Borrar
+              </button>
             </li>
           ))}
         </ul>
