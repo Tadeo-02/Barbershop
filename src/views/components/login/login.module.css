@@ -68,7 +68,12 @@
   transition: 0.25s;
   cursor: pointer;
 }
-
+.form button:hover {
+  background: #2ecc71;
+  color: black;
+  border-color: #2ecc71;
+  transition: 0.25s;
+}
 .form a {
   color: red;
   font-size: 20px;
