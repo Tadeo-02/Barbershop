@@ -14,7 +14,8 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/turnos': 'http://localhost:3000' // o el puerto donde corre tu backend,
+      '/turnos': 'http://localhost:3000', // o el puerto donde corre tu backend,
+      '/barberos': 'http://localhost:3000' // o el puerto donde corre tu backend
       }
   }
 })

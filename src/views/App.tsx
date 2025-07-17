@@ -7,8 +7,9 @@ import MainTurnos from "./components/turnos/mainTurnos.tsx";
 import CreateTurnos from "./components/turnos/createTurnos.tsx";
 import IndexTurnos from "./components/turnos/indexTurnos.tsx";
 import ShowTurno from "./components/turnos/showTurnos.tsx";
-import DeleteTurnos from "./components/turnos/deleteTurnos.tsx";
 import ModificarTurno from "./components/turnos/modificarTurno.tsx";
+import CreateBarberos from "./components/Barberos/createBarberos.tsx";
+// import IndexBarberos from "./components/Barberos/indexBarberos.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -21,11 +22,13 @@ function App() {
             <Route path="/" element={<MainTurnos />} />
             <Route path="/turnos/mainTurnos" element={<MainTurnos />} />{" "}
             <Route path="/createTurnos" element={<CreateTurnos />} />
-            <Route path="/deleteTurnos" element={<DeleteTurnos />} />
             <Route path="/login" element={<Login />} />
             <Route path="/indexTurnos" element={<IndexTurnos />} />
             <Route path="/turnos/:codTurno" element={<ShowTurno />} />
             <Route path="/turnos/modificarTurno/:codTurno" element={<ModificarTurno />}/>
+            <Route path="/barberos/createBarberos" element={<CreateBarberos />} />
+            {/* <Route path="/barberos/indexBarberos" element={<IndexBarberos />} /> */}
+            {/* Puedes agregar más rutas aquí */}
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>
