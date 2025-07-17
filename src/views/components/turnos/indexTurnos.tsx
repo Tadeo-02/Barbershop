@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+interface Turno {
+  codTurno: number;
+  fechaTurno: string;
+}
+
 const IndexTurnos = () => {
-  const [turnos, setTurnos] = useState([]);
+  const [turnos, setTurnos] = useState<Turno[]>([]);
 
   useEffect(() => {
     // Llama al backend para obtener los turnos
@@ -30,6 +35,10 @@ const IndexTurnos = () => {
                 Codigo Turno: {turno.codTurno}
               </Link>
               ; - Fecha: {new Date(turno.fechaTurno).toLocaleDateString()}
+              <br />
+              <Link to={`/turnos/modificarTurno/${turno.codTurno}`} style={{marginLeft: "20px", color: "blue"}}>
+                Modificar
+              </Link>
             </li>
           ))}
         </ul>

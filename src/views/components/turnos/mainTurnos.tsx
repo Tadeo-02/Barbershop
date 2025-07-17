@@ -57,21 +57,9 @@ function MainTurnos() {
         <Link to="/indexTurnos" className={styles.link}>
           VER TURNOS
         </Link>
-        <br />
-        {/* Replace the single link with a list of links */}
-        {turnos && turnos.length > 0 ? (
-          turnos.map((turno) => (
-            <Link
-              key={turno.codTurno}
-              to={`/turnos/modificarTurno/${turno.codTurno}`}
-              className={styles.link}
-            >
-              MODIFICAR TURNO {turno.codTurno}
-            </Link>
-          ))
-        ) : (
-          <div>No hay turnos disponibles.</div>
-        )}
+        <Link to="/indexTurnos" className={styles.link}>
+          MODIFICAR TURNOS  
+        </Link>
         <h2 className={styles.title}>Sucursal Centro</h2>
         <div className={styles.branchGallery}>
           <img
