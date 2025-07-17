@@ -9,6 +9,12 @@ import IndexTurnos from "./components/turnos/indexTurnos.tsx";
 import ShowTurno from "./components/turnos/showTurnos.tsx";
 import DeleteTurnos from "./components/turnos/deleteTurnos.tsx";
 import ModificarTurno from "./components/turnos/modificarTurno.tsx";
+
+
+
+
+import CreateTipoCortes from "./components/tipoCortes/createTipoCortes.tsx";
+import IndexTipoCortes from "./components/tipoCortes/indexTipoCortes.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -26,6 +32,9 @@ function App() {
             <Route path="/indexTurnos" element={<IndexTurnos />} />
             <Route path="/turnos/:codTurno" element={<ShowTurno />} />
             <Route path="/turnos/modificarTurno/:codTurno" element={<ModificarTurno />}/>
+            <Route path="/tipoCortes/createTipoCortes" element={<CreateTipoCortes />} />
+            <Route path="/tipoCortes/createTipoCortes" element={<CreateTipoCortes />} />
+            <Route path="/tipoCortes/indexTipoCortes" element={<IndexTipoCortes />} />
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>

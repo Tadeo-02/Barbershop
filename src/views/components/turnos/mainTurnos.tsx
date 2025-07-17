@@ -93,6 +93,13 @@ function MainTurnos() {
         >
           Dirección: Juan B. Justo 1767, Rosario{" "}
         </a>
+
+        <Link to="/tipoCortes/createTipoCortes" className={styles.link}>
+          CREAR TIPO CORTES
+        </Link>
+        <Link to="/indexTipoCortes" className={styles.link}>
+          VER TIPO CORTES
+        </Link>
       </div>
     </div>
   );
