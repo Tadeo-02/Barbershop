@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const ModificarTurno: React.FC = () => {
     const { codTurno } = useParams<{ codTurno: string }>();
+    const navigate = useNavigate();
     const [turno, setTurno] = useState<any | null>(null); // Use 'any' type
     const [fechaTurno, setFechaTurno] = useState("");
 
@@ -44,6 +45,7 @@ const ModificarTurno: React.FC = () => {
 
             if (response.ok) {
                 alert(data.message);
+                navigate("/indexTurnos"); // Redirigir a la lista de turnos
             } else {
                 alert(data.message);
             }
