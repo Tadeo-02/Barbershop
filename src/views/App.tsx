@@ -25,7 +25,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/indexTurnos" element={<IndexTurnos />} />
             <Route path="/turnos/:codTurno" element={<ShowTurno />} />
-            <Route path="/turnos/:codTurno/modificarTurno" element={<ModificarTurno />}/>
+            <Route path="/turnos/modificarTurno/:codTurno" element={<ModificarTurno />}/>
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>
