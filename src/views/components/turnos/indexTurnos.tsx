@@ -23,7 +23,7 @@ const IndexTurnos = () => {
   }, []);
 
   
-  const handleDelete = async () => {
+  const handleDelete = async (codTurno: number) => {
     const confirmed = window.confirm(
       "¿Estás seguro de que querés borrar este turno?"
     );
@@ -31,12 +31,13 @@ const IndexTurnos = () => {
 
     try {
       const response = await fetch(`/turnos/${codTurno}`, {
-        method: "delete",
+        method: "DELETE",
       });
 
       if (response.ok) {
         alert("Turno eliminado correctamente.");
-        // Acá podrías actualizar la lista de turnos o redirigir
+        // Actualizar la lista de turnos removiendo el turno eliminado
+        setTurnos(turnos.filter(turno => turno.codTurno !== codTurno));
       } else if (response.status === 404) {
         alert("Turno no encontrado.");
       } else {
@@ -62,13 +63,10 @@ const IndexTurnos = () => {
               </Link>
               ; - Fecha: {new Date(turno.fechaTurno).toLocaleDateString()}
               <br />
-              <Link
-                to={`/turnos/modificarTurno/${turno.codTurno}`}
-                style={{ marginLeft: "20px", color: "blue" }}
-              >
+              <Link to={`/turnos/modificarTurno/${turno.codTurno}`} style={{ marginLeft: "20px", color: "blue" }}>
                 Modificar
               </Link>
-              <button className="button button--danger" onClick={handleDelete}>
+              <button className="button button--danger" onClick={() => handleDelete(turno.codTurno)}>
                 Borrar
               </button>
             </li>
