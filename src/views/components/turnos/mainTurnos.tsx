@@ -54,11 +54,13 @@ function MainTurnos() {
         <Link to="/createTurnos" className={styles.link}>
           CREAR TURNOS
         </Link>
+        <br />
         <Link to="/indexTurnos" className={styles.link}>
           VER TURNOS
         </Link>
-        <Link to="/indexTurnos" className={styles.link}>
-          MODIFICAR TURNOS  
+        <br />
+        <Link to="/barberos/createBarberos" className={styles.link}>
+          CREAR BARBEROS
         </Link>
         <h2 className={styles.title}>Sucursal Centro</h2>
         <div className={styles.branchGallery}>
@@ -74,9 +76,6 @@ function MainTurnos() {
         >
           Dirección: Mendoza 2774, Rosario{" "}
         </a>
-        <Link to="/deleteTurnos" className={styles.link}>
-          ANIQUILAR TURNOS
-        </Link>
       </div>
       <div className={styles.container}>
         <h2 className={styles.title}>Sucursal Norte</h2>
