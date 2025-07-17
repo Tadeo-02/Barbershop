@@ -25,7 +25,7 @@ const mainRouter = require("./src/routes/main.router");
 app.use(mainRouter);
 
 app.use("/turnos", require("./src/routes/turnos.router"));
-// app.use("/productos", require("./src/routes/productos.router"));
+app.use("/tipoCortes", require("./src/routes/tipoCortes.router"));
 // app.use("/contacto", require("./src/routes/contacto.router"));
 
 const PORT = process.env.PORT || 3001;
