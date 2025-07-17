@@ -15,6 +15,7 @@ import ModificarTurno from "./components/turnos/modificarTurno.tsx";
 
 import CreateTipoCortes from "./components/tipoCortes/createTipoCortes.tsx";
 import IndexTipoCortes from "./components/tipoCortes/indexTipoCortes.tsx";
+import ModificarTipoCorte from "./components/tipoCortes/modificarTipoCorte.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -35,6 +36,8 @@ function App() {
             <Route path="/tipoCortes/createTipoCortes" element={<CreateTipoCortes />} />
             <Route path="/tipoCortes/createTipoCortes" element={<CreateTipoCortes />} />
             <Route path="/tipoCortes/indexTipoCortes" element={<IndexTipoCortes />} />
+            <Route path="/tipoCortes/modificarTipoCorte/:codCorte" element={<ModificarTipoCorte />} />
+            {/* Aquí puedes agregar más rutas según sea necesario */}
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>

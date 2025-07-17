@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import styles from "./TipoCortes.module.css";
 
 interface TipoCorte {
   codCorte: number;
@@ -52,30 +53,33 @@ const IndexTipoCortes = () => {
   };
 
   return (
-    <div className="index-tipo-cortes">
-      <h1>Listado de Tipos de Corte</h1>
+    <div className={styles.indexTipoCortes}> {/* Usando styles.indexTipoCortes */}
+      <h2>Listado de Tipos de Corte</h2>
       {tipoCortes.length === 0 ? (
         <p>No hay tipos de corte disponibles.</p>
       ) : (
         <ul>
           {tipoCortes.map((corte) => (
             <li key={corte.codCorte}>
-              <strong>{corte.nombreCorte}</strong> (Código: {corte.codCorte})
-              <br />
-              Valor base: ${corte.valorBase}
-              <br />
-              <Link
-                to={`/tipoCortes/modificar/${corte.codCorte}`}
-                style={{ marginLeft: "20px", color: "blue" }}
-              >
-                Modificar
-              </Link>
-              <button
-                className="button button--danger"
-                onClick={() => handleDelete(corte.codCorte)}
-              >
-                Borrar
-              </button>
+              <div>
+                <strong>{corte.nombreCorte}</strong> (Código: {corte.codCorte})
+                <br />
+                Valor base: ${corte.valorBase}
+              </div>
+              <div>
+                <Link
+                  to={`/tipoCortes/modificarTipoCorte/${corte.codCorte}`}
+                  className={`${styles.button} ${styles.buttonPrimary}`}
+                >
+                  Modificar
+                </Link>
+                <button
+                  className={`${styles.button} ${styles.buttonDanger}`} 
+                  onClick={() => handleDelete(corte.codCorte)}
+                >
+                  Borrar
+                </button>
+              </div>
             </li>
           ))}
         </ul>
