@@ -97,7 +97,7 @@ function MainTurnos() {
         <Link to="/tipoCortes/createTipoCortes" className={styles.link}>
           CREAR TIPO CORTES
         </Link>
-        <Link to="/indexTipoCortes" className={styles.link}>
+        <Link to="/tipoCortes/indexTipoCortes" className={styles.link}>
           VER TIPO CORTES
         </Link>
       </div>

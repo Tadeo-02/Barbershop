@@ -19,15 +19,15 @@ const store = async (req, res) => {
   }
 };
 
-// const index = async (req, res) => {
-//   try {
-//     const turnos = await model.findAll();
-//     res.render("turnos/index", { turnos });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send("Internal Server Error");
-//   }
-// };
+const index = async (req, res) => {
+  try {
+    const cortes = await model.findAll();
+    res.status(200).json(cortes); // <-- Aquí va el res.status
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
 
 const show = async (req, res) => {
   const { codCorte } = req.params;
@@ -94,7 +94,7 @@ const destroy = async (req, res) => {
 module.exports = {
   create,
   store,
-  // index,
+  index,
   show,
   edit,
   update,
