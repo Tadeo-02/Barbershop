@@ -25,6 +25,8 @@ const mainRouter = require("./src/routes/main.router");
 app.use(mainRouter);
 
 app.use("/turnos", require("./src/routes/turnos.router"));
+app.use("/barberos", require("./src/routes/barberos.router"));
+// app.use("/productos", require("./src/routes/productos.router"));
 app.use("/tipoCortes", require("./src/routes/tipoCortes.router"));
 // app.use("/contacto", require("./src/routes/contacto.router"));
 
