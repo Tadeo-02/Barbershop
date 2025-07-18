@@ -1,11 +1,12 @@
-    import { useEffect, useState } from "react";
-    import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import styles from './barberos.module.css';
 
-    interface Barbero {
+interface Barbero {
     cuil: string;
     nombre: string;
     apellido: string;
-    }
+}
 
     const IndexBarberos = () => {
     const [barberos, setBarberos] = useState<Barbero[]>([]);
@@ -50,35 +51,48 @@
     };
 
     return (
-        <div className="index-barberos">
-        <h1>Listado de barberos</h1>
-        {barberos.length === 0 ? (
-            <p>No hay barberos disponibles.</p>
-        ) : (
-            <ul>
-            {barberos.map((barbero, idx) => (
-                <li key={idx}>
-                <Link to={`/barberos/${barbero.cuil}`}>
-                    Cuil Barbero: {barbero.cuil}
-                </Link>
-                ; - Nombre: {barbero.apellido}, {barbero.nombre}
-                <br />
-                <Link
-                    to={`/barberos/modificarBarbero/${barbero.cuil}`}
-                    style={{ marginLeft: "20px", color: "blue" }}
-                >
-                    Modificar
-                </Link>
-                <button
-                    className="button button--danger"
-                    onClick={() => handleDelete(barbero.cuil)}
-                >
-                    Borrar
-                </button>
-                </li>
-            ))}
-            </ul>
-        )}
+        <div className={styles.indexBarberos}>
+            <h2>Gestión de Barberos</h2>
+            {barberos.length === 0 ? (
+                <div className={styles.emptyState}>
+                    <p>No hay barberos disponibles.</p>
+                </div>
+            ) : (
+                <ul>
+                    {barberos.map((barbero, idx) => (
+                        <li key={idx}>
+                            <div className={styles.barberoInfo}>
+                                <div className={styles.barberoTitle}>
+                                    {barbero.apellido}, {barbero.nombre}
+                                </div>
+                                <div className={styles.barberoCode}>
+                                    CUIL: {barbero.cuil}
+                                </div>
+                            </div>
+                            <div className={styles.actionButtons}>
+                                <Link 
+                                    to={`/barberos/${barbero.cuil}`}
+                                    className={`${styles.button} ${styles.buttonPrimary}`}
+                                >
+                                    Ver Detalles
+                                </Link>
+                                <Link
+                                    to={`/barberos/modificarBarbero/${barbero.cuil}`}
+                                    className={`${styles.button} ${styles.buttonPrimary}`}
+                                >
+                                    Modificar
+                                </Link>
+                                <button
+                                    className={`${styles.button} ${styles.buttonDanger}`}
+                                    onClick={() => handleDelete(barbero.cuil)}
+                                >
+                                    Eliminar
+                                </button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
     };

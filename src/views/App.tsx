@@ -8,9 +8,12 @@ import CreateTurnos from "./components/turnos/createTurnos.tsx";
 import IndexTurnos from "./components/turnos/indexTurnos.tsx";
 import ShowTurno from "./components/turnos/showTurnos.tsx";
 import ModificarTurno from "./components/turnos/modificarTurno.tsx";
+
 import CreateCategorias from "./components/categorias/createCategorias.tsx";
-import DeleteCategoria from "./components/categorias/deleteCategorias.tsx";
 import ModificarCategoria from "./components/categorias/modificarCategorias.tsx";
+import IndexCategorias from "./components/categorias/indexCategorias.tsx";
+import ShowCategoria from "./components/categorias/showCategoria.tsx";
+
 import CreateBarberos from "./components/Barberos/createBarberos.tsx";
 import IndexBarberos from "./components/Barberos/indexBarberos.tsx";
 import ShowBarbero from "./components/Barberos/showBarberos.tsx";
@@ -34,9 +37,10 @@ function App() {
             <Route path="/indexTurnos" element={<IndexTurnos />} />
             <Route path="/turnos/:codTurno" element={<ShowTurno />} />
             <Route path="/turnos/modificarTurno/:codTurno" element={<ModificarTurno />}/>
-            <Route path="/createCategorias" element={<CreateCategorias />} />
-            <Route path= "/deleteCategorias" element={<DeleteCategoria />} />
+            <Route path="/categorias/createCategorias" element={<CreateCategorias />} />
             <Route path="/categorias/modificarCategorias/:codCategoria" element={<ModificarCategoria />} />
+            <Route path="/categorias/indexCategorias" element={<IndexCategorias />} />
+            <Route path="/categorias/:codCategoria" element={<ShowCategoria />} />
             <Route path="/barberos/createBarberos" element={<CreateBarberos />} />
             <Route path="/barberos/indexBarberos" element={<IndexBarberos />} />
             <Route path="/barberos/:cuil" element={<ShowBarbero />} />
