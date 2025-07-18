@@ -9,6 +9,9 @@ import IndexTurnos from "./components/turnos/indexTurnos.tsx";
 import ShowTurno from "./components/turnos/showTurnos.tsx";
 import DeleteTurnos from "./components/turnos/deleteTurnos.tsx";
 import ModificarTurno from "./components/turnos/modificarTurno.tsx";
+import CreateCategorias from "./components/categorias/createCategorias.tsx";
+
+
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -26,6 +29,7 @@ function App() {
             <Route path="/indexTurnos" element={<IndexTurnos />} />
             <Route path="/turnos/:codTurno" element={<ShowTurno />} />
             <Route path="/turnos/modificarTurno/:codTurno" element={<ModificarTurno />}/>
+            <Route path="/createCategorias" element={<CreateCategorias />} />
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>
