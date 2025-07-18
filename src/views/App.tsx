@@ -9,7 +9,9 @@ import IndexTurnos from "./components/turnos/indexTurnos.tsx";
 import ShowTurno from "./components/turnos/showTurnos.tsx";
 import ModificarTurno from "./components/turnos/modificarTurno.tsx";
 import CreateBarberos from "./components/Barberos/createBarberos.tsx";
-// import IndexBarberos from "./components/Barberos/indexBarberos.tsx";
+import IndexBarberos from "./components/Barberos/indexBarberos.tsx";
+import ShowBarbero from "./components/Barberos/showBarberos.tsx";
+import UpdateBarbero from "./components/Barberos/updateBarberos.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -27,7 +29,9 @@ function App() {
             <Route path="/turnos/:codTurno" element={<ShowTurno />} />
             <Route path="/turnos/modificarTurno/:codTurno" element={<ModificarTurno />}/>
             <Route path="/barberos/createBarberos" element={<CreateBarberos />} />
-            {/* <Route path="/barberos/indexBarberos" element={<IndexBarberos />} /> */}
+            <Route path="/barberos/indexBarberos" element={<IndexBarberos />} />
+            <Route path="/barberos/:cuil" element={<ShowBarbero />} />
+            <Route path="/barberos/modificarBarbero/:cuil" element={<UpdateBarbero />} />
             {/* Puedes agregar más rutas aquí */}
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>

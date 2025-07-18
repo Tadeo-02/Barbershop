@@ -34,11 +34,11 @@ const findById = async (cuil) => {
   }
 };
 
-const update = async (cuil, nombre, apellido, telefono) => {
-  const sql = `UPDATE barberos SET nombre = ? AND apellido = ? AND telefono = ? WHERE cuil = ?`;
+const update = async (cuilViejo, nuevoCuil, nombre, apellido, telefono) => {
+  const sql = `UPDATE barberos SET cuil = ?, nombre = ?, apellido = ?, telefono = ? WHERE cuil = ?`;
 
   try {
-    const [result] = await pool.query(sql, [nombre, apellido, telefono, cuil]);
+    const [result] = await pool.query(sql, [ nuevoCuil, nombre, apellido, telefono, cuilViejo]);
     return result;
   } catch (error) {
     throw error;

@@ -19,7 +19,6 @@ const ShowTurno = () => {
       <h1>Turno: {turno.codTurno}</h1>
       <p>Fecha: {new Date(turno.fechaTurno).toLocaleDateString()}</p>
       <p>Precio: {turno.precioTurno}</p>
-      {/* Más datos según tu modelo */}
     </div>
   );
 };
