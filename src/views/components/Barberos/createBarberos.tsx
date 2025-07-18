@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from './barberos.module.css';
 
-const CreateTurnos: React.FC = () => {
+const CreateBarberos: React.FC = () => {
+  const navigate = useNavigate();
   const [cuil, setCuil] = useState("");
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
@@ -43,6 +46,7 @@ const CreateTurnos: React.FC = () => {
         setNombre("");
         setApellido("");
         setTelefono("");
+        navigate("/barberos/indexBarberos");
       } else {
         alert(data.message);
       }
@@ -53,67 +57,71 @@ const CreateTurnos: React.FC = () => {
   };
 
   return (
-    <div>
-      <h1>Crear Barberos</h1>
-      <form className="form" onSubmit={handleSubmit}>
-        <div className="form__group">
-          <label className="form__label" htmlFor="cuil">
-            Cuil:
+    <div className={styles.formContainer}>
+      <h1>Crear Barbero</h1>
+      <form onSubmit={handleSubmit}>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel} htmlFor="cuil">
+            CUIL:
           </label>
           <input
-            className="form__input"
+            className={styles.formInput}
             type="text"
             name="cuil"
             id="cuil"
             value={cuil}
             onChange={(e) => setCuil(e.target.value)}
+            required
           />
         </div>
-        <div className="form__group">
-          <label className="form__label" htmlFor="nombre">
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel} htmlFor="nombre">
             Nombre:
           </label>
           <input
-            className="form__input"
+            className={styles.formInput}
             type="text"
             name="nombre"
             id="nombre"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
+            required
           />
         </div>
-        <div className="form__group">
-          <label className="form__label" htmlFor="apellido">
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel} htmlFor="apellido">
             Apellido:
           </label>
           <input
-            className="form__input"
+            className={styles.formInput}
             type="text"
             name="apellido"
             id="apellido"
             value={apellido}
             onChange={(e) => setApellido(e.target.value)}
+            required
           />
         </div>
-        <div className="form__group">
-          <label className="form__label" htmlFor="telefono">
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel} htmlFor="telefono">
             Teléfono:
           </label>
           <input
-            className="form__input"
+            className={styles.formInput}
             type="text"
             name="telefono"
             id="telefono"
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
+            required
           />
         </div>
-        <button className="button button--primary" type="submit">
-          Guardar
+        <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit">
+          Guardar Barbero
         </button>
       </form>
     </div>
   );
 };
 
-export default CreateTurnos;
+export default CreateBarberos;

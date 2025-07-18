@@ -13,6 +13,9 @@ function Barberos() {
 function AgendarTurno() {
   return <div>Formulario para solicitar un turno nuevo</div>;
 }       
+function Categorias() {
+  return <div>Categorias</div>;
+}
 
 function MainTurnos() {
   return (
@@ -32,11 +35,15 @@ function MainTurnos() {
         <div className={styles.mainSucursal}>
           <Link to="Agendar Turnos">Agendar Turnos</Link>
         </div>
+        <div className={styles.mainSucursal}>
+          <Link to="Categorias">Categorias</Link> 
+        </div>
       </nav>
       <Routes>
         <Route path="Ubicación" element={<Ubicacion />} />
         <Route path="Horarios" element={<Horarios />} />
         <Route path="Barberos" element={<Barberos />} />
+        <Route path="Categorias" element={<Categorias />} />
         <Route path="Agendar Turnos" element={<AgendarTurno />} />
       </Routes>
     </div>

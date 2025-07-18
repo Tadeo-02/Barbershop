@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import styles from './categorias.module.css';
 
 const ModificarCategoria: React.FC = () => {
     const { codCategoria } = useParams<{ codCategoria: string }>();
@@ -15,39 +16,40 @@ const ModificarCategoria: React.FC = () => {
                 if (response.ok) {
                     const data = await response.json();
                     setCategoria(data);
-                    setNomCategoria(data.NomCategoria);
-                    setDescCategoria(data.DescCategoria);
+                    setNomCategoria(data.nomCategoria);
+                    setDescCategoria(data.descCategoria);
                 } else {
                     console.error("Failed to fetch categoria");
+                    alert("Error al cargar la categoría");
                 }
             } catch (error) {
                 console.error("Error fetching categoria:", error);
+                alert("Error de conexión al cargar la categoría");
             }
         };
 
-        fetchCategoria();
+        if (codCategoria) {
+            fetchCategoria();
+        }
     }, [codCategoria]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
-            const response = await fetch(
-                `/categorias/${categoria?.codCategoria}?_method=PUT`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ nomCategoria, descCategoria }),
-                }
-            );
+            const response = await fetch(`/categorias/${codCategoria}?_method=PUT`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ nomCategoria, descCategoria }),
+            });
 
             const data = await response.json();
 
             if (response.ok) {
                 alert(data.message);
-                navigate("/indexCategorias"); // Redirigir a la lista de categorias
+                navigate("/categorias/indexCategorias");
             } else {
                 alert(data.message);
             }
@@ -58,36 +60,47 @@ const ModificarCategoria: React.FC = () => {
     };
 
     if (!categoria) {
-        return <div>Loading...</div>;
+        return (
+            <div className={styles.loadingState}>
+                Cargando categoría...
+            </div>
+        );
     }
 
     return (
-        <div>
-            <h1>Editar Categoria</h1>
+        <div className={styles.formContainer}>
+            <h1>Editar Categoría</h1>
             <form className="form" onSubmit={handleSubmit}>
-                <div className="form__group">
-                    <label className="form__label" htmlFor="nomCategoria">
-                        Nombre:
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel} htmlFor="nomCategoria">
+                        Nombre de la Categoría:
                     </label>
                     <input
-                        className="form__input"
+                        className={styles.formInput}
                         type="text"
                         name="nomCategoria"
                         id="nomCategoria"
                         value={nomCategoria}
                         onChange={(e) => setNomCategoria(e.target.value)}
-                    />
-                    <input
-                        className="form__input"
-                        type="text"
-                        name="descCategoria"
-                        id="descCategoria"
-                        value={nomCategoria}
-                        onChange={(e) => setDescCategoria(e.target.value)}
+                        required
                     />
                 </div>
-                <button className="button button--primary" type="submit">
-                    Guardar
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel} htmlFor="descCategoria">
+                        Descripción:
+                    </label>
+                    <textarea
+                        className={styles.formTextarea}
+                        name="descCategoria"
+                        id="descCategoria"
+                        value={descCategoria}
+                        onChange={(e) => setDescCategoria(e.target.value)}
+                        rows={4}
+                        required
+                    />
+                </div>
+                <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit">
+                    Guardar Cambios
                 </button>
             </form>
         </div>

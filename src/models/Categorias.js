@@ -1,7 +1,7 @@
 const pool = require("./mysql");
 
 const store = async (nomCategoria, descCategoria) => {
-    const sql = `INSERT INTO categorias (nomCategoria, descCategorias) VALUES (?1, ?2)`;
+    const sql = `INSERT INTO categorias (nomCategoria, descCategoria) VALUES (?, ?)`;
 
     try {
         const [result] = await pool.query(sql, [nomCategoria, descCategoria]);
@@ -34,27 +34,17 @@ const findById = async (codCategoria) => {
     }
 };
 
-const updateNom = async (codCategoria, nomCategoria) => {
-    const sql = `UPDATE categorias SET nomCategoria = ? WHERE codCategoria = ?`;
+const update = async (nomCategoria, descCategoria, codCategoria) => {
+    const sql = `UPDATE categorias SET nomCategoria = ?, descCategoria = ? WHERE codCategoria = ?`;
 
     try {
-        const [result] = await pool.query(sql, [nomCategoria, codCategoria]);
+        const [result] = await pool.query(sql, [nomCategoria, descCategoria, codCategoria]);
         return result;
     } catch (error) {
         throw error;
     }
 };
 
-const updateDesc = async (codCategoria, descCategoria) => {
-    const sql = `UPDATE categorias SET descCategoria = ? WHERE codCategoria = ?`;
-
-    try {
-        const [result] = await pool.query(sql, [descCategoria, codCategoria]);
-        return result;
-    } catch (error) {
-        throw error;
-    }
-};
 
 const destroy = async (codCategoria) => {
     const sql = `DELETE FROM categorias WHERE codCategoria = ?`;
@@ -71,7 +61,6 @@ module.exports = {
     store,
     findAll,
     findById,
-    updateNom,
-    updateDesc,
+    update,
     destroy,
 };

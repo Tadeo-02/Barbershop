@@ -1,27 +1,47 @@
-    import { useEffect, useState } from "react";
-    import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import styles from './barberos.module.css';
 
-    const ShowBarbero = () => {
+interface Barbero {
+    cuil: string;
+    nombre: string;
+    apellido: string;
+    telefono: string;
+}
+
+const ShowBarbero = () => {
     const { cuil } = useParams(); // si lo pasás como parámetro de URL
-    const [barbero, setBarbero] = useState(null);
+    const [barbero, setBarbero] = useState<Barbero | null>(null);
 
     useEffect(() => {
         fetch(`/barberos/${cuil}`)
-        .then((res) => res.json())
-        .then((data) => setBarbero(data))
-        .catch((err) => console.error("Error al obtener el barbero:", err));
+            .then((res) => res.json())
+            .then((data) => setBarbero(data))
+            .catch((err) => console.error("Error al obtener el barbero:", err));
     }, [cuil]);
 
-    if (!barbero) return <div>Cargando barbero...</div>;
-
-    return (
-        <div>
-        <h1>Cuil: {barbero.cuil}</h1>
-        <p>Nombre: {barbero.nombre}</p>
-        <p>Apellido: {barbero.apellido}</p>
-        <p>Telefono: {barbero.telefono}</p>
+    if (!barbero) return (
+        <div className={styles.loadingState}>
+            Cargando barbero...
         </div>
     );
-    };
 
-    export default ShowBarbero;
+    return (
+        <div className={styles.formContainer}>
+            <h1>Detalles del Barbero</h1>
+            <div className={styles.barberoInfo}>
+                <div className={styles.barberoTitle}>
+                    {barbero.apellido}, {barbero.nombre}
+                </div>
+                <div className={styles.barberoCode}>
+                    CUIL: {barbero.cuil}
+                </div>
+                <div className={styles.barberoDisponibilidad}>
+                    Teléfono: {barbero.telefono}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ShowBarbero;
