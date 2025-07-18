@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import styles from './turnos.module.css';
+
+interface Turno {
+    codTurno: number;
+    fechaTurno: string;
+}
 
 const ModificarTurno: React.FC = () => {
     const { codTurno } = useParams<{ codTurno: string }>();
     const navigate = useNavigate();
-    const [turno, setTurno] = useState<any | null>(null); // Use 'any' type
+    const [turno, setTurno] = useState<Turno | null>(null);
     const [fechaTurno, setFechaTurno] = useState("");
 
     useEffect(() => {
@@ -56,28 +62,33 @@ const ModificarTurno: React.FC = () => {
     };
 
     if (!turno) {
-        return <div>Loading...</div>;
+        return (
+            <div className={styles.loadingState}>
+                Cargando turno...
+            </div>
+        );
     }
 
     return (
-        <div>
+        <div className={styles.formContainer}>
             <h1>Editar Turno</h1>
-            <form className="form" onSubmit={handleSubmit}>
-                <div className="form__group">
-                    <label className="form__label" htmlFor="fechaTurno">
-                        Fecha:
+            <form onSubmit={handleSubmit}>
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel} htmlFor="fechaTurno">
+                        Fecha del Turno:
                     </label>
                     <input
-                        className="form__input"
+                        className={styles.formInput}
                         type="date"
                         name="fechaTurno"
                         id="fechaTurno"
                         value={fechaTurno}
                         onChange={(e) => setFechaTurno(e.target.value)}
+                        required
                     />
                 </div>
-                <button className="button button--primary" type="submit">
-                    Guardar
+                <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit">
+                    Guardar Cambios
                 </button>
             </form>
         </div>

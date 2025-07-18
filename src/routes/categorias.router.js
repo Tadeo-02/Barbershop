@@ -10,7 +10,7 @@ router.get("/", controller.index);
 router.get("/:codCategoria", controller.show);
 
 router.get("/:codCategoria/modificarCategorias", controller.edit);
-router.put("/:codCategoria", controller.updateDesc, controller.updateNom);
+router.put("/:codCategoria", controller.update);
 
 router.delete("/:codCategoria", controller.destroy);
 // 

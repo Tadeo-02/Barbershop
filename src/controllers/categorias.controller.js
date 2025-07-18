@@ -62,33 +62,32 @@ const edit = async (req, res) => {
     }
 };
 
-const updateNom = async (req, res) => {
+const update = async (req, res) => {
     const { codCategoria } = req.params;
-    const { nomCategoria } = req.body;
+    const { nomCategoria, descCategoria } = req.body;
+
+    // Validaciones
+    if (!nomCategoria || nomCategoria.trim() === "") {
+        return res.status(400).json({ message: "nomCategoria es requerido" });
+    }
+    if (!descCategoria || descCategoria.trim() === "") {
+        return res.status(400).json({ message: "descCategoria es requerido" });
+    }
 
     try {
-        const result = await model.update(codCategoria, nomCategoria);
-        console.log(result);
-        res.json({ message: "Nombre de Categoria updated successfully" });
+        // Asegurar que los valores son strings
+        const nomCategoriaString = String(nomCategoria).trim();
+        const descCategoriaString = String(descCategoria).trim();
+        const codCategoriaNumber = parseInt(codCategoria, 10);
+
+        const result = await model.update(nomCategoriaString, descCategoriaString, codCategoriaNumber);
+        res.json({ message: "Categoría actualizada correctamente" });
     } catch (error) {
-        console.log(error);
+        console.log("Error en update:", error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
 
-const updateDesc = async (req, res) => {
-    const { codCategoria } = req.params;
-    const { descCategoria } = req.body;
-
-    try {
-        const result = await model.update(codCategoria, descCategoria);
-        console.log(result);
-        res.json({ message: "Descripción de categoria updated successfully" });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
-};
 
 const destroy = async (req, res) => {
     const { codCategoria } = req.params;
@@ -96,9 +95,9 @@ const destroy = async (req, res) => {
     try {
         const result = await model.destroy(codCategoria);
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "Categoria no encontrado" });
+            return res.status(404).json({ message: "Categoria no encontrada" });
         }
-        res.status(200).json({ message: "Categoria eliminado correctamente" });
+        res.status(200).json({ message: "Categoria eliminada correctamente" });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal Server Error" });
@@ -111,8 +110,6 @@ module.exports = {
     index,
     show,
     edit,
-    updateDesc,
-    updateNom,
+    update,
     destroy
-
 };
