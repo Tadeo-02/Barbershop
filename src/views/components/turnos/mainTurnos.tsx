@@ -62,6 +62,10 @@ function MainTurnos() {
         <Link to="/barberos/createBarberos" className={styles.link}>
           CREAR BARBEROS
         </Link>
+        <br />
+        <Link to="/barberos/indexBarberos" className={styles.link}>
+          VER BARBEROS
+        </Link>
         <h2 className={styles.title}>Sucursal Centro</h2>
         <div className={styles.branchGallery}>
           <img

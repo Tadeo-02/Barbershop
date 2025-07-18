@@ -63,11 +63,11 @@ const edit = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { cuil } = req.params;
-  const { nombre, apellido, telefono } = req.body;
+  const cuilViejo = req.params.cuil;
+  const { nuevoCuil, nombre, apellido, telefono } = req.body;
 
   try {
-    const result = await model.update(cuil, nombre, apellido, telefono);
+    const result = await model.update(cuilViejo, nuevoCuil, nombre, apellido, telefono);
     console.log(result);
     res.json({ message: "Barbero updated successfully" });
   } catch (error) {
