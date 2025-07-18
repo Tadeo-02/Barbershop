@@ -10,6 +10,8 @@ import ShowTurno from "./components/turnos/showTurnos.tsx";
 import DeleteTurnos from "./components/turnos/deleteTurnos.tsx";
 import ModificarTurno from "./components/turnos/modificarTurno.tsx";
 import CreateCategorias from "./components/categorias/createCategorias.tsx";
+import DeleteCategoria from "./components/categorias/deleteCategorias.tsx";
+import ModificarCategoria from "./components/categorias/modificarCategorias.tsx";
 
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -30,6 +32,8 @@ function App() {
             <Route path="/turnos/:codTurno" element={<ShowTurno />} />
             <Route path="/turnos/modificarTurno/:codTurno" element={<ModificarTurno />}/>
             <Route path="/createCategorias" element={<CreateCategorias />} />
+            <Route path= "/deleteCategorias" element={<DeleteCategoria />} />
+            <Route path="/categorias/modificarCategorias/:codCategoria" element={<ModificarCategoria />} />
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>

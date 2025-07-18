@@ -24,7 +24,7 @@ const DeleteTurnos: React.FC = () => {
           data = JSON.parse(text);
         }   
         catch {
-         console.log("Dentro del catch:", text);
+          console.log("Dentro del catch:", text);
           data = { message: text };
         }
       } else {
