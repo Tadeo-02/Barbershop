@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from './turnos.module.css';
 
 const CreateTurnos: React.FC = () => {
+  const navigate = useNavigate();
   const [fechaTurno, setFechaTurno] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,6 +40,7 @@ const CreateTurnos: React.FC = () => {
       if (response.ok) {
         alert(data.message);
         setFechaTurno("");
+        navigate("/indexTurnos");
       } else {
         alert(data.message);
       }
@@ -47,24 +51,25 @@ const CreateTurnos: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className={styles.formContainer}>
       <h1>Crear Turno</h1>
-      <form className="form" onSubmit={handleSubmit}>
-        <div className="form__group">
-          <label className="form__label" htmlFor="fechaTurno">
-            Fecha:
+      <form onSubmit={handleSubmit}>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel} htmlFor="fechaTurno">
+            Fecha del Turno:
           </label>
           <input
-            className="form__input"
+            className={styles.formInput}
             type="date"
             name="fechaTurno"
             id="fechaTurno"
             value={fechaTurno}
             onChange={(e) => setFechaTurno(e.target.value)}
+            required
           />
         </div>
-        <button className="button button--primary" type="submit">
-          Guardar
+        <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit">
+          Guardar Turno
         </button>
       </form>
     </div>

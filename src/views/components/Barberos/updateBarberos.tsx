@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import styles from './barberos.module.css';
+
+interface Barbero {
+    cuil: string;
+    nombre: string;
+    apellido: string;
+    telefono: string;
+}
 
 const UpdateBarbero: React.FC = () => {
     const { cuil } = useParams<{ cuil: string }>();
     const navigate = useNavigate();
-    const [barbero, setBarbero] = useState<any | null>(null); // Use 'any' type
+    const [barbero, setBarbero] = useState<Barbero | null>(null);
     const [nuevoCuil, setNuevoCuil] = useState("");
     const [nombre, setNombre] = useState("");
     const [apellido, setApellido] = useState("");
@@ -48,7 +56,7 @@ const UpdateBarbero: React.FC = () => {
 
         if (response.ok) {
             alert(data.message);
-            navigate("/indexBarberos"); // Redirigir a la lista de barberos
+            navigate("/barberos/indexBarberos"); // Redirigir a la lista de barberos
         } else {
             alert(data.message);
         }
@@ -59,67 +67,75 @@ const UpdateBarbero: React.FC = () => {
     };
 
     if (!barbero) {
-        return <div>Loading...</div>;
+        return (
+            <div className={styles.loadingState}>
+                Cargando barbero...
+            </div>
+        );
     }
 
     return (
-        <div>
+        <div className={styles.formContainer}>
             <h1>Editar Barbero</h1>
-            <form className="form" onSubmit={handleSubmit}>
-                <div className="form__group">
-                <label className="form__label" htmlFor="cuil">
-                    Cuil:
-                </label>
-                <input
-                    className="form__input"
-                    type="text"
-                    name="cuil"
-                    id="cuil"
-                    value={nuevoCuil}
-                    onChange={(e) => setNuevoCuil(e.target.value)}
-                />
+            <form onSubmit={handleSubmit}>
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel} htmlFor="cuil">
+                        CUIL:
+                    </label>
+                    <input
+                        className={styles.formInput}
+                        type="text"
+                        name="cuil"
+                        id="cuil"
+                        value={nuevoCuil}
+                        onChange={(e) => setNuevoCuil(e.target.value)}
+                        required
+                    />
                 </div>
-                <div className="form__group">
-                <label className="form__label" htmlFor="nombre">
-                    Nombre:
-                </label>
-                <input
-                    className="form__input"
-                    type="text"
-                    name="nombre"
-                    id="nombre"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                />
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel} htmlFor="nombre">
+                        Nombre:
+                    </label>
+                    <input
+                        className={styles.formInput}
+                        type="text"
+                        name="nombre"
+                        id="nombre"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                        required
+                    />
                 </div>
-                <div className="form__group">
-                <label className="form__label" htmlFor="apellido">
-                    Apellido:
-                </label>
-                <input
-                    className="form__input"
-                    type="text"
-                    name="apellido"
-                    id="apellido"
-                    value={apellido}
-                    onChange={(e) => setApellido(e.target.value)}
-                />
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel} htmlFor="apellido">
+                        Apellido:
+                    </label>
+                    <input
+                        className={styles.formInput}
+                        type="text"
+                        name="apellido"
+                        id="apellido"
+                        value={apellido}
+                        onChange={(e) => setApellido(e.target.value)}
+                        required
+                    />
                 </div>
-                <div className="form__group">
-                <label className="form__label" htmlFor="telefono">
-                    Teléfono:
-                </label>
-                <input
-                    className="form__input"
-                    type="text"
-                    name="telefono"
-                    id="telefono"
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                />
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel} htmlFor="telefono">
+                        Teléfono:
+                    </label>
+                    <input
+                        className={styles.formInput}
+                        type="text"
+                        name="telefono"
+                        id="telefono"
+                        value={telefono}
+                        onChange={(e) => setTelefono(e.target.value)}
+                        required
+                    />
                 </div>
-                <button className="button button--primary" type="submit">
-                Guardar
+                <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit">
+                    Guardar Cambios
                 </button>
             </form>
         </div>

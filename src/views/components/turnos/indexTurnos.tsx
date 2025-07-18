@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import styles from './turnos.module.css';
 
 interface Turno {
   codTurno: number;
@@ -50,25 +51,49 @@ const IndexTurnos = () => {
   };
 
   return (
-    <div className="index-turnos">
-      <h1>Listado de turnos</h1>
+    <div className={styles.indexTurnos}>
+      <h2>Gestión de Turnos</h2>
       {turnos.length === 0 ? (
-        <p>No hay turnos disponibles.</p>
+        <div className={styles.emptyState}>
+          <p>No hay turnos disponibles.</p>
+        </div>
       ) : (
         <ul>
           {turnos.map((turno, idx) => (
             <li key={idx}>
-              <Link to={`/turnos/${turno.codTurno}`}>
-                Codigo Turno: {turno.codTurno}
-              </Link>
-              ; - Fecha: {new Date(turno.fechaTurno).toLocaleDateString()}
-              <br />
-              <Link to={`/turnos/modificarTurno/${turno.codTurno}`} style={{ marginLeft: "20px", color: "blue" }}>
-                Modificar
-              </Link>
-              <button className="button button--danger" onClick={() => handleDelete(turno.codTurno)}>
-                Borrar
-              </button>
+              <div className={styles.turnoInfo}>
+                <div className={styles.turnoTitle}>
+                  Turno #{turno.codTurno}
+                </div>
+                <div className={styles.turnoCode}>
+                  Código: {turno.codTurno}
+                </div>
+                <div className={styles.turnoDetails}>
+                  <span className={styles.turnoFecha}>
+                    Fecha: {new Date(turno.fechaTurno).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+              <div className={styles.actionButtons}>
+                <Link 
+                  to={`/turnos/${turno.codTurno}`}
+                  className={`${styles.button} ${styles.buttonPrimary}`}
+                >
+                  Ver Detalles
+                </Link>
+                <Link 
+                  to={`/turnos/modificarTurno/${turno.codTurno}`} 
+                  className={`${styles.button} ${styles.buttonPrimary}`}
+                >
+                  Modificar
+                </Link>
+                <button 
+                  className={`${styles.button} ${styles.buttonDanger}`} 
+                  onClick={() => handleDelete(turno.codTurno)}
+                >
+                  Eliminar
+                </button>
+              </div>
             </li>
           ))}
         </ul>

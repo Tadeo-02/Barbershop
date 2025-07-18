@@ -28,6 +28,7 @@ app.use("/turnos", require("./src/routes/turnos.router"));
 app.use("/barberos", require("./src/routes/barberos.router"));
 // app.use("/productos", require("./src/routes/productos.router"));
 app.use("/tipoCortes", require("./src/routes/tipoCortes.router"));
+app.use("/categorias", require("./src/routes/categorias.router"));
 // app.use("/contacto", require("./src/routes/contacto.router"));
 
 const PORT = process.env.PORT || 3001;

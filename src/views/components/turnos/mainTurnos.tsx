@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import styles from './mainTurnos.module.css';
+import styles from './turnos.module.css';
 import React, { useState, useEffect } from "react";
 
 // function TurnoNuevo() {
@@ -49,62 +49,92 @@ function MainTurnos() {
       </div>
       */
     /*MUESTRA DE SUCURSALES */
-    <div>
-      <div className={styles.container}>
-        <Link to="/createTurnos" className={styles.link}>
-          CREAR TURNOS
-        </Link>
-        <br />
-        <Link to="/indexTurnos" className={styles.link}>
-          VER TURNOS
-        </Link>
-        <br />
-        <Link to="/barberos/createBarberos" className={styles.link}>
-          CREAR BARBEROS
-        </Link>
-        <br />
-        <Link to="/barberos/indexBarberos" className={styles.link}>
-          VER BARBEROS
-        </Link>
-        <h2 className={styles.title}>Sucursal Centro</h2>
-        <div className={styles.branchGallery}>
-          <img
-            src="/images/sucursal1.jpeg"
-            alt="Sucursal Centro"
-            className={styles.branchImage}
-          />
+    <div className={styles.mainTurnos}>
+        <h2>Sistema de Gestión de Barbería</h2>
+        
+        {/* Primera fila: Turnos y Barberos */}
+        <div className={styles.mainTurnosGrid}>
+          <div className={styles.mainTurnosCard}>
+            <h3>Turnos</h3>
+            <Link to="/createTurnos" className={`${styles.button} ${styles.buttonPrimary}`}>
+              CREAR TURNOS
+            </Link>
+            <Link to="/indexTurnos" className={`${styles.button} ${styles.buttonPrimary}`}>
+              VER TURNOS
+            </Link>
+          </div>
+          
+          <div className={styles.mainTurnosCard}>
+            <h3>Barberos</h3>
+            <Link to="/barberos/createBarberos" className={`${styles.button} ${styles.buttonPrimary}`}>
+              CREAR BARBEROS
+            </Link>
+            <Link to="/barberos/indexBarberos" className={`${styles.button} ${styles.buttonPrimary}`}>
+              VER BARBEROS
+            </Link>
+          </div>
         </div>
-        <a
-          href="https://maps.app.goo.gl/ut38V2Tf414qxqs28"
-          className={styles.mapLink}
-        >
-          Dirección: Mendoza 2774, Rosario{" "}
-        </a>
-      </div>
-      <div className={styles.container}>
-        <h2 className={styles.title}>Sucursal Norte</h2>
-        <div className={styles.branchGallery}>
-          <img
-            src="/images/sucursal2.jpg"
-            alt="Sucursal Norte"
-            className={styles.branchImage}
-          />
+        
+        {/* Segunda fila: Categorías y Tipos de Corte */}
+        <div className={styles.mainTurnosGrid}>
+          <div className={styles.mainTurnosCard}>
+            <h3>Categorías</h3>
+            <Link to="/categorias/createCategorias" className={`${styles.button} ${styles.buttonPrimary}`}>
+              CREAR CATEGORIAS
+            </Link>
+            <Link to="/categorias/indexCategorias" className={`${styles.button} ${styles.buttonPrimary}`}>
+              VER CATEGORIAS
+            </Link>
+          </div>
+          
+          <div className={styles.mainTurnosCard}>
+            <h3>Tipo de Cortes</h3>
+            <Link to="/tipoCortes/createTipoCortes" className={`${styles.button} ${styles.buttonPrimary}`}>
+              CREAR TIPO CORTES
+            </Link>
+            <Link to="/tipoCortes/indexTipoCortes" className={`${styles.button} ${styles.buttonPrimary}`}>
+              VER TIPO CORTES
+            </Link>
+          </div>
         </div>
-        <a
-          href="https://maps.app.goo.gl/KJnih2u2hf5S9jmB6"
-          className={styles.mapLink}
-        >
-          Dirección: Juan B. Justo 1767, Rosario{" "}
-        </a>
-
-        <Link to="/tipoCortes/createTipoCortes" className={styles.link}>
-          CREAR TIPO CORTES
-        </Link>
-        <Link to="/tipoCortes/indexTipoCortes" className={styles.link}>
-          VER TIPO CORTES
-        </Link>
+        
+        {/* Tercera fila: Sucursales */}
+        <div className={styles.mainTurnosGrid}>
+          <div className={styles.mainTurnosCard}>
+            <h3>Sucursal Centro</h3>
+            <img
+              src="/images/sucursal1.jpeg"
+              alt="Sucursal Centro"
+              style={{ width: '100%', borderRadius: '8px', marginBottom: '10px' }}
+            />
+            <a
+              href="https://maps.app.goo.gl/ut38V2Tf414qxqs28"
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Mendoza 2774, Rosario
+            </a>
+          </div>
+          
+          <div className={styles.mainTurnosCard}>
+            <h3>Sucursal Norte</h3>
+            <img
+              src="/images/sucursal2.jpg"
+              alt="Sucursal Norte"
+              style={{ width: '100%', borderRadius: '8px', marginBottom: '10px' }}
+            />
+            <a
+              href="https://maps.app.goo.gl/KJnih2u2hf5S9jmB6"
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Juan B. Justo 1767, Rosario
+            </a>
+          </div>
+        </div>
       </div>
-    </div>
   );
 }
 export default MainTurnos;
