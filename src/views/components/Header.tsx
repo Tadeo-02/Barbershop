@@ -19,9 +19,15 @@ function Header() {
         </div>
 
         {/* título  */}
-        <h1 className="text-2xl text-center flex-1 text-white font-bold">
-          Mechas Barbershop
-        </h1>
+        <div className="flex-1 flex flex-col md:flex-row items-center justify-center text-white">
+          {/* estilos para que se vean una encima de la otra en móvil, lado a lado en desktop */}
+          <h1 className="text-xs md:text-lg font-medium leading-none">
+            Mechas
+          </h1>
+          <h1 className="text-xs md:text-lg font-medium leading-none md:ml-1">
+            Barbershop
+          </h1>
+        </div>
 
         {/* boton a la derecha */}
         <div>
