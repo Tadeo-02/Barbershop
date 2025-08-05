@@ -4,7 +4,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Centra los elementos verticalmente */
+  justify-content: center; 
 }
 
 .form h1 {

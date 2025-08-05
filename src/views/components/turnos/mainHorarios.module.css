@@ -55,8 +55,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 35px; /* Ajusta el tamaño según necesites */
-  height: 35px; /* Ajusta el tamaño según necesites */
+  width: 35px; 
+  height: 35px; 
   border-radius: 4px;
   background-color: #f9f9f9;
   border: 1px solid #eee;
@@ -67,7 +67,7 @@
 .day.empty {
   background-color: #f0f0f0;
   border: none;
-  visibility: hidden; /* Oculta los días vacíos */
+  visibility: hidden; /* ocultar los días vacíos */
 }
 .selected {
   background-color: #007bff;

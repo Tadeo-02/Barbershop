@@ -12,7 +12,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Headings */
+/* headings */
 h2 {
   font-size: 2.5rem;
   color: #1a202c;
@@ -22,7 +22,7 @@ h2 {
   letter-spacing: -0.025em;
 }
 
-/* Container for IndexTipoCortes */
+/* container de IndexTipoCortes */
 .indexTipoCortes {
   max-width: 800px;
   margin: 40px auto;
@@ -33,7 +33,7 @@ h2 {
   animation: fadeIn 0.5s ease-out;
 }
 
-/* List of TipoCortes */
+/* lista de TipoCortes */
 .indexTipoCortes ul {
   list-style: none;
   padding: 0;
@@ -66,7 +66,7 @@ h2 {
   color: #4a5568;
 }
 
-/* Form Styles (for Create and Modificar) */
+/* Fromulario (create y modificar) */
 .formContainer {
   max-width: 600px;
   margin: 40px auto;
@@ -77,9 +77,6 @@ h2 {
   animation: fadeIn 0.5s ease-out;
 }
 
-.form {
-  /* Estilos del formulario si es necesario */
-}
 
 .formGroup {
   margin-bottom: 20px;
@@ -96,20 +93,20 @@ h2 {
 .formInput {
   width: 100%;
   padding: 12px 15px;
-  border: 2px solid #a0aec0; /* Border más oscuro para distinción */
+  border: 2px solid #a0aec0; 
   border-radius: 8px;
   font-size: 1rem;
   color: #2d3748;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   box-sizing: border-box;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Sombra interna para profundidad */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .formInput:focus {
   outline: none;
-  border-color: #4299e1; /* Borde azul brillante al enfocar */
-  box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.6); /* Sombra externa más visible */
-  background-color: #e6f4ff; /* Fondo ligeramente azulado al enfocar */
+  border-color: #4299e1; /* borde azul brillante al enfocar */
+  box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.6); 
+  background-color: #e6f4ff; /* fondo ligeramente azulado al enfocar */
 }
 
 /* Buttons */
@@ -118,7 +115,7 @@ h2 {
   align-items: center;
   justify-content: center;
   padding: 12px 25px;
-  border: none; /* Eliminar borde para botones */
+  border: none; /* eliminar borde para botones */
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
@@ -131,35 +128,34 @@ h2 {
 }
 
 .buttonPrimary {
-  background-color: #2b6cb0; /* Azul más intenso para el primario */
+  background-color: #2b6cb0; 
   color: #ffffff;
-  box-shadow: 0 6px 15px rgba(43, 108, 176, 0.4); /* Sombra más grande y marcada */
+  box-shadow: 0 6px 15px rgba(43, 108, 176, 0.4); 
 }
 
 .buttonPrimary:hover {
-  background-color: #2c5282; /* Azul aún más oscuro al hover */
-  transform: translateY(-3px); /* Efecto de "levantamiento" más notorio */
-  box-shadow: 0 8px 20px rgba(43, 108, 176, 0.5); /* Sombra más grande al hover */
+  background-color: #2c5282; 
+  transform: translateY(-3px); 
+  box-shadow: 0 8px 20px rgba(43, 108, 176, 0.5); 
 }
 
 .buttonDanger {
-  background-color: #c53030; /* Rojo más intenso para el de peligro */
+  background-color: #c53030; 
   color: #ffffff;
-  box-shadow: 0 6px 15px rgba(197, 48, 48, 0.4); /* Sombra más grande y marcada */
+  box-shadow: 0 6px 15px rgba(197, 48, 48, 0.4); 
 }
 
 .buttonDanger:hover {
-  background-color: #9b2c2c; /* Rojo aún más oscuro al hover */
-  transform: translateY(-3px); /* Efecto de "levantamiento" más notorio */
-  box-shadow: 0 8px 20px rgba(197, 48, 48, 0.5); /* Sombra más grande al hover */
+  background-color: #9b2c2c; 
+  transform: translateY(-3px); 
+  box-shadow: 0 8px 20px rgba(197, 48, 48, 0.5); 
 }
 
-/* Specific adjustment for buttons within list items in IndexTipoCortes */
 .indexTipoCortes li .button {
   margin-top: 0;
 }
 
-/* Responsive adjustments */
+/* Ajusters responsive */
 @media (max-width: 768px) {
   h1 {
     font-size: 2rem;
@@ -186,7 +182,7 @@ h2 {
   }
 }
 
-/* Animations */
+/* animaciones */
 @keyframes fadeIn {
   from {
     opacity: 0;
