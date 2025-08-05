@@ -7,7 +7,7 @@ const ModificarTipoCorte: React.FC = () => {
   const { codCorte } = useParams<{ codCorte: string }>();
   const navigate = useNavigate();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [corte, setCorte] = useState<any | null>(null); // Use 'any' type
+  const [corte, setCorte] = useState<any | null>(null); 
   const [nombreCorte, setNombreCorte] = useState("");
   const [valorBase, setValorBase] = useState<number | "">("");
 
@@ -47,7 +47,7 @@ const ModificarTipoCorte: React.FC = () => {
 
       if (response.ok) {
         alert(data.message);
-        navigate("/indexTipoCortes"); // Redirigir a la lista de tipo de cortes
+        navigate("/indexTipoCortes"); // redirigir a la lista de tipo de cortes
       } else {
         alert(data.message);
       }
@@ -64,21 +64,17 @@ const ModificarTipoCorte: React.FC = () => {
   return (
     <div className={styles.formContainer}>
       {" "}
-      {/* Usando styles.formContainer (asumiendo que defines esta clase) */}
       <h1>Editar Tipo de Corte</h1>
       <form className={styles.form} onSubmit={handleSubmit}>
         {" "}
-        {/* Usando styles.form */}
         <div className={styles.formGroup}>
           {" "}
-          {/* Usando styles.formGroup */}
           <label className={styles.formLabel} htmlFor="nombreCorte">
             {" "}
-            {/* Usando styles.formLabel */}
             Nombre del corte:
           </label>
           <input
-            className={styles.formInput} // Usando styles.formInput
+            className={styles.formInput} 
             type="text"
             name="nombreCorte"
             id="nombreCorte"
@@ -90,14 +86,12 @@ const ModificarTipoCorte: React.FC = () => {
         </div>
         <div className={styles.formGroup}>
           {" "}
-          {/* Usando styles.formGroup */}
           <label className={styles.formLabel} htmlFor="valorBase">
             {" "}
-            {/* Usando styles.formLabel */}
             Valor base:
           </label>
           <input
-            className={styles.formInput} // Usando styles.formInput
+            className={styles.formInput} 
             type="number"
             name="valorBase"
             id="valorBase"
@@ -114,7 +108,6 @@ const ModificarTipoCorte: React.FC = () => {
           type="submit"
         >
           {" "}
-          {/* Combinando clases */}
           Guardar
         </button>
       </form>

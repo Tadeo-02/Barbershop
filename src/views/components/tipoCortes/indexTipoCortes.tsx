@@ -12,7 +12,7 @@ const IndexTipoCortes = () => {
   const [tipoCortes, setTipoCortes] = useState<TipoCorte[]>([]);
 
   useEffect(() => {
-    // Llama al backend para obtener los tipos de corte
+    // llama al backend para obtener los tipos de corte
     fetch("/tipoCortes")
       .then((res) => res.json())
       .then((data) => {
@@ -37,7 +37,7 @@ const IndexTipoCortes = () => {
 
       if (response.ok) {
         alert("Tipo de corte eliminado correctamente.");
-        // Actualizar la lista removiendo el eliminado
+        // actualizar la lista removiendo el eliminado
         setTipoCortes(
           tipoCortes.filter((corte) => corte.codCorte !== codCorte)
         );
@@ -53,7 +53,7 @@ const IndexTipoCortes = () => {
   };
 
   return (
-    <div className={styles.indexTipoCortes}> {/* Usando styles.indexTipoCortes */}
+    <div className={styles.indexTipoCortes}> 
       <h2>Listado de Tipos de Corte</h2>
       {tipoCortes.length === 0 ? (
         <p>No hay tipos de corte disponibles.</p>

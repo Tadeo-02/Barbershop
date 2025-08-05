@@ -48,21 +48,17 @@ const CreateTipoCortes: React.FC = () => {
   return (
     <div className={styles.formContainer}>
       {" "}
-      {/* Usando styles.formContainer (asumiendo que defines esta clase) */}
       <h2>Crear Tipo de Corte</h2>
       <form className={styles.form} onSubmit={handleSubmit}>
         {" "}
-        {/* Usando styles.form */}
         <div className={styles.formGroup}>
           {" "}
-          {/* Usando styles.formGroup */}
           <label className={styles.formLabel} htmlFor="nombreCorte">
             {" "}
-            {/* Usando styles.formLabel */}
             Nombre del corte:
           </label>
           <input
-            className={styles.formInput} // Usando styles.formInput
+            className={styles.formInput} 
             type="text"
             name="nombreCorte"
             id="nombreCorte"
@@ -74,14 +70,12 @@ const CreateTipoCortes: React.FC = () => {
         </div>
         <div className={styles.formGroup}>
           {" "}
-          {/* Usando styles.formGroup */}
           <label className={styles.formLabel} htmlFor="valorBase">
             {" "}
-            {/* Usando styles.formLabel */}
             Valor base:
           </label>
           <input
-            className={styles.formInput} // Usando styles.formInput
+            className={styles.formInput} 
             type="number"
             name="valorBase"
             id="valorBase"
@@ -98,7 +92,6 @@ const CreateTipoCortes: React.FC = () => {
           type="submit"
         >
           {" "}
-          {/* Combinando clases */}
           Guardar
         </button>
       </form>

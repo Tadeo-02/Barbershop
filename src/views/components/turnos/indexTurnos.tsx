@@ -11,7 +11,7 @@ const IndexTurnos = () => {
   const [turnos, setTurnos] = useState<Turno[]>([]);
 
   useEffect(() => {
-    // Llama al backend para obtener los turnos
+    // llama al backend para obtener los turnos
     fetch("/turnos")
       .then((res) => res.json())
       .then((data) => {
@@ -37,7 +37,7 @@ const IndexTurnos = () => {
 
       if (response.ok) {
         alert("Turno eliminado correctamente.");
-        // Actualizar la lista de turnos removiendo el turno eliminado
+        // actualizar la lista de turnos removiendo el turno eliminado
         setTurnos(turnos.filter(turno => turno.codTurno !== codTurno));
       } else if (response.status === 404) {
         alert("Turno no encontrado.");
