@@ -1,13 +1,16 @@
 const pool = require("./mysql");
-
+// 'async' indica que es una funcion que puede llevar tiempo (como una consulta a la DB); habilita usar 'await'
 const store = async (nombreCorte, valorBase) => {
-  const sql = `INSERT INTO tipoCorte (nombreCorte, valorBase) VALUES (?, ?)`;
+  const sql = `INSERT INTO tipoCorte (nombreCorte, valorBase) VALUES (?, ?)`; //consulta a la DB
 
-  try {
-    const [result] = await pool.query(sql, [nombreCorte, valorBase]);
-    return result;
-  } catch (error) {
-    throw error;
+  try { //codigo que puede fallar
+    const [result] = await pool.query(sql, [nombreCorte, valorBase]); 
+    // 'pool.query' funcion de mysql, envia la consulta a la DB con el primer parametro; el segundo es un array con los valores que reemplazan los '?' en la consulta
+    // 'await' inidica que espere la ejecucion de la consulta
+    // 'result' toma el primer elemento de la respuesta de la consulta (destructuracion de arrays)
+    return result; // devuelve result si el try se ejecuta correctamente
+  } catch (error) { // si el 'try' falla, detiene su ejecucion y ejectua el bloque del catch
+    throw error; // informa el error al controlador
   }
 };
 
