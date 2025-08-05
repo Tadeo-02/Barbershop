@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from './barberos.module.css';
+import styles from "./barberos.module.css";
 
 const CreateBarberos: React.FC = () => {
   const navigate = useNavigate();
@@ -12,7 +12,13 @@ const CreateBarberos: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      console.log("Enviando POST a /barberos con datos barbero:", cuil, nombre, apellido, telefono);
+      console.log(
+        "Enviando POST a /barberos con datos barbero:",
+        cuil,
+        nombre,
+        apellido,
+        telefono
+      );
       const response = await fetch("/barberos", {
         method: "POST",
         headers: {
@@ -58,7 +64,7 @@ const CreateBarberos: React.FC = () => {
 
   return (
     <div className={styles.formContainer}>
-      <h1>Crear Barbero</h1>
+      <h1 className={styles.pageTitle}>Crear Barbero</h1>
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="cuil">
@@ -116,7 +122,10 @@ const CreateBarberos: React.FC = () => {
             required
           />
         </div>
-        <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit">
+        <button
+          className={`${styles.button} ${styles.buttonSuccess}`}
+          type="submit"
+        >
           Guardar Barbero
         </button>
       </form>

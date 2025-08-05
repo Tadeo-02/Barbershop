@@ -9,9 +9,9 @@ router.post("/", controller.store);
 router.get("/", controller.index);
 router.get("/:codCorte", controller.show);
 
-router.get("/:codCorte/modificarTipoCorte", controller.edit); //revisar
+router.get("/:codCorte/modificarTipoCorte", controller.edit); 
 router.put("/:codCorte", controller.update);
 
 router.delete("/:codCorte", controller.destroy);
-// 
+
 module.exports = router;

@@ -2,13 +2,12 @@ import { useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-
 function Header() {
   const [open, setOpen] = useState(false);
   return (
     <nav>
       <div className="fixed top-0 left-0 right-0 h-16 bg-gray-800 text-white px-4 flex items-center justify-between z-50">
-        {/* Logo a la izquierda */}
+        {/* logo a la izquierda */}
         <div>
           <Link to="/" aria-label="Ir al inicio">
             <img
@@ -19,10 +18,12 @@ function Header() {
           </Link>
         </div>
 
-        {/* Título centrado */}
-        <h1 className="text-lg text-center flex-1">Mechas Barbershop</h1>
+        {/* título  */}
+        <h1 className="text-2xl text-center flex-1 text-white font-bold">
+          Mechas Barbershop
+        </h1>
 
-        {/* Botón a la derecha */}
+        {/* boton a la derecha */}
         <div>
           <button
             className="bg-white text-gray-800 px-4 py-2 rounded"
@@ -33,7 +34,7 @@ function Header() {
         </div>
       </div>
 
-      {/* Sidebar */}
+      {/* sidebar */}
       <div
         className={`fixed top-0 right-0 h-full bg-white shadow-lg z-50 transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
@@ -46,7 +47,6 @@ function Header() {
         >
           Cerrar
         </button>
-        {/* Aquí pones el contenido del menú */}
         <ul className="mt-16 p-4">
           <li>
             <Link to="/" onClick={() => setOpen(false)}>
@@ -54,8 +54,10 @@ function Header() {
             </Link>
           </li>
           <li>
-            {/* <Link to="/productos" onClick={() => navigate("/productos")}> */}
-            <Link to="/productos/mainProductos.tsx" onClick={() => setOpen(false)}>
+            <Link
+              to="/productos/mainProductos.tsx"
+              onClick={() => setOpen(false)}
+            >
               Productos
             </Link>
           </li>
@@ -64,11 +66,9 @@ function Header() {
               Login
             </Link>
           </li>
-          {/* Agrega más enlaces aquí */}
         </ul>
       </div>
 
-      {/* Fondo oscuro al abrir el sidebar */}
       {open && (
         <div
           className="fixed inset-0 bg-black bg-opacity-40 z-40"

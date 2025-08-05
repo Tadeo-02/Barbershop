@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import styles from './turnos.module.css';
+import styles from "./turnos.module.css";
 
 interface Turno {
   codTurno: number;
@@ -19,30 +19,21 @@ const ShowTurno = () => {
       .catch((err) => console.error("Error al obtener el turno:", err));
   }, [codTurno]);
 
-  if (!turno) return (
-    <div className={styles.loadingState}>
-      Cargando turno...
-    </div>
-  );
+  if (!turno)
+    return <div className={styles.loadingState}>Cargando turno...</div>;
 
   return (
     <div className={styles.formContainer}>
-      <h1>Detalles del Turno</h1>
+      <h1 className={styles.pageTitle}>Detalles del Turno</h1>
       <div className={styles.turnoInfo}>
-        <div className={styles.turnoTitle}>
-          Turno #{turno.codTurno}
-        </div>
-        <div className={styles.turnoCode}>
-          Código: {turno.codTurno}
-        </div>
+        <div className={styles.turnoTitle}>Turno #{turno.codTurno}</div>
+        <div className={styles.turnoCode}>Código: {turno.codTurno}</div>
         <div className={styles.turnoDetails}>
           <span className={styles.turnoFecha}>
             Fecha: {new Date(turno.fechaTurno).toLocaleDateString()}
           </span>
           <br />
-          <span className={styles.turnoHora}>
-            Precio: ${turno.precioTurno}
-          </span>
+          <span className={styles.turnoHora}>Precio: ${turno.precioTurno}</span>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from './turnos.module.css';
+import styles from "./turnos.module.css";
 
 const CreateTurnos: React.FC = () => {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const CreateTurnos: React.FC = () => {
 
   return (
     <div className={styles.formContainer}>
-      <h1>Crear Turno</h1>
+      <h1 className={styles.pageTitle}>Crear Turno</h1>
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="fechaTurno">
@@ -68,7 +68,10 @@ const CreateTurnos: React.FC = () => {
             required
           />
         </div>
-        <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit">
+        <button
+          className={`${styles.button} ${styles.buttonSuccess}`}
+          type="submit"
+        >
           Guardar Turno
         </button>
       </form>

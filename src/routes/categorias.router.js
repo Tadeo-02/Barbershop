@@ -13,5 +13,5 @@ router.get("/:codCategoria/modificarCategorias", controller.edit);
 router.put("/:codCategoria", controller.update);
 
 router.delete("/:codCategoria", controller.destroy);
-// 
+
 module.exports = router;

@@ -21,7 +21,7 @@ const store = async (req, res) => {
 const index = async (req, res) => {
     try {
         const categorias = await model.findAll();
-        res.status(200).json(categorias); // <-- Aquí va el res.status
+        res.status(200).json(categorias); 
     } catch (error) {
         console.log(error);
         return res.status(500).send("Internal Server Error");

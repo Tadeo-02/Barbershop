@@ -13,5 +13,5 @@ router.get("/:cuil/updateBarbero", controller.edit);
 router.put("/:cuil", controller.update);
 
 router.delete("/:cuil", controller.destroy);
-// 
+
 module.exports = router;
