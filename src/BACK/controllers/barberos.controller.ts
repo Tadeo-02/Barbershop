@@ -1,15 +1,16 @@
-const querystring = require("querystring");
-const model = require("../models/Barberos");
+import type { Request, Response } from "express";
+import type { ResultSetHeader } from "mysql2";
+import * as model from "../models/Barberos.js";
 
-const create = (req, res) => {
+const create = (_req: Request, res: Response) => {
   res.render("barberos/createBarberos");
 };
 
-const store = async (req, res) => {
+const store = async (req: Request, res: Response) => {
   const { cuil, nombre, apellido, telefono } = req.body;
 
   try {
-    const result = await model.store( cuil, nombre, apellido, telefono );
+    const result = await model.store(cuil, nombre, apellido, telefono);
     console.log(result);
     res.status(200).json({ message: "Barberos created successfully" });
   } catch (error) {
@@ -18,17 +19,17 @@ const store = async (req, res) => {
   }
 };
 
-const index = async (req, res) => {
+const index = async (_req: Request, res: Response) => {
   try {
     const barberos = await model.findAll();
-    res.status(200).json(barberos); 
+    res.status(200).json(barberos);
   } catch (error) {
     console.log(error);
     return res.status(500).send("Internal Server Error");
   }
 };
 
-const show = async (req, res) => {
+const show = async (req: Request, res: Response) => {
   console.log(req.params);
 
   const { cuil } = req.params;
@@ -46,7 +47,7 @@ const show = async (req, res) => {
   }
 };
 
-const edit = async (req, res) => {
+const edit = async (req: Request, res: Response) => {
   const { cuil } = req.params;
 
   try {
@@ -62,12 +63,18 @@ const edit = async (req, res) => {
   }
 };
 
-const update = async (req, res) => {
+const update = async (req: Request, res: Response) => {
   const cuilViejo = req.params.cuil;
   const { nuevoCuil, nombre, apellido, telefono } = req.body;
 
   try {
-    const result = await model.update(cuilViejo, nuevoCuil, nombre, apellido, telefono);
+    const result = await model.update(
+      cuilViejo,
+      nuevoCuil,
+      nombre,
+      apellido,
+      telefono
+    );
     console.log(result);
     res.json({ message: "Barbero updated successfully" });
   } catch (error) {
@@ -76,11 +83,11 @@ const update = async (req, res) => {
   }
 };
 
-const destroy = async (req, res) => {
+const destroy = async (req: Request, res: Response) => {
   const { cuil } = req.params;
 
   try {
-    const result = await model.destroy(cuil);
+    const result = (await model.destroy(cuil)) as ResultSetHeader;
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Barbero no encontrado" });
     }
@@ -91,13 +98,4 @@ const destroy = async (req, res) => {
   }
 };
 
-module.exports = {
-  create,
-  store,
-  index,
-  show,
-  edit,
-  update,
-  destroy
-
-};
+export { create, store, index, show, edit, update, destroy };

@@ -21,7 +21,7 @@ const store = async (req, res) => {
 const index = async (req, res) => {
   try {
     const turnos = await model.findAll();
-    res.status(200).json(turnos); 
+    res.status(200).json(turnos);
   } catch (error) {
     console.log(error);
     return res.status(500).send("Internal Server Error");
@@ -98,6 +98,5 @@ module.exports = {
   show,
   edit,
   update,
-  destroy
-
+  destroy,
 };
