@@ -21,15 +21,32 @@ app.set("views", path.join(__dirname, "src/views"));
 // app.use(layouts);
 // app.set("layout", "layouts/layout");
 
-const mainRouter = require("./src/routes/main.router");
-app.use(mainRouter);
+// Temporarily disable other routers until they are converted
+// const mainRouter = require("./src/BACK/routes/main.router");
+// app.use(mainRouter);
 
-app.use("/turnos", require("./src/routes/turnos.router"));
-app.use("/barberos", require("./src/routes/barberos.router"));
+// const turnosRouter = require("./src/BACK/routes/turnos.router");
+// app.use("/turnos", turnosRouter);
+
+// For now, just use the barberos router that we fixed
+// Since it's ES modules, we need to use dynamic import or convert it back
+// const barberosRouter = require("./src/BACK/routes/barberos.router");
+// app.use("/barberos", barberosRouter);
+
 // app.use("/productos", require("./src/routes/productos.router"));
-app.use("/tipoCortes", require("./src/routes/tipoCortes.router"));
-app.use("/categorias", require("./src/routes/categorias.router"));
+
+// const tipoCortesRouter = require("./src/BACK/routes/tipoCortes.router");
+// app.use("/tipoCortes", tipoCortesRouter);
+
+// const categoriasRouter = require("./src/BACK/routes/categorias.router");
+// app.use("/categorias", categoriasRouter);
+
 // app.use("/contacto", require("./src/routes/contacto.router"));
+
+// Simple test route
+app.get("/", (req, res) => {
+  res.send("Server is running! Barbershop backend is up.");
+});
 
 const PORT = process.env.PORT || 3001;
 

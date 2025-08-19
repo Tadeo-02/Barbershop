@@ -1,6 +1,6 @@
 // import { useState } from "react";
 import "./App.css";
-import Login from "./components/login/login";
+import Login from "./components/login/login.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import MainTurnos from "./components/turnos/mainTurnos.tsx";

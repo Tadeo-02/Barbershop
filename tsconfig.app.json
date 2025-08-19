@@ -23,5 +23,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "index.js"]
+  "include": ["src", "index.ts", "src/BACK/controllers", "src/BACK/models", "src/BACK/routes"]
 }
