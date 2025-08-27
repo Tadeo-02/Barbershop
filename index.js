@@ -28,10 +28,30 @@ app.set("views", path.join(__dirname, "src/views"));
 // const turnosRouter = require("./src/BACK/routes/turnos.router");
 // app.use("/turnos", turnosRouter);
 
-// For now, just use the barberos router that we fixed
-// Since it's ES modules, we need to use dynamic import or convert it back
-// const barberosRouter = require("./src/BACK/routes/barberos.router");
-// app.use("/barberos", barberosRouter);
+// Simple test route for barberos
+app.post("/barberos", async (req, res) => {
+  const { cuil, nombre, apellido, telefono } = req.body;
+
+  try {
+    // Here you would normally call your model function
+    // For now, let's just return a success response
+    console.log("Received barbero data:", { cuil, nombre, apellido, telefono });
+    res.status(200).json({ message: "Barbero created successfully" });
+  } catch (error) {
+    console.log("Error creating barbero:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+app.get("/barberos", async (req, res) => {
+  try {
+    // Return empty array for now
+    res.status(200).json([]);
+  } catch (error) {
+    console.log("Error fetching barberos:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 // app.use("/productos", require("./src/routes/productos.router"));
 

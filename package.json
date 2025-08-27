@@ -7,7 +7,10 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev:backend": "ts-node --project src/BACK/tsconfig.json src/BACK/index.ts",
+    "build:backend": "tsc src/BACK/index.ts --outDir dist --module commonjs --target es2020",
+    "start:backend": "node dist/index.js"
   },
   "dependencies": {
     "dotenv": "^17.2.0",

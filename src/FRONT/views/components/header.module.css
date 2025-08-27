@@ -1,0 +1,110 @@
+/*HEADER*/
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem; /* h-16 */
+  background-color: #1f2937; /* bg-gray-800 */
+  color: white;
+  padding-left: 1rem; /* px-4 */
+  padding-right: 1rem; /* px-4 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+}
+
+.logo {
+  height: 3rem; /* h-12 */
+}
+
+.titleContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.title {
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 500; /* font-medium */
+  line-height: 1; /* leading-none */
+}
+
+.button {
+  background-color: white;
+  color: #1f2937; /* text-gray-800 */
+  padding-left: 1rem; /* px-4 */
+  padding-right: 1rem; /* px-4 */
+  padding-top: 0.5rem; /* py-2 */
+  padding-bottom: 0.5rem; /* py-2 */
+  border-radius: 0.25rem; /* rounded */
+  border: none;
+  cursor: pointer;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem; /* top-4 */
+  right: 1rem; /* right-4 */
+  color: #1f2937; /* text-gray-800 */
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.sidebarMenu {
+  margin-top: 4rem; /* mt-16 */
+  padding: 1rem; /* p-4 */
+  list-style: none;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0; /* inset-0 */
+  background-color: rgba(0, 0, 0, 0.4); /* bg-black bg-opacity-40 */
+  z-index: 40;
+}
+
+/*SIDEBAR*/
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  background-color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  transition: transform 300ms ease-in-out;
+}
+
+.sidebar-open {
+  transform: translateX(0);
+}
+
+.sidebar-closed {
+  transform: translateX(100%);
+}
+
+/* Media queries para responsive */
+@media (min-width: 768px) {
+  .titleContainer {
+    flex-direction: row;
+  }
+
+  .title {
+    font-size: 1.125rem; /* md:text-lg */
+  }
+
+  .titleSecond {
+    margin-left: 0.25rem; /* md:ml-1 */
+  }
+}
