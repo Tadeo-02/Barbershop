@@ -26,9 +26,9 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 function App() {
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
+      <div className="appContainer">
         <Header />
-        <main className="flex-grow flex items-center justify-center">
+        <main className="mainContent">
           <Routes>
             <Route path="/" element={<MainTurnos />} />
             <Route path="/turnos/mainTurnos" element={<MainTurnos />} />{" "}
@@ -36,19 +36,52 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/indexTurnos" element={<IndexTurnos />} />
             <Route path="/turnos/:codTurno" element={<ShowTurno />} />
-            <Route path="/turnos/modificarTurno/:codTurno" element={<ModificarTurno />}/>
-            <Route path="/categorias/createCategorias" element={<CreateCategorias />} />
-            <Route path="/categorias/modificarCategorias/:codCategoria" element={<ModificarCategoria />} />
-            <Route path="/categorias/indexCategorias" element={<IndexCategorias />} />
-            <Route path="/categorias/:codCategoria" element={<ShowCategoria />} />
-            <Route path="/barberos/createBarberos" element={<CreateBarberos />} />
+            <Route
+              path="/turnos/modificarTurno/:codTurno"
+              element={<ModificarTurno />}
+            />
+            <Route
+              path="/categorias/createCategorias"
+              element={<CreateCategorias />}
+            />
+            <Route
+              path="/categorias/modificarCategorias/:codCategoria"
+              element={<ModificarCategoria />}
+            />
+            <Route
+              path="/categorias/indexCategorias"
+              element={<IndexCategorias />}
+            />
+            <Route
+              path="/categorias/:codCategoria"
+              element={<ShowCategoria />}
+            />
+            <Route
+              path="/barberos/createBarberos"
+              element={<CreateBarberos />}
+            />
             <Route path="/barberos/indexBarberos" element={<IndexBarberos />} />
             <Route path="/barberos/:cuil" element={<ShowBarbero />} />
-            <Route path="/barberos/modificarBarbero/:cuil" element={<UpdateBarbero />} />
-            <Route path="/tipoCortes/createTipoCortes" element={<CreateTipoCortes />} />
-            <Route path="/tipoCortes/createTipoCortes" element={<CreateTipoCortes />} />
-            <Route path="/tipoCortes/indexTipoCortes" element={<IndexTipoCortes />} />
-            <Route path="/tipoCortes/modificarTipoCorte/:codCorte" element={<ModificarTipoCorte />} />
+            <Route
+              path="/barberos/modificarBarbero/:cuil"
+              element={<UpdateBarbero />}
+            />
+            <Route
+              path="/tipoCortes/createTipoCortes"
+              element={<CreateTipoCortes />}
+            />
+            <Route
+              path="/tipoCortes/createTipoCortes"
+              element={<CreateTipoCortes />}
+            />
+            <Route
+              path="/tipoCortes/indexTipoCortes"
+              element={<IndexTipoCortes />}
+            />
+            <Route
+              path="/tipoCortes/modificarTipoCorte/:codCorte"
+              element={<ModificarTipoCorte />}
+            />
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>

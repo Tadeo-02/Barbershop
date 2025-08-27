@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import type { ResultSetHeader } from "mysql2";
-import * as model from "../models/Barberos.js";
-
+import * as model from "../models/Barberos";
 const create = (_req: Request, res: Response) => {
   res.render("barberos/createBarberos");
 };
@@ -9,13 +8,28 @@ const create = (_req: Request, res: Response) => {
 const store = async (req: Request, res: Response) => {
   const { cuil, nombre, apellido, telefono } = req.body;
 
+  console.log("Received data:", { cuil, nombre, apellido, telefono });
+
   try {
     const result = await model.store(cuil, nombre, apellido, telefono);
-    console.log(result);
-    res.status(200).json({ message: "Barberos created successfully" });
+    console.log("Store result:", result);
+    console.log("Affected rows:", result.affectedRows);
+    console.log("Insert ID:", result.insertId);
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: "Barbero created successfully" });
+    } else {
+      res
+        .status(400)
+        .json({ message: "Failed to create barbero - no rows affected" });
+    }
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error creating barbero:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", error: errorMessage });
   }
 };
 
