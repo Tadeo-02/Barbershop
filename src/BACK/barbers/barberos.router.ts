@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 
-import * as controller from "../controllers/barberos.controller";
+import * as controller from "./barberos.controller";
 
 router.get("/createBarberos", controller.create);
 router.post("/", controller.store);

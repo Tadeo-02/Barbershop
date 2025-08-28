@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import styles from "./header.module.css";
-import logoBarber from "../../public/images/logoBarber.png";
+// import logoBarber from "../../public/images/logoBarber.png";
 
 function Header() {
   const [open, setOpen] = useState(false);
@@ -12,7 +12,11 @@ function Header() {
         {/* logo a la izquierda */}
         <div>
           <Link to="/" aria-label="Ir al inicio">
-            <img src={logoBarber} alt="logo-barber" className={styles.logo} />
+            <img
+              src="/images/logoBarber.png"
+              // alt="logo-barber"
+              className={styles.logo}
+            />
           </Link>
         </div>
 
