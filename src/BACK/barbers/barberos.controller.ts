@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
 import type { ResultSetHeader } from "mysql2";
-import * as model from "../models/Barberos";
+import * as model from "./Barberos";
 const create = (_req: Request, res: Response) => {
-  res.render("barberos/createBarberos");
+  res.render("/src/FRONT/views/components/barberos/createBarbero");
 };
 
 const store = async (req: Request, res: Response) => {

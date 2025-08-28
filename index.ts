@@ -1,48 +1,56 @@
-import "dotenv/config"; // cargamos las variables de entrono desde el .env
-
+import "dotenv/config"; // Load environment variables from .env
 import express from "express";
 import methodOverride from "method-override";
 import path from "path";
 
+// Import CommonJS routers
+import barberosRouter from "./src/BACK/barbers/barberos.router";
+import tipoCortesRouter from "./src/BACK/typeOfCut/tipoCortes.router";
+
 const app = express();
 
+// Middleware
 app.use(methodOverride("_method"));
-
-// const layouts = require("express-ejs-layouts");
-
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, "public")));
 
+// View engine setup
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src/views"));
 
-// app.use(layouts);
-// app.set("layout", "layouts/layout");
-
-// Load CommonJS routers using dynamic imports
-(async () => {
-  const mainRouter = await import("./src/BACK/routes/main.router");
-  app.use(mainRouter.default || mainRouter);
-
-  const turnosRouter = await import("./src/BACK/routes/turnos.router");
-  app.use("/turnos", turnosRouter.default || turnosRouter);
-
-  const tipoCortesRouter = await import("./src/BACK/routes/tipoCortes.router");
-  app.use("/tipoCortes", tipoCortesRouter.default || tipoCortesRouter);
-
-  const categoriasRouter = await import("./src/BACK/routes/categorias.router");
-  app.use("/categorias", categoriasRouter.default || categoriasRouter);
-})();
-
-import barberosRouter from "./src/BACK/routes/barberos.router.js";
+// Routes - ES Module routers
 app.use("/barberos", barberosRouter);
+app.use("/tipoCortes", tipoCortesRouter);
 
-// app.use("/productos", require("./src/routes/productos.router"));
+// Load CommonJS routers (commented out until converted to ES modules)
+// TODO: Convert these routers to ES modules for consistency
+// app.use(require("./src/BACK/routes/main.router"));
+// app.use("/turnos", require("./src/BACK/routes/turnos.router"));
+// app.use("/tipoCortes", require("./src/BACK/routes/tipoCortes.router"));
+// app.use("/categorias", require("./src/BACK/routes/categorias.router"));
 
-// app.use("/contacto", require("./src/routes/contacto.router"));
+// Root route
+app.get("/", (_req, res) => {
+  res.send("Server is running! Barbershop backend is up.");
+});
+
+// Error handling middleware
+app.use(
+  (
+    err: Error,
+    _req: express.Request,
+    res: express.Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: express.NextFunction
+  ) => {
+    console.error("Error:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+);
 
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+});
