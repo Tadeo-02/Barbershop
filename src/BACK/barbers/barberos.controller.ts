@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import type { ResultSetHeader } from "mysql2";
 import * as model from "./Barberos";
+import { DatabaseError } from "./Barberos";
+
 const create = (_req: Request, res: Response) => {
   res.render("/src/FRONT/views/components/barberos/createBarbero");
 };
@@ -8,28 +9,33 @@ const create = (_req: Request, res: Response) => {
 const store = async (req: Request, res: Response) => {
   const { cuil, nombre, apellido, telefono } = req.body;
 
-  console.log("Received data:", { cuil, nombre, apellido, telefono });
+  console.log("Store barbero request received"); //console log seguro
 
   try {
     const result = await model.store(cuil, nombre, apellido, telefono);
-    console.log("Store result:", result);
-    console.log("Affected rows:", result.affectedRows);
-    console.log("Insert ID:", result.insertId);
-
-    if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Barbero created successfully" });
-    } else {
-      res
-        .status(400)
-        .json({ message: "Failed to create barbero - no rows affected" });
-    }
+    console.log("Barbero created successfully");
+//no es necesaria una validacion, prisma garantiza que si llega a esta instancia no hay errores
+    res.status(201).json({
+      message: "Barbero creado exitosamente",
+      barbero: result,
+    });
   } catch (error) {
-    console.error("Error creating barbero:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", error: errorMessage });
+    console.error(
+      "Error creating barbero:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+//manejo de errores
+    if (error instanceof DatabaseError) {
+      return res.status(400).json({
+        message: error.message,
+        type: "validation_error",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Error interno del servidor",
+      type: "server_error",
+    });
   }
 };
 
@@ -38,26 +44,56 @@ const index = async (_req: Request, res: Response) => {
     const barberos = await model.findAll();
     res.status(200).json(barberos);
   } catch (error) {
-    console.log(error);
-    return res.status(500).send("Internal Server Error");
+    console.error(
+      "Error fetching barberos:",
+      error instanceof Error ? error.message : "Unknown error" //error seguro
+    );
+//manejo de errores
+    if (error instanceof DatabaseError) {
+      return res.status(400).json({
+        message: error.message,
+        type: "validation_error",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Error interno del servidor",
+      type: "server_error",
+    });
   }
 };
 
 const show = async (req: Request, res: Response) => {
-  console.log(req.params);
-
   const { cuil } = req.params;
 
   try {
     const barbero = await model.findById(cuil);
-    // console.log(barbero);
+
     if (!barbero) {
-      return res.status(404).send("Barbero no encontrado");
+      return res.status(404).json({
+        message: "Barbero no encontrado",
+        type: "not_found",
+      });
     }
+
     res.status(200).json(barbero);
   } catch (error) {
-    console.log(error);
-    return res.status(500).send("Internal Server Error");
+    console.error(
+      "Error finding barbero:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+
+    if (error instanceof DatabaseError) {
+      return res.status(400).json({
+        message: error.message,
+        type: "validation_error",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Error interno del servidor",
+      type: "server_error",
+    });
   }
 };
 
@@ -66,14 +102,32 @@ const edit = async (req: Request, res: Response) => {
 
   try {
     const barbero = await model.findById(cuil);
-    console.log(barbero);
+
     if (!barbero) {
-      return res.status(404).json({ message: "Barbero no encontrado" });
+      return res.status(404).json({
+        message: "Barbero no encontrado",
+        type: "not_found",
+      });
     }
+
     res.json(barbero);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error(
+      "Error finding barbero for edit:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+
+    if (error instanceof DatabaseError) {
+      return res.status(400).json({
+        message: error.message,
+        type: "validation_error",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Error interno del servidor",
+      type: "server_error",
+    });
   }
 };
 
@@ -89,11 +143,28 @@ const update = async (req: Request, res: Response) => {
       apellido,
       telefono
     );
-    console.log(result);
-    res.json({ message: "Barbero updated successfully" });
+
+    res.status(200).json({
+      message: "Barbero actualizado exitosamente",
+      barbero: result,
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error(
+      "Error updating barbero:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+
+    if (error instanceof DatabaseError) {
+      return res.status(400).json({
+        message: error.message,
+        type: "validation_error",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Error interno del servidor",
+      type: "server_error",
+    });
   }
 };
 
@@ -101,14 +172,29 @@ const destroy = async (req: Request, res: Response) => {
   const { cuil } = req.params;
 
   try {
-    const result = (await model.destroy(cuil)) as ResultSetHeader;
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Barbero no encontrado" });
-    }
-    res.status(200).json({ message: "Barbero eliminado correctamente" });
+    const result = await model.destroy(cuil);
+
+    res.status(200).json({
+      message: "Barbero eliminado correctamente",
+      barbero: result,
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error(
+      "Error deleting barbero:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+
+    if (error instanceof DatabaseError) {
+      return res.status(400).json({
+        message: error.message,
+        type: "validation_error",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Error interno del servidor",
+      type: "server_error",
+    });
   }
 };
 
