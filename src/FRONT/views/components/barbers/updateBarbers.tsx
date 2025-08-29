@@ -1,70 +1,78 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import styles from "./barberos.module.css";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import styles from "./barbers.module.css";
 
-const CreateBarberos: React.FC = () => {
+interface Barbero {
+  cuil: string;
+  nombre: string;
+  apellido: string;
+  telefono: string;
+}
+
+const UpdateBarber: React.FC = () => {
+  const { cuil } = useParams<{ cuil: string }>();
   const navigate = useNavigate();
-  const [cuil, setCuil] = useState("");
+  const [barbero, setBarbero] = useState<Barbero | null>(null);
+  const [nuevoCuil, setNuevoCuil] = useState("");
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
 
+  useEffect(() => {
+    const fetchBarbero = async () => {
+      try {
+        const response = await fetch(`/barberos/${cuil}`);
+        if (response.ok) {
+          const data = await response.json();
+          setBarbero(data);
+          setNuevoCuil(data.cuil);
+          setNombre(data.nombre);
+          setApellido(data.apellido);
+          setTelefono(data.telefono);
+        } else {
+          console.error("Failed to fetch barbero");
+        }
+      } catch (error) {
+        console.error("Error fetching barbero:", error);
+      }
+    };
+
+    fetchBarbero();
+  }, [cuil]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      console.log(
-        "Enviando POST a /barberos con datos barbero:",
-        cuil,
-        nombre,
-        apellido,
-        telefono
-      );
-      const response = await fetch("/barberos", {
+      const response = await fetch(`/barberos/${barbero?.cuil}?_method=PUT`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ cuil, nombre, apellido, telefono }),
+        body: JSON.stringify({ nuevoCuil, nombre, apellido, telefono }),
       });
-      console.log("Después de fetch, status:", response.status);
 
-      const text = await response.text();
-      console.log("Respuesta cruda del backend:", text);
-
-      let data;
-      if (text) {
-        try {
-          data = JSON.parse(text);
-          console.log("Después de JSON.parse, data:", data);
-        } catch (parseError) {
-          console.error("Error al parsear JSON:", parseError);
-          throw parseError;
-        }
-      } else {
-        console.error("Respuesta vacía del backend");
-        alert("El servidor no devolvió respuesta.");
-        return;
-      }
+      const data = await response.json();
 
       if (response.ok) {
         alert(data.message);
-        setCuil("");
-        setNombre("");
-        setApellido("");
-        setTelefono("");
-        navigate("/barberos/indexBarberos");
+        navigate("/barbers/indexBarbers"); // Redirigir a la lista de barberos
       } else {
         alert(data.message);
       }
     } catch (error) {
-      console.error("Error en handleSubmit:", error);
+      console.error("Error updating barbero:", error);
       alert("Error de conexión");
     }
   };
 
+  if (!barbero) {
+    return <div className={styles.loadingState}>Cargando barbero...</div>;
+  }
+
   return (
     <div className={styles.formContainer}>
-      <h1 className={styles.pageTitle}>Crear Barbero</h1>
+      <h1 className={styles.pageTitle}>Editar Barbero</h1>
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="cuil">
@@ -75,8 +83,8 @@ const CreateBarberos: React.FC = () => {
             type="text"
             name="cuil"
             id="cuil"
-            value={cuil}
-            onChange={(e) => setCuil(e.target.value)}
+            value={nuevoCuil}
+            onChange={(e) => setNuevoCuil(e.target.value)}
             required
           />
         </div>
@@ -126,11 +134,11 @@ const CreateBarberos: React.FC = () => {
           className={`${styles.button} ${styles.buttonSuccess}`}
           type="submit"
         >
-          Guardar Barbero
+          Guardar Cambios
         </button>
       </form>
     </div>
   );
 };
 
-export default CreateBarberos;
+export default UpdateBarber;

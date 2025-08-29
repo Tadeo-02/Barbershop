@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import styles from './turnos.module.css';
+import styles from "./turns.module.css";
 
 interface Turno {
   codTurno: number;
@@ -23,7 +23,6 @@ const IndexTurnos = () => {
       });
   }, []);
 
-  
   const handleDelete = async (codTurno: number) => {
     const confirmed = window.confirm(
       "¿Estás seguro de que querés borrar este turno?"
@@ -38,7 +37,7 @@ const IndexTurnos = () => {
       if (response.ok) {
         alert("Turno eliminado correctamente.");
         // actualizar la lista de turnos removiendo el turno eliminado
-        setTurnos(turnos.filter(turno => turno.codTurno !== codTurno));
+        setTurnos(turnos.filter((turno) => turno.codTurno !== codTurno));
       } else if (response.status === 404) {
         alert("Turno no encontrado.");
       } else {
@@ -62,12 +61,8 @@ const IndexTurnos = () => {
           {turnos.map((turno, idx) => (
             <li key={idx}>
               <div className={styles.turnoInfo}>
-                <div className={styles.turnoTitle}>
-                  Turno #{turno.codTurno}
-                </div>
-                <div className={styles.turnoCode}>
-                  Código: {turno.codTurno}
-                </div>
+                <div className={styles.turnoTitle}>Turno #{turno.codTurno}</div>
+                <div className={styles.turnoCode}>Código: {turno.codTurno}</div>
                 <div className={styles.turnoDetails}>
                   <span className={styles.turnoFecha}>
                     Fecha: {new Date(turno.fechaTurno).toLocaleDateString()}
@@ -75,20 +70,20 @@ const IndexTurnos = () => {
                 </div>
               </div>
               <div className={styles.actionButtons}>
-                <Link 
+                <Link
                   to={`/turnos/${turno.codTurno}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Ver Detalles
                 </Link>
-                <Link 
-                  to={`/turnos/modificarTurno/${turno.codTurno}`} 
+                <Link
+                  to={`/turnos/modificarTurno/${turno.codTurno}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Modificar
                 </Link>
-                <button 
-                  className={`${styles.button} ${styles.buttonDanger}`} 
+                <button
+                  className={`${styles.button} ${styles.buttonDanger}`}
                   onClick={() => handleDelete(turno.codTurno)}
                 >
                   Eliminar
@@ -103,5 +98,3 @@ const IndexTurnos = () => {
 };
 
 export default IndexTurnos;
-
-

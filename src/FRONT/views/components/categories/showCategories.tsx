@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import styles from "./categorias.module.css";
+import styles from "./categories.module.css";
 
 interface Categoria {
   codCategoria: number;

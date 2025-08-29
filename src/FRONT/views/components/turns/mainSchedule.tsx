@@ -1,6 +1,6 @@
 // src/components/Calendar.tsx
 import React, { useState, useEffect } from "react";
-import styles from "./mainHorarios.module.css";
+import styles from "./mainSchedule.module.css";
 
 // Definición de tipos para las props del componente Day
 interface DayProps {

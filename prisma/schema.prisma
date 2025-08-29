@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Barbero {
+  cuil     String @id @db.VarChar(13)
+  nombre   String @db.VarChar(50)
+  apellido String @db.VarChar(50)
+  telefono String @db.VarChar(20)
+
+  @@map("barberos")
+}
+
+model Categoria {
+  codCategoria  Int    @id @default(autoincrement())
+  nomCategoria  String @unique(map: "Nombre") @db.VarChar(15)
+  descCategoria String @db.VarChar(100)
+
+  @@map("categorias")
+}
+
+model TipoCorte {
+  codCorte    Int    @id @default(autoincrement())
+  nombreCorte String @db.VarChar(255)
+  valorBase   Float
+
+  @@map("tipoCorte")
+}
+
+model Turno {
+  codTurno    Int      @id @default(autoincrement())
+  fechaTurno  DateTime @db.Date
+  precioTurno Float    @db.Float
+
+  @@map("turnos")
+}

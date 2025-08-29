@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./turnos.module.css";
+import styles from "./turns.module.css";
 
 const CreateTurnos: React.FC = () => {
   const navigate = useNavigate();
