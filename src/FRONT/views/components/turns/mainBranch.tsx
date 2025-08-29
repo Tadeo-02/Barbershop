@@ -1,5 +1,5 @@
 import { Link, Routes, Route } from "react-router-dom";
-import styles from "./mainSucursal.module.css";
+import styles from "./mainBranch.module.css";
 
 function Ubicacion() {
   return <div>Formulario para solicitar un turno nuevo</div>;
@@ -8,11 +8,11 @@ function Horarios() {
   return <div>Historial de turnos</div>;
 }
 function Barberos() {
-    return <div>Historial de turnos</div>;
+  return <div>Historial de turnos</div>;
 }
 function AgendarTurno() {
   return <div>Formulario para solicitar un turno nuevo</div>;
-}       
+}
 function Categorias() {
   return <div>Categorias</div>;
 }
@@ -36,7 +36,7 @@ function MainTurnos() {
           <Link to="Agendar Turnos">Agendar Turnos</Link>
         </div>
         <div className={styles.mainSucursal}>
-          <Link to="Categorias">Categorias</Link> 
+          <Link to="Categorias">Categorias</Link>
         </div>
       </nav>
       <Routes>

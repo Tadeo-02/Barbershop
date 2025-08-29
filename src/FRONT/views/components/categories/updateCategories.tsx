@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import styles from "./categorias.module.css";
+import styles from "./categories.module.css";
 
 const ModificarCategoria: React.FC = () => {
   const { codCategoria } = useParams<{ codCategoria: string }>();

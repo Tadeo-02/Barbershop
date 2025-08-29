@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
-import * as model from "./Barberos";
-import { DatabaseError } from "./Barberos";
+import * as model from "./Barbers";
+import { DatabaseError } from "./Barbers";
 
 const create = (_req: Request, res: Response) => {
-  res.render("/src/FRONT/views/components/barberos/createBarbero");
+  res.render("/src/FRONT/views/components/barbers/createBarbers");
 };
 
 const store = async (req: Request, res: Response) => {

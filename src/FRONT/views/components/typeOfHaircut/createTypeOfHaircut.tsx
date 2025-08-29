@@ -1,41 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import styles from "./TipoCortes.module.css";
+import React, { useState } from "react";
+import styles from "./typeOfHaircut.module.css";
 
 
-const ModificarTipoCorte: React.FC = () => {
-  const { codCorte } = useParams<{ codCorte: string }>();
-  const navigate = useNavigate();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [corte, setCorte] = useState<any | null>(null); 
+const CreateTipoCortes: React.FC = () => {
   const [nombreCorte, setNombreCorte] = useState("");
   const [valorBase, setValorBase] = useState<number | "">("");
 
-  useEffect(() => {
-    const fetchCorte = async () => {
-      try {
-        const response = await fetch(`/tipoCortes/${codCorte}`);
-        if (response.ok) {
-          const data = await response.json();
-          setCorte(data);
-          setNombreCorte(data.nombreCorte);
-          setValorBase(data.valorBase);
-        } else {
-          console.error("Failed to fetch turno");
-        }
-      } catch (error) {
-        console.error("Error fetching turno:", error);
-      }
-    };
-
-    fetchCorte();
-  }, [codCorte]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      const response = await fetch(`/turnos/${corte?.codCorte}?_method=PUT`, {
+      const response = await fetch("/tipoCortes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,28 +17,39 @@ const ModificarTipoCorte: React.FC = () => {
         body: JSON.stringify({ nombreCorte, valorBase }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+
+      let data;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          console.error("Error al parsear JSON:", parseError);
+          alert("Respuesta inválida del servidor");
+          return;
+        }
+      } else {
+        alert("El servidor no devolvió respuesta.");
+        return;
+      }
 
       if (response.ok) {
-        alert(data.message);
-        navigate("/indexTipoCortes"); // redirigir a la lista de tipo de cortes
+        alert(data.message || "Tipo de corte creado correctamente.");
+        setNombreCorte("");
+        setValorBase("");
       } else {
-        alert(data.message);
+        alert(data.message || "Error al crear el tipo de corte.");
       }
     } catch (error) {
-      console.error("Error modificando Tipo de Corte:", error);
+      console.error("Error en handleSubmit:", error);
       alert("Error de conexión");
     }
   };
 
-  if (!corte) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className={styles.formContainer}>
       {" "}
-      <h1>Editar Tipo de Corte</h1>
+      <h2>Crear Tipo de Corte</h2>
       <form className={styles.form} onSubmit={handleSubmit}>
         {" "}
         <div className={styles.formGroup}>
@@ -115,4 +100,4 @@ const ModificarTipoCorte: React.FC = () => {
   );
 };
 
-export default ModificarTipoCorte;
+export default CreateTipoCortes;
