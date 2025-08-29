@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import styles from "./turnos.module.css";
+import styles from "./turns.module.css";
 
 interface Turno {
   codTurno: number;

@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import styles from "./barberos.module.css";
+import styles from "./barbers.module.css";
 
 interface Barbero {
   cuil: string;
   nombre: string;
   apellido: string;
-  telefono: string;
+  telefono: string; 
 }
 
-const ShowBarbero = () => {
+const ShowBarbers = () => {
   const { cuil } = useParams(); // si lo pasás como parámetro de URL
   const [barbero, setBarbero] = useState<Barbero | null>(null);
 
@@ -39,4 +39,4 @@ const ShowBarbero = () => {
   );
 };
 
-export default ShowBarbero;
+export default ShowBarbers;

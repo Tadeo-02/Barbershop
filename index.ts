@@ -4,8 +4,8 @@ import methodOverride from "method-override";
 import path from "path";
 
 // Import CommonJS routers
-import barberosRouter from "./src/BACK/barbers/barberos.router";
-import tipoCortesRouter from "./src/BACK/typeOfCut/tipoCortes.router";
+import barbersRouter from "./src/BACK/barbers/barbers.router";
+//import typeOfCutRouter from "./src/BACK/typeOfCut/typeOfCut.router";
 
 const app = express();
 
@@ -20,8 +20,8 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src/views"));
 
 // Routes - ES Module routers
-app.use("/barberos", barberosRouter);
-app.use("/tipoCortes", tipoCortesRouter);
+app.use("/barberos", barbersRouter);
+//app.use("/typeOfCut", typeOfCutRouter);
 
 // Load CommonJS routers (commented out until converted to ES modules)
 // TODO: Convert these routers to ES modules for consistency

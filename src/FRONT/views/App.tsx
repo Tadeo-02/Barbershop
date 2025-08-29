@@ -3,24 +3,24 @@ import "./App.css";
 import Login from "./components/login/login.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
-import MainTurnos from "./components/turnos/mainTurnos.tsx";
-import CreateTurnos from "./components/turnos/createTurnos.tsx";
-import IndexTurnos from "./components/turnos/indexTurnos.tsx";
-import ShowTurno from "./components/turnos/showTurnos.tsx";
-import ModificarTurno from "./components/turnos/modificarTurno.tsx";
+import MainTurns from "./components/turns/mainTurns.tsx";
+import CreateTurns from "./components/turns/createTurns.tsx";
+import IndexTurns from "./components/turns/indexTurns.tsx";
+import ShowTurn from "./components/turns/showTurns.tsx";
+import UpdateTurn from "./components/turns/updateTurn.tsx";
 
-import CreateCategorias from "./components/categorias/createCategorias.tsx";
-import ModificarCategoria from "./components/categorias/modificarCategorias.tsx";
-import IndexCategorias from "./components/categorias/indexCategorias.tsx";
-import ShowCategoria from "./components/categorias/showCategoria.tsx";
+import CreateCategories from "./components/categories/createCategories.tsx";
+import UpdateCategories from "./components/categories/updateCategories.tsx";
+import IndexCategories from "./components/categories/indexCategories.tsx";
+import ShowCategories from "./components/categories/showCategories.tsx";
 
-import CreateBarberos from "./components/Barberos/createBarberos.tsx";
-import IndexBarberos from "./components/Barberos/indexBarberos.tsx";
-import ShowBarbero from "./components/Barberos/showBarberos.tsx";
-import UpdateBarbero from "./components/Barberos/updateBarberos.tsx";
-import CreateTipoCortes from "./components/tipoCortes/createTipoCortes.tsx";
-import IndexTipoCortes from "./components/tipoCortes/indexTipoCortes.tsx";
-import ModificarTipoCorte from "./components/tipoCortes/modificarTipoCorte.tsx";
+import CreateBarbers from "./components/barbers/createBarbers.tsx";
+import IndexBarbers from "./components/barbers/indexBarbers.tsx";
+import ShowBarbers from "./components/barbers/showBarbers.tsx";
+import UpdateBarbers from "./components/barbers/updateBarbers.tsx";
+import CreateTypeOfHaircut from "./components/typeOfHaircut/createTypeOfHaircut.tsx";
+import IndexTypeOfHaircut from "./components/typeOfHaircut/indexTypeOfHaircut.tsx";
+import UpdateTypeOfHaircut from "./components/typeOfHaircut/updateTypeOfHaircut.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -30,57 +30,54 @@ function App() {
         <Header />
         <main className="mainContent">
           <Routes>
-            <Route path="/" element={<MainTurnos />} />
-            <Route path="/turnos/mainTurnos" element={<MainTurnos />} />{" "}
-            <Route path="/createTurnos" element={<CreateTurnos />} />
+            <Route path="/" element={<MainTurns />} />
+            <Route path="/turnos/mainTurnos" element={<MainTurns />} />{" "}
+            <Route path="/createTurnos" element={<CreateTurns />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/indexTurnos" element={<IndexTurnos />} />
-            <Route path="/turnos/:codTurno" element={<ShowTurno />} />
+            <Route path="/indexTurnos" element={<IndexTurns />} />
+            <Route path="/turnos/:codTurno" element={<ShowTurn />} />
             <Route
               path="/turnos/modificarTurno/:codTurno"
-              element={<ModificarTurno />}
+              element={<UpdateTurn />}
             />
             <Route
               path="/categorias/createCategorias"
-              element={<CreateCategorias />}
+              element={<CreateCategories />}
             />
             <Route
               path="/categorias/modificarCategorias/:codCategoria"
-              element={<ModificarCategoria />}
+              element={<UpdateCategories />}
             />
             <Route
               path="/categorias/indexCategorias"
-              element={<IndexCategorias />}
+              element={<IndexCategories />}
             />
             <Route
               path="/categorias/:codCategoria"
-              element={<ShowCategoria />}
+              element={<ShowCategories />}
             />
+            <Route path="/barbers/createBarbers" element={<CreateBarbers />} />
+            <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
+            <Route path="/barbers/:cuil" element={<ShowBarbers />} />
             <Route
-              path="/barberos/createBarberos"
-              element={<CreateBarberos />}
-            />
-            <Route path="/barberos/indexBarberos" element={<IndexBarberos />} />
-            <Route path="/barberos/:cuil" element={<ShowBarbero />} />
-            <Route
-              path="/barberos/modificarBarbero/:cuil"
-              element={<UpdateBarbero />}
+              path="/barbers/updateBarber/:cuil"
+              element={<UpdateBarbers />}
             />
             <Route
               path="/tipoCortes/createTipoCortes"
-              element={<CreateTipoCortes />}
+              element={<CreateTypeOfHaircut />}
             />
             <Route
               path="/tipoCortes/createTipoCortes"
-              element={<CreateTipoCortes />}
+              element={<CreateTypeOfHaircut />}
             />
             <Route
               path="/tipoCortes/indexTipoCortes"
-              element={<IndexTipoCortes />}
+              element={<IndexTypeOfHaircut />}
             />
             <Route
               path="/tipoCortes/modificarTipoCorte/:codCorte"
-              element={<ModificarTipoCorte />}
+              element={<UpdateTypeOfHaircut />}
             />
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>

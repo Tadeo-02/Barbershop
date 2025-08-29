@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import type { ResultSetHeader } from "mysql2";
-import * as model from "./TipoCorte"; //importamos los modelos
+import * as model from "./typeOfHaircut"; //importamos los modelos
 // conecta con la DB
 // req: request, res: response
 const create = (_req: Request, res: Response) => {

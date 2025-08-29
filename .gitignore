@@ -25,3 +25,4 @@ dist-ssr
 
 # Dependency directories
 node_modules/
+/src/generated/prisma
