@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -9,11 +8,6 @@ export default defineConfig({
     // Temporarily remove tailwindcss plugin to fix the dev server
     // tailwindcss(),
   ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
   server: {
     proxy: {
       "/turnos": "http://localhost:3001", // o el puerto donde corre tu backend,
