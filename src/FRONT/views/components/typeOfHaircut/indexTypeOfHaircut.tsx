@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import styles from "./TipoCortes.module.css";
+import styles from "./typeOfHaircut.module.css";
 
 interface TipoCorte {
   codCorte: number;
