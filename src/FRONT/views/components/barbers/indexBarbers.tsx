@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./barbers.module.css";
+import toast from "react-hot-toast";
 
 interface Barbero {
   cuil: string;
@@ -10,8 +11,12 @@ interface Barbero {
 
 const IndexBarbers = () => {
   const [barberos, setBarberos] = useState<Barbero[]>([]);
+  const [loading, setLoading] = useState(true); // loading inicial
 
   useEffect(() => {
+    //alert de loading para carga inicial
+    // const toastId = toast.loading("Cargando barberos...");
+
     // Llama al backend para obtener los barberos
     fetch("/barberos")
       .then((res) => res.json())
@@ -21,14 +26,103 @@ const IndexBarbers = () => {
       })
       .catch((error) => {
         console.error("Error al obtener barberos:", error);
+        toast.error("Error al cargar los barberos", { id: toastId });
+      })
+      .finally(() => {
+        setLoading(false); // Termina el loading
       });
   }, []);
+  // loading state
+  if (loading) {
+    return <div className={styles.loadingState}>Cargando barberos...</div>;
+  }
 
   const handleDelete = async (cuil: string) => {
-    const confirmed = window.confirm(
-      "¿Estás seguro de que querés borrar este barbero?"
+    //alert personalizado para confirmacion:
+    toast(
+      (t) => (
+        <div style={{ textAlign: "center" }}>
+          <p
+            style={{
+              margin: "0 0 16px 0",
+              fontSize: "18px",
+              fontWeight: "600",
+            }}
+          >
+            ¿Estás seguro de que querés borrar este barbero?
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                confirmedDelete(cuil);
+              }}
+              style={{
+                background: "#e53e3e",
+                color: "white",
+                border: "none",
+                padding: "12px 24px", 
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "16px", 
+                fontWeight: "600",
+                minWidth: "120px", 
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#c53030";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#e53e3e";
+              }}
+            >
+              Eliminar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                background: "#718096",
+                color: "white",
+                border: "none",
+                padding: "12px 24px", 
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "16px", 
+                fontWeight: "600",
+                minWidth: "120px", 
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#4a5568";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#718096";
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        style: {
+          minWidth: "350px", // botones mas anchos
+          padding: "24px",
+        },
+      }
     );
-    if (!confirmed) return;
+  };
+
+  const confirmedDelete = async (cuil: string) => {
+    const toastId = toast.loading("Eliminando barbero...");
 
     try {
       const response = await fetch(`/barberos/${cuil}`, {
@@ -36,17 +130,16 @@ const IndexBarbers = () => {
       });
 
       if (response.ok) {
-        alert("Barbero eliminado correctamente.");
-        // Actualizar la lista de barberos removiendo el barbero eliminado
+        toast.success("Barbero eliminado correctamente", { id: toastId });
         setBarberos(barberos.filter((barbero) => barbero.cuil !== cuil));
       } else if (response.status === 404) {
-        alert("Barbero no encontrado.");
+        toast.error("Barbero no encontrado", { id: toastId });
       } else {
-        alert("Error al borrar el barbero.");
+        toast.error("Error al borrar el barbero", { id: toastId });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      alert("Error de conexión con el servidor.");
+      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 
