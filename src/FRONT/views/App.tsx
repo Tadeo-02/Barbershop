@@ -23,6 +23,8 @@ import IndexTypeOfHaircut from "./components/typeOfHaircut/indexTypeOfHaircut.ts
 import UpdateTypeOfHaircut from "./components/typeOfHaircut/updateTypeOfHaircut.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
+import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
+
 function App() {
   return (
     <Router>
@@ -83,6 +85,44 @@ function App() {
           </Routes>
         </main>
         <Footer />
+        {/* Alerts de Toaster */}
+        <Toaster
+          position="center"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: "#363636",
+              color: "#fff",
+              fontSize: "18px",
+              fontWeight: "500",
+              padding: "20px 30px",
+              borderRadius: "12px",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
+              minWidth: "400px",
+              textAlign: "center",
+            },
+            success: {
+              duration: 3000,
+              style: {
+                background: "#38a169",
+              },
+            },
+            error: {
+              duration: 5000,
+              style: {
+                background: "#e53e3e",
+              },
+            },
+          }}
+          containerStyle={{
+            // Subido más - de 40% a 35%
+            top: "15%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            position: "fixed",
+            zIndex: 9999,
+          }}
+        />
       </div>
     </Router>
   );

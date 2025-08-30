@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./barbers.module.css";
+import toast from "react-hot-toast"; //importamos libreria de alertas
 
 const CreateBarbers: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const CreateBarbers: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const toastId = toast.loading("Creando Barbero..."); //alert de loading
     try {
       console.log(
         "Enviando POST a /barberos con datos barbero:",
@@ -37,28 +39,28 @@ const CreateBarbers: React.FC = () => {
           data = JSON.parse(text);
           console.log("Después de JSON.parse, data:", data);
         } catch (parseError) {
-          console.error("Error al parsear JSON:", parseError);
+          toast.error("Error al parsear JSON:", parseError);
           throw parseError;
         }
       } else {
-        console.error("Respuesta vacía del backend");
+        toast.error("Respuesta vacía del backend");
         alert("El servidor no devolvió respuesta.");
         return;
       }
 
       if (response.ok) {
-        alert(data.message);
+        toast.success(data.message || "Barbero creado exitosamente", {id: toastId});
         setCuil("");
         setNombre("");
         setApellido("");
         setTelefono("");
         navigate("/barbers/indexBarbers");
       } else {
-        alert(data.message);
+        toast.error(data.message || "Error al crear barbero", { id: toastId });
       }
     } catch (error) {
       console.error("Error en handleSubmit:", error);
-      alert("Error de conexión");
+      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 
