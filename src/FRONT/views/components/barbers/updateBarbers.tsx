@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./barbers.module.css";
+import toast from "react-hot-toast";
 
 interface Barbero {
   cuil: string;
@@ -20,6 +21,8 @@ const UpdateBarber: React.FC = () => {
 
   useEffect(() => {
     const fetchBarbero = async () => {
+      // const toastId = toast.loading("Cargando datos del barbero...");
+
       try {
         const response = await fetch(`/barberos/${cuil}`);
         if (response.ok) {
@@ -28,12 +31,14 @@ const UpdateBarber: React.FC = () => {
           setNuevoCuil(data.cuil);
           setNombre(data.nombre);
           setApellido(data.apellido);
-          setTelefono(data.telefono);
+          setTelefono(data.telefono);                    
+          toast.success("Datos cargados correctamente", {id: toastId,});
         } else {
-          console.error("Failed to fetch barbero");
+          toast.error("Error al cargar los datos del barbero", { id: toastId });
         }
       } catch (error) {
         console.error("Error fetching barbero:", error);
+        toast.error("Error de conexión", { id: toastId });
       }
     };
 
@@ -42,6 +47,7 @@ const UpdateBarber: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const toastId = toast.loading("Actualizando barbero...");
 
     try {
       const response = await fetch(`/barberos/${barbero?.cuil}?_method=PUT`, {
@@ -55,14 +61,14 @@ const UpdateBarber: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message);
+        toast.success(data.message || "Barbero actualizado exitosamente", { id: toastId });
         navigate("/barbers/indexBarbers"); // Redirigir a la lista de barberos
       } else {
-        alert(data.message);
+        toast.error(data.message || "Error al actualizar barbero", { id: toastId });
       }
     } catch (error) {
       console.error("Error updating barbero:", error);
-      alert("Error de conexión");
+      toast.error("Error de conexión", { id: toastId });
     }
   };
 
