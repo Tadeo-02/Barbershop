@@ -7,21 +7,29 @@ const create = (_req: Request, res: Response) => {
 };
 
 const store = async (req: Request, res: Response) => {
-  const { cuil, nombre, apellido, telefono } = req.body;
+  const { dni, cuil, nombre, apellido, telefono, email, contraseña } = req.body;
 
-  console.log("Store barbero request received"); //console log seguro
+  console.log("Store usuarios request received"); //console log seguro
 
   try {
-    const result = await model.store(cuil, nombre, apellido, telefono);
-    console.log("Barbero created successfully");
+    const result = await model.store(
+      dni,
+      cuil,
+      nombre,
+      apellido,
+      telefono,
+      email,
+      contraseña
+    );
+    console.log("Usuarios created successfully");
 //no es necesaria una validacion, prisma garantiza que si llega a esta instancia no hay errores
     res.status(201).json({
-      message: "Barbero creado exitosamente",
-      barbero: result,
+      message: "Usuarios creado exitosamente",
+      usuarios: result,
     });
   } catch (error) {
     console.error(
-      "Error creating barbero:",
+      "Error creating usuarios:",
       error instanceof Error ? error.message : "Unknown error"
     );
 //manejo de errores
@@ -41,11 +49,11 @@ const store = async (req: Request, res: Response) => {
 
 const index = async (_req: Request, res: Response) => {
   try {
-    const barberos = await model.findAll();
-    res.status(200).json(barberos);
+    const usuarios = await model.findAll();
+    res.status(200).json(usuarios);
   } catch (error) {
     console.error(
-      "Error fetching barberos:",
+      "Error fetching usuarios:",
       error instanceof Error ? error.message : "Unknown error" //error seguro
     );
 //manejo de errores
@@ -64,22 +72,22 @@ const index = async (_req: Request, res: Response) => {
 };
 
 const show = async (req: Request, res: Response) => {
-  const { cuil } = req.params;
+  const { codUsuario } = req.params;
 
   try {
-    const barbero = await model.findById(cuil);
+    const usuario = await model.findById(codUsuario);
 
-    if (!barbero) {
+    if (!usuario) {
       return res.status(404).json({
-        message: "Barbero no encontrado",
+        message: "Usuario no encontrado",
         type: "not_found",
       });
     }
 
-    res.status(200).json(barbero);
+    res.status(200).json(usuario);
   } catch (error) {
     console.error(
-      "Error finding barbero:",
+      "Error finding usuario:",
       error instanceof Error ? error.message : "Unknown error"
     );
 
@@ -98,22 +106,22 @@ const show = async (req: Request, res: Response) => {
 };
 
 const edit = async (req: Request, res: Response) => {
-  const { cuil } = req.params;
+  const { codUsuario } = req.params;
 
   try {
-    const barbero = await model.findById(cuil);
+    const usuario = await model.findById(codUsuario);
 
-    if (!barbero) {
+    if (!usuario) {
       return res.status(404).json({
-        message: "Barbero no encontrado",
+        message: "Usuario no encontrado",
         type: "not_found",
       });
     }
 
-    res.json(barbero);
+    res.json(usuario);
   } catch (error) {
     console.error(
-      "Error finding barbero for edit:",
+      "Error finding usuario for edit:",
       error instanceof Error ? error.message : "Unknown error"
     );
 
@@ -132,25 +140,28 @@ const edit = async (req: Request, res: Response) => {
 };
 
 const update = async (req: Request, res: Response) => {
-  const cuilViejo = req.params.cuil;
-  const { nuevoCuil, nombre, apellido, telefono } = req.body;
+  const codUsuario = req.params.codUsuario;
+  const { dni, cuil, nombre, apellido, telefono, email, contraseña } = req.body;
 
   try {
     const result = await model.update(
-      cuilViejo,
-      nuevoCuil,
+      codUsuario,
+      dni,
+      cuil,
       nombre,
       apellido,
-      telefono
+      telefono,
+      email,
+      contraseña
     );
 
     res.status(200).json({
-      message: "Barbero actualizado exitosamente",
-      barbero: result,
+      message: "Usuarios actualizado exitosamente",
+      usuarios: result,
     });
   } catch (error) {
     console.error(
-      "Error updating barbero:",
+      "Error updating usuarios:",
       error instanceof Error ? error.message : "Unknown error"
     );
 
@@ -169,18 +180,18 @@ const update = async (req: Request, res: Response) => {
 };
 
 const destroy = async (req: Request, res: Response) => {
-  const { cuil } = req.params;
+  const { codUsuario } = req.params;
 
   try {
-    const result = await model.destroy(cuil);
+    const result = await model.destroy(codUsuario);
 
     res.status(200).json({
-      message: "Barbero eliminado correctamente",
-      barbero: result,
+      message: "Usuarios eliminado correctamente",
+      usuarios: result,
     });
   } catch (error) {
     console.error(
-      "Error deleting barbero:",
+      "Error deleting usuarios:",
       error instanceof Error ? error.message : "Unknown error"
     );
 
