@@ -4,19 +4,21 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 
 interface Barbero {
+  codUsuario: string;
   cuil: string;
   nombre: string;
   apellido: string;
   telefono: string;
+  email: string;
 }
 
 const ShowBarbers = () => {
-  const { cuil } = useParams();
+  const { codUsuario } = useParams();
   const [barbero, setBarbero] = useState<Barbero | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/barberos/${cuil}`)
+    fetch(`/barberos/${codUsuario}`)
       .then((res) => res.json())
       .then((data) => setBarbero(data))
       .catch((err) => {
@@ -26,7 +28,7 @@ const ShowBarbers = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [cuil]);
+  }, [codUsuario]);
 
   if (loading) {
     return <div className={styles.loadingState}>Cargando barbero...</div>;
@@ -51,6 +53,7 @@ const ShowBarbers = () => {
         <div className={styles.barberoDisponibilidad}>
           Teléfono: {barbero.telefono}
         </div>
+        <div className={styles.barberoEmail}>Email: {barbero.email}</div>
       </div>
     </div>
   );

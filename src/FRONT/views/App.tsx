@@ -60,9 +60,9 @@ function App() {
             />
             <Route path="/barbers/createBarbers" element={<CreateBarbers />} />
             <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
-            <Route path="/barbers/:cuil" element={<ShowBarbers />} />
+            <Route path="/barbers/:codUsuario" element={<ShowBarbers />} />
             <Route
-              path="/barbers/updateBarber/:cuil"
+              path="/barbers/updateBarber/:codUsuario"
               element={<UpdateBarbers />}
             />
             <Route
@@ -102,13 +102,13 @@ function App() {
               textAlign: "center",
             },
             success: {
-              duration: 3000,
+              duration: 2000,
               style: {
                 background: "#38a169",
               },
             },
             error: {
-              duration: 5000,
+              duration: 1500,
               style: {
                 background: "#e53e3e",
               },

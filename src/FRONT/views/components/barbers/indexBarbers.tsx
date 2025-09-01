@@ -4,9 +4,12 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 
 interface Barbero {
+  codUsuario: string;
   cuil: string;
   nombre: string;
   apellido: string;
+  telefono: string;
+  email: string;
 }
 
 const IndexBarbers = () => {
@@ -37,7 +40,7 @@ const IndexBarbers = () => {
     return <div className={styles.loadingState}>Cargando barberos...</div>;
   }
 
-  const handleDelete = async (cuil: string) => {
+  const handleDelete = async (codUsuario: string) => {
     //alert personalizado para confirmacion:
     toast(
       (t) => (
@@ -62,7 +65,7 @@ const IndexBarbers = () => {
             <button
               onClick={() => {
                 toast.dismiss(t.id);
-                confirmedDelete(cuil);
+                confirmedDelete(codUsuario);
               }}
               style={{
                 background: "#e53e3e",
@@ -121,17 +124,17 @@ const IndexBarbers = () => {
     );
   };
 
-  const confirmedDelete = async (cuil: string) => {
+  const confirmedDelete = async (codUsuario: string) => {
     const toastId = toast.loading("Eliminando barbero...");
 
     try {
-      const response = await fetch(`/barberos/${cuil}`, {
+      const response = await fetch(`/barberos/${codUsuario}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
         toast.success("Barbero eliminado correctamente", { id: toastId });
-        setBarberos(barberos.filter((barbero) => barbero.cuil !== cuil));
+        setBarberos(barberos.filter((barbero) => barbero.codUsuario !== codUsuario));
       } else if (response.status === 404) {
         toast.error("Barbero no encontrado", { id: toastId });
       } else {
@@ -162,20 +165,20 @@ const IndexBarbers = () => {
               </div>
               <div className={styles.actionButtons}>
                 <Link
-                  to={`/barbers/${barbero.cuil}`}
+                  to={`/barbers/${barbero.codUsuario}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Ver Detalles
                 </Link>
                 <Link
-                  to={`/barbers/updateBarber/${barbero.cuil}`}
+                  to={`/barbers/updateBarber/${barbero.codUsuario}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Modificar
                 </Link>
                 <button
                   className={`${styles.button} ${styles.buttonDanger}`}
-                  onClick={() => handleDelete(barbero.cuil)}
+                  onClick={() => handleDelete(barbero.codUsuario)}
                 >
                   Eliminar
                 </button>
