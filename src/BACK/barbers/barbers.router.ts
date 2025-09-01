@@ -7,11 +7,11 @@ router.get("/createBarbers", controller.create);
 router.post("/", controller.store);
 
 router.get("/", controller.index);
-router.get("/:cuil", controller.show);
+router.get("/:codUsuario", controller.show);
 
-router.get("/:cuil/updateBarber", controller.edit);
-router.put("/:cuil", controller.update);
+router.get("/:codUsuario/updateBarber", controller.edit);
+router.put("/:codUsuario", controller.update);
 
-router.delete("/:cuil", controller.destroy);
+router.delete("/:codUsuario", controller.destroy);
 
 export default router;

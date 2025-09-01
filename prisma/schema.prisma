@@ -7,35 +7,81 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Barbero {
-  cuil     String @id @db.VarChar(13)
-  nombre   String @db.VarChar(50)
-  apellido String @db.VarChar(50)
-  telefono String @db.VarChar(20)
-
-  @@map("barberos")
-}
-
 model Categoria {
-  codCategoria  Int    @id @default(autoincrement())
-  nomCategoria  String @unique(map: "Nombre") @db.VarChar(15)
-  descCategoria String @db.VarChar(100)
+  codCategoria      String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  nombreCategoria   String @db.VarChar(50)
+  descCategoria     String @db.VarChar(250)
+  descuentoCorte    Float  @db.Float
+  descuentoProducto Float  @db.Float
 
   @@map("categorias")
 }
 
-model TipoCorte {
-  codCorte    Int    @id @default(autoincrement())
-  nombreCorte String @db.VarChar(255)
-  valorBase   Float
+model Turno {
+  codTurno         String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codCorte         String?   @db.VarChar(36)
+  codBarbero       String    @db.VarChar(36)
+  codCliente       String    @db.VarChar(36)
+  horaDesdeTurno   DateTime  @db.Time(0)
+  horaHastaTurno   DateTime  @db.Time(0)
+  fechaTurno       DateTime  @db.Date
+  precioTurno      Float?    @db.Float
+  metodoPago       String?   @db.VarChar(20)
+  fechaCancelacion DateTime? @db.Date
 
-  @@map("tipoCorte")
+  @@index([codBarbero], map: "codBarbero")
+  @@index([codCliente], map: "codCliente")
+  @@index([codCorte], map: "codCorte")
+  @@map("turnos")
 }
 
-model Turno {
-  codTurno    Int      @id @default(autoincrement())
-  fechaTurno  DateTime @db.Date
-  precioTurno Float    @db.Float
+model categoria_vigente {
+  codCategoriaVigente String   @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codCategoria        String   @db.VarChar(36)
+  codCliente          String   @db.VarChar(36)
+  ultimaFechaInicio   DateTime @db.Date
 
-  @@map("turnos")
+  @@index([codCategoria], map: "codCategoria")
+  @@index([codCliente], map: "codCliente")
+}
+
+model estado_del_turno {
+  codEstadoDelTurno String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codEstado         String @db.VarChar(36)
+  codTurno          String @db.VarChar(36)
+
+  @@index([codEstado], map: "codEstado")
+  @@index([codTurno], map: "codTurno")
+}
+
+model estado_turno {
+  codEstado    String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  nombreEstado String @db.VarChar(50)
+  descEstado   String @db.VarChar(250)
+}
+
+model sucursales {
+  codSucursal String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  calle       String @db.VarChar(50)
+  altura      Int
+}
+
+model tipos_corte {
+  codCorte    String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  nombreCorte String @db.VarChar(50)
+  valorBase   Float  @db.Float
+}
+
+model usuarios {
+  codUsuario  String  @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  dni         String  @db.VarChar(8)
+  cuil        String? @db.VarChar(13)
+  codSucursal String? @db.VarChar(36)
+  nombre      String  @db.VarChar(50)
+  apellido    String  @db.VarChar(50)
+  telefono    String  @db.VarChar(20)
+  email       String  @db.VarChar(50)
+  contrase_a  String  @map("contraseña") @db.VarChar(50)
+
+  @@index([codSucursal], map: "codSucursal")
 }
