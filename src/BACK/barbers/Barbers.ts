@@ -6,6 +6,12 @@ const prisma = new PrismaClient();
 
 // schema de validación con Zod (más robusto que las funciones manuales)
 const BarberoSchema = z.object({
+  // codUsuario: z
+  //   .string().uuid("ID de barbero inválido"),
+  dni: z
+    .string()
+    .min(1, "DNI es requerido")
+    .regex(/^\d{8}$/, "DNI inválido. Debe tener 8 dígitos"),
   cuil: z
     .string()
     .min(1, "CUIL es requerido")
@@ -29,14 +35,20 @@ const BarberoSchema = z.object({
       /^(\+?54\s?)?(\(?\d{2,4}\)?\s?)?\d{4}-?\d{4}$/,
       "Teléfono inválido. Formato esperado: +54 11 1234-5678"
     ),
+  email: z
+    .string()
+    .email("Email inválido"),
+  contraseña: z
+    .string()
+    .min(6, "Contraseña debe tener al menos 6 caracteres"),
 });
 
-const BarberoUpdateSchema = BarberoSchema.extend({
-  cuilViejo: z
-    .string()
-    .min(1, "CUIL anterior es requerido")
-    .regex(/^\d{2}-?\d{8}-?\d{1}$/, "CUIL anterior inválido"),
-});
+// const BarberoUpdateSchema = BarberoSchema.extend({
+//   cuilViejo: z
+//     .string()
+//     .min(1, "CUIL anterior es requerido")
+//     .regex(/^\d{2}-?\d{8}-?\d{1}$/, "CUIL anterior inválido"),
+// });
 
 //  manejo de errores personalizados
 export class DatabaseError extends Error {
@@ -53,18 +65,24 @@ const sanitizeInput = (input: string): string => {
 
 // funciones backend
 export const store = async (
+  dni: string,
   cuil: string,
   nombre: string,
   apellido: string,
-  telefono: string
+  telefono: string,
+  email: string,
+  contraseña: string
 ) => {
   try {
     // Sanitizar datos
     const sanitizedData = {
+      dni: sanitizeInput(dni),
       cuil: sanitizeInput(cuil),
       nombre: sanitizeInput(nombre),
       apellido: sanitizeInput(apellido),
       telefono: sanitizeInput(telefono),
+      email: sanitizeInput(email),
+      contraseña: sanitizeInput(contraseña),
     };
 
     // Validación con Zod
@@ -72,13 +90,21 @@ export const store = async (
 
     console.log("Creating barbero");
 
-    // Crear barbero
-    const barbero = await prisma.barbero.create({
-      data: validatedData,
+    // Crear usuario (mapeando contraseña -> contrase_a)
+    const usuario = await prisma.usuarios.create({
+      data: {
+        dni: validatedData.dni,
+        cuil: validatedData.cuil,
+        nombre: validatedData.nombre,
+        apellido: validatedData.apellido,
+        telefono: validatedData.telefono,
+        email: sanitizedData.email,
+        contrase_a: sanitizedData.contraseña,
+      },
     });
 
-    console.log("Barbero created successfully");
-    return barbero;
+    console.log("Usuario created successfully");
+    return usuario;
   } catch (error) {
     console.error(
       "Error creating barbero:",
@@ -106,39 +132,40 @@ export const findAll = async () => {
   try {
     console.log("Fetching all barberos with Prisma");
 
-    const barberos = await prisma.barbero.findMany({
+    const usuarios = await prisma.usuarios.findMany({
       orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
     });
 
-    console.log(`Retrieved ${barberos.length} barberos`);
-    return barberos;
+    console.log(`Retrieved ${usuarios.length} usuarios`);
+    console.log(usuarios);
+    return usuarios;
   } catch (error) {
     console.error(
-      "Error fetching barberos:",
+      "Error fetching usuarios:",
       error instanceof Error ? error.message : "Unknown error"
     );
-    throw new DatabaseError("Error al obtener lista de barberos");
+    throw new DatabaseError("Error al obtener lista de usuarios");
   }
 };
 
-export const findById = async (cuil: string) => {
+export const findById = async (codUsuario: string) => {
   try {
     // sanitizar y validar
-    const sanitizedCuil = sanitizeInput(cuil);
+    const sanitizedCodUsuario = sanitizeInput(codUsuario);
 
-    if (!sanitizedCuil) {
-      throw new DatabaseError("CUIL es requerido");
-    }
+    // if (!sanitizedCuil) {
+    //   throw new DatabaseError("CUIL es requerido");
+    // }
 
-    if (!/^\d{2}-?\d{8}-?\d{1}$/.test(sanitizedCuil.replace(/-/g, ""))) {
-      throw new DatabaseError("Formato de CUIL inválido");
-    }
+    // if (!/^\d{2}-?\d{8}-?\d{1}$/.test(sanitizedCuil.replace(/-/g, ""))) {
+    //   throw new DatabaseError("Formato de CUIL inválido");
+    // }
 
-    const barbero = await prisma.barbero.findUnique({
-      where: { cuil: sanitizedCuil },
+    const usuario = await prisma.usuarios.findUnique({
+      where: { codUsuario: sanitizedCodUsuario },
     });
 
-    return barbero;
+    return usuario;
   } catch (error) {
     if (error instanceof DatabaseError) {
       throw error;
@@ -153,47 +180,56 @@ export const findById = async (cuil: string) => {
 };
 
 export const update = async (
-  cuilViejo: string,
-  nuevoCuil: string,
+  codUsuario: string,
+  dni: string,
+  cuil: string,
   nombre: string,
   apellido: string,
-  telefono: string
+  telefono: string,
+  email: string,
+  contraseña: string
 ) => {
   try {
     // sanitizar datos
     const sanitizedData = {
-      cuilViejo: sanitizeInput(cuilViejo),
-      cuil: sanitizeInput(nuevoCuil),
+      codUsuario: sanitizeInput(codUsuario),
+      dni: sanitizeInput(dni),
+      cuil: sanitizeInput(cuil),
       nombre: sanitizeInput(nombre),
       apellido: sanitizeInput(apellido),
       telefono: sanitizeInput(telefono),
+      email: sanitizeInput(email),
+      contraseña: sanitizeInput(contraseña),
     };
 
     // validaciones
     //zod
-    const validatedData = BarberoUpdateSchema.parse(sanitizedData);
-    //existe barbero
-    const existingBarbero = await prisma.barbero.findUnique({
-      where: { cuil: validatedData.cuilViejo },
+    const validatedData = BarberoSchema.parse(sanitizedData);
+    //existe usuario
+    const existingUsuario = await prisma.usuarios.findUnique({
+      where: { codUsuario: codUsuario },
     });
 
-    if (!existingBarbero) {
-      throw new DatabaseError("Barbero no encontrado");
+    if (!existingUsuario) {
+      throw new DatabaseError("Usuario no encontrado");
     }
 
-    // update barbero
-    const updatedBarbero = await prisma.barbero.update({
-      where: { cuil: validatedData.cuilViejo },
+    // update usuario
+    const updatedUsuario = await prisma.usuarios.update({
+      where: { codUsuario: codUsuario },
       data: {
+        dni: validatedData.dni,
         cuil: validatedData.cuil,
         nombre: validatedData.nombre,
         apellido: validatedData.apellido,
         telefono: validatedData.telefono,
+        email: validatedData.email,
+        contrase_a: validatedData.contraseña,
       },
     });
 
-    console.log("Barbero updated successfully");
-    return updatedBarbero;
+    console.log("Usuario updated successfully");
+    return updatedUsuario;
   } catch (error) {
     console.error(
       "Error updating barbero:",
@@ -227,35 +263,35 @@ export const update = async (
   }
 };
 
-export const destroy = async (cuil: string) => {
+export const destroy = async (codUsuario: string) => {
   try {
     // sanitizar y validar
-    const sanitizedCuil = sanitizeInput(cuil);
+    const sanitizedCodUsuario = sanitizeInput(codUsuario);
 
-    if (!sanitizedCuil) {
-      throw new DatabaseError("CUIL es requerido");
-    }
+  //  // if (!sanitizedCuil) {
+  //  //   throw new DatabaseError("CUIL es requerido");
+  // // }
 
-    if (!/^\d{2}-?\d{8}-?\d{1}$/.test(sanitizedCuil.replace(/-/g, ""))) {
-      throw new DatabaseError("CUIL inválido");
-    }
+  //  // if (!/^\d{2}-?\d{8}-?\d{1}$/.test(sanitizedCuil.replace(/-/g, ""))) {
+  //  //   throw new DatabaseError("CUIL inválido");
+  //  // }
 
-    // verificar que el barbero existe
-    const existingBarbero = await prisma.barbero.findUnique({
-      where: { cuil: sanitizedCuil },
+    // verificar que el usuario existe
+    const existingUsuario = await prisma.usuarios.findUnique({
+      where: { codUsuario: sanitizedCodUsuario },
     });
 
-    if (!existingBarbero) {
-      throw new DatabaseError("Barbero no encontrado");
+    if (!existingUsuario) {
+      throw new DatabaseError("Usuario no encontrado");
     }
 
-    // delete barbero
-    const deletedBarbero = await prisma.barbero.delete({
-      where: { cuil: sanitizedCuil },
+    // delete usuario
+    const deletedUsuario = await prisma.usuarios.delete({
+      where: { codUsuario: sanitizedCodUsuario },
     });
 
-    console.log("Barbero deleted successfully");
-    return deletedBarbero;
+    console.log("Usuario deleted successfully");
+    return deletedUsuario;
   } catch (error) {
     console.error(
       "Error deleting barbero:",
