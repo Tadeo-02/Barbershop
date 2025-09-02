@@ -1,36 +1,43 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
+import toast from "react-hot-toast"; // ✅ Importar librería de alertas
 
-const createCategorias: React.FC = () => {
+const CreateCategorias: React.FC = () => {
   const navigate = useNavigate();
-  const [nomCategoria, setNomCategoria] = useState("");
+  // ✅ Estados actualizados según el schema
+  const [nombreCategoria, setNombreCategoria] = useState("");
   const [descCategoria, setDescCategoria] = useState("");
+  const [descuentoCorte, setDescuentoCorte] = useState("");
+  const [descuentoProducto, setDescuentoProducto] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validación básica
-    if (!nomCategoria.trim() || !descCategoria.trim()) {
-      alert("Por favor, completa todos los campos");
-      return;
-    }
+    const toastId = toast.loading("Creando Categoría..."); // ✅ Alert de loading
 
     try {
-      console.log("Enviando POST a /categorias con:", {
-        nomCategoria,
+      console.log(
+        "Enviando POST a /categorias con datos categoría:",
+        nombreCategoria,
         descCategoria,
-      });
+        descuentoCorte,
+        descuentoProducto
+      );
+
       const response = await fetch("/categorias", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ nomCategoria, descCategoria }),
+        body: JSON.stringify({
+          nombreCategoria,
+          descCategoria,
+          descuentoCorte: Number(descuentoCorte), // ✅ Convertir a número
+          descuentoProducto: Number(descuentoProducto), // ✅ Convertir a número
+        }),
       });
 
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
+      console.log("Después de fetch, status:", response.status);
 
       const text = await response.text();
       console.log("Respuesta cruda del backend:", text);
@@ -39,54 +46,57 @@ const createCategorias: React.FC = () => {
       if (text) {
         try {
           data = JSON.parse(text);
-          console.log("Datos parseados:", data);
+          console.log("Después de JSON.parse, data:", data);
         } catch (parseError) {
-          console.error("Error al parsear JSON:", parseError);
-          console.error("Texto recibido:", text);
-          alert(`Error del servidor: ${text}`);
-          return;
+          toast.error("Error al parsear JSON", { id: toastId }); // ✅ Toast en lugar de alert
+          throw parseError;
         }
       } else {
-        console.error("Respuesta vacía del backend");
-        alert("El servidor no devolvió respuesta.");
+        toast.error("Respuesta vacía del backend", { id: toastId }); // ✅ Toast consistente
         return;
       }
 
       if (response.ok) {
-        alert(data.message);
-        setNomCategoria("");
+        toast.success(data.message || "Categoría creada exitosamente", {
+          id: toastId,
+        });
+        setNombreCategoria("");
         setDescCategoria("");
-        navigate("/categorias/indexCategorias");
+        setDescuentoCorte("");
+        setDescuentoProducto("");
+        // ✅ CORREGIR: Usar la ruta correcta de App.tsx
+        navigate("/categories/indexCategories");
       } else {
-        alert(data.message || `Error ${response.status}`);
+        toast.error(data.message || "Error al crear categoría", {
+          id: toastId,
+        });
       }
     } catch (error) {
       console.error("Error en handleSubmit:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Error desconocido";
-      alert("Error de conexión: " + errorMessage);
+      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 
   return (
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Crear Nueva Categoría</h1>
-      <form className="form" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="nomCategoria">
+          <label className={styles.formLabel} htmlFor="nombreCategoria">
             Nombre de la Categoría:
           </label>
           <input
             className={styles.formInput}
             type="text"
-            name="nomCategoria"
-            id="nomCategoria"
-            value={nomCategoria}
-            onChange={(e) => setNomCategoria(e.target.value)}
+            name="nombreCategoria"
+            id="nombreCategoria"
+            value={nombreCategoria}
+            onChange={(e) => setNombreCategoria(e.target.value)}
             placeholder="Ej: Premium"
             required
           />
         </div>
+
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="descCategoria">
             Descripción:
@@ -102,6 +112,46 @@ const createCategorias: React.FC = () => {
             required
           />
         </div>
+
+        {/* ✅ Nuevos campos según el schema */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel} htmlFor="descuentoCorte">
+            Descuento en Cortes (%):
+          </label>
+          <input
+            className={styles.formInput}
+            type="number"
+            name="descuentoCorte"
+            id="descuentoCorte"
+            value={descuentoCorte}
+            onChange={(e) => setDescuentoCorte(e.target.value)}
+            placeholder="Ej: 15"
+            min="0"
+            max="100"
+            step="0.01"
+            required
+          />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel} htmlFor="descuentoProducto">
+            Descuento en Productos (%):
+          </label>
+          <input
+            className={styles.formInput}
+            type="number"
+            name="descuentoProducto"
+            id="descuentoProducto"
+            value={descuentoProducto}
+            onChange={(e) => setDescuentoProducto(e.target.value)}
+            placeholder="Ej: 10"
+            min="0"
+            max="100"
+            step="0.01"
+            required
+          />
+        </div>
+
         <button
           className={`${styles.button} ${styles.buttonSuccess}`}
           type="submit"
@@ -112,4 +162,5 @@ const createCategorias: React.FC = () => {
     </div>
   );
 };
-export default createCategorias;
+
+export default CreateCategorias;

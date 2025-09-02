@@ -1,17 +1,8 @@
-import express from "express";
-const router = express.Router();
-
 import * as controller from "./barbers.controller";
+import { createRouter } from "../base/base.router";
 
-router.get("/createBarbers", controller.create);
-router.post("/", controller.store);
-
-router.get("/", controller.index);
-router.get("/:codUsuario", controller.show);
-
-router.get("/:codUsuario/updateBarber", controller.edit);
-router.put("/:codUsuario", controller.update);
-
-router.delete("/:codUsuario", controller.destroy);
-
-export default router;
+export default createRouter(controller, {
+  create: "/create",
+  idParam: "codUsuario",
+  updatePath: "/update",
+});
