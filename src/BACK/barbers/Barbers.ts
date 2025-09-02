@@ -1,8 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importamos todo desde Base
 import { z } from "zod";
-
-// inicializar Prisma Client
-const prisma = new PrismaClient();
 
 // schema de validación con Zod (más robusto que las funciones manuales)
 const BarberoSchema = z.object({
@@ -35,33 +32,9 @@ const BarberoSchema = z.object({
       /^(\+?54\s?)?(\(?\d{2,4}\)?\s?)?\d{4}-?\d{4}$/,
       "Teléfono inválido. Formato esperado: +54 11 1234-5678"
     ),
-  email: z
-    .string()
-    .email("Email inválido"),
-  contraseña: z
-    .string()
-    .min(6, "Contraseña debe tener al menos 6 caracteres"),
+  email: z.string().email("Email inválido"),
+  contraseña: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
 });
-
-// const BarberoUpdateSchema = BarberoSchema.extend({
-//   cuilViejo: z
-//     .string()
-//     .min(1, "CUIL anterior es requerido")
-//     .regex(/^\d{2}-?\d{8}-?\d{1}$/, "CUIL anterior inválido"),
-// });
-
-//  manejo de errores personalizados
-export class DatabaseError extends Error {
-  constructor(message: string, public code?: string) {
-    super(message);
-    this.name = "DatabaseError";
-  }
-}
-
-// función para sanitizar datos
-const sanitizeInput = (input: string): string => {
-  return input.trim().replace(/[<>'";&]/g, "");
-};
 
 // funciones backend
 export const store = async (
@@ -150,16 +123,8 @@ export const findAll = async () => {
 
 export const findById = async (codUsuario: string) => {
   try {
-    // sanitizar y validar
+    //sanitizar y validar
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
-
-    // if (!sanitizedCuil) {
-    //   throw new DatabaseError("CUIL es requerido");
-    // }
-
-    // if (!/^\d{2}-?\d{8}-?\d{1}$/.test(sanitizedCuil.replace(/-/g, ""))) {
-    //   throw new DatabaseError("Formato de CUIL inválido");
-    // }
 
     const usuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedCodUsuario },
@@ -192,7 +157,7 @@ export const update = async (
   try {
     // sanitizar datos
     const sanitizedData = {
-      codUsuario: sanitizeInput(codUsuario),
+      codUsuario: sanitizeInput(codUsuario), // ✅ Esto está bien para sanitizar
       dni: sanitizeInput(dni),
       cuil: sanitizeInput(cuil),
       nombre: sanitizeInput(nombre),
@@ -202,21 +167,29 @@ export const update = async (
       contraseña: sanitizeInput(contraseña),
     };
 
-    // validaciones
-    //zod
-    const validatedData = BarberoSchema.parse(sanitizedData);
-    //existe usuario
+    // ❌ PROBLEMA: No incluir codUsuario en la validación de Zod
+    const validatedData = BarberoSchema.parse({
+      dni: sanitizedData.dni,
+      cuil: sanitizedData.cuil,
+      nombre: sanitizedData.nombre,
+      apellido: sanitizedData.apellido,
+      telefono: sanitizedData.telefono,
+      email: sanitizedData.email,
+      contraseña: sanitizedData.contraseña,
+    });
+
+    // Usar el codUsuario sanitizado (no validado por Zod)
     const existingUsuario = await prisma.usuarios.findUnique({
-      where: { codUsuario: codUsuario },
+      where: { codUsuario: sanitizedData.codUsuario },
     });
 
     if (!existingUsuario) {
       throw new DatabaseError("Usuario no encontrado");
     }
 
-    // update usuario
+    // update usuario usando codUsuario sanitizado
     const updatedUsuario = await prisma.usuarios.update({
-      where: { codUsuario: codUsuario },
+      where: { codUsuario: sanitizedData.codUsuario },
       data: {
         dni: validatedData.dni,
         cuil: validatedData.cuil,
@@ -268,13 +241,13 @@ export const destroy = async (codUsuario: string) => {
     // sanitizar y validar
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
 
-  //  // if (!sanitizedCuil) {
-  //  //   throw new DatabaseError("CUIL es requerido");
-  // // }
+    //  // if (!sanitizedCuil) {
+    //  //   throw new DatabaseError("CUIL es requerido");
+    // // }
 
-  //  // if (!/^\d{2}-?\d{8}-?\d{1}$/.test(sanitizedCuil.replace(/-/g, ""))) {
-  //  //   throw new DatabaseError("CUIL inválido");
-  //  // }
+    //  // if (!/^\d{2}-?\d{8}-?\d{1}$/.test(sanitizedCuil.replace(/-/g, ""))) {
+    //  //   throw new DatabaseError("CUIL inválido");
+    //  // }
 
     // verificar que el usuario existe
     const existingUsuario = await prisma.usuarios.findUnique({
@@ -319,9 +292,4 @@ export const destroy = async (codUsuario: string) => {
 
     throw new DatabaseError("Error al eliminar barbero");
   }
-};
-
-// función para cerrar la conexión de Prisma
-export const disconnect = async () => {
-  await prisma.$disconnect();
 };

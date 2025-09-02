@@ -45,7 +45,7 @@ const CreateBarbers: React.FC = () => {
           data = JSON.parse(text);
           console.log("Después de JSON.parse, data:", data);
         } catch (parseError) {
-          toast.error("Error al parsear JSON:", parseError);
+          toast.error("Error al parsear JSON:");
           throw parseError;
         }
       } else {
