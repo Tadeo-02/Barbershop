@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PrismaClient } from "@prisma/client";
 
-// Instancia única de Prisma para toda la aplicación
+// instancia de prima universal
 export const prisma = new PrismaClient();
 
-// Error personalizado para toda la aplicación
+// error universal
 export class DatabaseError extends Error {
   constructor(message: string, public code?: string) {
     super(message);
@@ -12,17 +12,17 @@ export class DatabaseError extends Error {
   }
 }
 
-// Función utilitaria para sanitizar datos
+// sanitización declarada universal
 export const sanitizeInput = (input: string): string => {
   return input.trim().replace(/[<>'";&]/g, "");
 };
 
-// Función para cerrar la conexión de Prisma
+// cierre de conexion universal
 export const disconnect = async () => {
   await prisma.$disconnect();
 };
 
-// Tipos comunes
+// funciones universales
 export interface BaseModel {
   store: (...args: any[]) => Promise<any>;
   findAll: () => Promise<any[]>;

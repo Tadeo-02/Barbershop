@@ -6,7 +6,7 @@ export interface RouterConfig {
   idParam: string;
   updatePath: string;
 }
-
+// creacion de router general
 export const createRouter = (
   controller: any,
   config: RouterConfig = {

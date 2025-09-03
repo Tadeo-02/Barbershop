@@ -47,7 +47,7 @@ export const store = async (
   contraseña: string
 ) => {
   try {
-    // Sanitizar datos
+    // sanitizar inputs
     const sanitizedData = {
       dni: sanitizeInput(dni),
       cuil: sanitizeInput(cuil),
@@ -58,12 +58,12 @@ export const store = async (
       contraseña: sanitizeInput(contraseña),
     };
 
-    // Validación con Zod
+    // validación con zod
     const validatedData = BarberoSchema.parse(sanitizedData);
 
     console.log("Creating barbero");
 
-    // Crear usuario (mapeando contraseña -> contrase_a)
+    // crear usuario (mapeando contraseña -> contrase_a)
     const usuario = await prisma.usuarios.create({
       data: {
         dni: validatedData.dni,
@@ -157,7 +157,7 @@ export const update = async (
   try {
     // sanitizar datos
     const sanitizedData = {
-      codUsuario: sanitizeInput(codUsuario), // ✅ Esto está bien para sanitizar
+      codUsuario: sanitizeInput(codUsuario),
       dni: sanitizeInput(dni),
       cuil: sanitizeInput(cuil),
       nombre: sanitizeInput(nombre),
@@ -167,7 +167,6 @@ export const update = async (
       contraseña: sanitizeInput(contraseña),
     };
 
-    // ❌ PROBLEMA: No incluir codUsuario en la validación de Zod
     const validatedData = BarberoSchema.parse({
       dni: sanitizedData.dni,
       cuil: sanitizedData.cuil,
@@ -209,13 +208,13 @@ export const update = async (
       error instanceof Error ? error.message : "Unknown error"
     );
 
-    // Manejo de errores de validacion
+    // manejo de errores de validacion
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
 
-    // Manejar errores de DB
+    // manejar errores de DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -241,14 +240,6 @@ export const destroy = async (codUsuario: string) => {
     // sanitizar y validar
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
 
-    //  // if (!sanitizedCuil) {
-    //  //   throw new DatabaseError("CUIL es requerido");
-    // // }
-
-    //  // if (!/^\d{2}-?\d{8}-?\d{1}$/.test(sanitizedCuil.replace(/-/g, ""))) {
-    //  //   throw new DatabaseError("CUIL inválido");
-    //  // }
-
     // verificar que el usuario existe
     const existingUsuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedCodUsuario },
@@ -271,7 +262,7 @@ export const destroy = async (codUsuario: string) => {
       error instanceof Error ? error.message : "Unknown error"
     );
 
-    // Manejo de errores de DB
+    // manejo de errores de DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 

@@ -1,7 +1,6 @@
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
 
-// Schema de validación para Categorías
 const CategoriaSchema = z.object({
   nombreCategoria: z
     .string()
@@ -22,7 +21,7 @@ const CategoriaSchema = z.object({
     .max(100, "Descuento de producto no puede ser mayor a 100%"),
 });
 
-// Funciones backend para Categorías
+// funciones backend para Categorías
 export const store = async (
   nombreCategoria: string,
   descCategoria: string,
@@ -30,7 +29,7 @@ export const store = async (
   descuentoProducto: number
 ) => {
   try {
-    // Sanitizar datos de texto
+    // sanitizar de inputs
     const sanitizedData = {
       nombreCategoria: sanitizeInput(nombreCategoria),
       descCategoria: sanitizeInput(descCategoria),
@@ -38,12 +37,12 @@ export const store = async (
       descuentoProducto: Number(descuentoProducto),
     };
 
-    // Validación con Zod
+    // validacion con zod
     const validatedData = CategoriaSchema.parse(sanitizedData);
 
     console.log("Creating categoria");
 
-    // Crear categoría usando el modelo correcto de Prisma
+    // crear categoría usando el modelo correcto de Prisma
     const categoria = await prisma.categoria.create({
       data: {
         nombreCategoria: validatedData.nombreCategoria,
@@ -61,17 +60,17 @@ export const store = async (
       error instanceof Error ? error.message : "Unknown error"
     );
 
-    // Manejo de errores de validación
+    //  de errores de validación
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
 
-    // Manejo de errores de DB
+    //  errores de DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; message: string };
 
-      if (prismaError.code === "P2002") {
+      if (prismaError.code === "P2002") { //? a lo mejor se pueden generalizar este error pero es innecesario y complicado
         throw new DatabaseError("Ya existe una categoría con ese nombre");
       }
     }
@@ -101,7 +100,7 @@ export const findAll = async () => {
 
 export const findById = async (codCategoria: string) => {
   try {
-    // Sanitizar y validar ID
+    // sanitizar y validar ID
     const sanitizedCodCategoria = sanitizeInput(codCategoria);
 
     const categoria = await prisma.categoria.findUnique({
@@ -130,7 +129,7 @@ export const update = async (
   descuentoProducto: number
 ) => {
   try {
-    // Sanitizar datos
+    // sanitizar datos
     const sanitizedData = {
       codCategoria: sanitizeInput(codCategoria),
       nombreCategoria: sanitizeInput(nombreCategoria),
@@ -139,7 +138,7 @@ export const update = async (
       descuentoProducto: Number(descuentoProducto),
     };
 
-    // Validar solo los campos del schema (sin codCategoria)
+    // validar (menos codCategoria)
     const validatedData = CategoriaSchema.parse({
       nombreCategoria: sanitizedData.nombreCategoria,
       descCategoria: sanitizedData.descCategoria,
@@ -147,8 +146,8 @@ export const update = async (
       descuentoProducto: sanitizedData.descuentoProducto,
     });
 
-    // Verificar que la categoría existe
-    const existingCategoria = await prisma.categoria.findUnique({
+    // verificar que la categoría existe
+    const existingCategoria = await prisma.categoria.findUnique({ //? se podría reutilizar
       where: { codCategoria: sanitizedData.codCategoria },
     });
 
@@ -156,8 +155,8 @@ export const update = async (
       throw new DatabaseError("Categoría no encontrada");
     }
 
-    // Actualizar categoría
-    const updatedCategoria = await prisma.categoria.update({
+    // actualizar categoría
+    const updatedCategoria = await prisma.categoria.update({ //? verificar si es seguro
       where: { codCategoria: sanitizedData.codCategoria },
       data: {
         nombreCategoria: validatedData.nombreCategoria,
@@ -180,7 +179,6 @@ export const update = async (
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
-
     // Manejo de errores de DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
@@ -204,10 +202,10 @@ export const update = async (
 
 export const destroy = async (codCategoria: string) => {
   try {
-    // Sanitizar y validar
+    // sanitizar y validar
     const sanitizedCodCategoria = sanitizeInput(codCategoria);
 
-    // Verificar que la categoría existe
+    // verificar que la categoría existe
     const existingCategoria = await prisma.categoria.findUnique({
       where: { codCategoria: sanitizedCodCategoria },
     });
@@ -216,7 +214,7 @@ export const destroy = async (codCategoria: string) => {
       throw new DatabaseError("Categoría no encontrada");
     }
 
-    // Eliminar categoría
+    // eliminar categoría
     const deletedCategoria = await prisma.categoria.delete({
       where: { codCategoria: sanitizedCodCategoria },
     });
@@ -229,7 +227,7 @@ export const destroy = async (codCategoria: string) => {
       error instanceof Error ? error.message : "Unknown error"
     );
 
-    // Manejo de errores de DB
+    // manejo de errores de DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 

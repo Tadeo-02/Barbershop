@@ -4,19 +4,19 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 
 interface Categoria {
-  codCategoria: string; // ✅ String según schema
-  nombreCategoria: string; // ✅ Nombre correcto del campo
+  codCategoria: string; 
+  nombreCategoria: string;  
   descCategoria: string;
-  descuentoCorte: number; // ✅ Añadir campos faltantes
-  descuentoProducto: number; // ✅ Añadir campos faltantes
+  descuentoCorte: number; 
+  descuentoProducto: number; 
 }
 
 const IndexCategorias = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [loading, setLoading] = useState(true); // ✅ loading inicial
+  const [loading, setLoading] = useState(true); // loading
 
   useEffect(() => {
-    // Llama al backend para obtener las categorias
+    // llama al backend para obtener las categorias
     fetch("/categorias")
       .then((res) => res.json())
       .then((data) => {
@@ -25,21 +25,19 @@ const IndexCategorias = () => {
       })
       .catch((error) => {
         console.error("Error al obtener categorias:", error);
-        toast.error("Error al cargar las categorías"); // ✅ Toast en lugar de console
+        toast.error("Error al cargar las categorías"); 
       })
       .finally(() => {
-        setLoading(false); // ✅ Termina el loading
+        setLoading(false); // cortar loading
       });
   }, []);
 
-  // ✅ loading state
+  // loading state
   if (loading) {
     return <div className={styles.loadingState}>Cargando categorías...</div>;
   }
 
   const handleDelete = async (codCategoria: string) => {
-    // ✅ String en lugar de number
-    // ✅ Toast personalizado para confirmación (igual que barbers)
     toast(
       (t) => (
         <div style={{ textAlign: "center" }}>
@@ -113,7 +111,7 @@ const IndexCategorias = () => {
         </div>
       ),
       {
-        duration: Infinity,
+        duration: Infinity, //dura hasta que se cierre
         style: {
           minWidth: "350px", // botones mas anchos
           padding: "24px",
@@ -161,12 +159,13 @@ const IndexCategorias = () => {
           {categorias.map(
             (
               categoria,
-              idx // ✅ Usar idx como key backup
+              idx // idx como key backup
             ) => (
               <li key={categoria.codCategoria || idx}>
+                {/* MOSTRAR DATOS CATEGORIA */}
                 <div className={styles.categoryInfo}>
                   <div className={styles.categoryTitle}>
-                    {categoria.nombreCategoria} {/* ✅ Campo correcto */}
+                    {categoria.nombreCategoria}
                   </div>
                   <div className={styles.categoryCode}>
                     Código: {categoria.codCategoria}
@@ -174,7 +173,6 @@ const IndexCategorias = () => {
                   <div className={styles.categoryDescription}>
                     {categoria.descCategoria}
                   </div>
-                  {/* ✅ Mostrar descuentos */}
                   <div className={styles.categoryDiscounts}>
                     <span>Descuento Corte: {categoria.descuentoCorte}%</span>
                     <span>
@@ -184,7 +182,7 @@ const IndexCategorias = () => {
                 </div>
                 <div className={styles.actionButtons}>
                   <Link
-                    to={`/categorias/${categoria.codCategoria}`} // ✅ Ruta para ver detalles
+                    to={`/categorias/${categoria.codCategoria}`}
                     className={`${styles.button} ${styles.buttonPrimary}`}
                   >
                     Ver Detalles
