@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request, Response } from "express";
 import { DatabaseError } from "./Base";
-
+// manejo universal de los distintos datos que llegan del front
 export abstract class BaseController<T> {
   protected abstract model: {
     store: (...args: any[]) => Promise<T>;
@@ -10,15 +10,16 @@ export abstract class BaseController<T> {
     update: (id: string, ...args: any[]) => Promise<T>;
     destroy: (id: string) => Promise<T>;
   };
-
+// nombre del componente y el id que se utilizan para navegar
   protected abstract entityName: string;
   protected abstract idFieldName: string;
-
+// los path son generados de acuerdo a los parametros que llegan (nombre del componente e id)
   create = (_req: Request, res: Response) => {
     res.render(`/src/FRONT/views/components/${this.entityName}/create${this.entityName}`);
   };
 
   store = async (req: Request, res: Response) => {
+    // manejo de errores generales en estructura generica
     try {
       const result = await this.model.store(...Object.values(req.body));
       res.status(201).json({

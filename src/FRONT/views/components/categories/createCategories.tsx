@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
-import toast from "react-hot-toast"; // ✅ Importar librería de alertas
+import toast from "react-hot-toast"; // importar librería de alerts
 
 const CreateCategorias: React.FC = () => {
   const navigate = useNavigate();
-  // ✅ Estados actualizados según el schema
+// ESTADOS
   const [nombreCategoria, setNombreCategoria] = useState("");
   const [descCategoria, setDescCategoria] = useState("");
   const [descuentoCorte, setDescuentoCorte] = useState("");
@@ -13,7 +13,7 @@ const CreateCategorias: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const toastId = toast.loading("Creando Categoría..."); // ✅ Alert de loading
+    const toastId = toast.loading("Creando Categoría..."); // loading
 
     try {
       console.log(
@@ -32,8 +32,8 @@ const CreateCategorias: React.FC = () => {
         body: JSON.stringify({
           nombreCategoria,
           descCategoria,
-          descuentoCorte: Number(descuentoCorte), // ✅ Convertir a número
-          descuentoProducto: Number(descuentoProducto), // ✅ Convertir a número
+          descuentoCorte: Number(descuentoCorte),
+          descuentoProducto: Number(descuentoProducto),
         }),
       });
 
@@ -48,11 +48,11 @@ const CreateCategorias: React.FC = () => {
           data = JSON.parse(text);
           console.log("Después de JSON.parse, data:", data);
         } catch (parseError) {
-          toast.error("Error al parsear JSON", { id: toastId }); // ✅ Toast en lugar de alert
+          toast.error("Error al parsear JSON", { id: toastId });
           throw parseError;
         }
       } else {
-        toast.error("Respuesta vacía del backend", { id: toastId }); // ✅ Toast consistente
+        toast.error("Respuesta vacía del backend", { id: toastId });
         return;
       }
 
@@ -64,7 +64,6 @@ const CreateCategorias: React.FC = () => {
         setDescCategoria("");
         setDescuentoCorte("");
         setDescuentoProducto("");
-        // ✅ CORREGIR: Usar la ruta correcta de App.tsx
         navigate("/categories/indexCategories");
       } else {
         toast.error(data.message || "Error al crear categoría", {
@@ -81,6 +80,7 @@ const CreateCategorias: React.FC = () => {
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Crear Nueva Categoría</h1>
       <form onSubmit={handleSubmit}>
+        {/* NOMBRE CATEGORIA */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="nombreCategoria">
             Nombre de la Categoría:
@@ -96,7 +96,7 @@ const CreateCategorias: React.FC = () => {
             required
           />
         </div>
-
+        {/* DESCRIPCIÓN */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="descCategoria">
             Descripción:
@@ -113,7 +113,7 @@ const CreateCategorias: React.FC = () => {
           />
         </div>
 
-        {/* ✅ Nuevos campos según el schema */}
+        {/* DESCUENTO EN CORTES*/}
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="descuentoCorte">
             Descuento en Cortes (%):
@@ -132,7 +132,7 @@ const CreateCategorias: React.FC = () => {
             required
           />
         </div>
-
+        {/* DESCUENTO EN PRODUCTOS */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="descuentoProducto">
             Descuento en Productos (%):

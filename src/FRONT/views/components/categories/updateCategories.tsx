@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
-import toast from "react-hot-toast"; // ✅ Importar toast
+import toast from "react-hot-toast";
 
 interface Categoria {
-  codCategoria: string; // ✅ String según schema
-  nombreCategoria: string; // ✅ Campo correcto
+  codCategoria: string;
+  nombreCategoria: string;
   descCategoria: string;
-  descuentoCorte: number; // ✅ Campos nuevos
+  descuentoCorte: number;
   descuentoProducto: number;
 }
 
@@ -15,14 +15,15 @@ const ModificarCategoria: React.FC = () => {
   const { codCategoria } = useParams<{ codCategoria: string }>();
   const navigate = useNavigate();
   const [categoria, setCategoria] = useState<Categoria | null>(null);
-  // ✅ Estados actualizados según schema
   const [nombreCategoria, setNombreCategoria] = useState("");
   const [descCategoria, setDescCategoria] = useState("");
   const [descuentoCorte, setDescuentoCorte] = useState("");
   const [descuentoProducto, setDescuentoProducto] = useState("");
 
   useEffect(() => {
-    let isMounted = true; // ✅ Flag para controlar si el componente está montado
+    // Esta flag se usa para que no se vean 2 toast mientras cargan los datos
+    //todo Solucion parcial
+    let isMounted = true; // Flag para controlar si el componente está montado
 
     const fetchCategoria = async () => {
       const toastId = toast.loading("Cargando datos de la categoría...");
@@ -30,16 +31,16 @@ const ModificarCategoria: React.FC = () => {
       try {
         const response = await fetch(`/categorias/${codCategoria}`);
 
-        if (!isMounted) return; // ✅ Si el componente se desmontó, no continuar
+        if (!isMounted) return; // Si el componente se desmontó, no continuar
 
         if (response.ok) {
           const data = await response.json();
           setCategoria(data);
-          setNombreCategoria(data.nombreCategoria); // ✅ Campo correcto
+          setNombreCategoria(data.nombreCategoria);
           setDescCategoria(data.descCategoria);
-          setDescuentoCorte(data.descuentoCorte.toString()); // ✅ Convertir a string para input
+          setDescuentoCorte(data.descuentoCorte.toString());
           setDescuentoProducto(data.descuentoProducto.toString());
-          toast.dismiss(toastId); // ✅ Solo dismiss
+          toast.dismiss(toastId);
         } else if (response.status === 404) {
           toast.error("Categoría no encontrada", { id: toastId });
           navigate("/categorias/indexCategorias");
@@ -57,7 +58,7 @@ const ModificarCategoria: React.FC = () => {
 
     fetchCategoria();
 
-    // ✅ Cleanup function para evitar duplicación
+    // Cleanup function para evitar duplicación
     return () => {
       isMounted = false;
     };
@@ -69,14 +70,14 @@ const ModificarCategoria: React.FC = () => {
 
     try {
       const response = await fetch(`/categorias/${categoria?.codCategoria}`, {
-        method: "PUT", // ✅ PUT directo
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          nombreCategoria, // ✅ Campo correcto
+          nombreCategoria,
           descCategoria,
-          descuentoCorte: Number(descuentoCorte), // ✅ Convertir a número
+          descuentoCorte: Number(descuentoCorte),
           descuentoProducto: Number(descuentoProducto),
         }),
       });
@@ -107,6 +108,7 @@ const ModificarCategoria: React.FC = () => {
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Editar Categoría</h1>
       <form onSubmit={handleSubmit}>
+        {/* NOMBRE CATEGORIA */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="nombreCategoria">
             Nombre de la Categoría:
@@ -121,7 +123,7 @@ const ModificarCategoria: React.FC = () => {
             required
           />
         </div>
-
+        {/* DESCRIPCION CATEGORIA */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="descCategoria">
             Descripción:
@@ -137,7 +139,7 @@ const ModificarCategoria: React.FC = () => {
           />
         </div>
 
-        {/* ✅ Nuevos campos de descuentos */}
+        {/* DESCUENTO CORTES */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="descuentoCorte">
             Descuento en Cortes (%):
@@ -155,7 +157,7 @@ const ModificarCategoria: React.FC = () => {
             required
           />
         </div>
-
+        {/* DESCUENTO PRODUCTO */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="descuentoProducto">
             Descuento en Productos (%):
