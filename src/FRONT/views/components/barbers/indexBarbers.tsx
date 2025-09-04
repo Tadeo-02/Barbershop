@@ -29,7 +29,7 @@ const IndexBarbers = () => {
       })
       .catch((error) => {
         console.error("Error al obtener barberos:", error);
-        toast.error("Error al cargar los barberos", { id: toastId });
+        // toast.error("Error al cargar los barberos", { id: toastId });
       })
       .finally(() => {
         setLoading(false); // Termina el loading
