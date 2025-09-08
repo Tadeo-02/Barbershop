@@ -24,57 +24,83 @@ const UpdateBarber: React.FC = () => {
   const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
-  const [contrase_a, setContrase_a] = useState("");
+  const [contraseña, setContraseña] = useState(""); // Cambiar de contrase_a a contraseña
 
   useEffect(() => {
-    const fetchBarbero = async () => {
-      // const toastId = toast.loading("Cargando datos del barbero...");
+  let isMounted = true; // Flag para controlar si el componente está montado
 
-      try {
-        const response = await fetch(`/barberos/${codUsuario}`);
-        if (response.ok) {
-          const data = await response.json();
-          setBarbero(data);
-          setDni(data.dni);
-          setCuil(data.cuil);
-          setNombre(data.nombre);
-          setApellido(data.apellido);
-          setTelefono(data.telefono);
-          setEmail(data.email);
-          setContrase_a(data.contrase_a);
-          toast.success("Datos cargados correctamente", { id: toastId });
-        } else {
-          toast.error("Error al cargar los datos del barbero", { id: toastId });
-        }
-      } catch (error) {
-        console.error("Error fetching barbero:", error);
-        toast.error("Error de conexión", { id: toastId });
+  const fetchBarbero = async () => {
+    const toastId = toast.loading("Cargando datos del barbero...");
+
+    try {
+      const response = await fetch(`/barberos/${codUsuario}`);
+
+      if (!isMounted) return; // Si el componente se desmontó, no continuar
+
+      if (response.ok) {
+        const data = await response.json();
+        setBarbero(data);
+        setDni(data.dni);
+        setCuil(data.cuil);
+        setNombre(data.nombre);
+        setApellido(data.apellido);
+        setTelefono(data.telefono);
+        setEmail(data.email);
+        setContraseña(data.contrase_a);
+        toast.dismiss(toastId); // Solo dismiss
+      } else if (response.status === 404) {
+        toast.error("Barbero no encontrado", { id: toastId });
+        navigate("/barbers/indexBarbers");
+      } else {
+        toast.error("Error al cargar los datos del barbero", { id: toastId });
       }
-    };
+    } catch (error) {
+      if (!isMounted) return;
+      console.error("Error fetching barbero:", error);
+      toast.error("Error de conexión", { id: toastId });
+    }
+  };
 
-    fetchBarbero();
-  }, [codUsuario]);
+  fetchBarbero();
+
+  // ✅ Cleanup function para evitar duplicación
+  return () => {
+    isMounted = false;
+  };
+}, [codUsuario, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const toastId = toast.loading("Actualizando barbero...");
 
     try {
-      const response = await fetch(`/barberos/${barbero?.codUsuario}?_method=PUT`, {
-        method: "POST",
+      const response = await fetch(`/barberos/${barbero?.codUsuario}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ dni, cuil, nombre, apellido, telefono, email, contraseña: contrase_a }),
+        body: JSON.stringify({
+          dni,
+          cuil,
+          nombre,
+          apellido,
+          telefono,
+          email,
+          contraseña, // Usar la variable renombrada
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(data.message || "Barbero actualizado exitosamente", { id: toastId });
-        navigate("/barbers/indexBarbers"); // Redirigir a la lista de barberos
+        toast.success(data.message || "Barbero actualizado exitosamente", {
+          id: toastId,
+        });
+        navigate("/barbers/indexBarbers");
       } else {
-        toast.error(data.message || "Error al actualizar barbero", { id: toastId });
+        toast.error(data.message || "Error al actualizar barbero", {
+          id: toastId,
+        });
       }
     } catch (error) {
       console.error("Error updating barbero:", error);
@@ -175,25 +201,27 @@ const UpdateBarber: React.FC = () => {
           />
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="contrase_a">
+          <label className={styles.formLabel} htmlFor="contraseña">
             Contraseña:
           </label>
           <input
             className={styles.formInput}
             type="password"
-            name="contrase_a"
-            id="contrase_a"
-            value={contrase_a}
-            onChange={(e) => setContrase_a(e.target.value)}
+            name="contraseña"
+            id="contraseña"
+            value={contraseña}
+            onChange={(e) => setContraseña(e.target.value)}
             required
           />
         </div>
-        <button
-          className={`${styles.button} ${styles.buttonSuccess}`}
-          type="submit"
-        >
-          Guardar Cambios
-        </button>
+        <div className={styles.buttonGroup}>
+          <button
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            type="submit"
+          >
+            Guardar Cambios
+          </button>
+        </div>
       </form>
     </div>
   );

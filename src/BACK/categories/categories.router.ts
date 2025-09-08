@@ -1,17 +1,8 @@
-const express = require("express");
-const router = express.Router();
+import * as controller from "./categories.controller";
+import { createRouter } from "../base/base.router";
 
-const controller = require("../controllers/categories.controller");
-
-router.get("/createCategories", controller.create);
-router.post("/", controller.store);
-
-router.get("/", controller.index);
-router.get("/:codCategoria", controller.show);
-
-router.get("/:codCategoria/updateCategories", controller.edit);
-router.put("/:codCategoria", controller.update);
-
-router.delete("/:codCategoria", controller.destroy);
-
-module.exports = router;
+export default createRouter(controller, {
+  create: "/create", //? estas rutas se pueden generalizar, salvo el ID
+  idParam: "codCategoria",
+  updatePath: "/update",
+});
