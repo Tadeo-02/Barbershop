@@ -18,7 +18,8 @@
   font-weight: 500;
 }
 .form input[type="email"],
-.form input[type="password"] {
+.form input[type="password"],
+.form input[type="text"]{
   border: 0;
   background: none;
   display: block;

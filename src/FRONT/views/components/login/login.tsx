@@ -58,7 +58,7 @@ function Login() {
               <input
                 className="form-control"
                 type="email"
-                name="nombreUsuario"
+                name="email"
                 placeholder="hola@ejemplo.com"
                 maxLength={70}
                 required
