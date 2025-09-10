@@ -6,10 +6,18 @@ import path from "path";
 // Import CommonJS routers
 import barbersRouter from "./src/BACK/barbers/barbers.router";
 import categoriesRouter from "./src/BACK/categories/categories.router";
+
+import usersRouter from "./src/BACK/users/users.router";
+//import typeOfCutRouter from "./src/BACK/typeOfCut/typeOfCut.router";
+console.log("🔍 Categories router:", categoriesRouter);
+console.log("🔍 Barbers router:", barbersRouter);
+console.log("🔍 Users router:", usersRouter);
+
 import typeOfHaircutRouter from "./src/BACK/typeOfHaircut/typeOfHaircut.router";
 console.log("🔍 Categories router:", categoriesRouter);
 console.log("🔍 Barbers router:", barbersRouter);
 console.log("🔍 TypeOfHaircut router:", typeOfHaircutRouter);
+
 const app = express();
 
 // Middleware
@@ -25,7 +33,11 @@ app.set("views", path.join(__dirname, "src/views"));
 //! Routers
 app.use("/barberos", barbersRouter);
 app.use("/categorias", categoriesRouter);
+
+app.use("/usuarios", usersRouter);
+
 app.use("/tipoCortes", typeOfHaircutRouter);
+
 
 // Load CommonJS routers (commented out until converted to ES modules)
 // TODO: Convert these routers to ES modules for consistency
