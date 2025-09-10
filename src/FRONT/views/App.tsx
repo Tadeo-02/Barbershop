@@ -53,22 +53,11 @@ function App() {
             <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
             <Route path="/barbers/:codUsuario" element={<ShowBarbers />} />
             <Route path="/barbers/updateBarber/:codUsuario" element={<UpdateBarbers />}/>
-            <Route
-              path="/tipoCortes/createTipoCortes"
-              element={<CreateTypeOfHaircut />}
-            />
-            <Route
-              path="/tipoCortes/createTipoCortes"
-              element={<CreateTypeOfHaircut />}
-            />
-            <Route
-              path="/tipoCortes/indexTipoCortes"
-              element={<IndexTypeOfHaircut />}
-            />
-            <Route
-              path="/tipoCortes/modificarTipoCorte/:codCorte"
-              element={<UpdateTypeOfHaircut />}
-            />
+
+            <Route path="/typeOfHaircut/createTypeOfHaircut" element={<CreateTypeOfHaircut />} />
+            <Route path="/typeOfHaircut/createTypeOfHaircut" element={<CreateTypeOfHaircut />} />
+            <Route path="/typeOfHaircut/indexTypeOfHaircut" element={<IndexTypeOfHaircut />} />
+            <Route path="/typeOfHaircut/updateTypeOfHaircut/:codCorte" element={<UpdateTypeOfHaircut />} />
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>

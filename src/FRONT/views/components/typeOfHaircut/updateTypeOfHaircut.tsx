@@ -1,42 +1,67 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./typeOfHaircut.module.css";
+import toast from "react-hot-toast";
 
+interface TipoCorte {
+  codCorte: string;
+  nombreCorte: string;
+  valorBase: number;
+}
 
-const ModificarTipoCorte: React.FC = () => {
+const UpdateTypeOfHaircut: React.FC = () => {
   const { codCorte } = useParams<{ codCorte: string }>();
   const navigate = useNavigate();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [corte, setCorte] = useState<any | null>(null); 
+  const [corte, setCorte] = useState<TipoCorte | null>(null);
   const [nombreCorte, setNombreCorte] = useState("");
   const [valorBase, setValorBase] = useState<number | "">("");
 
   useEffect(() => {
+    let isMounted = true; // Flag para controlar si el componente está montado
+
     const fetchCorte = async () => {
+      const toastId = toast.loading("Cargando datos del barbero...");
+
       try {
         const response = await fetch(`/tipoCortes/${codCorte}`);
+
+        if (!isMounted) return; // Si el componente se desmontó, no continuar
+
         if (response.ok) {
           const data = await response.json();
           setCorte(data);
           setNombreCorte(data.nombreCorte);
           setValorBase(data.valorBase);
+        } else if (response.status === 404) {
+          toast.error("Tipo de corte no encontrado", { id: toastId });
+          navigate("/tipoCortes/indexTypeOfHaircut");
         } else {
-          console.error("Failed to fetch turno");
+          toast.error("Error al cargar los datos del tipo de corte", {
+            id: toastId,
+          });
         }
       } catch (error) {
-        console.error("Error fetching turno:", error);
+        if (!isMounted) return;
+        console.error("Error fetching tipo de corte:", error);
+        toast.error("Error de conexión", { id: toastId });
       }
     };
 
     fetchCorte();
-  }, [codCorte]);
+
+    // Cleanup function para evitar duplicación
+    return () => {
+      isMounted = false;
+    };
+  }, [codCorte, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const toastId = toast.loading("Actualizando tipo de corte...");
 
     try {
-      const response = await fetch(`/turnos/${corte?.codCorte}?_method=PUT`, {
-        method: "POST",
+      const response = await fetch(`/tipoCortes/${corte?.codCorte}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -46,35 +71,35 @@ const ModificarTipoCorte: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message);
-        navigate("/indexTipoCortes"); // redirigir a la lista de tipo de cortes
+        toast.success(data.message || "Barbero actualizado exitosamente", {
+          id: toastId,
+        });
+        navigate("/indexTypeOfHaircut"); // redirigir a la lista de tipo de cortes
       } else {
-        alert(data.message);
+        toast.error(data.message || "Error al actualizar barbero", {
+          id: toastId,
+        });
       }
     } catch (error) {
       console.error("Error modificando Tipo de Corte:", error);
-      alert("Error de conexión");
+      toast.error("Error de conexión", { id: toastId });
     }
   };
 
   if (!corte) {
-    return <div>Loading...</div>;
+    return <div className={styles.loadingState}>Cargando tipo de corte...</div>;
   }
 
   return (
     <div className={styles.formContainer}>
-      {" "}
-      <h1>Editar Tipo de Corte</h1>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        {" "}
+      <h1 className={styles.pageTitle}>Editar Tipo de Corte</h1>
+      <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          {" "}
           <label className={styles.formLabel} htmlFor="nombreCorte">
-            {" "}
             Nombre del corte:
           </label>
           <input
-            className={styles.formInput} 
+            className={styles.formInput}
             type="text"
             name="nombreCorte"
             id="nombreCorte"
@@ -85,13 +110,11 @@ const ModificarTipoCorte: React.FC = () => {
           />
         </div>
         <div className={styles.formGroup}>
-          {" "}
           <label className={styles.formLabel} htmlFor="valorBase">
-            {" "}
             Valor base:
           </label>
           <input
-            className={styles.formInput} 
+            className={styles.formInput}
             type="number"
             name="valorBase"
             id="valorBase"
@@ -103,16 +126,17 @@ const ModificarTipoCorte: React.FC = () => {
             }
           />
         </div>
-        <button
-          className={`${styles.button} ${styles.buttonPrimary}`}
-          type="submit"
-        >
-          {" "}
-          Guardar
-        </button>
+        <div className={styles.buttonGroup}>
+          <button
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            type="submit"
+          >
+            Guardar Cambios
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
-export default ModificarTipoCorte;
+export default UpdateTypeOfHaircut;
