@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import styles from "./turns.module.css";
+import styles from "./HomePageAdmin.module.css";
 import React, { useState, useEffect } from "react";
 
 // function TurnoNuevo() {
@@ -9,7 +9,7 @@ import React, { useState, useEffect } from "react";
 //   return <div>Historial de turnos</div>;
 // }
 
-function MainTurnos() {
+function HomePageAdmin() {
   const [turnos, setTurnos] = useState([]); // Initialize as an empty array
 
   useEffect(() => {
@@ -49,82 +49,54 @@ function MainTurnos() {
       </div>
       */
     /*MUESTRA DE SUCURSALES */
-    <div className={styles.mainTurnos}>
+    <div className={styles.HomePageAdmin}>
       <h2>Sistema de Gestión de Barbería</h2>
 
       {/* Primera fila: Turnos y Barberos */}
-      <div className={styles.mainTurnosGrid}>
-        <div className={styles.mainTurnosCard}>
-          <h3>Turnos</h3>
+      <div className={styles.HomePageAdminGrid}>
+        <div className={styles.HomePageAdminCard}>
           <Link
-            to="/createTurns"
+            to="/Admin/TurnsPage"
             className={`${styles.button} ${styles.buttonPrimary}`}
           >
-            CREAR TURNOS
-          </Link>
-          <Link
-            to="/indexTurns"
-            className={`${styles.button} ${styles.buttonPrimary}`}
-          >
-            VER TURNOS
+            TURNOS
           </Link>
         </div>
 
-        <div className={styles.mainTurnosCard}>
-          <h3>Barberos</h3>
+        <div className={styles.HomePageAdminCard}>
           <Link
-            to="/barbers/createBarbers"
+            to="/Admin/BarbersPage"
             className={`${styles.button} ${styles.buttonPrimary}`}
           >
-            CREAR BARBEROS
-          </Link>
-          <Link
-            to="/barbers/indexBarbers"
-            className={`${styles.button} ${styles.buttonPrimary}`}
-          >
-            VER BARBEROS
+            BARBEROS
           </Link>
         </div>
       </div>
 
       {/* Segunda fila: Categorías y Tipos de Corte */}
-      <div className={styles.mainTurnosGrid}>
-        <div className={styles.mainTurnosCard}>
-          <h3>Categorías</h3>
+      <div className={styles.HomePageAdminGrid}>
+        <div className={styles.HomePageAdminCard}>
           <Link
-            to="/categories/createCategories"
+            to="/Admin/CategoriesPage"
             className={`${styles.button} ${styles.buttonPrimary}`}
           >
-            CREAR CATEGORIAS
-          </Link>
-          <Link
-            to="/categories/indexCategories"
-            className={`${styles.button} ${styles.buttonPrimary}`}
-          >
-            VER CATEGORIAS
+            CATEGORÍAS
           </Link>
         </div>
 
-        <div className={styles.mainTurnosCard}>
-          <h3>Tipo de Cortes</h3>
+        <div className={styles.HomePageAdminCard}>
           <Link
-            to="/typeOfHaircut/createTypeOfHaircut"
+            to="/Admin/HaircutTypesPage"
             className={`${styles.button} ${styles.buttonPrimary}`}
           >
-            CREAR TIPO CORTES
-          </Link>
-          <Link
-            to="/typeOfHaircut/indexTypeOfHaircut"
-            className={`${styles.button} ${styles.buttonPrimary}`}
-          >
-            VER TIPO CORTES
+            TIPOS DE CORTES
           </Link>
         </div>
       </div>
 
       {/* Tercera fila: Sucursales */}
-      <div className={styles.mainTurnosGrid}>
-        <div className={styles.mainTurnosCard}>
+      <div className={styles.HomePageAdminGrid}>
+        <div className={styles.HomePageAdminCard}>
           <h3>Sucursal Centro</h3>
           <img
             src="/images/sucursal1.jpeg"
@@ -141,7 +113,7 @@ function MainTurnos() {
           </a>
         </div>
 
-        <div className={styles.mainTurnosCard}>
+        <div className={styles.HomePageAdminCard}>
           <h3>Sucursal Norte</h3>
           <img
             src="/images/sucursal2.jpg"
@@ -161,4 +133,4 @@ function MainTurnos() {
     </div>
   );
 }
-export default MainTurnos;
+export default HomePageAdmin;

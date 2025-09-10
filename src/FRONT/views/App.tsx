@@ -3,7 +3,7 @@ import "./App.css";
 import Login from "./components/login/login.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
-import MainTurns from "./components/turns/mainTurns.tsx";
+
 import CreateTurns from "./components/turns/createTurns.tsx";
 import IndexTurns from "./components/turns/indexTurns.tsx";
 import ShowTurn from "./components/turns/showTurns.tsx";
@@ -25,6 +25,11 @@ import UpdateTypeOfHaircut from "./components/typeOfHaircut/updateTypeOfHaircut.
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
+import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
+import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
+import BarbersPage from "./pages/Admin/BarbersPage.tsx";
+import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
+import TurnsPage from "./pages/Admin/TurnsPage.tsx";
 
 function App() {
   return (
@@ -33,7 +38,7 @@ function App() {
         <Header />
         <main className="mainContent">
           <Routes>
-           <Route path="/" element={<MainTurns />} />
+            <Route path="/" element={<HomePageAdmin />} />
             {/* <Route path="/turnos/mainTurnos" element={<MainTurns />} />{" "}
             <Route path="/createTurnos" element={<CreateTurns />} />
             <Route path="/login" element={<Login />} />
@@ -43,6 +48,12 @@ function App() {
               path="/turnos/modificarTurno/:codTurno"
               element={<UpdateTurn />}
             /> */}
+
+            <Route path="/Admin/CategoriesPage" element={<CategoriesPage />}/>
+            <Route path="/Admin/BarbersPage" element={<BarbersPage />}/>
+            <Route path="/Admin/HaircutTypesPage" element={<HairCutTypesPage />}/>
+            <Route path="/Admin/TurnsPage" element={<TurnsPage />} />
+
             <Route path="/categories/createCategories" element={<CreateCategories />}/>
             <Route path="/categories/indexCategories" element={<IndexCategories />}/>
             <Route path="/categories/:codCategoria" element={<ShowCategories />}/>
