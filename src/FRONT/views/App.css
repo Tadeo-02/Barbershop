@@ -26,7 +26,7 @@ body {
 
 .mainContent {
   flex: 1;
-  display: flex;
+  display: block;
   align-items: center;
   justify-content: center;
   padding-top: 4rem; /* Height of header */
