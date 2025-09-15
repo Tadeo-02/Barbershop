@@ -27,8 +27,8 @@
     * CRUD Sucursal
 ##  General:
     * Revisar validaciones zod en general
+    * Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
     * Sección Productos
-
 
 
 
