@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import styles from "./turnsByBarber.module.css";
+import styles from "./appointmentsByBarber.module.css";
 import { useParams } from "react-router-dom";
 
 interface Turno {
@@ -47,18 +47,30 @@ const turnosPorBarbero: Record<string, Turno[]> = {
     ],
 };
 
-const TurnsByBarber = () => {
+const AppointmentsByBarber = () => {
     const { barberId } = useParams();
-    const [turnos, setTurnos] = useState<Turno[]>([]);
+    const [appointments, setAppointments] = useState<Turno[]>([]);
     const [barbero, setBarbero] = useState<Barbero | null>(null);
 
     useEffect(() => {
-        setTurnos(turnosPorBarbero[barberId || ""] || []);
+        setAppointments(turnosPorBarbero[barberId || ""] || []);
         setBarbero(barberos[barberId || ""] || null);
     }, [barberId]);
 
+    const [reserved, setReserved] = useState<Turno | null>(null);
+
+    const handleReserveAppointment = (appointmentId: number) => {
+        setAppointments((prevAppointments) =>
+            prevAppointments.map((t) =>
+                t.id === appointmentId ? { ...t, disponible: false } : t
+            )
+        );
+        const appointmentReserved = appointments.find((t) => t.id === appointmentId) || null;
+        setReserved(appointmentReserved);
+    };
+
     return (
-        <div className={styles.turnsContainer}>
+        <div className={styles.appointmentsContainer}>
             {barbero && (
                 <div className={styles.barberInfo}>
                     <h3>Datos del barbero</h3>
@@ -68,15 +80,25 @@ const TurnsByBarber = () => {
                 </div>
             )}
             <h2>Turnos disponibles</h2>
-            <ul className={styles.turnList}>
-                {turnos.length === 0 ? (
+            {reserved && (
+                <div className={styles.successMessage}>
+                    ¡Turno reservado para el {reserved.fecha} a las {reserved.hora}!
+                </div>
+            )}
+            <ul className={styles.appointmentList}>
+                {appointments.length === 0 ? (
                     <li className={styles.emptyState}>No hay turnos disponibles para este barbero.</li>
                 ) : (
-                    turnos.map((turno) => (
-                        <li key={turno.id} className={styles.turnItem + (!turno.disponible ? ' ' + styles.turnUnavailable : '')}>
-                            <div className={styles.turnDate}>{turno.fecha}</div>
-                            <div className={styles.turnHour}>{turno.hora}</div>
-                            <div className={styles.turnStatus}>{turno.disponible ? "Disponible" : "No disponible"}</div>
+                    appointments.map((appointment) => (
+                        <li key={appointment.id} className={styles.appointmentItem + (!appointment.disponible ? ' ' + styles.appointmentUnavailable : '')}>
+                            <div className={styles.appointmentDate}>{appointment.fecha}</div>
+                            <div className={styles.appointmentHour}>{appointment.hora}</div>
+                            <div className={styles.appointmentStatus}>{appointment.disponible ? "Disponible" : "No disponible"}</div>
+                            {appointment.disponible && (
+                                <button className={styles.reserveButton} onClick={() => handleReserveAppointment(appointment.id)}>
+                                    Reservar appointment
+                                </button>
+                            )}
                         </li>
                     ))
                 )}
@@ -85,4 +107,4 @@ const TurnsByBarber = () => {
     );
 };
 
-export default TurnsByBarber;
+export default AppointmentsByBarber;

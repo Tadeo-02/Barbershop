@@ -1,3 +1,30 @@
+.successMessage {
+    background-color: #c6f6d5;
+    color: #22543d;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #38a169;
+    font-size: 1.05rem;
+    text-align: center;
+}
+.reserveButton {
+    margin-top: 10px;
+    padding: 10px 22px;
+    background-color: #2b6cb0;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(43, 108, 176, 0.15);
+    transition: background 0.2s, transform 0.2s;
+}
+.reserveButton:hover {
+    background-color: #2c5282;
+    transform: translateY(-2px);
+}
 .barberInfo {
     width: 100%;
     background: #f0f4f8;
@@ -18,7 +45,7 @@
     color: #4a5568;
     margin-bottom: 6px;
 }
-.turnsContainer {
+.appointmentsContainer {
     max-width: 800px;
     margin: 40px auto;
     padding: 30px;
@@ -31,13 +58,13 @@
     align-items: center;
 }
 
-.turnList {
+.appointmentList {
     list-style: none;
     padding: 0;
     width: 100%;
 }
 
-.turnItem {
+.appointmentItem {
     background-color: #f0f4f8;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
@@ -49,35 +76,35 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.turnItem:hover {
+.appointmentItem:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
 }
 
-.turnUnavailable {
+.appointmentUnavailable {
     background-color: #fed7d7;
     border-color: #e53e3e;
 }
 
-.turnDate {
+.appointmentDate {
     font-size: 1.1rem;
     font-weight: 600;
     color: #2d3748;
 }
 
-.turnHour {
+.appointmentHour {
     font-size: 1rem;
     color: #718096;
     font-weight: 500;
 }
 
-.turnStatus {
+.appointmentStatus {
     font-size: 1rem;
     font-weight: 600;
     color: #38a169;
 }
 
-.turnUnavailable .turnStatus {
+.appointmentUnavailable .appointmentStatus {
     color: #e53e3e;
 }
 
@@ -89,16 +116,16 @@
 }
 
 @media (max-width: 768px) {
-    .turnsContainer {
+    .appointmentsContainer {
         margin: 20px;
         padding: 20px;
     }
 
-    .turnItem {
+    .appointmentItem {
         padding: 15px;
     }
 
-    .turnDate {
+    .appointmentDate {
         font-size: 1rem;
     }
 }

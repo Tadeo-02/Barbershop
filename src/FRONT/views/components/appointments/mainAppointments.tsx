@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import styles from "./turns.module.css";
+import styles from "./appointments.module.css";
 import React, { useState, useEffect } from "react";
 
 // function TurnoNuevo() {
@@ -9,7 +9,7 @@ import React, { useState, useEffect } from "react";
 //   return <div>Historial de turnos</div>;
 // }
 
-function MainTurnos() {
+function MainAppointments() {
   const [turnos, setTurnos] = useState([]); // Initialize as an empty array
 
   useEffect(() => {
@@ -49,12 +49,12 @@ function MainTurnos() {
       </div>
       */
     /*MUESTRA DE SUCURSALES */
-    <div className={styles.mainTurnos}>
+  <div className={styles.mainAppointments}>
       <h2>Sistema de Gestión de Barbería</h2>
 
       {/* Primera fila: Turnos y Barberos */}
-      <div className={styles.mainTurnosGrid}>
-        <div className={styles.mainTurnosCard}>
+  <div className={styles.mainAppointmentsGrid}>
+  <div className={styles.mainAppointmentsCard}>
           <h3>Turnos</h3>
           <Link
             to="/createTurns"
@@ -161,4 +161,4 @@ function MainTurnos() {
     </div>
   );
 }
-export default MainTurnos;
+export default MainAppointments;

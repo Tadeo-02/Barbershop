@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import styles from "./turns.module.css";
+import styles from "./appointments.module.css";
 
 interface Turno {
   codTurno: number;
   fechaTurno: string;
 }
 
-const IndexTurnos = () => {
+const IndexAppointments = () => {
   const [turnos, setTurnos] = useState<Turno[]>([]);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const IndexTurnos = () => {
   };
 
   return (
-    <div className={styles.indexTurnos}>
+  <div className={styles.indexAppointments}>
       <h2>Gestión de Turnos</h2>
       {turnos.length === 0 ? (
         <div className={styles.emptyState}>
@@ -60,11 +60,11 @@ const IndexTurnos = () => {
         <ul>
           {turnos.map((turno, idx) => (
             <li key={idx}>
-              <div className={styles.turnoInfo}>
-                <div className={styles.turnoTitle}>Turno #{turno.codTurno}</div>
-                <div className={styles.turnoCode}>Código: {turno.codTurno}</div>
-                <div className={styles.turnoDetails}>
-                  <span className={styles.turnoFecha}>
+              <div className={styles.appointmentInfo}>
+                <div className={styles.appointmentTitle}>Turno #{turno.codTurno}</div>
+                <div className={styles.appointmentCode}>Código: {turno.codTurno}</div>
+                <div className={styles.appointmentDetails}>
+                  <span className={styles.appointmentDate}>
                     Fecha: {new Date(turno.fechaTurno).toLocaleDateString()}
                   </span>
                 </div>
@@ -97,4 +97,4 @@ const IndexTurnos = () => {
   );
 };
 
-export default IndexTurnos;
+export default IndexAppointments;
