@@ -26,7 +26,7 @@ import UpdateTypeOfHaircut from "./components/typeOfHaircut/updateTypeOfHaircut.
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Branches from "./components/clients/branches.tsx";
 import BarbersByBranch from "./components/clients/barbersByBranch.tsx";
-import TurnsByBarber from "./components/clients/turnsByBarber.tsx";
+import AppointmentsByBarber from "./components/clients/appointmentsByBarber.tsx";
 
 import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
 
@@ -38,10 +38,10 @@ function App() {
         <main className="mainContent">
           <Routes>
             <Route path="/" element={<MainTurns />} />
-            {/* <Route path="/" element={<Home />} /> esto lo agregué para poder ver la home del cliente directamente*/}
+            {/*<Route path="/" element={<Home />} /> esto lo agregué para poder ver la home del cliente directamente*/}
             <Route path="/branches" element={<Branches />} />
             <Route path="/branches/:branchId" element={<BarbersByBranch />} />
-            <Route path="/barbers/:barberId/turns" element={<TurnsByBarber />} />
+            <Route path="/barbers/:barberId/appointments" element={<AppointmentsByBarber />} />
             {/* <Route path="/turnos/mainTurnos" element={<MainTurns />} />{" "}
             <Route path="/createTurnos" element={<CreateTurns />} />
             <Route path="/login" element={<Login />} />

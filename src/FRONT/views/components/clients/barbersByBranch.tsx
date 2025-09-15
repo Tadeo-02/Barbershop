@@ -8,32 +8,29 @@ interface Barbero {
     apellido: string;
 }
 
-// Simulación de barberos por sucursal
-const barberosPorSucursal: Record<string, Barbero[]> = {
-    "1": [
-        { id: 1, nombre: "Juan", apellido: "Pérez" },
-        { id: 2, nombre: "Carlos", apellido: "Gómez" },
-    ],
-    "2": [
-        { id: 3, nombre: "Luis", apellido: "Martínez" },
-    ],
-    "3": [
-        { id: 4, nombre: "Pedro", apellido: "López" },
-        { id: 5, nombre: "Jorge", apellido: "Ramírez" },
-    ],
-};
+// Los barberos se obtendrán del backend
 
 const BarbersByBranch = () => {
     const { branchId } = useParams();
     const [barberos, setBarberos] = useState<Barbero[]>([]);
 
     useEffect(() => {
-        setBarberos(barberosPorSucursal[branchId || ""] || []);
+        if (!branchId) return;
+        fetch(`/barbers?branchId=${branchId}`)
+            .then((res) => {
+                if (!res.ok) throw new Error("Error al obtener barberos");
+                return res.json();
+            })
+            .then((data) => setBarberos(data))
+            .catch((err) => {
+                setBarberos([]);
+                // Puedes mostrar un mensaje de error si lo deseas
+            });
     }, [branchId]);
 
     const navigate = useNavigate();
     const handleSelectBarber = (id: number) => {
-        navigate(`/barbers/${id}/turns`);
+    navigate(`/barbers/${id}/appointments`);
     };
     return (
         <div className={styles.barbersContainer}>
