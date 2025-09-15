@@ -1,17 +1,8 @@
-const express = require("express");
-const router = express.Router();
+import * as controller from "./turns.controller";
+import { createRouter } from "../base/base.router";
 
-const controller = require("../controllers/turns.controller");
-
-router.get("/createTurns", controller.create);
-router.post("/", controller.store);
-
-router.get("/", controller.index);
-router.get("/:codTurno", controller.show);
-
-router.get("/:codTurno/modificarTurn", controller.edit);
-router.put("/:codTurno", controller.update);
-
-router.delete("/:codTurno", controller.destroy);
-
-module.exports = router;
+export default createRouter(controller, {
+  create: "/create",
+  idParam: "codTurno",
+  updatePath: "/update",
+});
