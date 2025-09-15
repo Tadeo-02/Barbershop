@@ -1,21 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./turns.module.css";
+import styles from "./appointments.module.css";
 
-const CreateTurnos: React.FC = () => {
+const CreateAppointment: React.FC = () => {
   const navigate = useNavigate();
-  const [fechaTurno, setFechaTurno] = useState("");
+  const [appointmentDate, setAppointmentDate] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      console.log("Enviando POST a /turnos con fechaTurno:", fechaTurno);
-      const response = await fetch("/turnos", {
+  console.log("Enviando POST a /appointments con appointmentDate:", appointmentDate);
+  const response = await fetch("/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fechaTurno }),
+  body: JSON.stringify({ appointmentDate }),
       });
       console.log("Después de fetch, status:", response.status);
 
@@ -39,8 +39,8 @@ const CreateTurnos: React.FC = () => {
 
       if (response.ok) {
         alert(data.message);
-        setFechaTurno("");
-        navigate("/indexTurnos");
+  setAppointmentDate("");
+  navigate("/indexAppointments");
       } else {
         alert(data.message);
       }
@@ -55,16 +55,16 @@ const CreateTurnos: React.FC = () => {
       <h1 className={styles.pageTitle}>Crear Turno</h1>
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="fechaTurno">
-            Fecha del Turno:
+          <label className={styles.formLabel} htmlFor="appointmentDate">
+            Fecha del Appointment:
           </label>
           <input
             className={styles.formInput}
             type="date"
-            name="fechaTurno"
-            id="fechaTurno"
-            value={fechaTurno}
-            onChange={(e) => setFechaTurno(e.target.value)}
+            name="appointmentDate"
+            id="appointmentDate"
+            value={appointmentDate}
+            onChange={(e) => setAppointmentDate(e.target.value)}
             required
           />
         </div>
@@ -79,4 +79,4 @@ const CreateTurnos: React.FC = () => {
   );
 };
 
-export default CreateTurnos;
+export default CreateAppointment;
