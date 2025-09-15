@@ -14,6 +14,7 @@ export default defineConfig({
       "/barberos": "http://localhost:3001", // o el puerto donde corre tu backend
       "/tipoCortes": "http://localhost:3001",
       "/categorias": "http://localhost:3001", // o el puerto donde corre tu backend,
+      "/usuarios": "http://localhost:3001", // nuevo endpoint para usuarios
     },
   },
 });

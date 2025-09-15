@@ -63,7 +63,7 @@ const UpdateBarber: React.FC = () => {
 
   fetchBarbero();
 
-  // ✅ Cleanup function para evitar duplicación
+  // Cleanup function para evitar duplicación
   return () => {
     isMounted = false;
   };
