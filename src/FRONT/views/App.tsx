@@ -1,6 +1,7 @@
 // import { useState } from "react";
 import "./App.css";
 import Login from "./components/login/login.tsx";
+import CreateUser from "./components/login/createUser.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 
@@ -64,30 +65,44 @@ function App() {
             <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
             <Route path="/barbers/:codUsuario" element={<ShowBarbers />} />
             <Route path="/barbers/updateBarber/:codUsuario" element={<UpdateBarbers />}/>
+
             <Route
-              path="/tipoCortes/createTipoCortes"
-              element={<CreateTypeOfHaircut />}
+              path="/categories/createCategories"
+              element={<CreateCategories />}
             />
             <Route
-              path="/tipoCortes/createTipoCortes"
-              element={<CreateTypeOfHaircut />}
+              path="/categories/indexCategories"
+              element={<IndexCategories />}
             />
             <Route
-              path="/tipoCortes/indexTipoCortes"
-              element={<IndexTypeOfHaircut />}
+              path="/categories/:codCategoria"
+              element={<ShowCategories />}
             />
             <Route
-              path="/tipoCortes/modificarTipoCorte/:codCorte"
-              element={<UpdateTypeOfHaircut />}
+              path="/categories/updateCategories/:codCategoria"
+              element={<UpdateCategories />}
             />
+
+            <Route path="/barbers/createBarbers" element={<CreateBarbers />} />
+            <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
+            <Route path="/barbers/:codUsuario" element={<ShowBarbers />} />
+            <Route path="/barbers/updateBarber/:codUsuario" element={<UpdateBarbers />}/>
+            
+            <Route path="/login" element={<Login />} />
+            <Route path="/signUp" element={<CreateUser />} />
+
+            <Route path="/typeOfHaircut/createTypeOfHaircut" element={<CreateTypeOfHaircut />} />
+            <Route path="/typeOfHaircut/createTypeOfHaircut" element={<CreateTypeOfHaircut />} />
+            <Route path="/typeOfHaircut/indexTypeOfHaircut" element={<IndexTypeOfHaircut />} />
+            <Route path="/typeOfHaircut/updateTypeOfHaircut/:codCorte" element={<UpdateTypeOfHaircut />} />
+
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>
         <Footer />
         {/* Alerts de Toaster */}
         <Toaster
-          position="center"
-          toastOptions={{
+          toastOptions={
             duration: 4000,
             style: {
               background: "#363636",
@@ -115,7 +130,7 @@ function App() {
           }}
           containerStyle={{
             // Subido más - de 40% a 35%
-            top: "15%",
+            top: "55%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             position: "fixed",
