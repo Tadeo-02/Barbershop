@@ -1,10 +1,12 @@
 // import { useState } from "react";
 import "./App.css";
 import Login from "./components/login/login.tsx";
+import CreateUser from "./components/login/createUser.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import MainTurns from "./components/turns/mainTurns.tsx";
 import Home from "./components/clients/home/home.tsx";
+
 import CreateTurns from "./components/turns/createTurns.tsx";
 import IndexTurns from "./components/turns/indexTurns.tsx";
 import ShowTurn from "./components/turns/showTurns.tsx";
@@ -29,6 +31,11 @@ import BarbersByBranch from "./components/clients/barbersByBranch.tsx";
 import AppointmentsByBarber from "./components/clients/appointmentsByBarber.tsx";
 
 import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
+import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
+import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
+import BarbersPage from "./pages/Admin/BarbersPage.tsx";
+import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
+import TurnsPage from "./pages/Admin/TurnsPage.tsx";
 
 function App() {
   return (
@@ -37,11 +44,12 @@ function App() {
         <Header />
         <main className="mainContent">
           <Routes>
-            <Route path="/" element={<MainTurns />} />
+            <Route path="/" element={<HomePageAdmin />} />
             {/*<Route path="/" element={<Home />} /> esto lo agregué para poder ver la home del cliente directamente*/}
             <Route path="/branches" element={<Branches />} />
             <Route path="/branches/:branchId" element={<BarbersByBranch />} />
             <Route path="/barbers/:barberId/appointments" element={<AppointmentsByBarber />} />
+            
             {/* <Route path="/turnos/mainTurnos" element={<MainTurns />} />{" "}
             <Route path="/createTurnos" element={<CreateTurns />} />
             <Route path="/login" element={<Login />} />
@@ -51,6 +59,12 @@ function App() {
               path="/turnos/modificarTurno/:codTurno"
               element={<UpdateTurn />}
             /> */}
+
+            <Route path="/Admin/CategoriesPage" element={<CategoriesPage />}/>
+            <Route path="/Admin/BarbersPage" element={<BarbersPage />}/>
+            <Route path="/Admin/HaircutTypesPage" element={<HairCutTypesPage />}/>
+            <Route path="/Admin/TurnsPage" element={<TurnsPage />} />
+
             <Route path="/categories/createCategories" element={<CreateCategories />}/>
             <Route path="/categories/indexCategories" element={<IndexCategories />}/>
             <Route path="/categories/:codCategoria" element={<ShowCategories />}/>
@@ -61,30 +75,44 @@ function App() {
             <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
             <Route path="/barbers/:codUsuario" element={<ShowBarbers />} />
             <Route path="/barbers/updateBarber/:codUsuario" element={<UpdateBarbers />}/>
+
             <Route
-              path="/tipoCortes/createTipoCortes"
-              element={<CreateTypeOfHaircut />}
+              path="/categories/createCategories"
+              element={<CreateCategories />}
             />
             <Route
-              path="/tipoCortes/createTipoCortes"
-              element={<CreateTypeOfHaircut />}
+              path="/categories/indexCategories"
+              element={<IndexCategories />}
             />
             <Route
-              path="/tipoCortes/indexTipoCortes"
-              element={<IndexTypeOfHaircut />}
+              path="/categories/:codCategoria"
+              element={<ShowCategories />}
             />
             <Route
-              path="/tipoCortes/modificarTipoCorte/:codCorte"
-              element={<UpdateTypeOfHaircut />}
+              path="/categories/updateCategories/:codCategoria"
+              element={<UpdateCategories />}
             />
+
+            <Route path="/barbers/createBarbers" element={<CreateBarbers />} />
+            <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
+            <Route path="/barbers/:codUsuario" element={<ShowBarbers />} />
+            <Route path="/barbers/updateBarber/:codUsuario" element={<UpdateBarbers />}/>
+            
+            <Route path="/login" element={<Login />} />
+            <Route path="/signUp" element={<CreateUser />} />
+
+            <Route path="/typeOfHaircut/createTypeOfHaircut" element={<CreateTypeOfHaircut />} />
+            <Route path="/typeOfHaircut/createTypeOfHaircut" element={<CreateTypeOfHaircut />} />
+            <Route path="/typeOfHaircut/indexTypeOfHaircut" element={<IndexTypeOfHaircut />} />
+            <Route path="/typeOfHaircut/updateTypeOfHaircut/:codCorte" element={<UpdateTypeOfHaircut />} />
+
             {/* con el '*' indico que tiene rutas anidadas*/}
           </Routes>
         </main>
         <Footer />
         {/* Alerts de Toaster */}
         <Toaster
-          position="center"
-          toastOptions={{
+          toastOptions={
             duration: 4000,
             style: {
               background: "#363636",
@@ -112,7 +140,7 @@ function App() {
           }}
           containerStyle={{
             // Subido más - de 40% a 35%
-            top: "15%",
+            top: "55%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             position: "fixed",

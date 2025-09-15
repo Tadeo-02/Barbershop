@@ -1,8 +1,8 @@
-import * as controller from "./typeOfHaircut.controller";
+import * as controller from "./users.controller";
 import { createRouter } from "../base/base.router";
 
 export default createRouter(controller, {
   create: "/create",
-  idParam: "codCorte",
+  idParam: "codUsuario",
   updatePath: "/update",
 });
