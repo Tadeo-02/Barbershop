@@ -4,6 +4,8 @@ import Login from "./components/login/login.tsx";
 import CreateUser from "./components/login/createUser.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
+import MainTurns from "./components/turns/mainTurns.tsx";
+import Home from "./components/clients/home/home.tsx";
 
 import CreateTurns from "./components/turns/createTurns.tsx";
 import IndexTurns from "./components/turns/indexTurns.tsx";
@@ -24,6 +26,9 @@ import CreateTypeOfHaircut from "./components/typeOfHaircut/createTypeOfHaircut.
 import IndexTypeOfHaircut from "./components/typeOfHaircut/indexTypeOfHaircut.tsx";
 import UpdateTypeOfHaircut from "./components/typeOfHaircut/updateTypeOfHaircut.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Branches from "./components/clients/branches.tsx";
+import BarbersByBranch from "./components/clients/barbersByBranch.tsx";
+import AppointmentsByBarber from "./components/clients/appointmentsByBarber.tsx";
 
 import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
@@ -40,6 +45,11 @@ function App() {
         <main className="mainContent">
           <Routes>
             <Route path="/" element={<HomePageAdmin />} />
+            {/*<Route path="/" element={<Home />} /> esto lo agregué para poder ver la home del cliente directamente*/}
+            <Route path="/branches" element={<Branches />} />
+            <Route path="/branches/:branchId" element={<BarbersByBranch />} />
+            <Route path="/barbers/:barberId/appointments" element={<AppointmentsByBarber />} />
+            
             {/* <Route path="/turnos/mainTurnos" element={<MainTurns />} />{" "}
             <Route path="/createTurnos" element={<CreateTurns />} />
             <Route path="/login" element={<Login />} />
