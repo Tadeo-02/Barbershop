@@ -1,4 +1,4 @@
-import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
+import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 
 const CategoriaSchema = z.object({

@@ -15,6 +15,7 @@ export default defineConfig({
       "/tipoCortes": "http://localhost:3001",
       "/categorias": "http://localhost:3001", // o el puerto donde corre tu backend,
       "/usuarios": "http://localhost:3001", // nuevo endpoint para usuarios
+      "/login": "http://localhost:3001", // proxy para el endpoint de login
     },
   },
 });
