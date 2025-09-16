@@ -10,9 +10,21 @@ const branches = [
 
 const Branches = () => {
     const navigate = useNavigate();
+    const [selectedBranch, setSelectedBranch] = React.useState<number | null>(null);
+    const [showOptions, setShowOptions] = React.useState(false);
+
     const handleSelectBranch = (id: number) => {
-        navigate(`/branches/${id}`);
+        setSelectedBranch(id);
+        setShowOptions(true);
     };
+
+    const handleBarberFirst = () => {
+        navigate(`/branches/${selectedBranch}/barbers`);
+    };
+    const handleScheduleFirst = () => {
+        navigate(`/branches/${selectedBranch}/schedule`);
+    };
+
     return (
         <div className={styles.branchesContainer}>
             <h2>Sucursales disponibles</h2>
@@ -24,6 +36,17 @@ const Branches = () => {
                     </li>
                 ))}
             </ul>
+            {showOptions && (
+                <div className={styles.optionsContainer}>
+                    <h3>¿Cómo quieres buscar tu turno?</h3>
+                    <button className={styles.optionButton} onClick={handleBarberFirst}>
+                        Elegir barbero
+                    </button>
+                    <button className={styles.optionButton} onClick={handleScheduleFirst}>
+                        Elegir horario
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

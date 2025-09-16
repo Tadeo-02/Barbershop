@@ -1,0 +1,27 @@
+.scheduleContainer {
+    padding: 1rem;
+}
+.scheduleList {
+    list-style: none;
+    padding: 0;
+}
+.scheduleItem {
+    background: #f5f5f5;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.scheduleItem:hover {
+    background: #e0e0e0;
+}
+.scheduleDate {
+    font-weight: bold;
+}
+.scheduleHour {
+    color: #555;
+}
+.emptyState {
+    color: #999;
+    font-style: italic;
+}
