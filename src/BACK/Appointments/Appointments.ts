@@ -2,7 +2,7 @@ import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importam
 import { z } from "zod";
 
 // schema de validación con Zod (más robusto que las funciones manuales)
-const TurnsSchema = z.object({
+const AppointmentsSchema = z.object({
   // codTurno: z
   //   .string().uuid("ID de barbero inválido"),
   codCorte: z.string().min(1, "Código de corte es requerido").optional(),
@@ -60,7 +60,7 @@ export const store = async (
     };
 
     // validación con zod
-    const validatedData = TurnsSchema.parse(sanitizedData);
+    const validatedData = AppointmentsSchema.parse(sanitizedData);
 
     console.log("Creating turno");
 
@@ -180,7 +180,7 @@ export const update = async (
       fechaCancelacion: sanitizeInput(fechaCancelacion),
     };
 
-    const validatedData = TurnsSchema.parse({
+    const validatedData = AppointmentsSchema.parse({
       codTurno: sanitizedData.codTurno,
       codCorte: sanitizedData.codCorte,
       codBarbero: sanitizedData.codBarbero,

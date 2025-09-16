@@ -48,27 +48,27 @@ const UpdateAppointment: React.FC = () => {
 
       if (response.ok) {
         alert(data.message);
-        navigate("/indexAppointments"); // Redirigir a la lista de appointments
+        navigate("/indexAppointments"); // Redirigir a la lista de turnos
       } else {
         alert(data.message);
       }
-    } catch (error) {
+    } catch (error) { 
       console.error("Error updating appointment:", error);
       alert("Error de conexión");
     }
   };
 
   if (!appointment) {
-    return <div className={styles.loadingState}>Cargando appointment...</div>;
+    return <div className={styles.loadingState}>Cargando Turno...</div>;
   }
 
   return (
     <div className={styles.formContainer}>
-      <h1 className={styles.pageTitle}>Editar Appointment</h1>
+      <h1 className={styles.pageTitle}>Editar Turno</h1>
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="appointmentDate">
-            Fecha del Appointment:
+            Fecha del Turno:
           </label>
           <input
             className={styles.formInput}

@@ -4,13 +4,13 @@ import Login from "./components/login/login.tsx";
 import CreateUser from "./components/login/createUser.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
-import MainTurns from "./components/turns/mainTurns.tsx";
+import MainTurns from "./components/appointments/mainAppointments.tsx";
 import Home from "./components/clients/home/home.tsx";
 
-import CreateTurns from "./components/turns/createTurns.tsx";
-import IndexTurns from "./components/turns/indexTurns.tsx";
-import ShowTurn from "./components/turns/showTurns.tsx";
-import UpdateTurn from "./components/turns/updateTurn.tsx";
+import CreateAppointment from "./components/appointments/createAppointments.tsx";
+import IndexAppointment from "./components/appointments/indexAppointments.tsx";
+import ShowAppointment from "./components/appointments/showAppointment.tsx";
+import UpdateAppointments from "./components/appointments/updateAppointment.tsx";
 
 import CreateCategories from "./components/categories/createCategories.tsx";
 import UpdateCategories from "./components/categories/updateCategories.tsx";
@@ -29,13 +29,14 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Branches from "./components/clients/branches.tsx";
 import BarbersByBranch from "./components/clients/barbersByBranch.tsx";
 import AppointmentsByBarber from "./components/clients/appointmentsByBarber.tsx";
+import ScheduleByBranch from "./components/clients/scheduleByBranch.tsx";
 
 import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
 import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
 import BarbersPage from "./pages/Admin/BarbersPage.tsx";
 import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
-import TurnsPage from "./pages/Admin/TurnsPage.tsx";
+import TurnsPage from "./pages/Admin/AppointmentsPage.tsx";
 
 function App() {
   return (
@@ -44,12 +45,16 @@ function App() {
         <Header />
         <main className="mainContent">
           <Routes>
-            <Route path="/" element={<HomePageAdmin />} />
-            {/*<Route path="/" element={<Home />} /> esto lo agregué para poder ver la home del cliente directamente*/}
+            {/*<Route path="/" element={<HomePageAdmin />} />*/}
+            <Route path="/" element={<Home />} />{/* esto lo agregué para poder ver la home del cliente directamente*/}
             <Route path="/branches" element={<Branches />} />
-            <Route path="/branches/:branchId" element={<BarbersByBranch />} />
+            {/* Selección de barbero primero */}
+            <Route path="/branches/:branchId/barbers" element={<BarbersByBranch />} />
             <Route path="/barbers/:barberId/appointments" element={<AppointmentsByBarber />} />
-            
+            {/* Selección de horario primero */}
+            <Route path="/branches/:branchId/schedule" element={<ScheduleByBranch />} />
+            <Route path="/branches/:branchId/schedule/:scheduleId/barbers" element={<BarbersByBranch />} />
+
             {/* <Route path="/turnos/mainTurnos" element={<MainTurns />} />{" "}
             <Route path="/createTurnos" element={<CreateTurns />} />
             <Route path="/login" element={<Login />} />
@@ -60,21 +65,21 @@ function App() {
               element={<UpdateTurn />}
             /> */}
 
-            <Route path="/Admin/CategoriesPage" element={<CategoriesPage />}/>
-            <Route path="/Admin/BarbersPage" element={<BarbersPage />}/>
-            <Route path="/Admin/HaircutTypesPage" element={<HairCutTypesPage />}/>
+            <Route path="/Admin/CategoriesPage" element={<CategoriesPage />} />
+            <Route path="/Admin/BarbersPage" element={<BarbersPage />} />
+            <Route path="/Admin/HaircutTypesPage" element={<HairCutTypesPage />} />
             <Route path="/Admin/TurnsPage" element={<TurnsPage />} />
 
-            <Route path="/categories/createCategories" element={<CreateCategories />}/>
-            <Route path="/categories/indexCategories" element={<IndexCategories />}/>
-            <Route path="/categories/:codCategoria" element={<ShowCategories />}/>
-            <Route path="/categories/updateCategories/:codCategoria" element={<UpdateCategories />}/>
+            <Route path="/categories/createCategories" element={<CreateCategories />} />
+            <Route path="/categories/indexCategories" element={<IndexCategories />} />
+            <Route path="/categories/:codCategoria" element={<ShowCategories />} />
+            <Route path="/categories/updateCategories/:codCategoria" element={<UpdateCategories />} />
 
 
             <Route path="/barbers/createBarbers" element={<CreateBarbers />} />
             <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
             <Route path="/barbers/:codUsuario" element={<ShowBarbers />} />
-            <Route path="/barbers/updateBarber/:codUsuario" element={<UpdateBarbers />}/>
+            <Route path="/barbers/updateBarber/:codUsuario" element={<UpdateBarbers />} />
 
             <Route
               path="/categories/createCategories"
@@ -96,8 +101,8 @@ function App() {
             <Route path="/barbers/createBarbers" element={<CreateBarbers />} />
             <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
             <Route path="/barbers/:codUsuario" element={<ShowBarbers />} />
-            <Route path="/barbers/updateBarber/:codUsuario" element={<UpdateBarbers />}/>
-            
+            <Route path="/barbers/updateBarber/:codUsuario" element={<UpdateBarbers />} />
+
             <Route path="/login" element={<Login />} />
             <Route path="/signUp" element={<CreateUser />} />
 
@@ -112,8 +117,7 @@ function App() {
         <Footer />
         {/* Alerts de Toaster */}
         <Toaster
-          toastOptions={
-            duration: 4000,
+          toastOptions={{
             style: {
               background: "#363636",
               color: "#fff",
@@ -139,7 +143,6 @@ function App() {
             },
           }}
           containerStyle={{
-            // Subido más - de 40% a 35%
             top: "55%",
             left: "50%",
             transform: "translate(-50%, -50%)",
