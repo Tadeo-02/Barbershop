@@ -1,4 +1,4 @@
-import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importamos todo desde Base
+import { prisma, DatabaseError, sanitizeInput } from "../../base/Base"; // importamos todo desde Base
 import { z } from "zod";
 
 // schema de validación con Zod (más robusto que las funciones manuales)

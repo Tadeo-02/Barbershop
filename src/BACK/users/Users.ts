@@ -272,3 +272,62 @@ export const destroy = async (codUsuario: string) => {
     throw new DatabaseError("Error al eliminar usuario");
   }
 };
+
+// Schema de validación para login
+const LoginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  contraseña: z.string().min(1, "Contraseña es requerida"),
+});
+
+// Función para validar login del usuario
+export const validateLogin = async (email: string, contraseña: string) => {
+  try {
+    // Sanitizar inputs
+    const sanitizedData = {
+      email: sanitizeInput(email),
+      contraseña: sanitizeInput(contraseña),
+    };
+
+    // Validación con zod
+    const validatedData = LoginSchema.parse(sanitizedData);
+
+    console.log("Validating user login for email:", validatedData.email);
+
+    // Buscar usuario por email y contraseña
+    const usuario = await prisma.usuarios.findFirst({
+      where: {
+        email: validatedData.email,
+        contrase_a: validatedData.contraseña,
+        cuil: null, // Solo usuarios normales (no barberos)
+      },
+    });
+
+    if (!usuario) {
+      throw new DatabaseError("Email o contraseña incorrectos");
+    }
+
+    console.log("User login validated successfully");
+
+    // Retornar usuario sin contraseña por seguridad
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { contrase_a, ...userWithoutPassword } = usuario;
+    return userWithoutPassword;
+  } catch (error) {
+    console.error(
+      "Error validating login:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+
+    // Manejo de errores de validación
+    if (error instanceof z.ZodError) {
+      const firstError = error.issues[0];
+      throw new DatabaseError(firstError.message);
+    }
+
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError("Error al validar credenciales");
+  }
+};

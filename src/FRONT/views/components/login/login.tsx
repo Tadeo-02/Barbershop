@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import styles from "./login.module.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext.tsx";
 
 function Login() {
   const [correo, setCorreo] = useState("");
   const [clave, setClave] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await fetch("/login", {
@@ -28,12 +31,27 @@ function Login() {
         return;
       }
       if (response.ok) {
-        alert(data.message || "Login exitoso");
-        // Aquí puedes redirigir o guardar token, etc.
+        // ✅ Usar el contexto para manejar el login
+        if (data.user) {
+          login(data.user);
+
+          // ✅ Determinar tipo de usuario y redireccionar
+          const userType = data.user.cuit ? "barber" : "client";
+
+          if (userType === "barber") {
+            navigate("/barber");
+          } else {
+            navigate("/");
+          }
+
+          alert(data.message || "Login exitoso");
+        } else {
+          alert("Datos de usuario no encontrados");
+        }
       } else {
         alert(data.message || "Error de login");
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       alert("Error de conexión");
     }

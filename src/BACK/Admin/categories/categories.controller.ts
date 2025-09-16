@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as model from "./Categories";
-import { BaseController } from "../base/base.controller"; // improtamos al base controller
+import { BaseController } from "../../base/base.controller"; // improtamos al base controller
 // creamos el modelo de controlador de categorias
 class CategoriesController extends BaseController<any> {
   protected model = model;
