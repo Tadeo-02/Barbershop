@@ -20,12 +20,12 @@ const ShowAppointment = () => {
   }, [appointmentId]);
 
   if (!appointment)
-    return <div className={styles.loadingState}>Cargando appointment...</div>;
+    return <div className={styles.loadingState}>Cargando Turno...</div>;
 
   return (
         <div className={styles.appointmentInfo}>
-      <h1 className={styles.pageTitle}>Detalles del Appointment</h1>
-          <div className={styles.appointmentTitle}>Appointment #{appointment.appointmentId}</div>
+      <h1 className={styles.pageTitle}>Detalles del Turno</h1>
+          <div className={styles.appointmentTitle}>Turno #{appointment.appointmentId}</div>
           <div className={styles.appointmentCode}>ID: {appointment.appointmentId}</div>
           <div className={styles.appointmentDetails}>
             <span className={styles.appointmentDate}>

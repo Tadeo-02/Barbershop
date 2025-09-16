@@ -1,4 +1,4 @@
-import * as controller from "./turns.controller";
+import * as controller from "./appointments.controller";
 import { createRouter } from "../base/base.router";
 
 export default createRouter(controller, {

@@ -13,6 +13,9 @@ interface Barbero {
 const BarbersByBranch = () => {
     const { branchId } = useParams();
     const [barberos, setBarberos] = useState<Barbero[]>([]);
+    const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
+    const [showSchedule, setShowSchedule] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!branchId) return;
@@ -28,10 +31,15 @@ const BarbersByBranch = () => {
             });
     }, [branchId]);
 
-    const navigate = useNavigate();
     const handleSelectBarber = (id: number) => {
-    navigate(`/barbers/${id}/appointments`);
+        setSelectedBarber(id);
+        setShowSchedule(true);
     };
+
+    const handleSchedule = () => {
+        navigate(`/barbers/${selectedBarber}/appointments`);
+    };
+
     return (
         <div className={styles.barbersContainer}>
             <h2>Elige un barbero</h2>
@@ -46,6 +54,14 @@ const BarbersByBranch = () => {
                     ))
                 )}
             </ul>
+            {showSchedule && (
+                <div className={styles.optionsContainer}>
+                    <h3>Ahora elige el horario</h3>
+                    <button className={styles.optionButton} onClick={handleSchedule}>
+                        Ver horarios disponibles
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

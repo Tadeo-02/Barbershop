@@ -56,7 +56,7 @@ const CreateAppointment: React.FC = () => {
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="appointmentDate">
-            Fecha del Appointment:
+            Fecha del Turno:
           </label>
           <input
             className={styles.formInput}
