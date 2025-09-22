@@ -56,7 +56,7 @@ export const store = async (
     const usuario = await prisma.usuarios.create({
       data: {
         dni: validatedData.dni,
-        cuil: null, // Los usuarios normales no tienen CUIL
+        cuil: null, // Los usuarios normales no tienen CUIL !
         nombre: validatedData.nombre,
         apellido: validatedData.apellido,
         telefono: validatedData.telefono,
@@ -293,20 +293,27 @@ export const validateLogin = async (email: string, contraseña: string) => {
 
     console.log("Validating user login for email:", validatedData.email);
 
-    // Buscar usuario por email y contraseña
+    // Buscar usuario por email y contraseña (incluye todos los tipos de usuarios)
     const usuario = await prisma.usuarios.findFirst({
       where: {
         email: validatedData.email,
         contrase_a: validatedData.contraseña,
-        cuil: null, // Solo usuarios normales (no barberos)
+        //! Removido: cuil: null - ahora permite todos los tipos de usuarios, antes esto hacia que nomas busque clientes
       },
     });
 
     if (!usuario) {
+      console.log("Login failed: No user found with provided credentials");
       throw new DatabaseError("Email o contraseña incorrectos");
     }
 
-    console.log("User login validated successfully");
+    console.log("User login validated successfully for user:", {
+      codUsuario: usuario.codUsuario,
+      email: usuario.email,
+      cuil: usuario.cuil,
+      userType:
+        usuario.cuil === "1" ? "admin" : usuario.cuil ? "barber" : "client",
+    });
 
     // Retornar usuario sin contraseña por seguridad
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
