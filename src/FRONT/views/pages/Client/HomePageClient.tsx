@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import styles from "./HomePageAdmin.module.css";
+import styles from "./HomePageClient.module.css";
 import React, { useState, useEffect } from "react";
 
 // function TurnoNuevo() {
@@ -9,7 +9,7 @@ import React, { useState, useEffect } from "react";
 //   return <div>Historial de turnos</div>;
 // }
 
-function HomePageAdmin() {
+function HomePageClient() {
   const [turnos, setTurnos] = useState([]); // Initialize as an empty array
 
   useEffect(() => {
@@ -95,42 +95,8 @@ function HomePageAdmin() {
       </div>
 
       {/* Tercera fila: Sucursales */}
-      <div className={styles.HomePageAdminGrid}>
-        <div className={styles.HomePageAdminCard}>
-          <h3>Sucursal Centro</h3>
-          <img
-            src="/images/sucursal1.jpeg"
-            alt="Sucursal Centro"
-            style={{ width: "100%", borderRadius: "8px", marginBottom: "10px" }}
-          />
-          <a
-            href="https://maps.app.goo.gl/ut38V2Tf414qxqs28"
-            className={`${styles.button} ${styles.buttonSuccess}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Mendoza 2774, Rosario
-          </a>
-        </div>
-
-        <div className={styles.HomePageAdminCard}>
-          <h3>Sucursal Norte</h3>
-          <img
-            src="/images/sucursal2.jpg"
-            alt="Sucursal Norte"
-            style={{ width: "100%", borderRadius: "8px", marginBottom: "10px" }}
-          />
-          <a
-            href="https://maps.app.goo.gl/KJnih2u2hf5S9jmB6"
-            className={`${styles.button} ${styles.buttonSuccess}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Juan B. Justo 1767, Rosario
-          </a>
-        </div>
-      </div>
+    
     </div>
   );
 }
-export default HomePageAdmin;
+export default HomePageClient;

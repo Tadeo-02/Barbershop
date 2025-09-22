@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { FaBars } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./login/AuthContext.tsx";
 import styles from "./header.module.css";
 // import logoBarber from "../../public/images/logoBarber.png";
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const { user, userType, logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    setOpen(false);
+    navigate("/");
+  };
   return (
     <nav>
       <div className={styles.header}>
@@ -56,17 +65,80 @@ function Header() {
               Inicio
             </Link>
           </li>
+
+          {/* Mostrar diferentes opciones según el estado de autenticación */}
+          {!isAuthenticated ? (
+            <>
+              <li>
+                <Link to="/login" onClick={() => setOpen(false)}>
+                  Iniciar Sesión
+                </Link>
+              </li>
+              <li>
+                <Link to="/signUp" onClick={() => setOpen(false)}>
+                  Registrarse
+                </Link>
+              </li>
+            </>
+          ) : (
+            <>
+              {/* Opciones para usuarios autenticados */}
+              <li>
+                <span style={{ color: "#ccc", fontSize: "0.9em" }}>
+                  Bienvenido, {user?.name || user?.email}
+                </span>
+              </li>
+              <li>
+                <span style={{ color: "#999", fontSize: "0.8em" }}>
+                  Tipo: {userType}
+                </span>
+              </li>
+
+              {/* Opciones específicas por tipo de usuario */}
+              {userType === "barber" && (
+                <li>
+                  <Link to="/barber" onClick={() => setOpen(false)}>
+                    Panel Barbero
+                  </Link>
+                </li>
+              )}
+
+              {userType === "admin" && (
+                <li>
+                  <Link
+                    to="/Admin/CategoriesPage"
+                    onClick={() => setOpen(false)}
+                  >
+                    Panel Admin
+                  </Link>
+                </li>
+              )}
+
+              <li>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "inherit",
+                    cursor: "pointer",
+                    fontSize: "inherit",
+                    textAlign: "left",
+                    width: "100%",
+                  }}
+                >
+                  Cerrar Sesión
+                </button>
+              </li>
+            </>
+          )}
+
           <li>
             <Link
               to="/productos/mainProductos.tsx"
               onClick={() => setOpen(false)}
             >
               Productos
-            </Link>
-          </li>
-          <li>
-            <Link to="/login" onClick={() => setOpen(false)}>
-              Login
             </Link>
           </li>
         </ul>

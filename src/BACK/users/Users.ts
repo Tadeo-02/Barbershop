@@ -56,7 +56,7 @@ export const store = async (
     const usuario = await prisma.usuarios.create({
       data: {
         dni: validatedData.dni,
-        cuil: null, // Los usuarios normales no tienen CUIL
+        cuil: null, // Los usuarios normales no tienen CUIL !
         nombre: validatedData.nombre,
         apellido: validatedData.apellido,
         telefono: validatedData.telefono,
@@ -270,5 +270,71 @@ export const destroy = async (codUsuario: string) => {
     }
 
     throw new DatabaseError("Error al eliminar usuario");
+  }
+};
+
+// Schema de validación para login
+const LoginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  contraseña: z.string().min(1, "Contraseña es requerida"),
+});
+
+// Función para validar login del usuario
+export const validateLogin = async (email: string, contraseña: string) => {
+  try {
+    // Sanitizar inputs
+    const sanitizedData = {
+      email: sanitizeInput(email),
+      contraseña: sanitizeInput(contraseña),
+    };
+
+    // Validación con zod
+    const validatedData = LoginSchema.parse(sanitizedData);
+
+    console.log("Validating user login for email:", validatedData.email);
+
+    // Buscar usuario por email y contraseña (incluye todos los tipos de usuarios)
+    const usuario = await prisma.usuarios.findFirst({
+      where: {
+        email: validatedData.email,
+        contrase_a: validatedData.contraseña,
+        //! Removido: cuil: null - ahora permite todos los tipos de usuarios, antes esto hacia que nomas busque clientes
+      },
+    });
+
+    if (!usuario) {
+      console.log("Login failed: No user found with provided credentials");
+      throw new DatabaseError("Email o contraseña incorrectos");
+    }
+
+    console.log("User login validated successfully for user:", {
+      codUsuario: usuario.codUsuario,
+      email: usuario.email,
+      cuil: usuario.cuil,
+      userType:
+        usuario.cuil === "1" ? "admin" : usuario.cuil ? "barber" : "client",
+    });
+
+    // Retornar usuario sin contraseña por seguridad
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { contrase_a, ...userWithoutPassword } = usuario;
+    return userWithoutPassword;
+  } catch (error) {
+    console.error(
+      "Error validating login:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+
+    // Manejo de errores de validación
+    if (error instanceof z.ZodError) {
+      const firstError = error.issues[0];
+      throw new DatabaseError(firstError.message);
+    }
+
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError("Error al validar credenciales");
   }
 };

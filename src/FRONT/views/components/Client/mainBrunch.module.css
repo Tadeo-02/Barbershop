@@ -1,0 +1,24 @@
+/* .mainSucursal {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border: black solid 1px;
+    background-color: whitesmoke;
+    margin: 10px; /* Agrega espacio externo */
+    /* padding: 10px; /* Agrega espacio interno */
+    /* height: auto;  Se ajusta al contenido */
+/* } */
+
+.mainSucursal {
+    width: 95%;
+    margin: 10px;
+    padding: 10px;
+    height: auto;
+    border: black solid 1px;
+    background-color: whitesmoke;
+    border-radius: 10px;
+}
+/* .mainSucursal div {
+
+} */
