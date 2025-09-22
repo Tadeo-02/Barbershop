@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import styles from "./login.module.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext.tsx";
 
 function Login() {
   const [correo, setCorreo] = useState("");
   const [clave, setClave] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await fetch("/login", {
@@ -28,12 +31,46 @@ function Login() {
         return;
       }
       if (response.ok) {
-        alert(data.message || "Login exitoso");
-        // Aquí puedes redirigir o guardar token, etc.
+        console.log("✅ Login successful, server response:", data);
+
+        // ✅ Usar el contexto para manejar el login
+        if (data.user) {
+          console.log("User data received:", data.user);
+          console.log("User cuil:", data.user.cuil);
+
+          login(data.user);
+
+          // ✅ Determinar tipo de usuario y redireccionar
+          const userType =
+            data.user.cuil === "1"
+              ? "admin"
+              : data.user.cuil
+              ? "barber"
+              : "client";
+
+          console.log("Determined user type:", userType);
+
+          if (userType === "admin") {
+            console.log("Redirecting to admin page");
+            navigate("/Admin/CategoriesPage");
+          } else if (userType === "barber") {
+            console.log("Redirecting to barber page");
+            navigate("/barber");
+          } else {
+            console.log("Redirecting to client page");
+            navigate("/");
+          }
+
+          alert(data.message || "Login exitoso");
+        } else {
+          console.log("❌ No user data in response");
+          alert("Datos de usuario no encontrados");
+        }
       } else {
+        console.log("❌ Login failed, server response:", data);
         alert(data.message || "Error de login");
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       alert("Error de conexión");
     }
