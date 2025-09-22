@@ -31,7 +31,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   >(null);
 
   const login = (userData: User) => {
-    const type = userData.cuil ? "barber" : "client";
+    const type =
+      userData.cuil === "1" ? "admin" : userData.cuil ? "barber" : "client";
     setUser(userData);
     setUserType(type);
     localStorage.setItem("user", JSON.stringify(userData));
