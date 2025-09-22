@@ -8,3 +8,17 @@ Instruccions de uso: <br>
 3 - Ejecutar en consola: 'npx prisma db pull' -> 'npx prisma generate' <br>
 4 - Iniciar Frontend: 'npm run dev' -> Abrir Enlace <br>
 5 - Iniciar Backend: 'npm run dev:backend' <br>
+
+
+
+
+Datos de distintos Tipos de Usuarios:
+Client:
+cp3@gmail.com
+123456
+Barber:
+king@gmail.com
+123456
+Admin:
+admin@gmail.com
+12345

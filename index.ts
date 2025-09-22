@@ -4,19 +4,16 @@ import methodOverride from "method-override";
 import path from "path";
 
 // Import CommonJS routers
-import barbersRouter from "./src/BACK/Admin/barbers/barbers.router";
 import categoriesRouter from "./src/BACK/Admin/categories/categories.router";
 
 import usersRouter from "./src/BACK/users/users.router";
 import { login } from "./src/BACK/users/users.controller";
 //import typeOfCutRouter from "./src/BACK/typeOfCut/typeOfCut.router";
 console.log("🔍 Categories router:", categoriesRouter);
-console.log("🔍 Barbers router:", barbersRouter);
 console.log("🔍 Users router:", usersRouter);
 
 import typeOfHaircutRouter from "./src/BACK/Admin/typeOfHaircut/typeOfHaircut.router";
 console.log("🔍 Categories router:", categoriesRouter);
-console.log("🔍 Barbers router:", barbersRouter);
 console.log("🔍 TypeOfHaircut router:", typeOfHaircutRouter);
 
 const app = express();
@@ -32,7 +29,6 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src/views"));
 
 //! Routers
-app.use("/barberos", barbersRouter);
 app.use("/categorias", categoriesRouter);
 
 app.use("/usuarios", usersRouter);

@@ -5,11 +5,6 @@ import CreateUser from "./components/login/createUser.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 
-import CreateTurns from "./components/Client/turns/createTurns.tsx";
-import IndexTurns from "./components/Client/turns/indexTurns.tsx";
-import ShowTurn from "./components/Client/turns/showTurns.tsx";
-import UpdateTurn from "./components/Client/turns/updateTurn.tsx";
-
 import CreateCategories from "./components/Admin/categories/createCategories.tsx";
 import UpdateCategories from "./components/Admin/categories/updateCategories.tsx";
 import IndexCategories from "./components/Admin/categories/indexCategories.tsx";
@@ -35,12 +30,12 @@ import { AuthProvider } from "./components/login/AuthContext.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 
 // Importaciones para las rutas de branches y navegación
-import Home from "./components/Client/Home.tsx";
-import Branches from "./components/Client/Branches.tsx";
-import BarbersByBranch from "./components/Client/BarbersByBranch.tsx";
-import AppointmentsByBarber from "./components/Client/AppointmentsByBarber.tsx";
-import ScheduleByBranch from "./components/Client/ScheduleByBranch.tsx";
-import TurnsPage from "./pages/Admin/TurnsPage.tsx";
+import Home from "./components/Client/home/home.tsx";
+import Branches from "./components/Client/branches.tsx";
+import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
+import AppointmentsByBarber from "./components/Client/appointmentsByBarber.tsx";
+import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
+// import TurnsPage from "./pages/Admin/TurnsPage.tsx";
 
 function App() {
   return (
@@ -51,6 +46,22 @@ function App() {
           <main className="mainContent">
             <Routes>
               <Route path="/" element={<Home />} />
+
+              {/* Ruta temporal para testing */}
+              <Route
+                path="/test"
+                element={
+                  <div
+                    style={{
+                      padding: "20px",
+                      background: "red",
+                      color: "white",
+                    }}
+                  >
+                    TEST ROUTE WORKING
+                  </div>
+                }
+              />
 
               {/* Rutas del cliente para navegación por sucursales y barberos */}
               <Route path="/branches" element={<Branches />} />
@@ -69,15 +80,6 @@ function App() {
               <Route
                 path="/branches/:branchId/schedule/:scheduleId/barbers"
                 element={<BarbersByBranch />}
-              />
-
-              {/* Rutas de turnos para clientes */}
-              <Route path="/createTurnos" element={<CreateTurns />} />
-              <Route path="/indexTurnos" element={<IndexTurns />} />
-              <Route path="/turnos/:codTurno" element={<ShowTurn />} />
-              <Route
-                path="/turnos/modificarTurno/:codTurno"
-                element={<UpdateTurn />}
               />
 
               {/* Rutas protegidas por tipo de usuario */}
@@ -120,14 +122,14 @@ function App() {
                 }
               />
 
-              <Route
+              {/* <Route
                 path="/Admin/TurnsPage"
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <TurnsPage />
                   </ProtectedRoute>
                 }
-              />
+              /> */}
 
               <Route
                 path="/categories/createCategories"
