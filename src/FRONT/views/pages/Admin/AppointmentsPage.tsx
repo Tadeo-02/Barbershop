@@ -1,4 +1,4 @@
-import IndexAppointments from "../../components/appointments/indexAppointments.tsx";
+import IndexAppointments from "../../components/Client/appointments/indexAppointments.tsx";
 import styles from "./HomePageAdmin.module.css";
 import { Link } from "react-router-dom";
 

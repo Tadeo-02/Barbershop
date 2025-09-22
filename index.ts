@@ -4,18 +4,16 @@ import methodOverride from "method-override";
 import path from "path";
 
 // Import CommonJS routers
-import barbersRouter from "./src/BACK/barbers/barbers.router";
-import categoriesRouter from "./src/BACK/categories/categories.router";
+import categoriesRouter from "./src/BACK/Admin/categories/categories.router";
 
 import usersRouter from "./src/BACK/users/users.router";
+import { login } from "./src/BACK/users/users.controller";
 //import typeOfCutRouter from "./src/BACK/typeOfCut/typeOfCut.router";
 console.log("🔍 Categories router:", categoriesRouter);
-console.log("🔍 Barbers router:", barbersRouter);
 console.log("🔍 Users router:", usersRouter);
 
-import typeOfHaircutRouter from "./src/BACK/typeOfHaircut/typeOfHaircut.router";
+import typeOfHaircutRouter from "./src/BACK/Admin/typeOfHaircut/typeOfHaircut.router";
 console.log("🔍 Categories router:", categoriesRouter);
-console.log("🔍 Barbers router:", barbersRouter);
 console.log("🔍 TypeOfHaircut router:", typeOfHaircutRouter);
 
 const app = express();
@@ -31,20 +29,14 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src/views"));
 
 //! Routers
-app.use("/barberos", barbersRouter);
 app.use("/categorias", categoriesRouter);
 
 app.use("/usuarios", usersRouter);
 
 app.use("/tipoCortes", typeOfHaircutRouter);
 
-
-// Load CommonJS routers (commented out until converted to ES modules)
-// TODO: Convert these routers to ES modules for consistency
-// app.use(require("./src/BACK/routes/main.router"));
-// app.use("/turnos", require("./src/BACK/routes/turnos.router"));
-// app.use("/tipoCortes", require("./src/BACK/routes/tipoCortes.router"));
-// app.use("/categorias", require("./src/BACK/routes/categorias.router"));
+// Ruta específica para login
+app.post("/login", login);
 
 // Root route
 app.get("/", (_req, res) => {
