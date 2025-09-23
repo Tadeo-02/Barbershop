@@ -94,7 +94,19 @@ function HomePageAdmin() {
         </div>
       </div>
 
-      {/* Tercera fila: Sucursales */}
+      {/* Tercera fila: Horarios y Sucursales */}
+      <div className={styles.HomePageAdminGrid}>
+        <div className={styles.HomePageAdminCard}>
+          <Link
+            to="/Admin/SchedulesPage"
+            className={`${styles.button} ${styles.buttonPrimary}`}
+          >
+            HORARIOS
+          </Link>
+        </div>
+      </div>
+
+      {/* Cuarta fila: Sucursales */}
       <div className={styles.HomePageAdminGrid}>
         <div className={styles.HomePageAdminCard}>
           <h3>Sucursal Centro</h3>

@@ -13,10 +13,13 @@ console.log("🔍 Categories router:", categoriesRouter);
 console.log("🔍 Barbers router:", barbersRouter);
 console.log("🔍 Users router:", usersRouter);
 
+
 import typeOfHaircutRouter from "./src/BACK/typeOfHaircut/typeOfHaircut.router";
+import schedulesRouter from "./src/BACK/schedules/schedules.router";
 console.log("🔍 Categories router:", categoriesRouter);
 console.log("🔍 Barbers router:", barbersRouter);
 console.log("🔍 TypeOfHaircut router:", typeOfHaircutRouter);
+console.log("🔍 Schedules router:", schedulesRouter);
 
 const app = express();
 
@@ -33,6 +36,7 @@ app.set("views", path.join(__dirname, "src/views"));
 //! Routers
 app.use("/barberos", barbersRouter);
 app.use("/categorias", categoriesRouter);
+app.use("/horarios", schedulesRouter);
 
 app.use("/usuarios", usersRouter);
 
