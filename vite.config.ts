@@ -16,6 +16,7 @@ export default defineConfig({
       "/categorias": "http://localhost:3001", // o el puerto donde corre tu backend,
       "/usuarios": "http://localhost:3001", // nuevo endpoint para usuarios
       "/login": "http://localhost:3001", // proxy para el endpoint de login
+      "/sucursales": "http://localhost:3001", // proxy para el endpoint de sucursales
     },
   },
 });
