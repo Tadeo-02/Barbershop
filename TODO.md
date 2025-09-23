@@ -23,8 +23,9 @@
 ## Barberos:
     - [ ] Modificar Turnos
 ## Admin:
-    - [ ] CRUD Sucursal
+    - [X] CRUD Sucursal
 ## General:
     - [ ] Revisar validaciones zod en general
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
     - [ ] Sección Productos
+    - [ ] Cambiar NPM por PNPM
