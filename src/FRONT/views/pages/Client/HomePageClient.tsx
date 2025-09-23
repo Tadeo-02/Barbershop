@@ -94,8 +94,55 @@ function HomePageClient() {
         </div>
       </div>
 
-      {/* Tercera fila: Sucursales */}
-    
+
+      {/* Tercera fila: Horarios y Sucursales */}
+      <div className={styles.HomePageAdminGrid}>
+        <div className={styles.HomePageAdminCard}>
+          <Link
+            to="/Admin/SchedulesPage"
+            className={`${styles.button} ${styles.buttonPrimary}`}
+          >
+            HORARIOS
+          </Link>
+        </div>
+      </div>
+
+      {/* Cuarta fila: Sucursales */}
+      <div className={styles.HomePageAdminGrid}>
+        <div className={styles.HomePageAdminCard}>
+          <h3>Sucursal Centro</h3>
+          <img
+            src="/images/sucursal1.jpeg"
+            alt="Sucursal Centro"
+            style={{ width: "100%", borderRadius: "8px", marginBottom: "10px" }}
+          />
+          <a
+            href="https://maps.app.goo.gl/ut38V2Tf414qxqs28"
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Mendoza 2774, Rosario
+          </a>
+        </div>
+
+        <div className={styles.HomePageAdminCard}>
+          <h3>Sucursal Norte</h3>
+          <img
+            src="/images/sucursal2.jpg"
+            alt="Sucursal Norte"
+            style={{ width: "100%", borderRadius: "8px", marginBottom: "10px" }}
+          />
+          <a
+            href="https://maps.app.goo.gl/KJnih2u2hf5S9jmB6"
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Juan B. Justo 1767, Rosario
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

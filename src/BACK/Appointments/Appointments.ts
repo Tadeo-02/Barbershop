@@ -6,21 +6,8 @@ const AppointmentsSchema = z.object({
   // codTurno: z
   //   .string().uuid("ID de barbero inválido"),
   codCorte: z.string().min(1, "Código de corte es requerido").optional(),
-  codBarbero: z.string().min(1, "Código de barbero es requerido"),
+  codHorario: z.string().min(1, "Código de horario es requerido"),
   codCliente: z.string().min(1, "Código de cliente es requerido"),
-  // horaDesdeTurno y horaHastaTurno como strings con formato HH:MM
-  horaDesdeTurno: z
-    .string()
-    .min(1, "Hora desde es requerida")
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora desde inválida. Formato HH:MM"),
-  horaHastaTurno: z
-    .string()
-    .min(1, "Hora hasta es requerida")
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora hasta inválida. Formato HH:MM"),
-  fechaTurno: z
-    .string()
-    .min(1, "Fecha es requerida")
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida. Formato YYYY-MM-DD"),
   precioTurno: z
     .string()
     .min(1, "Precio es requerido")
@@ -43,20 +30,14 @@ const AppointmentsSchema = z.object({
 
 // funciones backend
 export const store = async (
-  codBarbero: string,
+  codHorario: string,
   codCliente: string,
-  horaDesdeTurno: string,
-  horaHastaTurno: string,
-  fechaTurno: string
 ) => {
   try {
     // sanitizar inputs
     const sanitizedData = {
-      codBarbero: sanitizeInput(codBarbero),
+      codHorario: sanitizeInput(codHorario),
       codCliente: sanitizeInput(codCliente),
-      horaDesdeTurno: sanitizeInput(horaDesdeTurno),
-      horaHastaTurno: sanitizeInput(horaHastaTurno),
-      fechaTurno: sanitizeInput(fechaTurno),
     };
 
     // validación con zod
@@ -64,23 +45,11 @@ export const store = async (
 
     console.log("Creating turno");
 
-    // convertir strings a Date objects para Prisma
-    const horaDesde = new Date(
-      `1970-01-01T${validatedData.horaDesdeTurno}:00.000Z`
-    );
-    const horaHasta = new Date(
-      `1970-01-01T${validatedData.horaHastaTurno}:00.000Z`
-    );
-    const fecha = new Date(validatedData.fechaTurno);
-
     // crear turno
     const turno = await prisma.turno.create({
       data: {
-        codBarbero: validatedData.codBarbero,
+        codHorario: validatedData.codHorario,
         codCliente: validatedData.codCliente,
-        horaDesdeTurno: horaDesde,
-        horaHastaTurno: horaHasta,
-        fechaTurno: fecha,
       },
     });
 
@@ -115,7 +84,8 @@ export const findAll = async () => {
     console.log("Fetching all turnos with Prisma");
 
     const turnos = await prisma.turno.findMany({
-      orderBy: [{ fechaTurno: "asc" }, { horaDesdeTurno: "asc" }],
+      // include: { horarios: true},
+      // orderBy: [{ horarios.fecha: "asc" }, { horarios.horaDesde: "asc" }],
     });
 
     console.log(`Retrieved ${turnos.length} turnos`);
@@ -156,11 +126,8 @@ export const findById = async (codTurno: string) => {
 export const update = async (
   codTurno: string,
   codCorte: string,
-  codBarbero: string,
+  codHorario: string,
   codCliente: string,
-  horaDesdeTurno: string,
-  horaHastaTurno: string,
-  fechaTurno: string,
   precioTurno: string,
   metodoPago: string,
   fechaCancelacion: string
@@ -170,11 +137,8 @@ export const update = async (
     const sanitizedData = {
       codTurno: sanitizeInput(codTurno),
       codCorte: sanitizeInput(codCorte),
-      codBarbero: sanitizeInput(codBarbero),
+      codHorario: sanitizeInput(codHorario),
       codCliente: sanitizeInput(codCliente),
-      horaDesdeTurno: sanitizeInput(horaDesdeTurno),
-      horaHastaTurno: sanitizeInput(horaHastaTurno),
-      fechaTurno: sanitizeInput(fechaTurno),
       precioTurno: sanitizeInput(precioTurno),
       metodoPago: sanitizeInput(metodoPago),
       fechaCancelacion: sanitizeInput(fechaCancelacion),
@@ -183,11 +147,8 @@ export const update = async (
     const validatedData = AppointmentsSchema.parse({
       codTurno: sanitizedData.codTurno,
       codCorte: sanitizedData.codCorte,
-      codBarbero: sanitizedData.codBarbero,
+      codHorario: sanitizedData.codHorario,
       codCliente: sanitizedData.codCliente,
-      horaDesdeTurno: sanitizedData.horaDesdeTurno,
-      horaHastaTurno: sanitizedData.horaHastaTurno,
-      fechaTurno: sanitizedData.fechaTurno,
       precioTurno: sanitizedData.precioTurno,
       metodoPago: sanitizedData.metodoPago,
       fechaCancelacion: sanitizedData.fechaCancelacion,
@@ -203,13 +164,6 @@ export const update = async (
     }
 
     // convertir strings a tipos correctos para Prisma
-    const horaDesde = new Date(
-      `1970-01-01T${validatedData.horaDesdeTurno}:00.000Z`
-    );
-    const horaHasta = new Date(
-      `1970-01-01T${validatedData.horaHastaTurno}:00.000Z`
-    );
-    const fecha = new Date(validatedData.fechaTurno);
     const fechaCancelacionDate = validatedData.fechaCancelacion
       ? new Date(validatedData.fechaCancelacion)
       : null;
@@ -222,11 +176,8 @@ export const update = async (
       where: { codTurno: sanitizedData.codTurno },
       data: {
         codCorte: validatedData.codCorte,
-        codBarbero: validatedData.codBarbero,
+        codHorario: validatedData.codHorario,
         codCliente: validatedData.codCliente,
-        horaDesdeTurno: horaDesde,
-        horaHastaTurno: horaHasta,
-        fechaTurno: fecha,
         precioTurno: precio,
         metodoPago: validatedData.metodoPago,
         fechaCancelacion: fechaCancelacionDate,
