@@ -5,11 +5,12 @@ import path from "path";
 
 // Import CommonJS routers
 import categoriesRouter from "./src/BACK/Admin/categories/categories.router";
-
+import branchesRouter from "./src/BACK/Admin/branches/branches.router";
 import usersRouter from "./src/BACK/users/users.router";
 import { login } from "./src/BACK/users/users.controller";
 //import typeOfCutRouter from "./src/BACK/typeOfCut/typeOfCut.router";
 console.log("🔍 Categories router:", categoriesRouter);
+console.log("🔍 Branches router:", branchesRouter);
 console.log("🔍 Users router:", usersRouter);
 
 import typeOfHaircutRouter from "./src/BACK/Admin/typeOfHaircut/typeOfHaircut.router";
@@ -35,6 +36,7 @@ app.use("/usuarios", usersRouter);
 
 app.use("/tipoCortes", typeOfHaircutRouter);
 
+app.use("/sucursales", branchesRouter);
 // Ruta específica para login
 app.post("/login", login);
 
