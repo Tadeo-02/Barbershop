@@ -47,12 +47,12 @@ import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
 
 function App() {
   return (
-
-    <Router>
-      <div className="appContainer">
-        <Header />
-        <main className="mainContent">
-          <Routes>
+    <AuthProvider>
+      <Router>
+        <div className="appContainer">
+          <Header />
+          <main className="mainContent">
+            <Routes>
             {/* <Route path="/" element={<HomePageAdmin />} /> */}
             <Route path="/" element={<Home />} /*>esto lo agregué para poder ver la home del cliente directamente*/ />
             <Route path="/branches" element={<Branches />} />
@@ -266,7 +266,7 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
-  );
+  );  
 }
 
 export default App;
