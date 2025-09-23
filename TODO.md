@@ -13,7 +13,7 @@
     * Listado de clientes (proposal.md)
     * Listado de rentabilidad (proposal.md)
 ##  General:
-    * Definir estructura mobile first en estilos
+    * Definir estructura mobile first en estilos - dolo, listo
     * Sección Productos 
 # BACK: 
 ## - Usuarios:
