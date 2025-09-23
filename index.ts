@@ -13,7 +13,7 @@ console.log("🔍 Categories router:", categoriesRouter);
 console.log("🔍 Branches router:", branchesRouter);
 console.log("🔍 Users router:", usersRouter);
 
-import typeOfHaircutRouter from "./src/BACK/typeOfHaircut/typeOfHaircut.router";
+import typeOfHaircutRouter from "./src/BACK/Admin/typeOfHaircut/typeOfHaircut.router";
 import schedulesRouter from "./src/BACK/schedules/schedules.router";
 
 console.log("🔍 Categories router:", categoriesRouter);

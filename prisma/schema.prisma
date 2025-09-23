@@ -20,16 +20,18 @@ model Categoria {
 model Turno {
   codTurno         String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
   codCorte         String?   @db.VarChar(36)
-  codHorario       String    @unique(map: "codHorario_2") @db.VarChar(36)
   codCliente       String    @db.VarChar(36)
   precioTurno      Float?    @db.Float
   metodoPago       String?   @db.VarChar(20)
   fechaCancelacion DateTime? @db.Date
+  codBarbero       String    @db.VarChar(36)
+  fechaTurno       DateTime  @db.Date
+  horaDesdeTurno   DateTime  @db.Time(0)
+  horaHastaTurno   DateTime  @db.Time(0)
 
-  @@index([codHorario], map: "codBarbero")
+  @@index([codBarbero], map: "codBarbero")
   @@index([codCliente], map: "codCliente")
   @@index([codCorte], map: "codCorte")
-  @@index([codHorario], map: "codHorario")
   @@map("turnos")
 }
 
@@ -82,15 +84,4 @@ model usuarios {
   contrase_a  String  @map("contraseña") @db.VarChar(50)
 
   @@index([codSucursal], map: "codSucursal")
-}
-
-model horarios {
-  codHorario String   @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  codBarbero String   @db.VarChar(36)
-  fecha      DateTime @db.Date
-  horaDesde  DateTime @db.Time(0)
-  horaHasta  DateTime @db.Time(0)
-  estado     String   @db.VarChar(10)
-
-  @@index([codBarbero], map: "codBarbero")
 }
