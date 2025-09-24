@@ -2,7 +2,7 @@ import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
 
 const ScheduleSchema = z.object({
-  codHorario: z.string().min(1, "Código de horario es requerido"),
+  // codHorario: z.string().min(1, "Código de horario es requerido"),
   codBarbero: z.string().min(1, "Código de barbero es requerido"),
   fecha: z
     .string()
@@ -40,10 +40,8 @@ export const store = async (
       estado: sanitizeInput(estado),
     };
 
-    // validacion con zod (omitir codHorario para creación)
-    const validatedData = ScheduleSchema.omit({ codHorario: true }).parse(
-      sanitizedData
-    );
+    // validacion con zod
+    const validatedData = ScheduleSchema.parse(sanitizedData);
 
     console.log("Creating schedule");
 
@@ -86,7 +84,6 @@ export const store = async (
       const prismaError = error as { code: string; message: string };
 
       if (prismaError.code === "P2002") {
-        //? a lo mejor se pueden generalizar este error pero es innecesario y complicado
         throw new DatabaseError("Ya existe ese horario");
       }
     }

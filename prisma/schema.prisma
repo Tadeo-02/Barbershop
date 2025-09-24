@@ -85,3 +85,12 @@ model usuarios {
 
   @@index([codSucursal], map: "codSucursal")
 }
+
+model horarios {
+  codHorario String   @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codBarbero String   @db.VarChar(36)
+  fecha      DateTime @db.Date
+  horaDesde  DateTime @db.Time(0)
+  horaHasta  DateTime @db.Time(0)
+  estado     String   @db.VarChar(10)
+}
