@@ -17,6 +17,7 @@ export default defineConfig({
       "/usuarios": "http://localhost:3001", // nuevo endpoint para usuarios
       "/login": "http://localhost:3001", // proxy para el endpoint de login
       "/sucursales": "http://localhost:3001", // proxy para el endpoint de sucursales
+      "/horarios": "http://localhost:3001", // proxy para el endpoint de schedules
     },
   },
 });

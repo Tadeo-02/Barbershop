@@ -53,27 +53,27 @@ function App() {
           <Header />
           <main className="mainContent">
             <Routes>
-            {/* <Route path="/" element={<HomePageAdmin />} /> */}
-            <Route path="/" element={<Home />} /*>esto lo agregué para poder ver la home del cliente directamente*/ />
-            <Route path="/branches" element={<Branches />} />
-            {/* Selección de barbero primero */}
-            <Route
-              path="/branches/:branchId/barbers"
-              element={<BarbersByBranch />}
-            />
-            <Route
-              path="/barbers/:barberId/appointments"
-              element={<AppointmentsByBarber />}
-            />
-            {/* Selección de horario primero */}
-            <Route
-              path="/branches/:branchId/schedule"
-              element={<ScheduleByBranch />}
-            />
-            <Route
-              path="/branches/:branchId/schedule/:scheduleId/barbers"
-              element={<BarbersByBranch />}
-            />
+              <Route path="/" element={<SchedulesPage />} />
+              {/* <Route path="/" element={<Home />}>esto lo agregué para poder ver la home del cliente directamente /> */}
+              <Route path="/branches" element={<Branches />} />
+              {/* Selección de barbero primero */}
+              <Route
+                path="/branches/:branchId/barbers"
+                element={<BarbersByBranch />}
+              />
+              <Route
+                path="/barbers/:barberId/appointments"
+                element={<AppointmentsByBarber />}
+              />
+              {/* Selección de horario primero */}
+              <Route
+                path="/branches/:branchId/schedule"
+                element={<ScheduleByBranch />}
+              />
+              <Route
+                path="/branches/:branchId/schedule/:scheduleId/barbers"
+                element={<BarbersByBranch />}
+              />
 
               {/* Ruta temporal para testing */}
               <Route
@@ -150,24 +150,35 @@ function App() {
                 }
               />
 
-            <Route
-              path="/schedules/createSchedules"
-              element={<CreateSchedules />}
-            />
-            <Route
-              path="/schedules/indexSchedules"
-              element={<IndexSchedules />}
-            />
-            <Route
-              path="/schedules/:codHorario"
-              element={
-                <div>Show Schedule Details - Component not implemented yet</div>
-              }
-            />
-            <Route
-              path="/schedules/updateSchedules/:codHorario"
-              element={<UpdateSchedules />}
-            />
+              <Route
+                path="/Admin/SchedulesPage"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <SchedulesPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/schedules/createSchedules"
+                element={<CreateSchedules />}
+              />
+              <Route
+                path="/schedules/indexSchedules"
+                element={<IndexSchedules />}
+              />
+              <Route
+                path="/schedules/:codHorario"
+                element={
+                  <div>
+                    Show Schedule Details - Component not implemented yet
+                  </div>
+                }
+              />
+              <Route
+                path="/schedules/updateSchedules/:codHorario"
+                element={<UpdateSchedules />}
+              />
 
               {/* <Route
                 path="/Admin/TurnsPage"
@@ -178,22 +189,22 @@ function App() {
                 }
               /> */}
 
-            <Route
-              path="/typeOfHaircut/createTypeOfHaircut"
-              element={<CreateTypeOfHaircut />}
-            />
-            <Route
-              path="/typeOfHaircut/createTypeOfHaircut"
-              element={<CreateTypeOfHaircut />}
-            />
-            <Route
-              path="/typeOfHaircut/indexTypeOfHaircut"
-              element={<IndexTypeOfHaircut />}
-            />
-            <Route
-              path="/typeOfHaircut/updateTypeOfHaircut/:codCorte"
-              element={<UpdateTypeOfHaircut />}
-            />
+              <Route
+                path="/typeOfHaircut/createTypeOfHaircut"
+                element={<CreateTypeOfHaircut />}
+              />
+              <Route
+                path="/typeOfHaircut/createTypeOfHaircut"
+                element={<CreateTypeOfHaircut />}
+              />
+              <Route
+                path="/typeOfHaircut/indexTypeOfHaircut"
+                element={<IndexTypeOfHaircut />}
+              />
+              <Route
+                path="/typeOfHaircut/updateTypeOfHaircut/:codCorte"
+                element={<UpdateTypeOfHaircut />}
+              />
 
               <Route
                 path="/barbers/createBarbers"
