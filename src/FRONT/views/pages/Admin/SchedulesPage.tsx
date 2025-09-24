@@ -17,7 +17,7 @@ function SchedulesPage() {
           to="/schedules/createSchedules"
           className={`${styles.button} ${styles.buttonPrimary}`}
         >
-          + CREAR HORARIO
+          CREAR HORARIO
         </Link>
         <Link
           to="/schedules/indexSchedules"
