@@ -7,7 +7,8 @@ const router = createRouter(controller, {
   updatePath: "/update",
 });
 
-// Agregar ruta específica para login
+// Rutas específicas para users
 router.post("/login", controller.login);
+router.get("/branch/:codSucursal", controller.findByBranchId);
 
 export default router;

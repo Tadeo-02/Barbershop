@@ -2,6 +2,10 @@ import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 
 const BranchSchema = z.object({
+  nombre: z
+    .string()
+    .min(2, "Nombre debe tener al menos 2 caracteres")
+    .max(100, "Nombre no puede tener más de 100 caracteres"),
   calle: z
     .string()
     .min(2, "Calle debe tener al menos 2 caracteres")
@@ -13,10 +17,11 @@ const BranchSchema = z.object({
 });
 
 // funciones backend para Sucursales
-export const store = async (calle: string, altura: number) => {
+export const store = async (nombre: string, calle: string, altura: number) => {
   try {
     // sanitizar de inputs
     const sanitizedData = {
+      nombre: sanitizeInput(nombre),
       calle: sanitizeInput(calle),
       altura: Number(altura),
     };
@@ -25,6 +30,7 @@ export const store = async (calle: string, altura: number) => {
     // crear branch usando el modelo correcto de Prisma
     const branch = await prisma.sucursales.create({
       data: {
+        nombre: validateData.nombre,
         calle: validateData.calle,
         altura: validateData.altura,
       },
@@ -87,16 +93,19 @@ export const findById = async (codSucursal: string) => {
 
 export const update = async (
   codSucursal: string,
+  nombre: string,
   calle: string,
   altura: number
 ) => {
   try {
     const sanitizedData = {
       codSucursal: sanitizeInput(codSucursal),
+      nombre: sanitizeInput(nombre),
       calle: sanitizeInput(calle),
       altura: Number(altura),
     };
     const validateData = BranchSchema.parse({
+      nombre: sanitizedData.nombre,
       calle: sanitizedData.calle,
       altura: sanitizedData.altura,
     });
@@ -109,6 +118,7 @@ export const update = async (
     const branch = await prisma.sucursales.update({
       where: { codSucursal: sanitizedData.codSucursal },
       data: {
+        nombre: validateData.nombre,
         calle: validateData.calle,
         altura: validateData.altura,
       },
