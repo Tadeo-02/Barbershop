@@ -56,6 +56,32 @@ class UsersController extends BaseController<any> {
 
 const usersController = new UsersController();
 
+// Función personalizada para buscar usuarios por sucursal
+export const findByBranchId = async (req: any, res: any) => {
+  try {
+    const { codSucursal } = req.params;
+
+    if (!codSucursal) {
+      return res.status(400).json({
+        success: false,
+        message: "codSucursal es requerido",
+      });
+    }
+
+    const usuarios = await model.findByBranchId(codSucursal);
+
+    return res.status(200).json({
+      success: true,
+      data: usuarios,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error al buscar usuarios por sucursal",
+    });
+  }
+};
+
 export const { create, store, index, show, edit, update, destroy } =
   usersController;
 
