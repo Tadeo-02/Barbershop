@@ -1,54 +1,73 @@
-import React from "react";
+import { useEffect, useState } from "react";
+// import { Link } from "react-router-dom";
 import styles from "./branches.module.css";
-import { useNavigate } from "react-router-dom";
+// import toast from "react-hot-toast";
+interface Branch {
+  codSucursal: number;
+  nombre: string;
+  calle: string;
+  altura: number;
+}
 
-const branches = [
-    { id: 1, nombre: "Sucursal Centro", direccion: "Av. Principal 123" },
-    { id: 2, nombre: "Sucursal Norte", direccion: "Calle Norte 456" },
-    { id: 3, nombre: "Sucursal Sur", direccion: "Av. Sur 789" },
-];
+const IndexBranches = () => {
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [loading, setLoading] = useState(true); // loading inicial
 
-const Branches = () => {
-    const navigate = useNavigate();
-    const [selectedBranch, setSelectedBranch] = React.useState<number | null>(null);
-    const [showOptions, setShowOptions] = React.useState(false);
+  useEffect(() => {
+    fetch("/sucursales")
+      .then((res) => res.json())
+      .then((data) => {
+        setBranches(data); // data debe ser un array de sucursales
+        console.log("Sucursales recibidas:", data);
+      })
+      .catch((error) => {
+        console.error("Error al obtener sucursales:", error);
+      })
+      .finally(() => {
+        setLoading(false); // Termina el loading
+      });
+  }, []);
 
-    const handleSelectBranch = (id: number) => {
-        setSelectedBranch(id);
-        setShowOptions(true);
-    };
+  if(loading) {
+    return <div className={styles.loadingState}>Cargando sucursales...</div>;
+  }
 
-    const handleBarberFirst = () => {
-        navigate(`/branches/${selectedBranch}/barbers`);
-    };
-    const handleScheduleFirst = () => {
-        navigate(`/branches/${selectedBranch}/schedule`);
-    };
-
-    return (
-        <div className={styles.branchesContainer}>
-            <h2>Sucursales disponibles</h2>
-            <ul className={styles.branchList}>
-                {branches.map((branch) => (
-                    <li key={branch.id} className={styles.branchItem} onClick={() => handleSelectBranch(branch.id)} style={{cursor: 'pointer'}}>
-                        <div className={styles.branchName}>{branch.nombre}</div>
-                        <div className={styles.branchAddress}>{branch.direccion}</div>
-                    </li>
-                ))}
-            </ul>
-            {showOptions && (
-                <div className={styles.optionsContainer}>
-                    <h3>¿Cómo quieres buscar tu turno?</h3>
-                    <button className={styles.optionButton} onClick={handleBarberFirst}>
-                        Elegir barbero
-                    </button>
-                    <button className={styles.optionButton} onClick={handleScheduleFirst}>
-                        Elegir horario
-                    </button>
-                </div>
-            )}
+  return (
+    <div className={styles.branchesContainer}>
+      <h2>Sucursales disponibles</h2>
+      {branches.length === 0 ? (
+        <div className={styles.emptyState}>
+          <p>No hay sucursales disponibles.</p>
         </div>
-    );
+      ) : (
+        <ul className={styles.branchList}>
+          {branches.map((branch, idx) => (
+            <li
+              key={idx}
+              className={styles.branchItem}
+              style={{ cursor: "pointer" }}
+            >
+              <div className={styles.branchName}>{branch.nombre}</div>
+              <div className={styles.branchAddress}>
+                {branch.calle} {branch.altura}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {/* {/*   {showOptions && (
+    //     <div className={styles.optionsContainer}>
+    //       <h3>¿Cómo quieres buscar tu turno?</h3>
+    //       <button className={styles.optionButton} onClick={handleBarberFirst}>
+    //         Elegir barbero
+    //       </button>
+    //       <button className={styles.optionButton} onClick={handleScheduleFirst}>
+    //         Elegir horario
+    //       </button>
+    //     </div> 
+      )}*/}
+    </div>
+  );
 };
 
-export default Branches;
+export default IndexBranches;

@@ -20,18 +20,12 @@ import CreateTypeOfHaircut from "./components/Admin/typeOfHaircut/createTypeOfHa
 import IndexTypeOfHaircut from "./components/Admin/typeOfHaircut/indexTypeOfHaircut.tsx";
 import UpdateTypeOfHaircut from "./components/Admin/typeOfHaircut/updateTypeOfHaircut.tsx";
 
-import CreateSchedules from "./components/schedules/createSchedules.tsx";
-import IndexSchedules from "./components/schedules/indexSchedules.tsx";
-// import ShowSchedules from "./components/schedules/showSchedules.tsx";
-import UpdateSchedules from "./components/schedules/updateSchedules.tsx";
-
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
 import HomePageClient from "./pages/Client/HomePageClient.tsx";
 import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
 import BarbersPage from "./pages/Admin/BarbersPage.tsx";
-import SchedulesPage from "./pages/Admin/SchedulesPage.tsx";
 import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 import { AuthProvider } from "./components/login/AuthContext.tsx";
@@ -53,8 +47,7 @@ function App() {
           <Header />
           <main className="mainContent">
             <Routes>
-              <Route path="/" element={<SchedulesPage />} />
-              {/* <Route path="/" element={<Home />}>esto lo agregué para poder ver la home del cliente directamente /> */}
+              <Route path="/" element={<Home />}>esto lo agregué para poder ver la home del cliente directamente </Route>
               <Route path="/branches" element={<Branches />} />
               {/* Selección de barbero primero */}
               <Route
@@ -148,36 +141,6 @@ function App() {
                     <HairCutTypesPage />
                   </ProtectedRoute>
                 }
-              />
-
-              <Route
-                path="/Admin/SchedulesPage"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <SchedulesPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/schedules/createSchedules"
-                element={<CreateSchedules />}
-              />
-              <Route
-                path="/schedules/indexSchedules"
-                element={<IndexSchedules />}
-              />
-              <Route
-                path="/schedules/:codHorario"
-                element={
-                  <div>
-                    Show Schedule Details - Component not implemented yet
-                  </div>
-                }
-              />
-              <Route
-                path="/schedules/updateSchedules/:codHorario"
-                element={<UpdateSchedules />}
               />
 
               {/* <Route
