@@ -5,21 +5,6 @@ import CreateUser from "./components/login/createUser.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 
-import CreateCategories from "./components/Admin/categories/createCategories.tsx";
-import UpdateCategories from "./components/Admin/categories/updateCategories.tsx";
-import IndexCategories from "./components/Admin/categories/indexCategories.tsx";
-import ShowCategories from "./components/Admin/categories/showCategories.tsx";
-
-import CreateBarbers from "./components/Admin/barbers/createBarbers.tsx";
-import IndexBarbers from "./components/Admin/barbers/indexBarbers.tsx";
-import ShowBarbers from "./components/Admin/barbers/showBarbers.tsx";
-import UpdateBarbers from "./components/Admin/barbers/updateBarbers.tsx";
-
-
-import CreateTypeOfHaircut from "./components/Admin/typeOfHaircut/createTypeOfHaircut.tsx";
-import IndexTypeOfHaircut from "./components/Admin/typeOfHaircut/indexTypeOfHaircut.tsx";
-import UpdateTypeOfHaircut from "./components/Admin/typeOfHaircut/updateTypeOfHaircut.tsx";
-
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
@@ -37,6 +22,7 @@ import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import AppointmentsByBarber from "./components/Client/appointmentsByBarber.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
+import ProfilePage from "./pages/Client/ProfilePage.tsx";
 // import TurnsPage from "./pages/Admin/TurnsPage.tsx";
 
 function App() {
@@ -47,7 +33,9 @@ function App() {
           <Header />
           <main className="mainContent">
             <Routes>
-              <Route path="/" element={<Home />}>esto lo agregué para poder ver la home del cliente directamente </Route>
+              <Route path="/" element={<Home />}>
+                esto lo agregué para poder ver la home del cliente directamente{" "}
+              </Route>
               <Route path="/branches" element={<Branches />} />
               {/* Selección de barbero primero */}
               <Route
@@ -114,6 +102,7 @@ function App() {
               />
 
               <Route path="/client" element={<HomePageClient />} />
+              <Route path="/client/profile" element={<ProfilePage />} />
 
               {/* Rutas de administración protegidas */}
               <Route
@@ -152,49 +141,6 @@ function App() {
                 }
               /> */}
 
-              <Route
-                path="/typeOfHaircut/createTypeOfHaircut"
-                element={<CreateTypeOfHaircut />}
-              />
-              <Route
-                path="/typeOfHaircut/createTypeOfHaircut"
-                element={<CreateTypeOfHaircut />}
-              />
-              <Route
-                path="/typeOfHaircut/indexTypeOfHaircut"
-                element={<IndexTypeOfHaircut />}
-              />
-              <Route
-                path="/typeOfHaircut/updateTypeOfHaircut/:codCorte"
-                element={<UpdateTypeOfHaircut />}
-              />
-
-              <Route
-                path="/barbers/createBarbers"
-                element={<CreateBarbers />}
-              />
-              <Route path="/barbers/indexBarbers" element={<IndexBarbers />} />
-              <Route path="/barbers/:codUsuario" element={<ShowBarbers />} />
-              <Route
-                path="/barbers/updateBarber/:codUsuario"
-                element={<UpdateBarbers />}
-              />
-
-              <Route path="/login" element={<Login />} />
-              <Route path="/signUp" element={<CreateUser />} />
-
-              <Route
-                path="/typeOfHaircut/createTypeOfHaircut"
-                element={<CreateTypeOfHaircut />}
-              />
-              <Route
-                path="/typeOfHaircut/indexTypeOfHaircut"
-                element={<IndexTypeOfHaircut />}
-              />
-              <Route
-                path="/typeOfHaircut/updateTypeOfHaircut/:codCorte"
-                element={<UpdateTypeOfHaircut />}
-              />
 
               {/* con el '*' indico que tiene rutas anidadas*/}
             </Routes>
@@ -240,7 +186,7 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
-  );  
+  );
 }
 
 export default App;
