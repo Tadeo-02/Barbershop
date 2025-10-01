@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-// import { Link } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
 // import toast from "react-hot-toast";
 interface Branch {
@@ -10,7 +11,9 @@ interface Branch {
 }
 
 const IndexBranches = () => {
+  const navigate = useNavigate();
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [showOptions, setShowOptions] = React.useState(false);
   const [loading, setLoading] = useState(true); // loading inicial
 
   useEffect(() => {
@@ -32,6 +35,18 @@ const IndexBranches = () => {
     return <div className={styles.loadingState}>Cargando sucursales...</div>;
   }
 
+  const handleSelectBranch = (codSucursal: number) => {
+    setBranches(branches.filter(branch => branch.codSucursal === codSucursal));
+    setShowOptions(true);
+  };
+
+  const handleBarberFirst = () => {
+    navigate(`/branches/${branches[0].codSucursal}/barbers`);
+  };
+  const handleScheduleFirst = () => {
+    navigate(`/branches/${branches[0].codSucursal}/schedule`);
+  };
+
   return (
     <div className={styles.branchesContainer}>
       <h2>Sucursales disponibles</h2>
@@ -45,6 +60,7 @@ const IndexBranches = () => {
             <li
               key={idx}
               className={styles.branchItem}
+              onClick={() => handleSelectBranch(branch.codSucursal)}
               style={{ cursor: "pointer" }}
             >
               <div className={styles.branchName}>{branch.nombre}</div>
@@ -55,17 +71,18 @@ const IndexBranches = () => {
           ))}
         </ul>
       )}
-      {/* {/*   {showOptions && (
-    //     <div className={styles.optionsContainer}>
-    //       <h3>¿Cómo quieres buscar tu turno?</h3>
-    //       <button className={styles.optionButton} onClick={handleBarberFirst}>
-    //         Elegir barbero
-    //       </button>
-    //       <button className={styles.optionButton} onClick={handleScheduleFirst}>
-    //         Elegir horario
-    //       </button>
-    //     </div> 
-      )}*/}
+      
+      {showOptions && (
+        <div className={styles.optionsContainer}>
+          <h3>¿Cómo quieres buscar tu turno?</h3>
+          <button className={styles.optionButton} onClick={handleBarberFirst}>
+            Elegir barbero
+          </button>
+          <button className={styles.optionButton} onClick={handleScheduleFirst}>
+            Elegir horario
+          </button>
+        </div>
+      )}
     </div>
   );
 };
