@@ -136,6 +136,30 @@ export const findById = async (codUsuario: string) => {
   }
 };
 
+export const findByBranchId = async (codSucursal: string) => {
+  try {
+    // Sanitizar y validar
+    const sanitizedCodSucursal = sanitizeInput(codSucursal);
+
+    const usuarios = await prisma.usuarios.findMany({
+      where: { codSucursal: sanitizedCodSucursal },
+      orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
+    });
+
+    return usuarios;
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding users by branch ID:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al buscar usuarios por sucursal");
+  }
+};
+
 export const update = async (
   codUsuario: string,
   dni: string,
