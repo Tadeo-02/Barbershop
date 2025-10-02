@@ -5,6 +5,7 @@ import toast from "react-hot-toast"; //importamos libreria de alertas
 
 const CreateBarbers: React.FC = () => {
   const navigate = useNavigate();
+
   const [dni, setDni] = useState("");
   const [cuil, setCuil] = useState("");
   const [nombre, setNombre] = useState("");
@@ -18,7 +19,7 @@ const CreateBarbers: React.FC = () => {
     const toastId = toast.loading("Creando Barbero..."); //alert de loading
     try {
       console.log(
-        "Enviando POST a /barberos con datos barbero:",
+        "Enviando POST a /users con datos barbero:",
         dni,
         cuil,
         nombre,
@@ -27,7 +28,7 @@ const CreateBarbers: React.FC = () => {
         email,
         contraseña
       );
-      const response = await fetch("/barberos", {
+      const response = await fetch("/usuarios", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,17 +46,21 @@ const CreateBarbers: React.FC = () => {
           data = JSON.parse(text);
           console.log("Después de JSON.parse, data:", data);
         } catch (parseError) {
-          toast.error("Error al parsear JSON:");
+          toast.error("Error al parsear JSON:", { id: toastId });
           throw parseError;
         }
       } else {
-        toast.error("Respuesta vacía del backend");
+        toast.error("Respuesta vacía del backend", { id: toastId });
         alert("El servidor no devolvió respuesta.");
         return;
       }
 
       if (response.ok) {
-        toast.success(data.message || "Barbero creado exitosamente", {id: toastId});
+        // Probar directamente reemplazando el toast de loading
+        toast.success(data.message || "Barbero creado exitosamente", {
+          id: toastId, // Usar el mismo ID para reemplazar
+          duration: 4000, // 4 segundos de duración
+        });
         setDni("");
         setCuil("");
         setNombre("");
@@ -63,7 +68,7 @@ const CreateBarbers: React.FC = () => {
         setTelefono("");
         setEmail("");
         setContraseña("");
-        navigate("/barbers/indexBarbers");
+        navigate("../indexBarbers");
       } else {
         toast.error(data.message || "Error al crear barbero", { id: toastId });
       }
@@ -84,6 +89,7 @@ const CreateBarbers: React.FC = () => {
           <input
             className={styles.formInput}
             type="text"
+            placeholder="40300123"
             name="dni"
             id="dni"
             value={dni}

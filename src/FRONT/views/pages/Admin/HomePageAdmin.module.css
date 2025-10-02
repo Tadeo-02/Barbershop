@@ -293,7 +293,146 @@ h2 {
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
 }
 
-/* Responsive adjustments */
+/* Admin Dashboard Styles */
+.adminDashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 200px);
+}
+
+.dashboardHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.dashboardHeader h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.dashboardHeader p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 0;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.dashboardCard {
+  background: #fff;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  text-decoration: none;
+  color: #333;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboardCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+  color: #333;
+}
+
+.cardIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboardCard h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.dashboardCard p {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 0;
+}
+
+/* Colores específicos para cada tarjeta */
+.categoriesCard:hover {
+  border-color: #4caf50;
+}
+
+.categoriesCard .cardIcon {
+  color: #4caf50;
+}
+
+.barbersCard:hover {
+  border-color: #2196f3;
+}
+
+.barbersCard .cardIcon {
+  color: #2196f3;
+}
+
+.haircutCard:hover {
+  border-color: #ff9800;
+}
+
+.haircutCard .cardIcon {
+  color: #ff9800;
+}
+
+.branchesCard:hover {
+  border-color: #9c27b0;
+}
+
+.branchesCard .cardIcon {
+  color: #9c27b0;
+}
+
+/* Botones existentes para las otras páginas */
+.button {
+  display: inline-block;
+  padding: 12px 30px;
+  margin: 10px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.buttonPrimary {
+  background-color: #007bff;
+  color: white;
+}
+
+.buttonPrimary:hover {
+  background-color: #0056b3;
+  text-decoration: none;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   h1,
   h2 {
@@ -333,6 +472,28 @@ h2 {
   .mainTurnosGrid {
     grid-template-columns: 1fr;
     gap: 15px;
+  }
+
+  .adminDashboard {
+    padding: 1rem;
+  }
+
+  .dashboardHeader h1 {
+    font-size: 2rem;
+  }
+
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .dashboardCard {
+    padding: 1.5rem;
+    min-height: 150px;
+  }
+
+  .cardIcon {
+    font-size: 2.5rem;
   }
 }
 
