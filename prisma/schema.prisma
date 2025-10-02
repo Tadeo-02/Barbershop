@@ -8,26 +8,31 @@ datasource db {
 }
 
 model Categoria {
-  codCategoria      String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  nombreCategoria   String @db.VarChar(50)
-  descCategoria     String @db.VarChar(250)
-  descuentoCorte    Float  @db.Float
-  descuentoProducto Float  @db.Float
+  codCategoria      String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  nombreCategoria   String              @db.VarChar(50)
+  descCategoria     String              @db.VarChar(250)
+  descuentoCorte    Float               @db.Float
+  descuentoProducto Float               @db.Float
+  categoria_vigente categoria_vigente[]
 
   @@map("categorias")
 }
 
 model Turno {
-  codTurno         String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  codCorte         String?   @db.VarChar(36)
-  codCliente       String    @db.VarChar(36)
-  precioTurno      Float?    @db.Float
-  metodoPago       String?   @db.VarChar(20)
-  fechaCancelacion DateTime? @db.Date
-  codBarbero       String    @db.VarChar(36)
-  fechaTurno       DateTime  @db.Date
-  horaDesdeTurno   DateTime  @db.Time(0)
-  horaHastaTurno   DateTime  @db.Time(0)
+  codTurno                             String             @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codCorte                             String?            @db.VarChar(36)
+  codCliente                           String             @db.VarChar(36)
+  precioTurno                          Float?             @db.Float
+  metodoPago                           String?            @db.VarChar(20)
+  fechaCancelacion                     DateTime?          @db.Date
+  codBarbero                           String             @db.VarChar(36)
+  fechaTurno                           DateTime           @db.Date
+  horaDesde                            DateTime           @db.Time(0)
+  horaHasta                            DateTime           @db.Time(0)
+  estado_del_turno                     estado_del_turno[]
+  usuarios_turnos_codBarberoTousuarios usuarios           @relation("turnos_codBarberoTousuarios", fields: [codBarbero], references: [codUsuario], onUpdate: Restrict, map: "fk_turnos_barbero")
+  usuarios_turnos_codClienteTousuarios usuarios           @relation("turnos_codClienteTousuarios", fields: [codCliente], references: [codUsuario], onUpdate: Restrict, map: "fk_turnos_cliente")
+  tipos_corte                          tipos_corte?       @relation(fields: [codCorte], references: [codCorte], onDelete: Restrict, onUpdate: Restrict, map: "fk_turnos_corte")
 
   @@index([codBarbero], map: "codBarbero")
   @@index([codCliente], map: "codCliente")
@@ -36,53 +41,64 @@ model Turno {
 }
 
 model categoria_vigente {
-  codCategoriaVigente String   @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  codCategoria        String   @db.VarChar(36)
-  codCliente          String   @db.VarChar(36)
-  ultimaFechaInicio   DateTime @db.Date
+  codCategoriaVigente String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codCategoria        String    @db.VarChar(36)
+  codCliente          String    @db.VarChar(36)
+  ultimaFechaInicio   DateTime  @db.Date
+  categorias          Categoria @relation(fields: [codCategoria], references: [codCategoria], onUpdate: Restrict, map: "fk_vigente_categoria")
+  usuarios            usuarios  @relation(fields: [codCliente], references: [codUsuario], onUpdate: Restrict, map: "fk_vigente_cliente")
 
   @@index([codCategoria], map: "codCategoria")
   @@index([codCliente], map: "codCliente")
 }
 
 model estado_del_turno {
-  codEstadoDelTurno String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  codEstado         String @db.VarChar(36)
-  codTurno          String @db.VarChar(36)
+  codEstadoDelTurno String       @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codEstado         String       @db.VarChar(36)
+  codTurno          String       @db.VarChar(36)
+  estado_turno      estado_turno @relation(fields: [codEstado], references: [codEstado], onUpdate: Restrict, map: "fk_edt_estado")
+  turnos            Turno        @relation(fields: [codTurno], references: [codTurno], onUpdate: Restrict, map: "fk_edt_turno")
 
   @@index([codEstado], map: "codEstado")
   @@index([codTurno], map: "codTurno")
 }
 
 model estado_turno {
-  codEstado    String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  nombreEstado String @db.VarChar(50)
-  descEstado   String @db.VarChar(250)
+  codEstado        String             @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  nombreEstado     String             @db.VarChar(50)
+  descEstado       String             @db.VarChar(250)
+  estado_del_turno estado_del_turno[]
 }
 
 model sucursales {
-  codSucursal String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  nombre      String @db.VarChar(30)
-  calle       String @db.VarChar(50)
+  codSucursal String     @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  nombre      String     @db.VarChar(30)
+  calle       String     @db.VarChar(50)
   altura      Int
+  usuarios    usuarios[]
 }
 
 model tipos_corte {
-  codCorte    String @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  nombreCorte String @db.VarChar(50)
-  valorBase   Float  @db.Float
+  codCorte    String  @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  nombreCorte String  @db.VarChar(50)
+  valorBase   Float   @db.Float
+  turnos      Turno[]
 }
 
 model usuarios {
-  codUsuario  String  @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  dni         String  @db.VarChar(8)
-  cuil        String? @db.VarChar(13)
-  codSucursal String? @db.VarChar(36)
-  nombre      String  @db.VarChar(50)
-  apellido    String  @db.VarChar(50)
-  telefono    String  @db.VarChar(20)
-  email       String  @db.VarChar(50)
-  contrase_a  String  @map("contraseña") @db.VarChar(50)
+  codUsuario                         String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  dni                                String              @db.VarChar(8)
+  cuil                               String?             @db.VarChar(13)
+  codSucursal                        String?             @db.VarChar(36)
+  nombre                             String              @db.VarChar(50)
+  apellido                           String              @db.VarChar(50)
+  telefono                           String              @db.VarChar(20)
+  email                              String              @db.VarChar(50)
+  contrase_a                         String              @map("contraseña") @db.VarChar(60)
+  categoria_vigente                  categoria_vigente[]
+  turnos_turnos_codBarberoTousuarios Turno[]             @relation("turnos_codBarberoTousuarios")
+  turnos_turnos_codClienteTousuarios Turno[]             @relation("turnos_codClienteTousuarios")
+  sucursales                         sucursales?         @relation(fields: [codSucursal], references: [codSucursal], onDelete: Restrict, onUpdate: Restrict, map: "fk_barbero_sucursal")
 
   @@index([codSucursal], map: "codSucursal")
 }
