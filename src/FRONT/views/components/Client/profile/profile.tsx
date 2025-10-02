@@ -2,7 +2,9 @@ import { useAuth } from "../../login/AuthContext";
 import { useEffect, useState } from "react";
 import styles from "./profile.module.css";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
+//! ADAPTAR A MOBILE
 interface UserProfile {
   codUsuario: string;
   dni: string;
@@ -12,6 +14,7 @@ interface UserProfile {
   apellido: string;
   telefono: string;
   email: string;
+  // codCategoria: string | null;
 }
 
 const MyProfile = () => {
@@ -25,22 +28,31 @@ const MyProfile = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-      const response = await fetch(`/client/profiles/${user.codUsuario}`);
+        const response = await fetch(`/client/profiles/${user.codUsuario}`);
 
         if (!response.ok) {
-          throw new Error("Error al obtener el perfil");
+          // Solo mostrar error si realmente falla la petición HTTP
+          console.warn("Response not ok, using fallback data");
+          setProfile(user);
+          return;
         }
 
         const data = await response.json();
 
-        if (data.success) {
+        if (data.success && data.data) { 
           setProfile(data.data);
         } else {
-          throw new Error(data.message || "Error al cargar el perfil");
+          // Si no hay data.success pero sí hay data, usar los datos directamente
+          if (data && typeof data === "object") {
+            setProfile(data);
+          } else {
+            console.warn("No profile data received, using fallback");
+            setProfile(user);
+          }
         }
-      } catch (error) {
+      } catch (error) { //todo Revisar el por que de este error que se printea en consola
         console.error("Error al obtener el perfil:", error);
-        toast.error("Error al cargar los datos del perfil");
+        // toast.error("Error al cargar los datos del perfil");
         // Si falla, usar los datos del contexto como fallback
         setProfile(user);
       } finally {
@@ -51,18 +63,19 @@ const MyProfile = () => {
     fetchProfile();
   }, [user]);
 
-  const getUserTypeLabel = () => {
-    switch (userType) {
-      case "admin":
-        return "Administrador";
-      case "barber":
-        return "Barbero";
-      case "client":
-        return "Cliente";
-      default:
-        return "Usuario";
-    }
-  };
+  //? util para perfil de barbero
+  // const getUserTypeLabel = () => {
+  //   switch (userType) {
+  //     case "admin":
+  //       return "Administrador";
+  //     case "barber":
+  //       return "Barbero";
+  //     case "client":
+  //       return "Cliente";
+  //     default:
+  //       return "Usuario";
+  //   }
+  // };
 
   if (!user) {
     return (
@@ -98,38 +111,48 @@ const MyProfile = () => {
             <strong>DNI:</strong> {displayUser.dni}
           </div>
 
+          {/* Util para mostrar perfil al admin si es necesasrio 
           {displayUser.cuil && (
             <div className={styles.profileField}>
               <strong>CUIL:</strong> {displayUser.cuil}
             </div>
-          )}
+          )} */}
 
-          <div className={styles.profileField}>
-            <strong>Tipo de Usuario:</strong> {getUserTypeLabel()}
-          </div>
-        </div>
-
-        <div className={styles.profileSection}>
+          
+       
           <h3>Información de Contacto</h3>
           <div className={styles.profileField}>
             <strong>Teléfono:</strong> {displayUser.telefono}
-          </div>
+          
+        </div>
           <div className={styles.profileField}>
             <strong>Email:</strong> {displayUser.email}
           </div>
+          <div className={styles.profileField}>
+            <strong>Categoria:</strong> {"Inicial"}
+            <div className={styles.actionButtons}>
+              {/* displayUser.codCategoria ? (
+                <Link
+                  to={`/categorias/${displayUser.codCategoria}`}
+                  className={`${styles.button} ${styles.buttonPrimary}`}
+                >
+                  Ver Detalles
+              </Link> */}
+            </div>
+          </div>
         </div>
 
-        {displayUser.codSucursal && (
+        {/* {displayUser.codSucursal && (
           <div className={styles.profileSection}>
             <h3>Información Laboral</h3>
             <div className={styles.profileField}>
               <strong>Código de Sucursal:</strong> {displayUser.codSucursal}
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
-      <div className={styles.actionButtons}>
+      {/* <div className={styles.actionButtons}>
         <button
           className={styles.editButton}
           onClick={() => {
@@ -139,7 +162,7 @@ const MyProfile = () => {
         >
           Editar Perfil
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

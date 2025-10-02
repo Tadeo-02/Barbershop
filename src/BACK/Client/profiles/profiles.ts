@@ -25,6 +25,7 @@ const UserSchema = z.object({
     ),
   email: z.string().email("Email inválido"),
   contraseña: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
+  // codCategoria: z.string().optional(), //todo Revisar, poner por defecto en la db "Inicial"
 });
 
 // Función para crear usuario normal (sin CUIL)
@@ -35,6 +36,7 @@ export const store = async (
   telefono: string,
   email: string,
   contraseña: string
+  //codCategoria?: string //todo Revisar
 ) => {
   try {
     // Sanitizar inputs
@@ -45,6 +47,7 @@ export const store = async (
       telefono: sanitizeInput(telefono),
       email: sanitizeInput(email),
       contraseña: sanitizeInput(contraseña),
+      //codCategoria: sanitizeInput(codCategoria) //todo Revisar
     };
 
     // Validación con zod
@@ -62,6 +65,7 @@ export const store = async (
         telefono: validatedData.telefono,
         email: validatedData.email,
         contrase_a: validatedData.contraseña,
+        // codCategoria: validatedData.codCategoria,
       },
     });
 
