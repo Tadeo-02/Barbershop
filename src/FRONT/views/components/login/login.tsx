@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
 
 function Login() {
-  const [correo, setCorreo] = useState("");
-  const [clave, setClave] = useState("");
+  const [email, setEmail] = useState("");
+  const [contraseña, setContraseña] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -15,7 +15,7 @@ function Login() {
       const response = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, clave }),
+        body: JSON.stringify({ email, contraseña }),
       });
       const text = await response.text();
       let data;
@@ -33,14 +33,14 @@ function Login() {
       if (response.ok) {
         console.log("✅ Login successful, server response:", data);
 
-        // ✅ Usar el contexto para manejar el login
+        // usar el contexto para manejar el login
         if (data.user) {
           console.log("User data received:", data.user);
           console.log("User cuil:", data.user.cuil);
 
           login(data.user);
 
-          // ✅ Determinar tipo de usuario y redireccionar
+          // determinar tipo de usuario y redireccionar
           const userType =
             data.user.cuil === "1"
               ? "admin"
@@ -63,11 +63,11 @@ function Login() {
 
           alert(data.message || "Login exitoso");
         } else {
-          console.log("❌ No user data in response");
+          console.log("No user data in response");
           alert("Datos de usuario no encontrados");
         }
       } else {
-        console.log("❌ Login failed, server response:", data);
+        console.log("Login failed, server response:", data);
         alert(data.message || "Error de login");
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -99,8 +99,8 @@ function Login() {
                 placeholder="hola@ejemplo.com"
                 maxLength={70}
                 required
-                value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <label>Contraseña:</label>
               <input
@@ -111,8 +111,8 @@ function Login() {
                 maxLength={100}
                 placeholder="********"
                 required
-                value={clave}
-                onChange={(e) => setClave(e.target.value)}
+                value={contraseña}
+                onChange={(e) => setContraseña(e.target.value)}
               />
               <p className="has-text-centered">
                 <br />

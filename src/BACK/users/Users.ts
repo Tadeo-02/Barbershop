@@ -1,5 +1,6 @@
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
+import { hashPassword, comparePassword } from "../users/bcrypt";
 
 // Schema de validación específico para usuarios normales (sin CUIL)
 const UserSchema = z.object({
@@ -52,6 +53,9 @@ export const store = async (
 
     console.log("Creating user");
 
+    // encriptar contraseña luego de sanitizada
+    const hashedPassword = await hashPassword(validatedData.contraseña);
+
     // Crear usuario (mapeando contraseña -> contrase_a, sin CUIL)
     const usuario = await prisma.usuarios.create({
       data: {
@@ -61,7 +65,7 @@ export const store = async (
         apellido: validatedData.apellido,
         telefono: validatedData.telefono,
         email: validatedData.email,
-        contrase_a: validatedData.contraseña,
+        contrase_a: hashedPassword,
       },
     });
 
@@ -198,6 +202,8 @@ export const update = async (
     if (!existingUsuario) {
       throw new DatabaseError("Usuario no encontrado");
     }
+    // encriptar nueva contraseña para el update
+    const hashedPassword = await hashPassword(validatedData.contraseña);
 
     // Actualizar usuario
     const updatedUsuario = await prisma.usuarios.update({
@@ -208,7 +214,7 @@ export const update = async (
         apellido: validatedData.apellido,
         telefono: validatedData.telefono,
         email: validatedData.email,
-        contrase_a: validatedData.contraseña,
+        contrase_a: hashedPassword,
       },
     });
 
@@ -317,17 +323,26 @@ export const validateLogin = async (email: string, contraseña: string) => {
 
     console.log("Validating user login for email:", validatedData.email);
 
-    // Buscar usuario por email y contraseña (incluye todos los tipos de usuarios)
+    // Buscar usuario solo por email (NO por contraseña)
     const usuario = await prisma.usuarios.findFirst({
       where: {
         email: validatedData.email,
-        contrase_a: validatedData.contraseña,
-        //! Removido: cuil: null - ahora permite todos los tipos de usuarios, antes esto hacia que nomas busque clientes
       },
     });
 
     if (!usuario) {
-      console.log("Login failed: No user found with provided credentials");
+      console.log("Login failed: No user found with provided email");
+      throw new DatabaseError("Email o contraseña incorrectos");
+    }
+
+    // Verificar contraseña usando bcrypt
+    const isPasswordValid = await comparePassword(
+      validatedData.contraseña,
+      usuario.contrase_a
+    );
+
+    if (!isPasswordValid) {
+      console.log("Login failed: Invalid password");
       throw new DatabaseError("Email o contraseña incorrectos");
     }
 

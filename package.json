@@ -15,6 +15,7 @@
   "dependencies": {
     "@prisma/client": "^6.15.0",
     "axios": "^1.12.2",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.3",
     "@types/method-override": "^3.0.0",
     "@types/node": "^24.3.0",
