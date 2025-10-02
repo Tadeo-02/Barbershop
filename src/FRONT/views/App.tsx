@@ -131,6 +131,12 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* Rutas de Login y Signup */}
+
+              <Route path="/login" element={<Login />} />
+              <Route path="/signUp" element={<CreateUser />} />
+
+             
 
               {/* <Route
                 path="/Admin/TurnsPage"
@@ -140,7 +146,6 @@ function App() {
                   </ProtectedRoute>
                 }
               /> */}
-
 
               {/* con el '*' indico que tiene rutas anidadas*/}
             </Routes>
