@@ -121,6 +121,11 @@ const CreateUser: React.FC = () => {
               <br />
               <h1>CREAR CUENTA</h1>
               <br />
+              <br />
+              <br />
+              <br />
+              <h1>CREAR CUENTA</h1>
+              <br />
 
               {/* DNI */}
               <label>DNI:</label>

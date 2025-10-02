@@ -17,9 +17,10 @@
 # BACK:
 ## - Usuarios:
     - [ ] Pedir turnos
-    - [ ] Ver perfil
-    - [ ] Ver beneficios de categoría
+    - [X] Ver perfil
+    - [X--] Ver beneficios de categoría (en ver perfil) 
     - [ ] Cancelar Turnos
+    - [X] Encriptar Contraseña
 ## Barberos:
     - [ ] Modificar Turnos
 ## Admin:

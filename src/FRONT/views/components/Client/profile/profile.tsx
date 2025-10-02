@@ -14,7 +14,7 @@ interface UserProfile {
   apellido: string;
   telefono: string;
   email: string;
-  // codCategoria: string | null;
+  //! obtener cod_categoria de la relacion con la tabla vigente
 }
 
 const MyProfile = () => {
