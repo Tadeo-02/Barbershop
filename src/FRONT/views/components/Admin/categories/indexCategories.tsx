@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./categories.module.css";
-import toast from "react-hot-toast";
+import toast from "react-hot-toast"
 
 interface Categoria {
   codCategoria: string; 

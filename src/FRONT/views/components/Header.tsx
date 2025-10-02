@@ -85,7 +85,7 @@ function Header() {
               {/* Opciones para usuarios autenticados */}
               <li>
                 <span style={{ color: "#ccc", fontSize: "0.9em" }}>
-                  Bienvenido, {user?.name || user?.email}
+                  Bienvenido, {user?.nombre || user?.email}
                 </span>
               </li>
               <li>
@@ -95,6 +95,14 @@ function Header() {
               </li>
 
               {/* Opciones específicas por tipo de usuario */}
+              {userType === "client" && (
+                <li>
+                  <Link to="/client/profile" onClick={() => setOpen(false)}>
+                    Mi Perfil
+                  </Link>
+                </li>
+              )}
+
               {userType === "barber" && (
                 <li>
                   <Link to="/barber" onClick={() => setOpen(false)}>
