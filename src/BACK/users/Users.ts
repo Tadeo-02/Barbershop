@@ -2,86 +2,79 @@ import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
 import { hashPassword, comparePassword } from "../users/bcrypt";
 
-// Schema de validación específico para usuarios normales (sin CUIL)
-const UserSchema = z.object({
-  dni: z
-    .string()
-    .min(1, "DNI es requerido")
-    .regex(/^\d{8}$/, "DNI inválido. Debe tener 8 dígitos"),
-  nombre: z
-    .string()
-    .min(2, "Nombre debe tener al menos 2 caracteres")
-    .max(50, "Nombre no puede tener más de 50 caracteres"),
-    // .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
-  apellido: z
-    .string()
-    .min(2, "Apellido debe tener al menos 2 caracteres")
-    .max(50, "Apellido no puede tener más de 50 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Apellido solo puede contener letras"),
-  telefono: z
-    .string()
-    .regex(
-      /^(\+?54\s?)?(\(?\d{2,4}\)?\s?)?\d{4}-?\d{4}$/,
-      "Teléfono inválido. Formato esperado: +54 11 1234-5678"
-    ),
-  email: z.string().email("Email inválido"),
-  contraseña: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
-  cuil: z
-    .string()
-    .optional()
-    .refine(
-      (cuil) => {
-        // Si no se proporciona CUIL, está bien (opcional)
-        if (!cuil || cuil === "" || cuil === null || cuil === undefined)
-          return true;
-        // Si se proporciona, debe ser válido
-        return validateCUIL(cuil);
-      },
-      {
-        message:
-          "CUIL inválido. Formato: XX-XXXXXXXX-X o 11 dígitos consecutivos",
-      }
-    ), // para barberos
-});
-
 // Función para validar CUIL
-const validateCUIL = (cuil: string): boolean => {
-  // Remover espacios y guiones
-  const cleanCUIL = cuil.replace(/[-\s]/g, "");
-
-  // Verificar que tenga 11 dígitos
-  if (!/^\d{11}$/.test(cleanCUIL)) {
+const validateCUIL = (cuil: string, dni: string): boolean => {
+  // Verificar formato XX-XXXXXXXX-X
+  const cuilRegex = /^\d{2}-\d{8}-\d{1}$/;
+  if (!cuilRegex.test(cuil)) {
     return false;
   }
 
-  // Extraer los componentes del CUIL
-  const prefix = cleanCUIL.substring(0, 2);
-  const dni = cleanCUIL.substring(2, 10);
-  const verifier = parseInt(cleanCUIL.substring(10, 11));
+  // Extraer el DNI del CUIL (los 8 dígitos del medio)
+  const dniFromCuil = cuil.substring(3, 11); // posición 3 a 10 (8 dígitos)
 
-  // Verificar prefijos válidos
-  const validPrefixes = ["20", "23", "24", "27", "30", "33", "34"];
-  if (!validPrefixes.includes(prefix)) {
-    return false;
-  }
-
-  // Calcular dígito verificador
-  const sequence = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
-  const cuilDigits = (prefix + dni).split("").map(Number);
-
-  let sum = 0;
-  for (let i = 0; i < 10; i++) {
-    sum += cuilDigits[i] * sequence[i];
-  }
-
-  const remainder = sum % 11;
-  let expectedVerifier = 11 - remainder;
-
-  if (expectedVerifier === 11) expectedVerifier = 0;
-  if (expectedVerifier === 10) expectedVerifier = 9;
-
-  return verifier === expectedVerifier;
+  // Verificar que el DNI del CUIL coincida con el DNI proporcionado
+  return dniFromCuil === dni;
 };
+
+const UserSchema = z
+  .object({
+    dni: z
+      .string()
+      .min(1, "DNI es requerido")
+      .regex(/^\d{8}$/, "DNI inválido. Debe tener 8 dígitos"),
+
+    nombre: z
+      .string()
+      .min(2, "Nombre debe tener al menos 2 caracteres")
+      .max(50, "Nombre no puede tener más de 50 caracteres")
+      .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
+
+    apellido: z
+      .string()
+      .min(2, "Apellido debe tener al menos 2 caracteres")
+      .max(50, "Apellido no puede tener más de 50 caracteres")
+      .regex(
+        /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+        "Apellido solo puede contener letras"
+      ),
+
+    telefono: z
+      .string()
+      .regex(
+        /^(\+?54\s?)?(\(?\d{2,4}\)?\s?)?\d{4}-?\d{4}$/,
+        "Teléfono inválido. Formato esperado: +54 11 1234-5678"
+      ),
+    email: z.string().email("Email inválido"),
+
+    contraseña: z
+      .string()
+      .min(6, "Contraseña debe tener al menos 6 caracteres"),
+
+    cuil: z
+      .string()
+      .optional()
+      .refine(
+        (cuil) => {
+          if (!cuil) return true;
+          return /^\d{2}-\d{8}-\d{1}$/.test(cuil);
+        },
+        { message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X" }
+      ),
+  })
+  .refine(
+    (data) => {
+      // Si hay CUIL, validar que el DNI coincida
+      if (data.cuil) {
+        return validateCUIL(data.cuil, data.dni);
+      }
+      return true;
+    },
+    {
+      message: "El DNI en el CUIL no coincide con el DNI proporcionado",
+      path: ["cuil"], // El error se asociará al campo cuil
+    }
+  );
 
 // Función para crear usuario normal (sin CUIL)
 export const store = async (
@@ -310,7 +303,9 @@ export const update = async (
       const prismaError = error as { code: string };
 
       if (prismaError.code === "P2002") {
-        throw new DatabaseError("El nuevo DNI, CUIL o email ya existe en el sistema");
+        throw new DatabaseError(
+          "El nuevo DNI, CUIL o email ya existe en el sistema"
+        );
       }
 
       if (prismaError.code === "P2025") {

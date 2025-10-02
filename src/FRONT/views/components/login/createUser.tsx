@@ -178,6 +178,7 @@ const CreateUser: React.FC = () => {
               {/* EMAIL */}
               <label>Correo electrónico:</label>
               <input
+                className={styles.formInput}
                 type="email"
                 name="email"
                 placeholder="juan@ejemplo.com"
