@@ -1,44 +1,110 @@
+//! TERMINAR
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./barbers.module.css";
-import toast from "react-hot-toast"; //importamos libreria de alertas
+import toast from "react-hot-toast"; // importar librería de alerts
 
 const CreateBarbers: React.FC = () => {
   const navigate = useNavigate();
 
+  // ESTADOS
   const [dni, setDni] = useState("");
-  const [cuil, setCuil] = useState("");
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
+  const [cuil, setCuil] = useState("");
   const [contraseña, setContraseña] = useState("");
+  const [confirmarContraseña, setConfirmarContraseña] = useState("");
+
+  //funcion para darle formato cuil al imut
+  const formatCuil = (value: string) => {
+    const numbersOnly = value.replace(/\D/g, "");
+    const limited = numbersOnly.slice(0, 11);
+    // Aplicar formato XX-XXXXXXXX-X
+    if (limited.length <= 2) {
+      return limited;
+    } else if (limited.length <= 10) {
+      return `${limited.slice(0, 2)}-${limited.slice(2)}`;
+    } else {
+      return `${limited.slice(0, 2)}-${limited.slice(2, 10)}-${limited.slice(
+        10
+      )}`;
+    }
+  };
+
+  // Función para validar CUIL con DNI
+  const validateCUILWithDNI = (
+    cuilValue: string,
+    dniValue: string
+  ): boolean => {
+    if (!cuilValue || !dniValue) return true; // Si alguno está vacío, no validar aún
+
+    const cuilRegex = /^\d{2}-\d{8}-\d{1}$/;
+    if (!cuilRegex.test(cuilValue)) return false;
+
+    const dniFromCuil = cuilValue.substring(3, 11);
+    return dniFromCuil === dniValue;
+  };
+
+  const handleCuilChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatCuil(e.target.value);
+    setCuil(formattedValue);
+  };
+
+  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ""); // Solo números
+    setDni(value);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const toastId = toast.loading("Creando Barbero..."); //alert de loading
+    // Debugging
+
+    if (contraseña !== confirmarContraseña) {
+      toast.error("Las contraseñas no coinciden");
+      return;
+    }
+    // Validar CUIL con DNI antes de enviar
+    if (cuil && !validateCUILWithDNI(cuil, dni)) {
+      toast.error("El DNI en el CUIL no coincide con el DNI proporcionado");
+      return;
+    }
+    const toastId = toast.loading("Creando Usuario..."); // loading
+
     try {
       console.log(
-        "Enviando POST a /users con datos barbero:",
+        "Enviando POST a /usuarios con datos:",
         dni,
-        cuil,
         nombre,
         apellido,
         telefono,
         email,
-        contraseña
+        contraseña,
+        cuil
       );
+
       const response = await fetch("/usuarios", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ dni, cuil, nombre, apellido, telefono, email, contraseña }),
+        body: JSON.stringify({
+          dni,
+          nombre,
+          apellido,
+          telefono,
+          email,
+          contraseña,
+          cuil,
+        }),
       });
+
       console.log("Después de fetch, status:", response.status);
 
       const text = await response.text();
       console.log("Respuesta cruda del backend:", text);
+      console.log("Response.ok:", response.ok);
 
       let data;
       if (text) {
@@ -46,31 +112,42 @@ const CreateBarbers: React.FC = () => {
           data = JSON.parse(text);
           console.log("Después de JSON.parse, data:", data);
         } catch (parseError) {
-          toast.error("Error al parsear JSON:", { id: toastId });
+          toast.error("Error al parsear JSON", { id: toastId });
           throw parseError;
         }
       } else {
         toast.error("Respuesta vacía del backend", { id: toastId });
-        alert("El servidor no devolvió respuesta.");
         return;
       }
 
       if (response.ok) {
+        console.log("Entrando en response.ok, preparando toast de éxito...");
+
         // Probar directamente reemplazando el toast de loading
-        toast.success(data.message || "Barbero creado exitosamente", {
+        toast.success(data.message || "Usuario creado exitosamente", {
           id: toastId, // Usar el mismo ID para reemplazar
           duration: 4000, // 4 segundos de duración
         });
+
+        console.log(
+          "Toast de éxito mostrado:",
+          data.message || "Usuario creado exitosamente"
+        );
+
+        // Limpiar campos del formulario
         setDni("");
-        setCuil("");
         setNombre("");
         setApellido("");
         setTelefono("");
         setEmail("");
+        setCuil("");
         setContraseña("");
+        setConfirmarContraseña("");
         navigate("../indexBarbers");
       } else {
-        toast.error(data.message || "Error al crear barbero", { id: toastId });
+        toast.error(data.message || "Error al crear usuario", {
+          id: toastId,
+        });
       }
     } catch (error) {
       console.error("Error en handleSubmit:", error);
@@ -79,116 +156,149 @@ const CreateBarbers: React.FC = () => {
   };
 
   return (
-    <div className={styles.formContainer}>
-      <h1 className={styles.pageTitle}>Crear Barbero</h1>
-      <form onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label htmlFor="dni" className={styles.formLabel}>
-            DNI:
-          </label>
-          <input
-            className={styles.formInput}
-            type="text"
-            placeholder="40300123"
-            name="dni"
-            id="dni"
-            value={dni}
-            onChange={(e) => setDni(e.target.value)}
-            required
-          />
+    <section className={styles.about}>
+      <div className="container-fluid">
+        <div className="row">
+          <div className="col-12">
+            <form className={styles.form} onSubmit={handleSubmit}>
+              <br />
+              <br />
+              <br />
+              <h1>Crear Barbero</h1>
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <h1>Crear Barbero</h1>
+              <br />
+
+              {/* DNI */}
+              <label>DNI:</label>
+              <input
+                type="text"
+                name="dni"
+                placeholder="40300123"
+                maxLength={8}
+                required
+                value={dni}
+                onChange={handleDniChange}
+              />
+
+              {/* NOMBRE */}
+              <label>Nombre:</label>
+              <input
+                type="text"
+                name="nombre"
+                placeholder="Juan"
+                maxLength={50}
+                required
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+              />
+
+              {/* APELLIDO */}
+              <label>Apellido:</label>
+              <input
+                type="text"
+                name="apellido"
+                placeholder="Pérez"
+                maxLength={50}
+                required
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
+              />
+
+              {/* TELÉFONO */}
+              <label>Teléfono:</label>
+              <input
+                type="text"
+                name="telefono"
+                placeholder="+54 11 1234-5678"
+                maxLength={20}
+                required
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+              />
+
+              {/* EMAIL */}
+              <label>Correo electrónico:</label>
+              <input
+                className={styles.formInput}
+                type="email"
+                name="email"
+                placeholder="juan@ejemplo.com"
+                maxLength={50}
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+
+              {/* CUIL */}
+              <label>CUIL:</label>
+              <input
+                className={styles.formInput}
+                type="text"
+                name="cuil"
+                id="cuil"
+                placeholder="20-40300123-4"
+                value={cuil}
+                onChange={handleCuilChange}
+                required
+              />
+              {cuil && !validateCUILWithDNI(cuil, dni) && dni && (
+                <small style={{ color: "red" }}>
+                  El DNI en el CUIL debe coincidir con el DNI proporcionado
+                </small>
+              )}
+
+              {/* CONTRASEÑA */}
+              <label>Contraseña:</label>
+              <input
+                type="password"
+                name="contraseña"
+                placeholder="********"
+                minLength={6}
+                maxLength={50}
+                required
+                value={contraseña}
+                onChange={(e) => setContraseña(e.target.value)}
+              />
+
+              {/* CONFIRMAR CONTRASEÑA */}
+              <label>Confirmar contraseña:</label>
+              <input
+                type="password"
+                name="confirmarContraseña"
+                placeholder="********"
+                minLength={6}
+                maxLength={50}
+                required
+                value={confirmarContraseña}
+                onChange={(e) => setConfirmarContraseña(e.target.value)}
+              />
+
+              <p className="has-text-centered">
+                <br />
+                <button type="submit" className="btn btn-primary">
+                  Crear Cuenta
+                </button>
+                <br />
+                <br />
+                <button type="button" onClick={() => navigate("/login")}>
+                  Volver al Login
+                </button>
+              </p>
+            </form>
+          </div>
         </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="cuil">
-            CUIL:
-          </label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="cuil"
-            id="cuil"
-            value={cuil}
-            onChange={(e) => setCuil(e.target.value)}
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="nombre">
-            Nombre:
-          </label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="nombre"
-            id="nombre"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="apellido">
-            Apellido:
-          </label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="apellido"
-            id="apellido"
-            value={apellido}
-            onChange={(e) => setApellido(e.target.value)}
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="telefono">
-            Teléfono:
-          </label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="telefono"
-            id="telefono"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="email">
-            Email:
-          </label>
-          <input
-            className={styles.formInput}
-            type="email"
-            name="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="contraseña">
-            Contraseña:
-          </label>
-          <input
-            className={styles.formInput}
-            type="password"
-            name="contraseña"
-            id="contraseña"
-            value={contraseña}
-            onChange={(e) => setContraseña(e.target.value)}
-            required
-          />
-        </div>
-        <button
-          className={`${styles.button} ${styles.buttonSuccess}`}
-          type="submit"
-        >
-          Guardar Barbero
-        </button>
-      </form>
-    </div>
+      </div>
+    </section>
   );
 };
 

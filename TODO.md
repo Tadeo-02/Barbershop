@@ -14,6 +14,7 @@
 ## General:
     - [ ] Definir estructura mobile first en estilos
     - [ ] Sección Productos
+    - [ ] Fix de Toasts de error cuando hay succes (ej: create barberos desde admin)
 # BACK:
 ## - Usuarios:
     - [ ] Pedir turnos
@@ -25,6 +26,7 @@
     - [ ] Modificar Turnos
 ## Admin:
     - [X] CRUD Sucursal
+    - [X--] CRUD Barberos
 ## General:
     - [ ] Revisar validaciones zod en general
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
