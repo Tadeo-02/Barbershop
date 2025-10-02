@@ -3,23 +3,24 @@ import styles from "./barbersByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 
 interface Barbero {
-    id: number;
+    codUsuario: number;
+    codSucursal: number;
     nombre: string;
     apellido: string;
+    telefono: string;
 }
 
 // Los barberos se obtendrán del backend
-
 const BarbersByBranch = () => {
-    const { branchId } = useParams();
+    const { codSucursal } = useParams();
     const [barberos, setBarberos] = useState<Barbero[]>([]);
     const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
     const [showSchedule, setShowSchedule] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!branchId) return;
-        fetch(`/barbers?branchId=${branchId}`)
+        if (!codSucursal) return;
+        fetch(`/barbers?codSucursal=${codSucursal}`)
             .then((res) => {
                 if (!res.ok) throw new Error("Error al obtener barberos");
                 return res.json();
@@ -27,9 +28,8 @@ const BarbersByBranch = () => {
             .then((data) => setBarberos(data))
             .catch((err) => {
                 setBarberos([]);
-                // Puedes mostrar un mensaje de error si lo deseas
             });
-    }, [branchId]);
+    }, [codSucursal]);
 
     const handleSelectBarber = (id: number) => {
         setSelectedBarber(id);
