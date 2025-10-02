@@ -132,7 +132,7 @@ const CreateUser: React.FC = () => {
               <input
                 type="text"
                 name="dni"
-                placeholder="12345678"
+                placeholder="40300123"
                 maxLength={8}
                 required
                 value={dni}

@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import styles from "./login.module.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
+import {useUserRedirect} from "../Redirect.tsx";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [contraseña, setContraseña] = useState("");
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const { redirectUser } = useUserRedirect();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,28 +41,8 @@ function Login() {
 
           login(data.user);
 
-          // determinar tipo de usuario y redireccionar
-          const userType =
-            data.user.cuil === "1"
-              ? "admin"
-              : data.user.cuil
-              ? "barber"
-              : "client";
-
-          console.log("Determined user type:", userType);
-
-          if (userType === "admin") {
-            console.log("Redirecting to admin page");
-            navigate("/Admin/CategoriesPage");
-          } else if (userType === "barber") {
-            console.log("Redirecting to barber page");
-            navigate("/barber");
-          } else {
-            console.log("Redirecting to client page");
-            navigate("/");
-          }
-
-          alert(data.message || "Login exitoso");
+          // gancho de redirección
+          redirectUser(data.user, data.message || "Login exitoso");
         } else {
           console.log("No user data in response");
           alert("Datos de usuario no encontrados");

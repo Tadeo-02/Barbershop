@@ -15,12 +15,29 @@ function Header() {
     setOpen(false);
     navigate("/");
   };
+//determino tipo de usuario
+  const getHomeRoute = () => {
+    if (!isAuthenticated) {
+      return "/"; // Si no está autenticado, ir a home general
+    }
+
+    switch (userType) {
+      case "admin":
+        return "/Admin/HomePageAdmin";
+      case "barber":
+        return "/barber";
+      case "client":
+        return "/client";
+      default:
+        return "/";
+    }
+  };
   return (
     <nav>
       <div className={styles.header}>
         {/* logo a la izquierda */}
         <div>
-          <Link to="/" aria-label="Ir al inicio">
+          <Link to={getHomeRoute()} aria-label="Ir al inicio">
             <img
               src="/images/logoBarber.png"
               // alt="logo-barber"

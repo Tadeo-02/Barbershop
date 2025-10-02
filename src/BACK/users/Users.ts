@@ -11,8 +11,8 @@ const UserSchema = z.object({
   nombre: z
     .string()
     .min(2, "Nombre debe tener al menos 2 caracteres")
-    .max(50, "Nombre no puede tener más de 50 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
+    .max(50, "Nombre no puede tener más de 50 caracteres"),
+    // .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
   apellido: z
     .string()
     .min(2, "Apellido debe tener al menos 2 caracteres")
@@ -26,7 +26,62 @@ const UserSchema = z.object({
     ),
   email: z.string().email("Email inválido"),
   contraseña: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
+  cuil: z
+    .string()
+    .optional()
+    .refine(
+      (cuil) => {
+        // Si no se proporciona CUIL, está bien (opcional)
+        if (!cuil || cuil === "" || cuil === null || cuil === undefined)
+          return true;
+        // Si se proporciona, debe ser válido
+        return validateCUIL(cuil);
+      },
+      {
+        message:
+          "CUIL inválido. Formato: XX-XXXXXXXX-X o 11 dígitos consecutivos",
+      }
+    ), // para barberos
 });
+
+// Función para validar CUIL
+const validateCUIL = (cuil: string): boolean => {
+  // Remover espacios y guiones
+  const cleanCUIL = cuil.replace(/[-\s]/g, "");
+
+  // Verificar que tenga 11 dígitos
+  if (!/^\d{11}$/.test(cleanCUIL)) {
+    return false;
+  }
+
+  // Extraer los componentes del CUIL
+  const prefix = cleanCUIL.substring(0, 2);
+  const dni = cleanCUIL.substring(2, 10);
+  const verifier = parseInt(cleanCUIL.substring(10, 11));
+
+  // Verificar prefijos válidos
+  const validPrefixes = ["20", "23", "24", "27", "30", "33", "34"];
+  if (!validPrefixes.includes(prefix)) {
+    return false;
+  }
+
+  // Calcular dígito verificador
+  const sequence = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+  const cuilDigits = (prefix + dni).split("").map(Number);
+
+  let sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += cuilDigits[i] * sequence[i];
+  }
+
+  const remainder = sum % 11;
+  let expectedVerifier = 11 - remainder;
+
+  if (expectedVerifier === 11) expectedVerifier = 0;
+  if (expectedVerifier === 10) expectedVerifier = 9;
+
+  return verifier === expectedVerifier;
+};
 
 // Función para crear usuario normal (sin CUIL)
 export const store = async (
@@ -35,7 +90,8 @@ export const store = async (
   apellido: string,
   telefono: string,
   email: string,
-  contraseña: string
+  contraseña: string,
+  cuil?: string
 ) => {
   try {
     // Sanitizar inputs
@@ -46,6 +102,7 @@ export const store = async (
       telefono: sanitizeInput(telefono),
       email: sanitizeInput(email),
       contraseña: sanitizeInput(contraseña),
+      cuil: cuil ? sanitizeInput(cuil) : undefined, // sanitizo si existe
     };
 
     // Validación con zod
@@ -55,12 +112,17 @@ export const store = async (
 
     // encriptar contraseña luego de sanitizada
     const hashedPassword = await hashPassword(validatedData.contraseña);
+    let cuilValue = null;
+    if (validatedData.cuil) {
+      // Limpiar CUIL para almacenamiento
+      cuilValue = validatedData.cuil.replace(/[-\s]/g, "");
+    }
 
     // Crear usuario (mapeando contraseña -> contrase_a, sin CUIL)
     const usuario = await prisma.usuarios.create({
       data: {
         dni: validatedData.dni,
-        cuil: null, // Los usuarios normales no tienen CUIL !
+        cuil: cuilValue, // Los usuarios normales no tienen CUIL !
         nombre: validatedData.nombre,
         apellido: validatedData.apellido,
         telefono: validatedData.telefono,
@@ -69,7 +131,9 @@ export const store = async (
       },
     });
 
-    console.log("Usuario created successfully");
+    const userType =
+      cuilValue === "1" ? "admin" : cuilValue ? "barber" : "client";
+    console.log(`${userType} created successfully`);
     return usuario;
   } catch (error) {
     console.error(
@@ -88,7 +152,7 @@ export const store = async (
       const prismaError = error as { code: string; message: string };
 
       if (prismaError.code === "P2002") {
-        throw new DatabaseError("El DNI o email ya existe en el sistema");
+        throw new DatabaseError("El DNI, email o CUIL ya existe en el sistema");
       }
     }
 
@@ -171,7 +235,8 @@ export const update = async (
   apellido: string,
   telefono: string,
   email: string,
-  contraseña: string
+  contraseña: string,
+  cuil?: string
 ) => {
   try {
     // Sanitizar datos
@@ -183,6 +248,7 @@ export const update = async (
       telefono: sanitizeInput(telefono),
       email: sanitizeInput(email),
       contraseña: sanitizeInput(contraseña),
+      cuil: cuil ? sanitizeInput(cuil) : undefined, // sanitizo si existe
     };
 
     const validatedData = UserSchema.parse({
@@ -192,6 +258,7 @@ export const update = async (
       telefono: sanitizedData.telefono,
       email: sanitizedData.email,
       contraseña: sanitizedData.contraseña,
+      cuil: sanitizedData.cuil,
     });
 
     // Verificar que el usuario existe
@@ -205,6 +272,11 @@ export const update = async (
     // encriptar nueva contraseña para el update
     const hashedPassword = await hashPassword(validatedData.contraseña);
 
+    let cuilValue = null;
+    if (validatedData.cuil) {
+      // Limpiar CUIL para almacenamiento
+      cuilValue = validatedData.cuil.replace(/[-\s]/g, "");
+    }
     // Actualizar usuario
     const updatedUsuario = await prisma.usuarios.update({
       where: { codUsuario: sanitizedData.codUsuario },
@@ -215,6 +287,7 @@ export const update = async (
         telefono: validatedData.telefono,
         email: validatedData.email,
         contrase_a: hashedPassword,
+        cuil: cuilValue, // si es barbero, se guarda el CUIL limpio
       },
     });
 
@@ -237,7 +310,7 @@ export const update = async (
       const prismaError = error as { code: string };
 
       if (prismaError.code === "P2002") {
-        throw new DatabaseError("El nuevo DNI o email ya existe en el sistema");
+        throw new DatabaseError("El nuevo DNI, CUIL o email ya existe en el sistema");
       }
 
       if (prismaError.code === "P2025") {

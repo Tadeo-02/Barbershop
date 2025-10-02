@@ -10,8 +10,8 @@ const UserSchema = z.object({
   nombre: z
     .string()
     .min(2, "Nombre debe tener al menos 2 caracteres")
-    .max(50, "Nombre no puede tener más de 50 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
+    .max(50, "Nombre no puede tener más de 50 caracteres"),
+    // .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
   apellido: z
     .string()
     .min(2, "Apellido debe tener al menos 2 caracteres")
