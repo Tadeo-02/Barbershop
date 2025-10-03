@@ -10,7 +10,7 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      "/turnos": "http://localhost:3001", // o el puerto donde corre tu backend,
+  "/appointments": "http://localhost:3001", // o el puerto donde corre tu backend,
       "/barberos": "http://localhost:3001", // o el puerto donde corre tu backend
       "/tipoCortes": "http://localhost:3001",
       "/categorias": "http://localhost:3001", // o el puerto donde corre tu backend,
