@@ -68,71 +68,36 @@ body {
   color: #888;
 }
 
-/* Estilos personalizados para react-hot-toast */
-/* Contenedor principal de toasts */
-[data-sonner-toaster] {
-  top: 30% !important; /* Subido más arriba */
-}
 
-/* Estilos generales para todos los toasts */
+/* MOBILE FIRST: estilos base para móviles */
+[data-sonner-toaster] {
+  top: 20% !important;
+}
 [data-sonner-toast] {
-  min-width: 400px !important;
-  font-size: 18px !important;
-  font-weight: 500 !important;
-  padding: 20px 30px !important;
+  min-width: 140px !important;
+  max-width: 80dvw !important;
+  font-size: 14px !important;
+  padding: 12px 16px !important;
+  margin: 0 15px !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
   text-align: center !important;
 }
-
-/* Responsive para tablets */
-@media (max-width: 768px) {
-  [data-sonner-toaster] {
-    top: 25% !important; /* Más arriba en tablets */
-  }
-
-  [data-sonner-toast] {
-    min-width: 180px !important;
-    max-width: 85dvw !important; /* Reducido de 90dvw a 85dvw */
-    font-size: 16px !important;
-    padding: 16px 20px !important;
-    margin: 0 20px !important; /* Aumentado de 15px a 20px */
-  }
-}
-
-/* Responsive para móviles */
-@media (max-width: 480px) {
-  [data-sonner-toaster] {
-    top: 20% !important; /* Aún más arriba en móviles */
-  }
-
-  [data-sonner-toast] {
-    min-width: 140px !important;
-    max-width: 80dvw !important; /* Reducido de 85dvw a 80dvw */
-    font-size: 14px !important;
-    padding: 12px 16px !important;
-    margin: 0 15px !important; /* Aumentado de 10px a 15px */
-  }
-
-  /* Botones en toasts personalizados para móviles */
-  [data-sonner-toast] button {
-    font-size: 14px !important;
-    padding: 8px 16px !important;
-    min-width: 70px !important;
-  }
+[data-sonner-toast] button {
+  font-size: 14px !important;
+  padding: 8px 16px !important;
+  min-width: 70px !important;
 }
 
 /* Para móviles muy pequeños */
 @media (max-width: 360px) {
   [data-sonner-toast] {
     min-width: 100px !important;
-    max-width: 75dvw !important; /* Reducido de 80dvw a 75dvw */
+    max-width: 75dvw !important;
     font-size: 13px !important;
     padding: 10px 12px !important;
-    margin: 0 12px !important; /* Añadido margen específico */
+    margin: 0 12px !important;
   }
-
-  /* Botones aún más pequeños para pantallas muy pequeñas */
   [data-sonner-toast] button {
     font-size: 12px !important;
     padding: 6px 12px !important;
@@ -140,23 +105,54 @@ body {
   }
 }
 
+/* TABLET: estilos para pantallas medianas */
+@media (min-width: 481px) {
+  [data-sonner-toaster] {
+    top: 25% !important;
+  }
+  [data-sonner-toast] {
+    min-width: 180px !important;
+    max-width: 85dvw !important;
+    font-size: 16px !important;
+    padding: 16px 20px !important;
+    margin: 0 20px !important;
+  }
+}
+
+/* DESKTOP: estilos para pantallas grandes */
+@media (min-width: 769px) {
+  [data-sonner-toaster] {
+    top: 30% !important;
+  }
+  [data-sonner-toast] {
+    min-width: 400px !important;
+    max-width: 90dvw !important;
+    font-size: 18px !important;
+    padding: 20px 30px !important;
+    margin: 0 30px !important;
+  }
+  [data-sonner-toast] button {
+    font-size: 16px !important;
+    padding: 10px 20px !important;
+    min-width: 90px !important;
+  }
+}
+
 /* Fallback para navegadores que no soportan dvw */
 @supports not (width: 1dvw) {
-  @media (max-width: 768px) {
+  @media (min-width: 769px) {
     [data-sonner-toast] {
-      max-width: 85vw !important; /* Actualizado también */
+      max-width: 90vw !important;
     }
   }
-
-  @media (max-width: 480px) {
+  @media (min-width: 481px) {
     [data-sonner-toast] {
-      max-width: 80vw !important; /* Actualizado también */
+      max-width: 85vw !important;
     }
   }
-
   @media (max-width: 360px) {
     [data-sonner-toast] {
-      max-width: 75vw !important; /* Actualizado también */
+      max-width: 75vw !important;
     }
   }
 }
