@@ -21,7 +21,7 @@ const IndexBarbers = () => {
     // const toastId = toast.loading("Cargando barberos...");
 
     // Llama al backend para obtener los barberos
-    fetch("/barberos")
+    fetch("/usuarios")
       .then((res) => res.json())
       .then((data) => {
         setBarberos(data); // data debe ser un array de barberos
@@ -128,7 +128,7 @@ const IndexBarbers = () => {
     const toastId = toast.loading("Eliminando barbero...");
 
     try {
-      const response = await fetch(`/barberos/${codUsuario}`, {
+      const response = await fetch(`/usuarios/${codUsuario}`, {
         method: "DELETE",
       });
 
@@ -165,13 +165,13 @@ const IndexBarbers = () => {
               </div>
               <div className={styles.actionButtons}>
                 <Link
-                  to={`/barbers/${barbero.codUsuario}`}
+                  to={`/Admin/BarbersPage/${barbero.codUsuario}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Ver Detalles
                 </Link>
                 <Link
-                  to={`/barbers/updateBarber/${barbero.codUsuario}`}
+                  to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Modificar

@@ -1,6 +1,6 @@
 import IndexBarbers from "../../components/Admin/barbers/indexBarbers.tsx";
 import styles from "./HomePageAdmin.module.css";
-import { Routes, Route, Link, Outlet } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import ShowBarbers from "../../components/Admin/barbers/showBarbers.tsx";
 import CreateBarbers from "../../components/Admin/barbers/createBarbers.tsx";
 import UpdateBarbers from "../../components/Admin/barbers/updateBarbers.tsx";
@@ -15,6 +15,7 @@ function BarbersPage() {
       >
         CREAR BARBERO
       </Link>
+
       <Routes>
         <Route index element={<IndexBarbers />} />
         <Route path="createBarbers" element={<CreateBarbers />} />

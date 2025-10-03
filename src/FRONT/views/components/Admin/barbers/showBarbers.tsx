@@ -18,7 +18,7 @@ const ShowBarbers = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/barberos/${codUsuario}`)
+    fetch(`/usuarios/${codUsuario}`)
       .then((res) => res.json())
       .then((data) => setBarbero(data))
       .catch((err) => {

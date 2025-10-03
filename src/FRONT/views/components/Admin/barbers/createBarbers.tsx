@@ -143,7 +143,7 @@ const CreateBarbers: React.FC = () => {
         setCuil("");
         setContraseña("");
         setConfirmarContraseña("");
-        navigate("../indexBarbers");
+        navigate("/indexBarbers");
       } else {
         toast.error(data.message || "Error al crear usuario", {
           id: toastId,

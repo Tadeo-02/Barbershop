@@ -33,7 +33,7 @@ const UpdateBarber: React.FC = () => {
     const toastId = toast.loading("Cargando datos del barbero...");
 
     try {
-      const response = await fetch(`/barberos/${codUsuario}`);
+      const response = await fetch(`/usuarios/${codUsuario}`);
 
       if (!isMounted) return; // Si el componente se desmontó, no continuar
 
@@ -50,7 +50,7 @@ const UpdateBarber: React.FC = () => {
         toast.dismiss(toastId); // Solo dismiss
       } else if (response.status === 404) {
         toast.error("Barbero no encontrado", { id: toastId });
-        navigate("/barbers/indexBarbers");
+        navigate("/indexBarbers");
       } else {
         toast.error("Error al cargar los datos del barbero", { id: toastId });
       }
@@ -74,7 +74,7 @@ const UpdateBarber: React.FC = () => {
     const toastId = toast.loading("Actualizando barbero...");
 
     try {
-      const response = await fetch(`/barberos/${barbero?.codUsuario}`, {
+      const response = await fetch(`/usuarios/${barbero?.codUsuario}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +96,7 @@ const UpdateBarber: React.FC = () => {
         toast.success(data.message || "Barbero actualizado exitosamente", {
           id: toastId,
         });
-        navigate("/barbers/indexBarbers");
+        navigate("/indexBarbers");
       } else {
         toast.error(data.message || "Error al actualizar barbero", {
           id: toastId,
