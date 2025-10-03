@@ -68,6 +68,16 @@ body {
 	cursor: not-allowed;
 }
 
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
 
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
@@ -75,8 +85,8 @@ body {
 		font-size: 2.5rem;
 	}
 	.homeContainer {
+		margin: 40px;
 		max-width: 800px;
-		margin: 40px auto;
 		padding: 30px;
 	}
 	.optionsContainer {
@@ -94,13 +104,3 @@ body {
 	}
 }
 
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(10px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
