@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
 // import toast from "react-hot-toast";
 interface Branch {
-  codSucursal: number;
+  codSucursal: string;
   nombre: string;
   calle: string;
   altura: number;
@@ -35,7 +35,7 @@ const IndexBranches = () => {
     return <div className={styles.loadingState}>Cargando sucursales...</div>;
   }
 
-  const handleSelectBranch = (codSucursal: number) => {
+  const handleSelectBranch = (codSucursal: string) => {
     setBranches(branches.filter(branch => branch.codSucursal === codSucursal));
     setShowOptions(true);
   };

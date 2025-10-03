@@ -41,20 +41,20 @@ function App() {
               <Route path="/branches" element={<Branches />} />
               {/* Selección de barbero primero */}
               <Route
-                path="/branches/:branchId/barbers"
+                path="/branches/:codSucursal/barbers"
                 element={<BarbersByBranch />}
               />
               <Route
-                path="/barbers/:barberId/appointments"
+                path="/barbers/:codBarbero/appointments"
                 element={<AppointmentsByBarber />}
               />
               {/* Selección de horario primero */}
               <Route
-                path="/branches/:branchId/schedule"
+                path="/branches/:codSucursal/schedule"
                 element={<ScheduleByBranch />}
               />
               <Route
-                path="/branches/:branchId/schedule/:scheduleId/barbers"
+                path="/branches/:codSucursal/schedule/:scheduleId/barbers"
                 element={<BarbersByBranch />}
               />
 
@@ -77,19 +77,19 @@ function App() {
               {/* Rutas del cliente para navegación por sucursales y barberos */}
               <Route path="/branches" element={<Branches />} />
               <Route
-                path="/branches/:branchId/barbers"
+                path="/branches/:codSucursal/barbers"
                 element={<BarbersByBranch />}
               />
               <Route
-                path="/barbers/:barberId/appointments"
+                path="/barbers/:codBarbero/appointments"
                 element={<AppointmentsByBarber />}
               />
               <Route
-                path="/branches/:branchId/schedule"
+                path="/branches/:codSucursal/schedule"
                 element={<ScheduleByBranch />}
               />
               <Route
-                path="/branches/:branchId/schedule/:scheduleId/barbers"
+                path="/branches/:codSucursal/schedule/:scheduleId/barbers"
                 element={<BarbersByBranch />}
               />
 
