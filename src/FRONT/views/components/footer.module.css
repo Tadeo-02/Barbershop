@@ -2,7 +2,7 @@
   background-color: #1f2937;
   color: white;
   text-align: center;
-  height: 4rem;
+  height: 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,4 +11,14 @@
   position: relative;
   left: 50%;
   transform: translateX(-50%);
+  font-size: 0.95rem;
+  padding: 0 10px;
+}
+/* DESKTOP: ajustes para pantallas grandes */
+@media (min-width: 769px) {
+  .footer {
+    height: 4rem;
+    font-size: 1.1rem;
+    padding: 0 30px;
+  }
 }
