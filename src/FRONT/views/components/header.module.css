@@ -4,11 +4,11 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 4rem; /* h-16 */
+  height: 3.5rem; /* más bajo en móviles */
   background-color: #1f2937; /* bg-gray-800 */
   color: white;
-  padding-left: 1rem; /* px-4 */
-  padding-right: 1rem; /* px-4 */
+  padding-left: 0.5rem; 
+  padding-right: 0.5rem; 
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -16,7 +16,7 @@
 }
 
 .logo {
-  height: 3rem; /* h-12 */
+  height: 2.2rem;
 }
 
 .titleContainer {
@@ -29,18 +29,18 @@
 }
 
 .title {
-  font-size: 0.75rem; /* text-xs */
-  font-weight: 500; /* font-medium */
-  line-height: 1; /* leading-none */
+  font-size: 0.85rem; 
+  font-weight: 500; 
+  line-height: 1;
 }
 
 .button {
   background-color: white;
   color: #1f2937; /* text-gray-800 */
-  padding-left: 1rem; /* px-4 */
-  padding-right: 1rem; /* px-4 */
-  padding-top: 0.5rem; /* py-2 */
-  padding-bottom: 0.5rem; /* py-2 */
+  padding-left: 0.5rem; /* px-4 */
+  padding-right: 0.5rem; /* px-4 */
+  padding-top: 0.4rem; /* py-2 */
+  padding-bottom: 0.4rem; /* py-2 */
   border-radius: 0.25rem; /* rounded */
   border: none;
   cursor: pointer;
@@ -48,8 +48,8 @@
 
 .closeButton {
   position: absolute;
-  top: 1rem; /* top-4 */
-  right: 1rem; /* right-4 */
+  top: 0.5rem; 
+  right: 0.5rem; 
   color: #1f2937; /* text-gray-800 */
   background: none;
   border: none;
@@ -57,8 +57,8 @@
 }
 
 .sidebarMenu {
-  margin-top: 4rem; /* mt-16 */
-  padding: 1rem; /* p-4 */
+  margin-top: 3.5rem;
+  padding: 0.5rem;
   list-style: none;
 }
 
@@ -94,17 +94,31 @@
   transform: translateX(100%);
 }
 
-/* Media queries para responsive */
-@media (min-width: 768px) {
+/* TABLET Y DESKTOP: ajustes para pantallas grandes */
+@media (min-width: 769px) {
+  .header {
+    height: 4rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .logo {
+    height: 3rem;
+  }
   .titleContainer {
     flex-direction: row;
   }
-
   .title {
-    font-size: 1.125rem; /* md:text-lg */
+    font-size: 1.125rem;
   }
-
   .titleSecond {
-    margin-left: 0.25rem; /* md:ml-1 */
+    margin-left: 0.25rem;
+  }
+  .sidebarMenu {
+    margin-top: 4rem;
+    padding: 1rem;
+  }
+  .closeButton {
+    top: 1rem;
+    right: 1rem;
   }
 }

@@ -2,17 +2,17 @@
 .optionsContainer {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  margin-top: 2.5rem;
+  gap: 1.2rem;
+  margin-top: 1.5rem;
   align-items: center;
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: 0 6px 24px rgba(56, 161, 105, 0.10);
-  padding: 2.5rem 2rem;
+  padding: 1.2rem 1rem;
 }
 .optionButton {
-  padding: 1.2rem 3rem;
-  font-size: 1.25rem;
-  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 10px;
   border: none;
 	background-color: #2b6cb0;
   color: #fff;
@@ -30,9 +30,9 @@
   box-shadow: 0 12px 40px rgba(49, 151, 149, 0.18);
 }
 .branchesContainer {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 30px;
+  max-width: 100%;
+  margin: 20px 0;
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -52,11 +52,11 @@
   background-color: #f0f4f8;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 15px;
+  padding: 12px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -68,27 +68,45 @@
 }
 
 .branchName {
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #2d3748;
 }
 
 .branchAddress {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #718096;
   font-weight: 500;
 }
 
-@media (max-width: 768px) {
+/* DESKTOP: ajustes para pantallas grandes */
+@media (min-width: 769px) {
+  .optionsContainer {
+    gap: 2rem;
+    margin-top: 2.5rem;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+  }
+  .optionButton {
+    padding: 1.2rem 3rem;
+    font-size: 1.25rem;
+    border-radius: 12px;
+  }
   .branchesContainer {
-    margin: 20px;
-    padding: 20px;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
   }
   .branchItem {
-    padding: 15px;
+    padding: 20px;
+    gap: 8px;
+    margin-bottom: 15px;
   }
   .branchName {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+  }
+  .branchAddress {
+    font-size: 1rem;
   }
 }
 
