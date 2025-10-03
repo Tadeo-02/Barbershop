@@ -1,5 +1,6 @@
 .scheduleContainer {
-    padding: 1rem;
+    padding: 0.7rem;
+    max-width: 100%;
 }
 .scheduleList {
     list-style: none;
@@ -8,20 +9,48 @@
 .scheduleItem {
     background: #f5f5f5;
     margin-bottom: 0.5rem;
-    padding: 0.75rem;
+    padding: 0.6rem;
     border-radius: 6px;
     transition: background 0.2s;
+    font-size: 0.98rem;
 }
 .scheduleItem:hover {
     background: #e0e0e0;
 }
 .scheduleDate {
     font-weight: bold;
+    font-size: 1rem;
 }
 .scheduleHour {
     color: #555;
+    font-size: 0.95rem;
 }
 .emptyState {
     color: #999;
     font-style: italic;
+    font-size: 0.95rem;
+    padding: 0.5rem 0;
+}
+
+/* DESKTOP: ajustes para pantallas grandes */
+@media (min-width: 769px) {
+    .scheduleContainer {
+        padding: 1.5rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .scheduleItem {
+        padding: 1rem;
+        font-size: 1.05rem;
+    }
+    .scheduleDate {
+        font-size: 1.1rem;
+    }
+    .scheduleHour {
+        font-size: 1rem;
+    }
+    .emptyState {
+        font-size: 1rem;
+        padding: 1rem 0;
+    }
 }

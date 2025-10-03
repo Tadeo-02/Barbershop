@@ -6,36 +6,28 @@ body {
   background-color: #f8f8f8;
   color: #333;
   margin: 0;
-  padding: 20px;
+  padding: 10px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Headings */
-.pageTitle {
-  font-size: 2.5rem;
+.pageTitle, h2  {
+  font-size: 2rem;
   color: #1a202c;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   font-weight: 700;
   letter-spacing: -0.025em;
 }
 
-h2 {
-  font-size: 2.5rem;
-  color: #1a202c;
-  text-align: center;
-  margin-bottom: 30px;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-}
 
 /* Container for IndexCategorias */
 .indexCategorias {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 30px;
+  max-width: 100%;
+  margin: 20px 0;
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -52,11 +44,11 @@ h2 {
   background-color: #f0f4f8;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 15px;
+  padding: 12px;
+  margin-bottom: 1px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -66,7 +58,7 @@ h2 {
 }
 
 .indexCategorias li strong {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: #2d3748;
 }
 
@@ -77,9 +69,9 @@ h2 {
 
 /* Form Styles (for Create and Modificar) */
 .formContainer {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 30px;
+  max-width: 100%;
+  margin: 20px auto;
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -87,24 +79,24 @@ h2 {
 }
 
 .formGroup {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .formLabel {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-weight: 600;
   color: #4a5568;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
-.formInput {
+.formInput, .formTextarea  {
   width: 100%;
-  padding: 12px 15px;
+  padding: 10px 12px;
   border: 2px solid #a0aec0;
   /* Border más oscuro para distinción */
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #2d3748;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   box-sizing: border-box;
@@ -112,7 +104,7 @@ h2 {
   /* Sombra interna para profundidad */
 }
 
-.formInput:focus {
+.formInput:focus, .formTextarea:focus  {
   outline: none;
   border-color: #4299e1;
   /* Borde azul brillante al enfocar */
@@ -122,27 +114,10 @@ h2 {
   /* Fondo ligeramente azulado al enfocar */
 }
 
-/* Textarea specific styles */
 .formTextarea {
-  width: 100%;
-  padding: 12px 15px;
-  border: 2px solid #a0aec0;
-  border-radius: 8px;
-  font-size: 1rem;
-  color: #2d3748;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  box-sizing: border-box;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
   resize: vertical;
-  min-height: 100px;
+  min-height: 80px;
   font-family: inherit;
-}
-
-.formTextarea:focus {
-  outline: none;
-  border-color: #4299e1;
-  box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.6);
-  background-color: #e6f4ff;
 }
 
 /* Buttons */
@@ -150,7 +125,8 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 25px;
+  width: 100%;
+  padding: 10px 0;
   border: none;
   /* Eliminar borde para botones */
   border-radius: 8px;
@@ -160,8 +136,7 @@ h2 {
   transition: background-color 0.3s ease, transform 0.2s ease,
     box-shadow 0.3s ease;
   text-decoration: none;
-  margin-right: 10px;
-  margin-top: 10px;
+  margin: 10px 0 0 0;
 }
 
 .buttonPrimary {
@@ -214,13 +189,15 @@ h2 {
 /* Specific adjustment for buttons within list items in IndexCategorias */
 .indexCategorias li .button {
   margin-top: 0;
+  width: auto;
 }
 
 /* Action buttons container */
 .actionButtons {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
   justify-content: center;
   align-items: center;
 }
@@ -229,18 +206,18 @@ h2 {
 .categoryInfo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .categoryTitle {
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #2d3748;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .categoryCode {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #718096;
   font-weight: 500;
 }
@@ -248,26 +225,26 @@ h2 {
 .categoryDescription {
   color: #4a5568;
   line-height: 1.5;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
 /* Loading and empty states */
 .loadingState {
   text-align: center;
-  padding: 40px;
+  padding: 30px;
   color: #718096;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .emptyState {
   text-align: center;
-  padding: 40px;
+  padding: 30px;
   color: #718096;
 }
 
 .emptyState p {
-  font-size: 1.1rem;
-  margin-bottom: 20px;
+  font-size: 1rem;
+  margin-bottom: 15px;
 }
 
 /* Back button */
@@ -277,12 +254,12 @@ h2 {
   gap: 8px;
   background-color: #e2e8f0;
   color: #4a5568;
-  padding: 10px 20px;
+  padding: 8px 14px;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 500;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .backButton:hover {
@@ -290,40 +267,55 @@ h2 {
   transform: translateY(-2px);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  h1,
+/* DESKTOP: ajustes para pantallas grandes */
+@media (min-width: 769px) {
+  .pageTitle,
   h2 {
-    font-size: 2rem;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
   }
-
   .indexCategorias,
   .formContainer {
-    margin: 20px;
-    padding: 20px;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
   }
-
   .indexCategorias li {
-    padding: 15px;
+    padding: 20px;
+    gap: 10px;
+    margin-bottom: 15px;
   }
-
   .button {
-    width: 100%;
-    margin-right: 0;
-    margin-bottom: 10px;
-  }
-
-  .indexCategorias li .button {
     width: auto;
+    margin-right: 10px;
+    margin-top: 10px;
+    margin-bottom: 0;
   }
-
   .actionButtons {
-    flex-direction: column;
-    gap: 5px;
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 15px;
   }
-
   .categoryTitle {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+  }
+  .loadingState,
+  .emptyState {
+    padding: 40px;
+    font-size: 1.1rem;
+  }
+  .emptyState p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+  }
+  .backButton {
+    padding: 10px 20px;
+    margin-bottom: 20px;
+  }
+  .successMessage,
+  .errorMessage {
+    padding: 12px 16px;
+    margin-bottom: 20px;
   }
 }
 
@@ -344,9 +336,9 @@ h2 {
 .successMessage {
   background-color: #c6f6d5;
   color: #22543d;
-  padding: 12px 16px;
+  padding: 10px 12px;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   border-left: 4px solid #38a169;
 }
 
@@ -354,8 +346,8 @@ h2 {
 .errorMessage {
   background-color: #fed7d7;
   color: #742a2a;
-  padding: 12px 16px;
+  padding: 10px 12px;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   border-left: 4px solid #e53e3e;
 }
