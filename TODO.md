@@ -12,7 +12,7 @@
     - [ ] Listado de clientes (proposal.md)
     - [ ] Listado de rentabilidad (proposal.md)
 ## General:
-    - [ ] Definir estructura mobile first en estilos
+    - [X] Definir estructura mobile first en estilos
     - [ ] Sección Productos
     - [ ] Fix de Toasts de error cuando hay succes (ej: create barberos desde admin)
 # BACK:

@@ -6,7 +6,7 @@ body {
   background-color: #f8f8f8;
   color: #333;
   margin: 0;
-  padding: 20px;
+  padding: 10px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -14,19 +14,19 @@ body {
 
 /* headings */
 h2 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   color: #1a202c;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   font-weight: 700;
   letter-spacing: -0.025em;
 }
 
 /* container de IndexTipoCortes */
 .indexTipoCortes {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 30px;
+  max-width: 100%;
+  margin: 20px auto;
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -43,11 +43,11 @@ h2 {
   background-color: #f0f4f8;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 15px;
+  padding: 12px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -57,7 +57,7 @@ h2 {
 }
 
 .indexTipoCortes li strong {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: #2d3748;
 }
 
@@ -66,11 +66,11 @@ h2 {
   color: #4a5568;
 }
 
-/* Fromulario (create y modificar) */
+/* Formulario (create y modificar) */
 .formContainer {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 30px;
+  max-width: 100%;
+  margin: 20px 0;
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -79,23 +79,23 @@ h2 {
 
 
 .formGroup {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .formLabel {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-weight: 600;
   color: #4a5568;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .formInput {
   width: 100%;
-  padding: 12px 15px;
+  padding: 10px 12px;
   border: 2px solid #a0aec0; 
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #2d3748;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   box-sizing: border-box;
@@ -114,7 +114,8 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 25px;
+  width: 100%;
+  padding: 10px;
   border: none; /* eliminar borde para botones */
   border-radius: 8px;
   font-size: 1rem;
@@ -123,8 +124,8 @@ h2 {
   transition: background-color 0.3s ease, transform 0.2s ease,
     box-shadow 0.3s ease;
   text-decoration: none;
-  margin-right: 10px;
-  margin-top: 10px;
+  margin: 10px 0 0 0;
+
 }
 
 .buttonPrimary {
@@ -153,33 +154,7 @@ h2 {
 
 .indexTipoCortes li .button {
   margin-top: 0;
-}
-
-/* Ajusters responsive */
-@media (max-width: 768px) {
-  h1 {
-    font-size: 2rem;
-  }
-
-  .indexTipoCortes,
-  .formContainer {
-    margin: 20px;
-    padding: 20px;
-  }
-
-  .indexTipoCortes li {
-    padding: 15px;
-  }
-
-  .button {
-    width: 100%;
-    margin-right: 0;
-    margin-bottom: 10px;
-  }
-
-  .indexTipoCortes li .button {
-    width: auto;
-  }
+  width: auto;
 }
 
 /* animaciones */
@@ -192,4 +167,31 @@ h2 {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* DESKTOP: ajustes para pantallas grandes */
+@media (min-width: 769px) {
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+  }
+
+  .indexTipoCortes,
+  .formContainer {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+  }
+
+  .indexTipoCortes li {
+    padding: 20px;
+    gap: 10px;
+  }
+
+  .button {
+    width: auto;
+    margin-right: 10px;
+    margin-top: 10px;
+  }
+
 }
