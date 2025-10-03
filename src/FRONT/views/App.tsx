@@ -26,6 +26,7 @@ import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
 import BarbersPage from "./pages/Admin/BarbersPage.tsx";
 import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
 import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
+import CancelAppointment from "./components/Client/appointments/cancelAppointment.tsx";
 
 function App() {
   return (
@@ -36,13 +37,17 @@ function App() {
           <main className="mainContent">
             <Routes>
               <Route path="/" element={<Home />}>
-                esto lo agregué para poder ver la home del cliente directamente{" "}
+                {/*esto lo agregué para poder ver la home del cliente directamente*/}
               </Route>
               <Route path="/branches" element={<Branches />} />
               {/* Selección de barbero primero */}
               <Route
                 path="/branches/:codSucursal/barbers"
                 element={<BarbersByBranch />}
+              />
+              <Route 
+                path="/appointments/cancelar/:appointmentId" 
+                element={<CancelAppointment />} 
               />
               <Route
                 path="/barbers/:codBarbero/appointments"

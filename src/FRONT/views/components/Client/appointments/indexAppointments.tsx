@@ -12,7 +12,7 @@ const IndexAppointments = () => {
 
   useEffect(() => {
     // llama al backend para obtener los turnos
-    fetch("/turnos")
+    fetch("/appointments")
       .then((res) => res.json())
       .then((data) => {
         setTurnos(data); // data debe ser un array de turnos
@@ -30,7 +30,7 @@ const IndexAppointments = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/turnos/${codTurno}`, {
+      const response = await fetch(`/appointments/${codTurno}`, {
         method: "DELETE",
       });
 
@@ -71,16 +71,22 @@ const IndexAppointments = () => {
               </div>
               <div className={styles.actionButtons}>
                 <Link
-                  to={`/turnos/${turno.codTurno}`}
+                  to={`/appointments/${turno.codTurno}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Ver Detalles
                 </Link>
                 <Link
-                  to={`/turnos/modificarTurno/${turno.codTurno}`}
+                  to={`/appointments/modificarTurno/${turno.codTurno}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Modificar
+                </Link>
+                <Link
+                  to={`/appointments/cancelar/${turno.codTurno}`}
+                  className={`${styles.button} ${styles.buttonDanger}`}
+                >
+                  Cancelar
                 </Link>
                 <button
                   className={`${styles.button} ${styles.buttonDanger}`}
