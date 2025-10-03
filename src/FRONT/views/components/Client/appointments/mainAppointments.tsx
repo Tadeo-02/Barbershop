@@ -15,7 +15,7 @@ function MainAppointments() {
   useEffect(() => {
     const fetchTurnos = async () => {
       try {
-        const response = await fetch("/turnos"); // Fetch all turnos from the backend
+  const response = await fetch("/appointments"); // Fetch all turnos from the backend
         if (response.ok) {
           const data = await response.json();
           setTurnos(data);
