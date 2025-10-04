@@ -45,9 +45,9 @@ function App() {
                 path="/branches/:codSucursal/barbers"
                 element={<BarbersByBranch />}
               />
-              <Route 
-                path="/appointments/cancelar/:appointmentId" 
-                element={<CancelAppointment />} 
+              <Route
+                path="/appointments/cancelar/:appointmentId"
+                element={<CancelAppointment />}
               />
               <Route
                 path="/barbers/:codBarbero/appointments"
@@ -99,7 +99,7 @@ function App() {
               />
 
               {/* Rutas protegidas por tipo de usuario */}
-              <Route
+              <Route //! BARBER
                 path="/barber"
                 element={
                   <ProtectedRoute allowedRoles={["barber"]}>
@@ -113,7 +113,7 @@ function App() {
 
               {/* Rutas de administración protegidas */}
 
-              <Route
+              <Route //! ADMIN
                 path="/Admin/HomePageAdmin"
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
@@ -123,7 +123,7 @@ function App() {
               />
 
               <Route
-                path="/Admin/CategoriesPage"
+                path="/Admin/CategoriesPage/*"
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <CategoriesPage />

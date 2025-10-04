@@ -21,7 +21,7 @@ const IndexBarbers = () => {
     // const toastId = toast.loading("Cargando barberos...");
 
     // Llama al backend para obtener los barberos
-    fetch("/usuarios")
+    fetch("/usuarios?type=barber") //! mando que quiero barberos, tener en cuenta para listado de clientes
       .then((res) => res.json())
       .then((data) => {
         setBarberos(data); // data debe ser un array de barberos

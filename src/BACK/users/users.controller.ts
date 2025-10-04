@@ -9,6 +9,45 @@ class UsersController extends BaseController<any> {
   protected entityName = "usuario";
   protected idFieldName = "codUsuario";
 
+  // Metodo especifico para mostar barberos o clientes
+  index = async (req: Request, res: Response) => {
+    try {
+      const userType = req.query.type as "client" | "barber" | undefined;
+      const entities = await model.findAll(userType);
+      res.status(200).json(entities);
+    } catch (error) {
+      this.handleError(error, res);
+    }
+  };
+// update especializado ya que el update puede ser para barber o usuario, lo que cambia los parametros enviados
+  update = async (req: Request, res: Response) => {
+    try {
+      const { codUsuario } = req.params; // codUsuario viene de la URL
+
+      const { dni, nombre, apellido, telefono, email, contraseña, cuil } =
+        req.body;
+
+      // Llamar a la función update con codUsuario como primer parámetro
+      const updatedUser = await model.update(codUsuario, {
+        dni,
+        nombre,
+        apellido,
+        telefono,
+        email,
+        contraseña,
+        cuil,
+      });
+
+      res.status(200).json({
+        message: "Usuario actualizado exitosamente",
+        user: updatedUser,
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      this.handleError(error, res);
+    }
+  };
+
   // Método específico para login de usuarios
   async login(req: Request, res: Response) {
     try {

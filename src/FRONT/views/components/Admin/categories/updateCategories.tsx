@@ -11,7 +11,7 @@ interface Categoria {
   descuentoProducto: number;
 }
 
-const ModificarCategoria: React.FC = () => {
+const UpdateCategories: React.FC = () => {
   const { codCategoria } = useParams<{ codCategoria: string }>();
   const navigate = useNavigate();
   const [categoria, setCategoria] = useState<Categoria | null>(null);
@@ -88,7 +88,7 @@ const ModificarCategoria: React.FC = () => {
         toast.success(data.message || "Categoría actualizada exitosamente", {
           id: toastId,
         });
-        navigate("/categorias/indexCategorias");
+        navigate("/Admin/CategoriesPage");
       } else {
         toast.error(data.message || "Error al actualizar categoría", {
           id: toastId,
@@ -189,4 +189,4 @@ const ModificarCategoria: React.FC = () => {
   );
 };
 
-export default ModificarCategoria;
+export default UpdateCategories;
