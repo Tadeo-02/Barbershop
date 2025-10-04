@@ -6,12 +6,12 @@ import toast from "react-hot-toast";
 interface Barbero {
   codUsuario: string;
   dni: string;
-  cuil: string;
   nombre: string;
   apellido: string;
   telefono: string;
   email: string;
   contrase_a: string;
+  cuil: string;
 }
 
 const UpdateBarber: React.FC = () => {
@@ -19,91 +19,123 @@ const UpdateBarber: React.FC = () => {
   const navigate = useNavigate();
   const [barbero, setBarbero] = useState<Barbero | null>(null);
   const [dni, setDni] = useState("");
-  const [cuil, setCuil] = useState("");
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
   const [contraseña, setContraseña] = useState(""); // Cambiar de contrase_a a contraseña
+  const [cuil, setCuil] = useState("");
 
   useEffect(() => {
-  let isMounted = true; // Flag para controlar si el componente está montado
+    let isMounted = true;
 
-  const fetchBarbero = async () => {
-    const toastId = toast.loading("Cargando datos del barbero...");
+    const fetchBarbero = async () => {
+      const toastId = toast.loading("Cargando datos del barbero...");
 
-    try {
-      const response = await fetch(`/usuarios/${codUsuario}`);
+      try {
+        console.log("🔍 Debug - codUsuario from params:", codUsuario);
+        console.log("🔍 Debug - Making request to:", `/usuarios/${codUsuario}`);
 
-      if (!isMounted) return; // Si el componente se desmontó, no continuar
+        const response = await fetch(`/usuarios/${codUsuario}`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setBarbero(data);
-        setDni(data.dni);
-        setCuil(data.cuil);
-        setNombre(data.nombre);
-        setApellido(data.apellido);
-        setTelefono(data.telefono);
-        setEmail(data.email);
-        setContraseña(data.contrase_a);
-        toast.dismiss(toastId); // Solo dismiss
-      } else if (response.status === 404) {
-        toast.error("Barbero no encontrado", { id: toastId });
-        navigate("/indexBarbers");
-      } else {
-        toast.error("Error al cargar los datos del barbero", { id: toastId });
+        console.log("🔍 Debug - Response status:", response.status);
+        console.log("🔍 Debug - Response ok:", response.ok);
+
+        if (!isMounted) return;
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("🔍 Debug - Data received from API:", data);
+
+          setBarbero(data);
+          setDni(data.dni || "");
+          setCuil(data.cuil || "");
+          setNombre(data.nombre || "");
+          setApellido(data.apellido || "");
+          setTelefono(data.telefono || "");
+          setEmail(data.email || "");
+          setContraseña("");
+
+          console.log("🔍 Debug - States after setting:", {
+            dni: data.dni,
+            nombre: data.nombre,
+            apellido: data.apellido,
+            telefono: data.telefono,
+            email: data.email,
+            cuil: data.cuil,
+          });
+
+          toast.dismiss(toastId);
+        } else if (response.status === 404) {
+          console.log("🔍 Debug - Barbero not found");
+          toast.error("Barbero no encontrado", { id: toastId });
+          navigate("/BarbersPage");
+        } else {
+          console.log("🔍 Debug - Other error:", response.status);
+          const errorData = await response.json().catch(() => ({}));
+          console.log("🔍 Debug - Error data:", errorData);
+          toast.error("Error al cargar los datos del barbero", { id: toastId });
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        console.error("🔍 Debug - Fetch error:", error);
+        toast.error("Error de conexión", { id: toastId });
       }
-    } catch (error) {
-      if (!isMounted) return;
-      console.error("Error fetching barbero:", error);
-      toast.error("Error de conexión", { id: toastId });
-    }
-  };
+    };
 
-  fetchBarbero();
+    fetchBarbero();
 
-  // Cleanup function para evitar duplicación
-  return () => {
-    isMounted = false;
-  };
-}, [codUsuario, navigate]);
+    return () => {
+      isMounted = false;
+    };
+  }, [codUsuario, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const toastId = toast.loading("Actualizando barbero...");
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const requestData: any = {
+        dni,
+        nombre,
+        apellido,
+        telefono,
+        email,
+        cuil,
+      };
+
+      if (contraseña.trim() !== "") {
+        requestData.contraseña = contraseña;
+      }
+
+      console.log("🔍 Debug - Request data being sent:", requestData);
+      console.log("🔍 Debug - URL:", `/usuarios/${barbero?.codUsuario}`);
+
       const response = await fetch(`/usuarios/${barbero?.codUsuario}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          dni,
-          cuil,
-          nombre,
-          apellido,
-          telefono,
-          email,
-          contraseña, // Usar la variable renombrada
-        }),
+        body: JSON.stringify(requestData),
       });
 
       const data = await response.json();
+      console.log("🔍 Debug - Response data:", data);
 
       if (response.ok) {
         toast.success(data.message || "Barbero actualizado exitosamente", {
           id: toastId,
         });
-        navigate("/indexBarbers");
+        navigate("/Admin/BarbersPage");
       } else {
         toast.error(data.message || "Error al actualizar barbero", {
           id: toastId,
         });
       }
     } catch (error) {
-      console.error("Error updating barbero:", error);
+      console.error("🔍 Debug - Submit error:", error);
       toast.error("Error de conexión", { id: toastId });
     }
   };
@@ -127,20 +159,6 @@ const UpdateBarber: React.FC = () => {
             id="dni"
             value={dni}
             onChange={(e) => setDni(e.target.value)}
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="cuil">
-            CUIL:
-          </label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="cuil"
-            id="cuil"
-            value={cuil}
-            onChange={(e) => setCuil(e.target.value)}
             required
           />
         </div>
@@ -204,13 +222,27 @@ const UpdateBarber: React.FC = () => {
           <label className={styles.formLabel} htmlFor="contraseña">
             Contraseña:
           </label>
-          <input
+          <input //todo Arreglar el placeholder
             className={styles.formInput}
             type="password"
             name="contraseña"
             id="contraseña"
             value={contraseña}
             onChange={(e) => setContraseña(e.target.value)}
+            placeholder="Ingrese nueva contraseña o deje vacío para mentener la actual"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel} htmlFor="cuil">
+            CUIL:
+          </label>
+          <input //todo Arreglar el input del cuil para que por defecto ponga los guiones o no lo exija y se pongan solos una vez enviados
+            className={styles.formInput}
+            type="text"
+            name="cuil"
+            id="cuil"
+            value={cuil}
+            onChange={(e) => setCuil(e.target.value)}
             required
           />
         </div>

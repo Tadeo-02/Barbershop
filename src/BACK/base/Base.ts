@@ -13,10 +13,12 @@ export class DatabaseError extends Error {
 }
 
 // sanitización declarada universal
-export const sanitizeInput = (input: string): string => {
-  return input.trim().replace(/[<>'";&]/g, "");
+export const sanitizeInput = (input: string | undefined): string => {
+  if (input === undefined || input === null) {
+    return "";
+  }
+  return input.toString().trim();
 };
-
 // cierre de conexion universal
 export const disconnect = async () => {
   await prisma.$disconnect();

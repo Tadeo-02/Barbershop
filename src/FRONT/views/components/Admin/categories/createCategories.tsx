@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast"; // importar librería de alerts
 
-const CreateCategorias: React.FC = () => {
+const CreateCategories: React.FC = () => {
   const navigate = useNavigate();
 // ESTADOS
   const [nombreCategoria, setNombreCategoria] = useState("");
@@ -64,7 +64,7 @@ const CreateCategorias: React.FC = () => {
         setDescCategoria("");
         setDescuentoCorte("");
         setDescuentoProducto("");
-        navigate("/categories/indexCategories");
+        navigate("/Admin/CategoriesPage");
       } else {
         toast.error(data.message || "Error al crear categoría", {
           id: toastId,
@@ -163,4 +163,4 @@ const CreateCategorias: React.FC = () => {
   );
 };
 
-export default CreateCategorias;
+export default CreateCategories;

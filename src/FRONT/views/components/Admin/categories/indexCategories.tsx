@@ -11,7 +11,7 @@ interface Categoria {
   descuentoProducto: number; 
 }
 
-const IndexCategorias = () => {
+const IndexCategories = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true); // loading
 
@@ -148,7 +148,7 @@ const IndexCategorias = () => {
   };
 
   return (
-    <div className={styles.indexCategorias}>
+    <div className={styles.indexCategories}>
       <h2>Gestión de Categorías</h2>
       {categorias.length === 0 ? (
         <div className={styles.emptyState}>
@@ -182,13 +182,13 @@ const IndexCategorias = () => {
                 </div>
                 <div className={styles.actionButtons}>
                   <Link
-                    to={`/categorias/${categoria.codCategoria}`}
+                    to={`/Admin/CategoriesPage/${categoria.codCategoria}`}
                     className={`${styles.button} ${styles.buttonPrimary}`}
                   >
                     Ver Detalles
                   </Link>
                   <Link
-                    to={`/categorias/modificarCategorias/${categoria.codCategoria}`}
+                    to={`/Admin/CategoriesPage/updateCategories/${categoria.codCategoria}`}
                     className={`${styles.button} ${styles.buttonPrimary}`}
                   >
                     Modificar
@@ -209,4 +209,4 @@ const IndexCategorias = () => {
   );
 };
 
-export default IndexCategorias;
+export default IndexCategories;

@@ -26,7 +26,8 @@
     - [ ] Modificar Turnos
 ## Admin:
     - [X] CRUD Sucursal
-    - [X--] CRUD Barberos
+    - [X] CRUD Barberos
+    - [X] CRUD Categorias
 ## General:
     - [ ] Revisar validaciones zod en general
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)

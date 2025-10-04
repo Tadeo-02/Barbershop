@@ -153,21 +153,36 @@ export const store = async (
   }
 };
 
-export const findAll = async () => {
+export const findAll = async (userType?: "client" | "barber") => {
+  //indico que tipo de usuario quiero mostrar
   try {
-    console.log("Fetching all users with Prisma");
+    console.log(`Fetching all ${userType} with Prisma`);
+
+    let whereCondition = {};
+    switch (userType) {
+      case "client":
+        whereCondition = { cuil: null }; // Solo usuarios sin CUIL (clientes)
+        break;
+      case "barber":
+        whereCondition = {
+          AND: [{ cuil: { not: null } }, { cuil: { not: "1" } }],
+        };
+        break;
+      default:
+        whereCondition = {}; // Todos los usuarios
+    }
 
     // Solo usuarios sin CUIL (usuarios normales, no barberos)
     const usuarios = await prisma.usuarios.findMany({
-      where: { cuil: null },
+      where: whereCondition,
       orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
     });
 
-    console.log(`Retrieved ${usuarios.length} usuarios`);
+    console.log(`Retrieved ${usuarios.length} ${userType}`);
     return usuarios;
   } catch (error) {
     console.error(
-      "Error fetching usuarios:",
+      `Error fetching ${userType}:`,
       error instanceof Error ? error.message : "Unknown error"
     );
     throw new DatabaseError("Error al obtener lista de usuarios");
@@ -176,15 +191,31 @@ export const findAll = async () => {
 
 export const findById = async (codUsuario: string) => {
   try {
-    // Sanitizar y validar
+    console.log("🔍 Debug - findById called with:", codUsuario);
+
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
+    console.log("🔍 Debug - sanitized codUsuario:", sanitizedCodUsuario);
 
     const usuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedCodUsuario },
     });
 
+    console.log("🔍 Debug - User found:", usuario ? "YES" : "NO");
+    if (usuario) {
+      console.log("🔍 Debug - User data:", {
+        codUsuario: usuario.codUsuario,
+        dni: usuario.dni,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        email: usuario.email,
+        telefono: usuario.telefono,
+        cuil: usuario.cuil,
+      });
+    }
+
     return usuario;
   } catch (error) {
+    console.error("🔍 Debug - findById error:", error);
     if (error instanceof DatabaseError) {
       throw error;
     }
@@ -220,31 +251,40 @@ export const findByBranchId = async (codSucursal: string) => {
     throw new DatabaseError("Error al buscar usuarios por sucursal");
   }
 };
+const UpdateUserSchema = UserSchema.omit({ contraseña: true }).extend({
+  contraseña: UserSchema.shape.contraseña.optional(),
+});
+interface UpdateUserParams {
+  dni: string;
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  email: string;
+  contraseña?: string;
+  cuil?: string;
+}
 
-export const update = async (
-  codUsuario: string,
-  dni: string,
-  nombre: string,
-  apellido: string,
-  telefono: string,
-  email: string,
-  contraseña: string,
-  cuil?: string
-) => {
+export const update = async (codUsuario: string, params: UpdateUserParams) => {
   try {
+    console.log("🔍 Debug - Raw codUsuario received:", codUsuario);
+    console.log("🔍 Debug - Raw codUsuario type:", typeof codUsuario);
+
     // Sanitizar datos
     const sanitizedData = {
       codUsuario: sanitizeInput(codUsuario),
-      dni: sanitizeInput(dni),
-      nombre: sanitizeInput(nombre),
-      apellido: sanitizeInput(apellido),
-      telefono: sanitizeInput(telefono),
-      email: sanitizeInput(email),
-      contraseña: sanitizeInput(contraseña),
-      cuil: cuil ? sanitizeInput(cuil) : undefined, // sanitizo si existe
+      dni: sanitizeInput(params.dni),
+      nombre: sanitizeInput(params.nombre),
+      apellido: sanitizeInput(params.apellido),
+      telefono: sanitizeInput(params.telefono),
+      email: sanitizeInput(params.email),
+      contraseña: params.contraseña
+        ? sanitizeInput(params.contraseña)
+        : undefined,
+      cuil: params.cuil ? sanitizeInput(params.cuil) : undefined,
     };
 
-    const validatedData = UserSchema.parse({
+
+    const validatedData = UpdateUserSchema.parse({
       dni: sanitizedData.dni,
       nombre: sanitizedData.nombre,
       apellido: sanitizedData.apellido,
@@ -254,34 +294,59 @@ export const update = async (
       cuil: sanitizedData.cuil,
     });
 
+    console.log(
+      "🔍 Debug - Looking for user with codUsuario:",
+      sanitizedData.codUsuario
+    );
+
     // Verificar que el usuario existe
     const existingUsuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedData.codUsuario },
     });
 
+    console.log(
+      "🔍 Debug - Query result:",
+      existingUsuario ? "FOUND" : "NOT FOUND"
+    );
+
+    if (existingUsuario) {
+      console.log("🔍 Debug - Found user data:", {
+        codUsuario: existingUsuario.codUsuario,
+        dni: existingUsuario.dni,
+        nombre: existingUsuario.nombre,
+        email: existingUsuario.email,
+      });
+    }
+
     if (!existingUsuario) {
       throw new DatabaseError("Usuario no encontrado");
     }
-    // encriptar nueva contraseña para el update
-    const hashedPassword = await hashPassword(validatedData.contraseña);
+    // preparo los datos obligatorios para la actualizacion
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: any = {
+      //! Criminal
+      dni: validatedData.dni,
+      nombre: validatedData.nombre,
+      apellido: validatedData.apellido,
+      telefono: validatedData.telefono,
+      email: validatedData.email,
+    };
 
-    let cuilValue = null;
-    if (validatedData.cuil) {
-      // Limpiar CUIL para almacenamiento
-      cuilValue = validatedData.cuil.replace(/[-\s]/g, "");
+    // Solo encriptar y actualizar contraseña si se proporciona una nueva
+    if (validatedData.contraseña) {
+      const hashedPassword = await hashPassword(validatedData.contraseña);
+      updateData.contrase_a = hashedPassword;
     }
+
+    // Solo actualizar CUIL si se proporciona
+    if (validatedData.cuil) {
+      updateData.cuil = validatedData.cuil.replace(/[-\s]/g, "");
+    }
+
     // Actualizar usuario
     const updatedUsuario = await prisma.usuarios.update({
       where: { codUsuario: sanitizedData.codUsuario },
-      data: {
-        dni: validatedData.dni,
-        nombre: validatedData.nombre,
-        apellido: validatedData.apellido,
-        telefono: validatedData.telefono,
-        email: validatedData.email,
-        contrase_a: hashedPassword,
-        cuil: cuilValue, // si es barbero, se guarda el CUIL limpio
-      },
+      data: updateData,
     });
 
     console.log("Usuario updated successfully");

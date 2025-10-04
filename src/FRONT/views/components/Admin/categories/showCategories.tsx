@@ -11,7 +11,7 @@ interface Categoria {
   descuentoProducto: number;
 }
 
-const ShowCategoria = () => {
+const ShowCategories = () => {
   const { codCategoria } = useParams();
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,4 +67,4 @@ const ShowCategoria = () => {
   );
 };
 
-export default ShowCategoria;
+export default ShowCategories;
