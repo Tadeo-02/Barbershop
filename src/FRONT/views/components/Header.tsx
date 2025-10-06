@@ -119,6 +119,13 @@ function Header() {
                   </Link>
                 </li>
               )}
+              {userType === "client" && (
+                <li>
+                  <Link to="/client/reservations" onClick={() => setOpen(false)}>
+                    Mis turnos
+                  </Link>
+                </li>
+              )}
 
               {userType === "barber" && (
                 <li>

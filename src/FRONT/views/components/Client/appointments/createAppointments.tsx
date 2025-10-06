@@ -52,7 +52,7 @@ const CreateAppointment: React.FC = () => {
 
   return (
     <div className={styles.formContainer}>
-      <h1 className={styles.pageTitle}>Crear Turno</h1>
+      <h1 className={styles.pageTitle}>Reservar Turno</h1>
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="appointmentDate">

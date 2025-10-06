@@ -18,6 +18,7 @@ import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import AppointmentsByBarber from "./components/Client/appointmentsByBarber.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
+import MyReservations from "./components/Client/MyReservations";
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 
@@ -79,25 +80,6 @@ function App() {
                 }
               />
 
-              {/* Rutas del cliente para navegación por sucursales y barberos */}
-              <Route path="/branches" element={<Branches />} />
-              <Route
-                path="/branches/:codSucursal/barbers"
-                element={<BarbersByBranch />}
-              />
-              <Route
-                path="/barbers/:codBarbero/appointments"
-                element={<AppointmentsByBarber />}
-              />
-              <Route
-                path="/branches/:codSucursal/schedule"
-                element={<ScheduleByBranch />}
-              />
-              <Route
-                path="/branches/:codSucursal/schedule/:scheduleId/barbers"
-                element={<BarbersByBranch />}
-              />
-
               {/* Rutas protegidas por tipo de usuario */}
               <Route //! BARBER
                 path="/barber"
@@ -110,6 +92,7 @@ function App() {
 
               <Route path="/client" element={<HomePageClient />} />
               <Route path="/client/profile" element={<ProfilePage />} />
+              <Route path="/client/reservations" element={<MyReservations />} />
 
               {/* Rutas de administración protegidas */}
 

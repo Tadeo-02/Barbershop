@@ -55,13 +55,81 @@
     animation: fadeIn 0.5s ease-out;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
 }
 
 .appointmentList {
     list-style: none;
     padding: 0;
     width: 100%;
+}
+
+.hoursGrid {
+    /* Mobile-first: two columns per row */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+
+/* Mobile-first: stack card content vertically */
+.hourCard {
+    background: #ffffff;
+    border: 1px solid #e6eef8;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.hourCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 18px rgba(15, 45, 75, 0.06);
+}
+
+.hourAvailable {
+    border-left: 4px solid #48bb78;
+}
+
+.hourBooked {
+    opacity: 0.7;
+    border-left: 4px solid #f56565;
+    background: #fff5f5;
+}
+
+.hourTime {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.hourMeta {
+    font-size: 0.9rem;
+    color: #718096;
+}
+
+/* Mobile-first: ensure the right-side area stacks under the time and shows status above the button */
+.hourCard > div:last-child {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.reserveButton {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    margin-top: 0;
+}
+
+.hourTime {
+    font-size: 1.05rem;
 }
 
 .appointmentItem {
@@ -115,10 +183,43 @@
     font-size: 1rem;
 }
 
+.pagination {
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin-top:16px;
+}
+
+.pageButton {
+    padding:6px 10px;
+    border-radius:6px;
+    border:1px solid #e2e8f0;
+    background:#fff;
+    cursor:pointer;
+}
+
+.pageButton:disabled {
+    opacity:0.5;
+    cursor:not-allowed;
+}
+
+.pageActive {
+    background:#2b6cb0;
+    color:#fff;
+    border-color:#2b6cb0;
+}
+
+.summary {
+    width:100%;
+    text-align:center;
+    margin:10px 0 16px 0;
+    color:#4a5568;
+    font-weight:600;
+}
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
     .appointmentsContainer {
-        max-width: 800px;
+        max-width: 100%;
         margin: 40px auto;
         padding: 30px;
     }
@@ -148,6 +249,46 @@
         padding: 40px;
         font-size: 1.1rem;
     }
+        .hoursGrid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .hourCard {
+        padding: 16px 18px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .hourTime {
+        font-size: 1.05rem;
+    }
+
+    .hourMeta {
+        font-size: 0.95rem;
+    }
+
+    /* Desktop: button smaller, inline to the right */
+    .reserveButton {
+        width: auto;
+        padding: 10px 18px;
+        font-size: 0.95rem;
+        margin-top: 0;
+    }
+}
+
+/* Ensure barber info is visible on small screens (force ordering and visibility) */
+@media (max-width: 768px) {
+    .barberInfo {
+        display: block !important;
+        width: 100% !important;
+        padding: 12px !important;
+        margin-bottom: 12px !important;
+        z-index: 2;
+        position: relative;
+        background: #f7fafc; /* slightly lighter on mobile */
+    }
 }
 
 @keyframes fadeIn {
@@ -161,3 +302,5 @@
         transform: translateY(0);
     }
 }
+
+

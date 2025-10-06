@@ -25,18 +25,25 @@ body {
 }
 
 .mainContent {
+  /* Mobile-first main area: stacked, centered content */
   flex: 1;
-  display: block;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  /* center vertically so option containers appear more in the middle */
   justify-content: center;
-  padding-top: 4rem; /* Height of header */
+  /* make the main area the full viewport minus header so centering is accurate */
+  min-height: calc(100vh - var(--header-height, 3.5rem));
+  padding-top: 0; /* header space handled by min-height calculation */
+  padding-inline: var(--container-padding, 1rem);
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+  /* logo size is fluid: mobile-first smaller, scales up on larger screens */
+  height: var(--logo-height, clamp(3.5rem, 8vw, 6rem));
+  padding: calc(var(--container-padding, 1rem) * 1.2);
+  will-change: filter, transform;
+  transition: filter 300ms, transform 300ms;
 }
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
@@ -61,7 +68,10 @@ body {
 }
 
 .card {
-  padding: 2em;
+  padding: var(--card-padding, 1rem);
+  width: 100%;
+  max-width: var(--card-max-width, 540px);
+  margin-inline: auto;
 }
 
 .read-the-docs {
@@ -70,12 +80,21 @@ body {
 
 
 /* MOBILE FIRST: estilos base para móviles */
+:root {
+  /* sensible mobile defaults using CSS variables */
+  --header-height: 3.5rem; /* ~56px mobile header */
+  --container-padding: 1rem;
+  --logo-height: clamp(3.5rem, 8vw, 5.5rem);
+  --card-padding: 1rem;
+  --card-max-width: 100%;
+  --font-size-base: 16px;
+}
 [data-sonner-toaster] {
   top: 20% !important;
 }
 [data-sonner-toast] {
   min-width: 140px !important;
-  max-width: 80dvw !important;
+  max-width: min(80dvw, 90vw) !important;
   font-size: 14px !important;
   padding: 12px 16px !important;
   margin: 0 15px !important;
@@ -93,7 +112,7 @@ body {
 @media (max-width: 360px) {
   [data-sonner-toast] {
     min-width: 100px !important;
-    max-width: 75dvw !important;
+    max-width: min(75dvw, 90vw) !important;
     font-size: 13px !important;
     padding: 10px 12px !important;
     margin: 0 12px !important;
@@ -107,12 +126,21 @@ body {
 
 /* TABLET: estilos para pantallas medianas */
 @media (min-width: 481px) {
+  /* tablet adjustments: increase some variables */
+  :root {
+    --header-height: 4rem;
+    --container-padding: 1.25rem;
+    --logo-height: clamp(4rem, 6vw, 6rem);
+    --card-padding: 1.25rem;
+    --card-max-width: 720px;
+    --font-size-base: 17px;
+  }
   [data-sonner-toaster] {
     top: 25% !important;
   }
   [data-sonner-toast] {
     min-width: 180px !important;
-    max-width: 85dvw !important;
+    max-width: min(85dvw, 85vw) !important;
     font-size: 16px !important;
     padding: 16px 20px !important;
     margin: 0 20px !important;
@@ -121,12 +149,21 @@ body {
 
 /* DESKTOP: estilos para pantallas grandes */
 @media (min-width: 769px) {
+  /* desktop: wider layout, centered container */
+  :root {
+    --header-height: 4.5rem;
+    --container-padding: 2rem;
+    --logo-height: 6rem;
+    --card-padding: 2rem;
+    --card-max-width: 1100px;
+    --font-size-base: 18px;
+  }
   [data-sonner-toaster] {
     top: 30% !important;
   }
   [data-sonner-toast] {
-    min-width: 400px !important;
-    max-width: 90dvw !important;
+    min-width: 320px !important;
+    max-width: min(90dvw, 900px) !important;
     font-size: 18px !important;
     padding: 20px 30px !important;
     margin: 0 30px !important;
@@ -135,6 +172,15 @@ body {
     font-size: 16px !important;
     padding: 10px 20px !important;
     min-width: 90px !important;
+  }
+  /* center main content and constrain width on large screens */
+  .mainContent {
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 0;
+  }
+  .appContainer {
+    align-items: center;
   }
 }
 

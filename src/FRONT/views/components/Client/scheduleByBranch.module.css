@@ -1,7 +1,10 @@
 
 .scheduleContainer {
-    padding: 0.7rem;
+    padding: 0.9rem;
     max-width: 100%;
+    margin: 12px 0;
+    background-color: #ffffff;
+    border-radius: 10px;
 }
 
 .scheduleList {
@@ -9,55 +12,58 @@
     padding: 0;
 }
 
-.scheduleItem {
-    background: #f5f5f5;
-    margin-bottom: 0.5rem;
-    padding: 0.6rem;
-    border-radius: 6px;
-    transition: background 0.2s;
-    font-size: 0.98rem;
-}
-
-.scheduleItem:hover {
-    background: #e0e0e0;
-}
-
-.scheduleDate {
-    font-weight: bold;
+.emptyState {
+    text-align: center;
+    padding: 24px;
+    color: #718096;
     font-size: 1rem;
 }
 
-.scheduleHour {
-    color: #555;
-    font-size: 0.95rem;
+/* Grid of hours - reuse styles similar to appointmentsByBarber */
+.hoursGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
 }
 
-.emptyState {
-    color: #999;
-    font-style: italic;
-    font-size: 0.95rem;
-    padding: 0.5rem 0;
+.hourCard {
+    background: #ffffff;
+    border: 1px solid #e6eef8;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
+
+.hourCard:hover { transform: translateY(-4px); box-shadow: 0 8px 18px rgba(15,45,75,0.06); }
+
+.hourAvailable { border-left: 4px solid #48bb78; }
+.hourTime { font-size: 1rem; font-weight: 700; color: #2d3748; }
+.hourMeta { font-size: 0.9rem; color: #718096; }
+.appointmentStatus { font-size: 0.95rem; font-weight: 600; color: #38a169; }
+.reserveButton {
+    margin-top: 0;
+    padding: 8px 14px;
+    background-color: #2b6cb0;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.reserveButton:hover { background-color: #2c5282; transform: translateY(-1px); }
 
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
-    .scheduleContainer {
-        padding: 1.5rem;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    .scheduleItem {
-        padding: 1rem;
-        font-size: 1.05rem;
-    }
-    .scheduleDate {
-        font-size: 1.1rem;
-    }
-    .scheduleHour {
-        font-size: 1rem;
-    }
-    .emptyState {
-        font-size: 1rem;
-        padding: 1rem 0;
-    }
+    .scheduleContainer { padding: 1.5rem; max-width: 1000px; margin: 0 auto; }
+    .hoursGrid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .hourCard { padding: 16px 18px; }
+    .hourTime { font-size: 1.05rem; }
+    .hourMeta { font-size: 0.95rem; }
+    .emptyState { padding: 40px; font-size: 1.1rem; }
 }

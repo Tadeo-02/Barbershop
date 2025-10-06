@@ -18,6 +18,9 @@ interface AuthContextType {
   login: (userData: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  reservations: any[];
+  addReservation: (r: any) => void;
+  removeReservation: (id: string | number) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userType, setUserType] = useState<
     "client" | "barber" | "admin" | null
   >(null);
+  const [reservations, setReservations] = useState<any[]>([]);
 
   const login = (userData: User) => {
     const type =
@@ -44,18 +48,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUserType(null);
     localStorage.removeItem("user");
     localStorage.removeItem("userType");
+    localStorage.removeItem("reservations");
   };
 
   // Recuperar datos del localStorage al iniciar
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     const savedUserType = localStorage.getItem("userType");
+    const savedReservations = localStorage.getItem("reservations");
 
     if (savedUser && savedUserType) {
       setUser(JSON.parse(savedUser));
       setUserType(savedUserType as "client" | "barber" | "admin");
     }
+    if (savedReservations) {
+      try { setReservations(JSON.parse(savedReservations)); } catch { setReservations([]); }
+    }
   }, []);
+
+  const addReservation = (r: any) => {
+    setReservations(prev => {
+      try {
+        // Avoid duplicates: prefer checking by id when available, otherwise by key fields
+        const exists = prev.some(x => {
+          if (x && x.id && r && r.id) return String(x.id) === String(r.id);
+          return (
+            x && r && x.fecha === r.fecha && x.hora === r.hora && x.codBarbero === r.codBarbero && x.codSucursal === r.codSucursal
+          );
+        });
+        if (exists) return prev;
+      } catch (e) {
+        // if any error during check, fall through and append
+      }
+      const next = [...prev, r];
+      localStorage.setItem('reservations', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const removeReservation = (id: string | number) => {
+    setReservations(prev => {
+      const next = prev.filter(x => x.id !== id);
+      localStorage.setItem('reservations', JSON.stringify(next));
+      return next;
+    });
+  };
 
   return (
     <AuthContext.Provider
@@ -65,6 +102,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         login,
         logout,
         isAuthenticated: !!user,
+        reservations,
+        addReservation,
+        removeReservation,
       }}
     >
       {children}

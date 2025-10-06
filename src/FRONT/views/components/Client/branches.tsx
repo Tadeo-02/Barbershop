@@ -47,6 +47,7 @@ const IndexBranches = () => {
     navigate(`/branches/${branches[0].codSucursal}/schedule`);
   };
 
+
   return (
     <div className={styles.branchesContainer}>
       <h2>Sucursales disponibles</h2>

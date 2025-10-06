@@ -22,7 +22,7 @@ const IndexAppointments = () => {
         console.error("Error al obtener turnos:", error);
       });
   }, []);
-
+/*
   const handleDelete = async (codTurno: number) => {
     const confirmed = window.confirm(
       "¿Estás seguro de que querés borrar este turno?"
@@ -48,7 +48,7 @@ const IndexAppointments = () => {
       alert("Error de conexión con el servidor.");
     }
   };
-
+*/
   return (
   <div className={styles.indexAppointments}>
       <h2>Gestión de Turnos</h2>
@@ -88,12 +88,9 @@ const IndexAppointments = () => {
                 >
                   Cancelar
                 </Link>
-                <button
-                  className={`${styles.button} ${styles.buttonDanger}`}
-                  onClick={() => handleDelete(turno.codTurno)}
-                >
-                  Eliminar
-                </button>
+
+
+
               </div>
             </li>
           ))}
@@ -104,3 +101,13 @@ const IndexAppointments = () => {
 };
 
 export default IndexAppointments;
+
+
+/*                <button
+                  className={`${styles.button} ${styles.buttonDanger}`}
+                  onClick={() => handleDelete(turno.codTurno)}
+                >
+                  Eliminar
+                </button>
+                esto iba abajo de la opcion cancelar
+                */
