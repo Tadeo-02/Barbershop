@@ -17,7 +17,7 @@ function BranchesPage() {
     <Routes>
       <Route index element={<IndexBranches />} />
       <Route path="createBranches" element={<CreateBranches />} />
-      <Route path="updateBranch/:codSucursal" element={<UpdateBranches />} />
+      <Route path="updateBranches/:codSucursal" element={<UpdateBranches />} />
       <Route path=":codSucursal" element={<ShowBranches />} />
     </Routes>{" "}
     </>
