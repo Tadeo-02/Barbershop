@@ -298,18 +298,6 @@ const AppointmentsByBarber = () => {
                 <input id="fecha" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
             </div>
             {usedLocalSchedule}
-            {/* summary: count available / total */}
-            {appointments.length > 0 && (
-                (() => {
-                    const total = appointments.length;
-                    const available = total; // all shown are available
-                    return (
-                        <div className={styles.summary}>
-                            {available} disponibles de {total} (0 ocupados en la lista)
-                        </div>
-                    );
-                })()
-            )}
             {successMessage && (
                 <div className={styles.successMessage} style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:12}}>
                     <div>{successMessage}</div>
@@ -331,7 +319,6 @@ const AppointmentsByBarber = () => {
                                         <div className={styles.hourMeta}>{appointment.fecha}</div>
                                     </div>
                                     <div style={{display:'flex', flexDirection:'column', alignItems:'flex-end', gap:8}}>
-                                        <div className={styles.appointmentStatus}>Disponible</div>
                                         {formatDateToYYYYMMDD(selectedDate) < todayYYYYMMDD ? (
                                             <div style={{color:'#888', fontSize:12}}>No se pueden reservar turnos para fechas pasadas</div>
                                         ) : (

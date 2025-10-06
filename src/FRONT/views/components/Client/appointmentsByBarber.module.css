@@ -33,6 +33,12 @@
     padding: 12px;
     margin-bottom: 18px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    /* Keep the barber card visible and fixed below the header so it doesn't get hidden */
+    position: sticky;
+    /* use CSS variable if your header defines --header-height; fallback to 64px */
+    top: var(--header-height, 64px);
+    z-index: 40;
+    background: #f7fafc; /* ensure solid background when sticky */
 }
 .barberInfo h3 {
     margin-top: 0;
@@ -56,12 +62,14 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    overflow: visible;
 }
 
 .appointmentList {
     list-style: none;
     padding: 0;
     width: 100%;
+    overflow: visible;
 }
 
 .hoursGrid {

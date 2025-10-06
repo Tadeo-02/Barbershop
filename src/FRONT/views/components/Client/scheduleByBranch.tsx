@@ -352,7 +352,6 @@ const ScheduleByBranch = () => {
                                 <div className={barberStyles.hourMeta}>{h.fecha}</div>
                             </div>
                             <div style={{display:'flex', flexDirection:'column', alignItems:'flex-end', gap:8}}>
-                                <div className={barberStyles.appointmentStatus}>Disponible</div>
                                 <button className={barberStyles.reserveButton} onClick={(e) => { e.stopPropagation(); handleSelectHorario(h); }}>
                                     Seleccionar
                                 </button>
@@ -387,7 +386,6 @@ const ScheduleByBranch = () => {
                                             {b.email && <div className={barberStyles.appointmentHour}>Email: {b.email}</div>}
                                         </div>
                                         <div style={{display:'flex', flexDirection:'column', gap:8, alignItems:'flex-end'}}>
-                                            <div className={barberStyles.appointmentStatus}>Disponible</div>
                                             <button className={barberStyles.reserveButton} onClick={() => handleReserve(b.codUsuario, b.nombre, b.apellido)}>Reservar</button>
                                         </div>
                                     </div>
