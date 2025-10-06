@@ -25,6 +25,7 @@ import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
 import BarbersPage from "./pages/Admin/BarbersPage.tsx";
 import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
+import BranchesPage from "./pages/Admin/BranchesPage.tsx";
 import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
 import CancelAppointment from "./components/Client/appointments/cancelAppointment.tsx";
 
@@ -136,6 +137,15 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <BarbersPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/Admin/BranchesPage/*"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <BranchesPage />
                   </ProtectedRoute>
                 }
               />
