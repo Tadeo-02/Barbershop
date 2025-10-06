@@ -161,13 +161,13 @@ const IndexBranches = () => {
               </div>
               <div className={styles.actionButtons}>
                 <Link
-                  to={`/branches/${sucursal.codSucursal}`}
+                  to={`/Admin/BranchesPage/${sucursal.codSucursal}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Ver Detalles
                 </Link>
                 <Link
-                  to={`/branches/updateBranch/${sucursal.codSucursal}`}
+                  to={`/Admin/BranchesPage/updateBranches/${sucursal.codSucursal}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Modificar

@@ -3,16 +3,23 @@ import { useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast"; //importamos libreria de alertas
 
-
 const CreateBranches: React.FC = () => {
   const navigate = useNavigate();
+  const [nombre, setNombre] = useState("");
   const [calle, setCalle] = useState("");
-  const [altura, setAltura] = useState("");
-  {/*agregar atributos linkMap e img?*/}
+  const [altura, setAltura] = useState<number | "">(""); // pasamos a number para que coincida con el back
+  {
+    /*agregar atributos linkMap e img?*/
+  }
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    //valido que la altura sea un numero valido
+    if (!altura || isNaN(Number(altura))) { //? no se hasta que punto es necesario o si habria que aplicarlo en el resto de CRUDs para los numbers ingresados
+      toast.error("Por favor ingrese una altura válida");
+      return;
+    }
     const toastId = toast.loading("Creando Sucursal..."); //alert de loading
     try {
       console.log(
@@ -20,12 +27,12 @@ const CreateBranches: React.FC = () => {
         calle,
         altura
       );
-      const response = await fetch("/sucursales/create", {
+      const response = await fetch("/sucursales", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ calle, altura }),
+        body: JSON.stringify({ nombre, calle, altura }),
       });
       console.log("Después de fetch, status:", response.status);
 
@@ -48,10 +55,12 @@ const CreateBranches: React.FC = () => {
       }
 
       if (response.ok) {
-        toast.success(data.message || "Sucursal creada exitosamente", {id: toastId});
+        toast.success(data.message || "Sucursal creada exitosamente", {
+          id: toastId,
+        });
         setCalle("");
         setAltura("");
-        navigate("/branches/indexBranches");
+        navigate("/Admin/BranchesPage");
       } else {
         toast.error(data.message || "Error al crear sucursal", { id: toastId });
       }
@@ -65,6 +74,20 @@ const CreateBranches: React.FC = () => {
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Crear Sucursal</h1>
       <form onSubmit={handleSubmit}>
+        <div className={styles.formGroup}>
+          <label htmlFor="nombre" className={styles.formLabel}>
+            NOMBRE:
+          </label>
+          <input
+            className={styles.formInput}
+            type="text"
+            name="nombre"
+            id="nombre"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            required
+          />
+        </div>
         <div className={styles.formGroup}>
           <label htmlFor="calle" className={styles.formLabel}>
             CALLE:
@@ -89,7 +112,10 @@ const CreateBranches: React.FC = () => {
             name="altura"
             id="altura"
             value={altura}
-            onChange={(e) => setAltura(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setAltura(value === "" ? "" : Number(value));
+            }}
             required
           />
         </div>
