@@ -22,6 +22,10 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
+  /* Reserve space for a fixed footer so no content is covered */
+  padding-bottom: var(--footer-height, 3rem);
+  /* Reserve space for a fixed header so content isn't hidden under it */
+  padding-top: var(--header-height, 3.5rem);
 }
 
 .mainContent {
@@ -32,9 +36,7 @@ body {
   align-items: center;
   /* center vertically so option containers appear more in the middle */
   justify-content: center;
-  /* make the main area the full viewport minus header so centering is accurate */
-  min-height: calc(100vh - var(--header-height, 3.5rem));
-  padding-top: 0; /* header space handled by min-height calculation */
+  /* padding for header/footer is applied on the appContainer to avoid overlap */
   padding-inline: var(--container-padding, 1rem);
 }
 
@@ -83,6 +85,7 @@ body {
 :root {
   /* sensible mobile defaults using CSS variables */
   --header-height: 3.5rem; /* ~56px mobile header */
+  --footer-height: 3rem;
   --container-padding: 1rem;
   --logo-height: clamp(3.5rem, 8vw, 5.5rem);
   --card-padding: 1rem;
@@ -152,6 +155,7 @@ body {
   /* desktop: wider layout, centered container */
   :root {
     --header-height: 4.5rem;
+    --footer-height: 4rem;
     --container-padding: 2rem;
     --logo-height: 6rem;
     --card-padding: 2rem;

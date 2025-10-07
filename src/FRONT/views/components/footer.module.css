@@ -6,11 +6,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100vw;
-  margin-top: auto;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 100%;
+  /* Fixed at the bottom of the viewport */
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  flex-shrink: 0;
   font-size: 0.95rem;
   padding: 0 10px;
 }
