@@ -11,15 +11,19 @@ const Home = () => {
     console.log("Navigating to branches..."); // Debug log
     navigate("/branches");
   };
+  const handlComprarProductos = () => {
+    console.log("Comprar productos clicked"); // Debug log
+    navigate("/products"); // Uncomment and implement when the route is ready
+  }
 
   return (
     <div className={styles.homeContainer}>
       <h2>Bienvenido</h2>
       <div className={styles.optionsContainer}>
-        <button className={styles.optionButton} onClick={handleSolicitarTurno}>
+        <button className={styles.optionButton} onClick={handleSolicitarTurno} disabled>
           Solicitar turno
         </button>
-        <button className={styles.optionButton} disabled>
+        <button className={styles.optionButton} onClick={handlComprarProductos}>
           Comprar productos
         </button>
       </div>

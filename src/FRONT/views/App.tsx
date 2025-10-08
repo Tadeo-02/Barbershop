@@ -18,6 +18,8 @@ import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import AppointmentsByBarber from "./components/Client/appointmentsByBarber.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
+import Products from "./components/Client/products/products.tsx";
+
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 
@@ -98,6 +100,7 @@ function App() {
                 path="/branches/:codSucursal/schedule/:scheduleId/barbers"
                 element={<BarbersByBranch />}
               />
+              <Route path="/products" element={<Products />} />
 
               {/* Rutas protegidas por tipo de usuario */}
               <Route //! BARBER
