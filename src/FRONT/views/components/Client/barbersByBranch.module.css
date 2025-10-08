@@ -1,43 +1,67 @@
 .barbersContainer {
-    max-width: 100%;
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-    animation: fadeIn 0.5s ease-out;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  max-width: 100%;
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.5s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .barberList {
-    list-style: none;
-    padding: 0;
-    width: 100%;
+  list-style: none;
+  padding: 0;
+  width: 100%;
 }
 
 .barberItem {
-    background-color: #f0f4f8;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: #f0f4f8;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.3s ease;
 }
 
 .barberItem:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
+}
+
+.barberItem.selected {
+  background-color: #007bff; /* Color azul para seleccionado */
+  color: white;
+  border: 2px solid #0056b3;
+  transform: scale(1.02); /* Efecto de agrandado sutil */
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.barberItem.selected:hover {
+  background-color: #0056b3; /* Un azul más oscuro en hover */
+  transform: scale(1.02) translateY(-2px);
 }
 
 .barberName {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.barberPhone {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+.barberItem.selected .barberPhone {
+  opacity: 1;
 }
 
 .optionsContainer {
@@ -87,39 +111,39 @@
 }
 
 .emptyState {
-    text-align: center;
-    padding: 30px;
-    color: #718096;
-    font-size: 1rem;
+  text-align: center;
+  padding: 30px;
+  color: #718096;
+  font-size: 1rem;
 }
 
 @media (min-width: 769px) {
-    .barbersContainer {
-        max-width: 800px;
-        margin: 40px auto;
-        padding: 30px;
-    }
+  .barbersContainer {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+  }
 
-    .barberItem {
-        padding: 20px;
-        gap: 8px;
-        margin-bottom: 15px;
-    }
+  .barberItem {
+    padding: 20px;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
 
-    .barberName {
-        padding: 40px;
-        font-size: 1.1rem;
-    }
+  .barberName {
+    padding: 40px;
+    font-size: 1.1rem;
+  }
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

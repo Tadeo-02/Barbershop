@@ -82,7 +82,7 @@ function App() {
 
               {/* Rutas protegidas por tipo de usuario */}
               <Route //! BARBER
-                path="/barber"
+                path="/Barber/HomePageBarber"
                 element={
                   <ProtectedRoute allowedRoles={["barber"]}>
                     <HomePageBarber />

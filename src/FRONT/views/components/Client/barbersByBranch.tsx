@@ -68,6 +68,8 @@ const BarbersByBranch = () => {
   }
 
   const handleSelectBarber = (codUsuario: string) => {
+    console.log("🔍 Barbero seleccionado:", codUsuario); // Log temporal
+    console.log("🔍 selectedBarber actual:", selectedBarber); // Agregar antes del return
     setSelectedBarber(codUsuario);
     setShowSchedule(true);
   };
@@ -87,9 +89,11 @@ const BarbersByBranch = () => {
         ) : (
           barberos.map((barbero) => (
             <li
-              key={barbero.codUsuario} // Use codUsuario as key instead of idx
-              className={styles.barberItem}
-              onClick={() => handleSelectBarber(barbero.codUsuario)} // Add click handler
+              key={barbero.codUsuario}
+              className={`${styles.barberItem} ${
+                selectedBarber === barbero.codUsuario ? styles.selected : ""
+              }`}
+              onClick={() => handleSelectBarber(barbero.codUsuario)}
               style={{ cursor: "pointer" }}
             >
               <div className={styles.barberName}>
