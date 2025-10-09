@@ -139,7 +139,8 @@
 .product-footer {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
+  gap: 10px;
 }
 
 .product-price {
@@ -174,6 +175,50 @@
 .add-to-cart-btn.disabled:hover {
   background: #bdc3c7;
   transform: none;
+}
+
+.quantity-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.quantity-selector label {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.quantity-select {
+  padding: 8px 12px;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  background: white;
+  color: #2c3e50;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 60px;
+  text-align: center;
+}
+
+.quantity-select:hover {
+  border-color: #2980b9;
+  box-shadow: 0 2px 5px rgba(52, 152, 219, 0.2);
+}
+
+.quantity-select:focus {
+  outline: none;
+  border-color: #2980b9;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.quantity-select:disabled {
+  background: #ecf0f1;
+  border-color: #bdc3c7;
+  cursor: not-allowed;
+  color: #95a5a6;
 }
 
 /* Responsive Design */
@@ -214,5 +259,16 @@
   .filter-btn {
     flex: 1;
     min-width: 120px;
+  }
+
+  .product-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .quantity-selector {
+    flex-direction: row;
+    gap: 10px;
   }
 }

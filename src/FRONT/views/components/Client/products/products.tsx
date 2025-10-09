@@ -13,23 +13,25 @@ interface Product {
 
 // Datos de ejemplo para productos de barbería
 const mockProducts: Product[] = [
-  {
-    id: 1,
-    name: "Espuma de Afeitar Premium",
-    price: 18.5,
-    description: "Espuma rica y cremosa para un afeitado suave y preciso",
+
+    {
+    id: 8,
+    name: "Bálsamo para Barba",
+    price: 28.0,
+    description: "Bálsamo hidratante y acondicionador para barbas largas",
     image:
-      "https://images.unsplash.com/photo-1564073056985-80c0a4b1e4a3?w=300&h=200&fit=crop",
-    category: "Afeitado",
+      "https://http2.mlstatic.com/D_NQ_NP_826800-MLA84987942320_052025-Ow=300&h=200&fit=crop",
+    category: "Cuidado de Barba",
     inStock: true,
   },
+ 
   {
     id: 2,
     name: "Gel Fijador Extra Fuerte",
     price: 12.0,
     description: "Gel de máxima fijación para peinados que duran todo el día",
     image:
-      "https://images.unsplash.com/photo-1562887284-5ad9b9a1dd93?w=300&h=200&fit=crop",
+      "https://casa-dora.shop/cdn/shop/products/IMG_20180424_140500883_530x.png?v=1528122471w=300&h=200&fit=crop",
     category: "Styling",
     inStock: true,
   },
@@ -39,28 +41,18 @@ const mockProducts: Product[] = [
     price: 25.0,
     description: "Aceite 100% natural para nutrir y dar brillo a tu barba",
     image:
-      "https://images.unsplash.com/photo-1635241161466-541ac25a6e88?w=300&h=200&fit=crop",
+      "https://http2.mlstatic.com/D_Q_NP_786314-MLU78029615972_082024-O.webpw=300&h=200&fit=crop",
     category: "Cuidado de Barba",
     inStock: false,
   },
-  {
-    id: 4,
-    name: "Champú Anticaspa",
-    price: 15.75,
-    description:
-      "Champú especializado para eliminar la caspa y fortalecer el cabello",
-    image:
-      "https://images.unsplash.com/photo-1556228724-f6f958db8b0d?w=300&h=200&fit=crop",
-    category: "Cuidado Capilar",
-    inStock: true,
-  },
+
   {
     id: 5,
     name: "Cera Modeladora Mate",
     price: 20.0,
     description: "Cera de acabado mate para texturas naturales y flexibles",
     image:
-      "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=300&h=200&fit=crop",
+      "https://farmacityar.vtexassets.com/arquivos/ids/270369-800-auto?v=638827555479530000&width=800&height=auto&aspect=truew=300&h=200&fit=crop",
     category: "Styling",
     inStock: true,
   },
@@ -70,7 +62,7 @@ const mockProducts: Product[] = [
     price: 22.5,
     description: "Loción calmante y refrescante para después del afeitado",
     image:
-      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=300&h=200&fit=crop",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGTp5Lhjz5XUvwFAIM3uaoaMZNF6EQUdNbXA&sw=300&h=200&fit=crop",
     category: "Afeitado",
     inStock: true,
   },
@@ -80,18 +72,17 @@ const mockProducts: Product[] = [
     price: 16.0,
     description: "Pomada tradicional con alto brillo para looks vintage",
     image:
-      "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=300&h=200&fit=crop",
+      "https://melbrosco.com/cdn/shop/files/Clasica.png?v=1752156360w=300&h=200&fit=crop",
     category: "Styling",
     inStock: true,
   },
-  {
-    id: 8,
-    name: "Bálsamo para Barba",
-    price: 28.0,
-    description: "Bálsamo hidratante y acondicionador para barbas largas",
+    { id: 1,
+    name: "Espuma de Afeitar Premium",
+    price: 18.5,
+    description: "Espuma rica y cremosa para un afeitado suave y preciso",
     image:
-      "https://images.unsplash.com/photo-1574594137545-b65e3e5c9b9a?w=300&h=200&fit=crop",
-    category: "Cuidado de Barba",
+      "https://farmaciasdelpueblo.vtexassets.com/arquivos/ids/183443/Gillette-Espuma-De-Afeitar-Gillette-Foamy-Regular-x-312gr-7500435224604_img1.png?v=638234036377330000w=300&h=200&fit=crop",
+    category: "Afeitado",
     inStock: true,
   },
 ];
@@ -99,11 +90,27 @@ const mockProducts: Product[] = [
 const Products: React.FC = () => {
   const [cart, setCart] = useState<Product[]>([]);
   const [filter, setFilter] = useState<string>("all");
+  const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
+
+  const handleQuantityChange = (productId: number, quantity: number) => {
+    setQuantities((prev) => ({
+      ...prev,
+      [productId]: quantity,
+    }));
+  };
+
+  const getQuantity = (productId: number) => {
+    return quantities[productId] || 1;
+  };
 
   const addToCart = (product: Product) => {
     if (product.inStock) {
-      setCart([...cart, product]);
-      alert(`${product.name} añadido al carrito`);
+      const quantity = getQuantity(product.id);
+      // Añadir el producto la cantidad de veces seleccionada
+      for (let i = 0; i < quantity; i++) {
+        setCart((prev) => [...prev, product]);
+      }
+      alert(`${quantity} x ${product.name} añadido al carrito`);
     }
   };
 
@@ -164,9 +171,7 @@ const Products: React.FC = () => {
             </div>
 
             <div className={styles["product-info"]}>
-              <div className={styles["product-category"]}>
-                {product.category}
-              </div>
+            
               <h3 className={styles["product-name"]}>{product.name}</h3>
               <p className={styles["product-description"]}>
                 {product.description}
@@ -175,6 +180,24 @@ const Products: React.FC = () => {
               <div className={styles["product-footer"]}>
                 <div className={styles["product-price"]}>
                   ${product.price.toFixed(2)}
+                </div>
+                <div className={styles["quantity-selector"]}>
+                  <label htmlFor={`quantity-${product.id}`}>Cantidad:</label>
+                  <select
+                    id={`quantity-${product.id}`}
+                    value={getQuantity(product.id)}
+                    onChange={(e) =>
+                      handleQuantityChange(product.id, parseInt(e.target.value))
+                    }
+                    disabled={!product.inStock}
+                    className={styles["quantity-select"]}
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                      <option key={num} value={num}>
+                        {num}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <button
                   className={`${styles["add-to-cart-btn"]} ${
