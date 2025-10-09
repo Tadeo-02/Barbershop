@@ -11,10 +11,14 @@ interface Product {
   inStock: boolean;
 }
 
+interface CartAnimation {
+  productId: number;
+  show: boolean;
+}
+
 // Datos de ejemplo para productos de barbería
 const mockProducts: Product[] = [
-
-    {
+  {
     id: 8,
     name: "Bálsamo para Barba",
     price: 28.0,
@@ -24,7 +28,6 @@ const mockProducts: Product[] = [
     category: "Cuidado de Barba",
     inStock: true,
   },
- 
   {
     id: 2,
     name: "Gel Fijador Extra Fuerte",
@@ -45,7 +48,6 @@ const mockProducts: Product[] = [
     category: "Cuidado de Barba",
     inStock: false,
   },
-
   {
     id: 5,
     name: "Cera Modeladora Mate",
@@ -76,7 +78,8 @@ const mockProducts: Product[] = [
     category: "Styling",
     inStock: true,
   },
-    { id: 1,
+  {
+    id: 1,
     name: "Espuma de Afeitar Premium",
     price: 18.5,
     description: "Espuma rica y cremosa para un afeitado suave y preciso",
@@ -91,6 +94,9 @@ const Products: React.FC = () => {
   const [cart, setCart] = useState<Product[]>([]);
   const [filter, setFilter] = useState<string>("all");
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
+  const [cartAnimation, setCartAnimation] = useState<CartAnimation | null>(
+    null
+  );
 
   const handleQuantityChange = (productId: number, quantity: number) => {
     setQuantities((prev) => ({
@@ -106,11 +112,19 @@ const Products: React.FC = () => {
   const addToCart = (product: Product) => {
     if (product.inStock) {
       const quantity = getQuantity(product.id);
+
+      // Mostrar animación
+      setCartAnimation({ productId: product.id, show: true });
+
       // Añadir el producto la cantidad de veces seleccionada
       for (let i = 0; i < quantity; i++) {
         setCart((prev) => [...prev, product]);
       }
-      alert(`${quantity} x ${product.name} añadido al carrito`);
+
+      // Ocultar animación después de 2 segundos
+      setTimeout(() => {
+        setCartAnimation(null);
+      }, 2000);
     }
   };
 
@@ -168,10 +182,25 @@ const Products: React.FC = () => {
               {!product.inStock && (
                 <div className={styles["out-of-stock-overlay"]}>Agotado</div>
               )}
+
+              {/* Animación de añadido al carrito */}
+              {cartAnimation?.productId === product.id &&
+                cartAnimation.show && (
+                  <div className={styles["cart-animation"]}>
+                    <div className={styles["cart-animation-content"]}>
+                      <div className={styles["cart-icon"]}>🛒</div>
+                      <div className={styles["cart-text"]}>
+                        ¡Añadido al carrito!
+                      </div>
+                      <div className={styles["cart-quantity"]}>
+                        {getQuantity(product.id)} x {product.name}
+                      </div>
+                    </div>
+                  </div>
+                )}
             </div>
 
             <div className={styles["product-info"]}>
-            
               <h3 className={styles["product-name"]}>{product.name}</h3>
               <p className={styles["product-description"]}>
                 {product.description}
@@ -202,11 +231,24 @@ const Products: React.FC = () => {
                 <button
                   className={`${styles["add-to-cart-btn"]} ${
                     !product.inStock ? styles.disabled : ""
+                  } ${
+                    cartAnimation?.productId === product.id &&
+                    cartAnimation.show
+                      ? styles["btn-loading"]
+                      : ""
                   }`}
                   onClick={() => addToCart(product)}
-                  disabled={!product.inStock}
+                  disabled={
+                    !product.inStock ||
+                    (cartAnimation?.productId === product.id &&
+                      cartAnimation.show)
+                  }
                 >
-                  {product.inStock ? "Añadir al Carrito" : "Agotado"}
+                  {cartAnimation?.productId === product.id && cartAnimation.show
+                    ? "Añadiendo..."
+                    : product.inStock
+                    ? "Añadir al Carrito"
+                    : "Agotado"}
                 </button>
               </div>
             </div>
