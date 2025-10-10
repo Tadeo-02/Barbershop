@@ -19,6 +19,9 @@ import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import AppointmentsByBarber from "./components/Client/appointmentsByBarber.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
 import Products from "./components/Client/products/products.tsx";
+import CheckoutPage from "./pages/Client/CheckoutPage";
+import OrderConfirmation from "./pages/Client/OrderConfirmation";
+import OrdersPage from "./pages/Client/OrdersPage";
 
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
@@ -101,6 +104,9 @@ function App() {
                 element={<BarbersByBranch />}
               />
               <Route path="/products" element={<Products />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/order-confirmation" element={<OrderConfirmation />} />
+              <Route path="/orders" element={<OrdersPage />} />
 
               {/* Rutas protegidas por tipo de usuario */}
               <Route //! BARBER

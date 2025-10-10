@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaShoppingCart } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./login/AuthContext.tsx";
 import styles from "./header.module.css";
 // import logoBarber from "../../public/images/logoBarber.png";
+import CartSummary from "./CartSummary";
+import { useCart } from "./CartContext";
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const [openCart, setOpenCart] = useState(false);
   const { user, userType, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const cart = useCart();
 
   const handleLogout = () => {
     logout();
@@ -56,7 +60,20 @@ function Header() {
         </div>
 
         {/* boton a la derecha */}
-        <div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <button
+            className={styles.cartButton}
+            onClick={() => setOpenCart(true)}
+            aria-label="Abrir carrito"
+          >
+            <FaShoppingCart style={{ fontSize: "1.6rem" }} />
+            <span className={styles.cartLabel}></span>
+            {/** badge */}
+            {cart.totalItems > 0 && (
+              <span className={styles.cartBadge}>{cart.totalItems}</span>
+            )}
+          </button>
+
           <button className={styles.button} onClick={() => setOpen(true)}>
             <FaBars style={{ fontSize: "2.2rem" }} />
           </button>
@@ -138,7 +155,9 @@ function Header() {
                   </Link>
                 </li>
               )}
-
+          <li>
+            <Link to="/orders" onClick={() => setOpen(false)}>Mis Pedidos</Link>
+          </li>
               <li>
                 <button
                   onClick={handleLogout}
@@ -158,7 +177,7 @@ function Header() {
             </>
           )}
 
-          <li>
+          {/*<li>
             <Link
               to="/productos/mainProductos.tsx"
               onClick={() => setOpen(false)}
@@ -166,11 +185,23 @@ function Header() {
               Productos
             </Link>
           </li>
+*/}
+
         </ul>
       </div>
 
       {open && (
         <div className={styles.overlay} onClick={() => setOpen(false)} />
+      )}
+
+      {/* Cart drawer rendered from header */}
+      {openCart && (
+        <div className={styles.cartDrawerWrapper}>
+          <div className={styles.cartDrawerBackdrop} onClick={() => setOpenCart(false)} />
+          <div className={styles.cartDrawer}>
+            <CartSummary onClose={() => setOpenCart(false)} />
+          </div>
+        </div>
       )}
     </nav>
   );

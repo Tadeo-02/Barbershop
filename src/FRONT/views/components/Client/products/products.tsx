@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./products.module.css";
+import { useCart } from "../../CartContext";
 
 interface Product {
   id: number;
@@ -91,8 +92,8 @@ const mockProducts: Product[] = [
 ];
 
 const Products: React.FC = () => {
-  const [cart, setCart] = useState<Product[]>([]);
-  const [filter, setFilter] = useState<string>("all");
+  const { addItem } = useCart();
+  const [filter] = useState<string>("all");
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
   const [cartAnimation, setCartAnimation] = useState<CartAnimation | null>(
     null
@@ -116,10 +117,16 @@ const Products: React.FC = () => {
       // Mostrar animación
       setCartAnimation({ productId: product.id, show: true });
 
-      // Añadir el producto la cantidad de veces seleccionada
-      for (let i = 0; i < quantity; i++) {
-        setCart((prev) => [...prev, product]);
-      }
+      // Añadir al contexto del carrito
+      addItem(
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+        },
+        quantity
+      );
 
       // Ocultar animación después de 2 segundos
       setTimeout(() => {
@@ -128,10 +135,6 @@ const Products: React.FC = () => {
     }
   };
 
-  const categories = [
-    "all",
-    ...Array.from(new Set(mockProducts.map((p) => p.category))),
-  ];
 
   const filteredProducts =
     filter === "all"
@@ -143,7 +146,8 @@ const Products: React.FC = () => {
       <div className={styles["products-header"]}>
         <h1>Productos de Barbería</h1>
         <div className={styles["cart-info"]}>
-          Carrito: {cart.length} productos
+          {/* ahora el header muestra el resumen global; dejamos esto informativo */}
+          Añade productos con "Añadir al Carrito" y abre el carrito desde el ícono superior.
         </div>
       </div>
 
