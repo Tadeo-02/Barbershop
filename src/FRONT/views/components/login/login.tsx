@@ -3,6 +3,7 @@ import styles from "./login.module.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
 import {useUserRedirect} from "../Redirect.tsx";
+import { toast } from "react-hot-toast";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -67,9 +68,6 @@ function Login() {
               autoComplete="on"
               onSubmit={handleSubmit}
             >
-              <br />
-              <br />
-              <br />
               <h1>INICIO DE SESIÓN</h1>
               <br />
               <label>Correo electrónico:</label>

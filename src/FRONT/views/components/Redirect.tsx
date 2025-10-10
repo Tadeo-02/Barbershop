@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./login/AuthContext";
 import React from "react";
+import { toast } from "react-hot-toast";
 
 interface RedirectProps {
   user: any; //todo Cambiar para que otaduy no nos asesine
@@ -29,7 +30,7 @@ export const useUserRedirect = () => {
     }
 
     if (message) {
-      alert(message);
+      toast.success(String(message));
     }
   };
 
@@ -40,6 +41,8 @@ export const useUserRedirect = () => {
 export const AutoRedirect = () => {
   const { user } = useAuth();
   const { redirectUser } = useUserRedirect();
+
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (user) {

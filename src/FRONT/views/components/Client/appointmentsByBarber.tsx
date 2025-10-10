@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import styles from "./appointmentsByBarber.module.css";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../login/AuthContext";
+import { toast } from "react-hot-toast";
 
 interface Turno {
     id: number;
@@ -200,6 +201,7 @@ const AppointmentsByBarber = () => {
     const perPage = 8;
 
     const auth = useAuth();
+    const navigate = useNavigate();
 
     const handleReserveAppointment = (appointmentId: number) => {
         // Reserva real: hacemos POST a /appointments
@@ -208,7 +210,9 @@ const AppointmentsByBarber = () => {
 
         // obtener codCliente desde el usuario logueado
         if (!auth.isAuthenticated || !auth.user) {
-            alert('Debes iniciar sesión para reservar un turno');
+            // show a toast and then navigate to login so user stays in SPA
+            toast.error('Debes iniciar sesión para reservar un turno');
+            setTimeout(() => navigate('/login'), 1000);
             return;
         }
         // const codCliente = auth.user.codUsuario; // usado cuando se realice el POST
@@ -219,14 +223,14 @@ const AppointmentsByBarber = () => {
         // Prevent reservations for past dates
         const normalizedSelected = formatDateToYYYYMMDD(selectedDate);
         if (normalizedSelected < todayYYYYMMDD) {
-            alert('No puedes reservar turnos para fechas anteriores a hoy');
+            toast.error('No puedes reservar turnos para fechas anteriores a hoy');
             return;
         }
         // prefer `hora` (normalized HH:MM) but fall back to `horaDesde` if needed
         const horaDesde = appointmentReserved.hora ?? appointmentReserved.horaDesde;
         // calcular horaHasta sumando 30 minutos
         if (!horaDesde) {
-            alert('No hay hora válida para este turno');
+            toast.error('No hay hora válida para este turno');
             return;
         }
     // const [hh, mm] = horaDesde.split(":").map(Number);
@@ -303,6 +307,16 @@ const AppointmentsByBarber = () => {
                     <div>{successMessage}</div>
                     <div>
                         <button onClick={() => { setSuccessMessage(null); if (successTimer.current) window.clearTimeout(successTimer.current); }} style={{background:'transparent', border:'none', color:'#22543d', fontWeight:700, cursor:'pointer'}}>X</button>
+                    </div>
+                </div>
+            )}
+            {/* If user is not authenticated, show a small call-to-action to login */}
+            {!auth.isAuthenticated && (
+                <div style={{margin:'12px 0', padding:12, border:'1px solid #e2e8f0', borderRadius:6, background:'#fffaf0'}}>
+                    <div style={{marginBottom:8}}>Para reservar un turno debes <strong>iniciar sesión</strong>.</div>
+                    <div style={{display:'flex', gap:8}}>
+                        <button onClick={() => { navigate('/login'); }} style={{background:'#2b6cb0', color:'#fff', padding:'8px 12px', borderRadius:4, border:'none', cursor:'pointer'}}>Ir a Iniciar Sesión</button>
+                        <button onClick={() => { navigate('/signUp'); }} style={{background:'transparent', color:'#2b6cb0', padding:'8px 12px', borderRadius:4, border:'1px solid #2b6cb0', cursor:'pointer'}}>Crear cuenta</button>
                     </div>
                 </div>
             )}
