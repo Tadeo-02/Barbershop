@@ -291,20 +291,6 @@ const AppointmentsByBarber = () => {
           <br />
           <br />
           <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-
-          <br />
-          <br />
-          <br />
           <h3>Datos del barbero</h3>
           <div>
             <strong>Nombre:</strong> {barbero.nombre} {barbero.apellido}
@@ -338,17 +324,6 @@ const AppointmentsByBarber = () => {
         />
       </div>
       {usedLocalSchedule}
-      {/* summary: count available / total */}
-      {appointments.length > 0 &&
-        (() => {
-          const total = appointments.length;
-          const available = total; // all shown are available
-          return (
-            <div className={styles.summary}>
-              {available} disponibles de {total} (0 ocupados en la lista)
-            </div>
-          );
-        })()}
       {successMessage && (
         <div
           className={styles.successMessage}
