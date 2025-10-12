@@ -11,11 +11,10 @@ interface Barbero {
 }
 
 const BarbersByBranch = () => {
-  const params = useParams();
-  console.log("All URL parameters:", params);
+
   const { codSucursal } = useParams();
   const [barberos, setBarberos] = useState<Barbero[]>([]);
-  const [selectedBarber, setSelectedBarber] = useState<string | null>(null); // Changed from number to string
+  const [selectedBarber, setSelectedBarber] = useState<string | null>(null);
   const [showSchedule, setShowSchedule] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
