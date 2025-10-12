@@ -222,8 +222,9 @@ export const findByAvailableDate = async (
         } else {
           // El barbero está disponible a esta hora
           horasDisponibles.push({
-            hora: horaString,
             barbero: barbero.codUsuario,
+            fecha: fechaTurno,
+            hora: horaString,
           });
         }
       }
