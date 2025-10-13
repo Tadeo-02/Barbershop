@@ -152,6 +152,18 @@ h2 {
   box-shadow: 0 8px 20px rgba(197, 48, 48, 0.5);
 }
 
+.buttonSuccess {
+  background-color: #38a169;
+  color: #ffffff;
+  box-shadow: 0 6px 15px rgba(56, 161, 105, 0.4);
+}
+
+.buttonSuccess:hover {
+  background-color: #2f855a;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(56, 161, 105, 0.5);
+}
+
 .indexTipoCortes li .button {
   margin-top: 0;
   width: auto;
