@@ -151,7 +151,7 @@ function App() {
               />
 
               <Route
-                path="/Admin/HaircutTypesPage"
+                path="/Admin/HaircutTypesPage/*"
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <HairCutTypesPage />

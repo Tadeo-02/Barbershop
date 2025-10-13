@@ -118,27 +118,29 @@ const IndexTypeOfHaircut = () => {
     );
   };
 
-const confirmedDelete = async (codCorte: string) => {
-  const toastId = toast.loading("Eliminando tipo de corte...");
+  const confirmedDelete = async (codCorte: string) => {
+    const toastId = toast.loading("Eliminando tipo de corte...");
 
-  try {
-    const response = await fetch(`/tipoCortes/${codCorte}`, {
-      method: "DELETE",
-    });
+    try {
+      const response = await fetch(`/tipoCortes/${codCorte}`, {
+        method: "DELETE",
+      });
 
-    if (response.ok) {
-      toast.success("Tipo de corte eliminado correctamente", { id: toastId });
-      setTipoCortes(tipoCortes.filter((corte) => corte.codCorte !== codCorte));
-    } else if (response.status === 404) {
-      toast.error("Tipo de corte no encontrado", { id: toastId });
-    } else {
-      toast.error("Error al borrar el tipo de corte", { id: toastId });
+      if (response.ok) {
+        toast.success("Tipo de corte eliminado correctamente", { id: toastId });
+        setTipoCortes(
+          tipoCortes.filter((corte) => corte.codCorte !== codCorte)
+        );
+      } else if (response.status === 404) {
+        toast.error("Tipo de corte no encontrado", { id: toastId });
+      } else {
+        toast.error("Error al borrar el tipo de corte", { id: toastId });
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      toast.error("Error de conexión con el servidor", { id: toastId });
     }
-  } catch (error) {
-    console.error("Error en la solicitud:", error);
-    toast.error("Error de conexión con el servidor", { id: toastId });
-  }
-};
+  };
 
   return (
     <div className={styles.indexTipoCortes}>
@@ -153,18 +155,15 @@ const confirmedDelete = async (codCorte: string) => {
             <li key={idx}>
               <div className={styles.corteInfo}>
                 <div className={styles.corteTitle}>
-                  {corte.nombreCorte}
+                  <strong>{corte.nombreCorte}</strong>
+                </div>
+                <div className={styles.cortePrice}>
+                  Valor Base: ${corte.valorBase}
                 </div>
               </div>
               <div className={styles.actionButtons}>
                 <Link
-                  to={`/typeOfHaircut/${corte.codCorte}`}
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                >
-                  Ver Detalles
-                </Link>
-                <Link
-                  to={`/typeOfHaircut/updateTypeOfHaircut/${corte.codCorte}`}
+                  to={`updateTypeOfHaircut/${corte.codCorte}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Modificar

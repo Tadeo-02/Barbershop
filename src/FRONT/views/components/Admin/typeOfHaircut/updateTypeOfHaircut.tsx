@@ -34,7 +34,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
           setValorBase(data.valorBase);
         } else if (response.status === 404) {
           toast.error("Tipo de corte no encontrado", { id: toastId });
-          navigate("/tipoCortes/indexTypeOfHaircut");
+          navigate("/Admin/HaircutTypesPage"); // redirigir si no se encuentra
         } else {
           toast.error("Error al cargar los datos del tipo de corte", {
             id: toastId,
@@ -74,7 +74,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
         toast.success(data.message || "Barbero actualizado exitosamente", {
           id: toastId,
         });
-        navigate("/indexTypeOfHaircut"); // redirigir a la lista de tipo de cortes
+        navigate("/Admin/HaircutTypesPage"); // redirigir a la lista de tipo de cortes
       } else {
         toast.error(data.message || "Error al actualizar barbero", {
           id: toastId,
