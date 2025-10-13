@@ -13,7 +13,8 @@ body {
 }
 
 /* Headings */
-.pageTitle, h2 {
+.pageTitle,
+h2 {
   font-size: 2rem;
   color: #1a202c;
   text-align: center;
@@ -38,7 +39,6 @@ body {
   padding: 0;
 }
 
-
 .indexTurnos li {
   background-color: #f0f4f8;
   border: 1px solid #e2e8f0;
@@ -55,7 +55,6 @@ body {
   transform: translateY(-3px);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
 }
-
 
 .indexTurnos li strong {
   font-size: 1.1rem;
@@ -79,11 +78,9 @@ body {
   animation: fadeIn 0.5s ease-out;
 }
 
-
 .formGroup {
   margin-bottom: 15px;
 }
-
 
 .formLabel {
   display: block;
@@ -93,7 +90,7 @@ body {
   font-size: 0.95rem;
 }
 
-.formInput, 
+.formInput,
 .formSelect {
   width: 100%;
   padding: 10px 12px;
@@ -106,13 +103,13 @@ body {
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.formInput:focus, .formSelect:focus {
+.formInput:focus,
+.formSelect:focus {
   outline: none;
   border-color: #4299e1;
   box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.6);
   background-color: #e6f4ff;
 }
-
 
 /* Buttons */
 
@@ -120,14 +117,15 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 100%; /* Mantener para casos normales */
   padding: 10px 0;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease,
+    box-shadow 0.3s ease;
   text-decoration: none;
   margin: 10px 0 0 0;
 }
@@ -184,6 +182,47 @@ body {
   align-items: center;
 }
 
+/* Contenedor para centrar botones */
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px;
+  padding: 0 20px;
+}
+
+/* Modificar el botón específicamente dentro del contenedor */
+.buttonContainer .button {
+  margin: 0;
+  width: auto !important; /* Importante para sobrescribir el width: 100% */
+  max-width: 280px;
+  min-width: 200px;
+  padding: 12px 24px;
+  flex-shrink: 0; /* Evita que se encoja */
+}
+
+/* Regla específica para forzar el comportamiento del botón en el contenedor */
+.buttonContainer > .button.buttonPrimary {
+  width: fit-content !important;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 12px 24px; /* Padding horizontal adecuado */
+}
+
+/* Sobrescribir la regla general del botón solo para móviles cuando está en buttonContainer */
+@media (max-width: 768px) {
+  .buttonContainer {
+    margin: 20px;
+    padding: 0 30px; /* Más padding en móviles */
+  }
+
+  .buttonContainer .button {
+    min-width: 160px;
+    max-width: 250px;
+    width: auto !important; /* Asegurar que no sea 100% en móvil */
+  }
+}
+
 /* Turno info styling */
 
 .turnoInfo {
@@ -192,7 +231,6 @@ body {
   gap: 6px;
 }
 
-
 .turnoTitle {
   font-size: 1.1rem;
   font-weight: 700;
@@ -200,13 +238,11 @@ body {
   margin-bottom: 4px;
 }
 
-
 .turnoCode {
   font-size: 0.85rem;
   color: #718096;
   font-weight: 500;
 }
-
 
 .turnoDetails {
   color: #4a5568;
@@ -214,12 +250,10 @@ body {
   margin-top: 4px;
 }
 
-
 .turnoFecha {
   color: #2d3748;
   font-weight: 600;
 }
-
 
 .turnoHora {
   color: #2b6cb0;
@@ -279,7 +313,6 @@ body {
   transform: translateY(-3px);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
 }
-
 
 .dashboardHeader {
   text-align: center;
@@ -384,35 +417,6 @@ body {
   color: #9c27b0;
 }
 
-/* Botones existentes para las otras páginas */
-.button {
-  display: inline-block;
-  padding: 12px 30px;
-  margin: 10px;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 16px;
-  text-align: center;
-  transition: all 0.3s ease;
-  border: none;
-  cursor: pointer;
-}
-
-.buttonPrimary {
-  background-color: #007bff;
-  color: white;
-}
-
-.buttonPrimary:hover {
-  background-color: #0056b3;
-  text-decoration: none;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-}
-
-
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
   body {
@@ -472,28 +476,27 @@ body {
     margin-bottom: 20px;
   }
 }
-  .adminDashboard {
-    padding: 1rem;
-  }
+.adminDashboard {
+  padding: 1rem;
+}
 
-  .dashboardHeader h1 {
-    font-size: 2rem;
-  }
+.dashboardHeader h1 {
+  font-size: 2rem;
+}
 
-  .dashboardGrid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
+.dashboardGrid {
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
 
-  .dashboardCard {
-    padding: 1.5rem;
-    min-height: 150px;
-  }
+.dashboardCard {
+  padding: 1.5rem;
+  min-height: 150px;
+}
 
-  .cardIcon {
-    font-size: 2.5rem;
-  }
-
+.cardIcon {
+  font-size: 2.5rem;
+}
 
 /* Animations */
 @keyframes fadeIn {
@@ -526,4 +529,17 @@ body {
   border-radius: 8px;
   margin-bottom: 15px;
   border-left: 4px solid #e53e3e;
+}
+
+/* MOBILE: Ajustes específicos para móvil */
+@media (max-width: 768px) {
+  .buttonContainer {
+    margin: 20px 20px; /* Más margen en móvil */
+    padding: 0 15px;
+  }
+
+  .buttonContainer .button {
+    min-width: 180px;
+    max-width: 280px;
+  }
 }
