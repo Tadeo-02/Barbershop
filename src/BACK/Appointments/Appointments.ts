@@ -211,17 +211,17 @@ export const findByAvailableDate = async (
 
       for (const barbero of barberos) {
         // Verificar si existe un turno para este barbero en esta hora específica
-        const turnoExistente = turnos.find(
-          (t) =>
-            t.codBarbero === barbero.codUsuario &&
-            t.horaDesde.toTimeString().substring(0, 5) === horaString
-        );
+        const turnoExistente = turnos.find((t) => {
+          // Usar toISOString() para obtener la hora correcta sin conversiones de zona horaria
+          const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
 
-        if (turnoExistente) {
-          // El barbero ya tiene un turno a esta hora
-          continue;
-        } else {
-          // El barbero está disponible a esta hora
+          return (
+            t.codBarbero === barbero.codUsuario &&
+            turnoHoraCorrecta === horaString
+          );
+        });
+
+        if (!turnoExistente) {
           horasDisponibles.push({
             // barbero: barbero.codUsuario,
             // fecha: fechaTurno,
@@ -293,7 +293,6 @@ export const findByBarberId = async (
           hora: horaString,
         });
       }
-
     }
 
     console.log(`Found ${horasDisponibles.length} available slots for barber`);
