@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
+
+interface Sucursal {
+  codSucursal: string;
+  nombre: string;
+}
 
 const CreateBarbers: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +20,32 @@ const CreateBarbers: React.FC = () => {
   const [cuil, setCuil] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [confirmarContraseña, setConfirmarContraseña] = useState("");
+  const [sucursalesSeleccionadas, setSucursalesSeleccionadas] = useState<
+    string[]
+  >([]);
+  const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
+    Sucursal[]
+  >([]);
+
+  // Cargar sucursales al montar el componente
+  useEffect(() => {
+    const fetchSucursales = async () => {
+      try {
+        const response = await fetch("/sucursales");
+        if (response.ok) {
+          const data = await response.json();
+          setSucursalesDisponibles(data);
+        } else {
+          toast.error("Error al cargar las sucursales");
+        }
+      } catch (error) {
+        console.error("Error fetching sucursales:", error);
+        toast.error("Error de conexión al cargar sucursales");
+      }
+    };
+
+    fetchSucursales();
+  }, []);
 
   //funcion para darle formato cuil al input
   const formatCuil = (value: string) => {
@@ -58,6 +89,16 @@ const CreateBarbers: React.FC = () => {
     }
   };
 
+  const handleSucursalChange = (codSucursal: string) => {
+    setSucursalesSeleccionadas((prev) => {
+      if (prev.includes(codSucursal)) {
+        return prev.filter((id) => id !== codSucursal);
+      } else {
+        return [...prev, codSucursal];
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -68,6 +109,11 @@ const CreateBarbers: React.FC = () => {
 
     if (cuil && !validateCUILWithDNI(cuil, dni)) {
       toast.error("El DNI en el CUIL no coincide con el DNI proporcionado");
+      return;
+    }
+
+    if (sucursalesSeleccionadas.length === 0) {
+      toast.error("Debe seleccionar al menos una sucursal");
       return;
     }
 
@@ -87,6 +133,7 @@ const CreateBarbers: React.FC = () => {
           email,
           contraseña,
           cuil,
+          sucursales: sucursalesSeleccionadas,
         }),
       });
 
@@ -120,6 +167,7 @@ const CreateBarbers: React.FC = () => {
         setCuil("");
         setContraseña("");
         setConfirmarContraseña("");
+        setSucursalesSeleccionadas([]);
 
         // Navegar de vuelta a la página de barberos
         navigate("/Admin/BarbersPage");
@@ -262,6 +310,37 @@ const CreateBarbers: React.FC = () => {
             value={confirmarContraseña}
             onChange={(e) => setConfirmarContraseña(e.target.value)}
           />
+        </div>
+
+        {/* ASIGNAR SUCURSALES */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Sucursales:</label>
+          <div className={styles.checkboxGroup}>
+            {sucursalesDisponibles.map((sucursal) => (
+              <div key={sucursal.codSucursal} className={styles.checkboxItem}>
+                <input
+                  type="checkbox"
+                  id={`sucursal-${sucursal.codSucursal}`}
+                  checked={sucursalesSeleccionadas.includes(
+                    sucursal.codSucursal
+                  )}
+                  onChange={() => handleSucursalChange(sucursal.codSucursal)}
+                  className={styles.checkbox}
+                />
+                <label
+                  htmlFor={`sucursal-${sucursal.codSucursal}`}
+                  className={styles.checkboxLabel}
+                >
+                  {sucursal.nombre}
+                </label>
+              </div>
+            ))}
+          </div>
+          {sucursalesSeleccionadas.length === 0 && (
+            <div className={styles.errorMessage}>
+              Debe seleccionar al menos una sucursal
+            </div>
+          )}
         </div>
 
         <div className={styles.actionButtons}>

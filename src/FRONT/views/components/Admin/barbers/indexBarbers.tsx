@@ -10,31 +10,67 @@ interface Barbero {
   apellido: string;
   telefono: string;
   email: string;
+  codSucursal: string;
+}
+
+interface Sucursal {
+  codSucursal: string;
+  nombre: string;
 }
 
 const IndexBarbers = () => {
   const [barberos, setBarberos] = useState<Barbero[]>([]);
-  const [loading, setLoading] = useState(true); // loading inicial
+  const [loading, setLoading] = useState(true);
+  const [sucursales, setSucursales] = useState<{ [key: string]: Sucursal }>({});
 
   useEffect(() => {
-    //alert de loading para carga inicial
-    // const toastId = toast.loading("Cargando barberos...");
+    const fetchData = async () => {
+      try {
+        // Cargar barberos y sucursales en paralelo
+        const [barberosResponse, sucursalesResponse] = await Promise.all([
+          fetch("/usuarios?type=barber"),
+          fetch("/sucursales"),
+        ]);
 
-    // Llama al backend para obtener los barberos
-    fetch("/usuarios?type=barber") //! mando que quiero barberos, tener en cuenta para listado de clientes
-      .then((res) => res.json())
-      .then((data) => {
-        setBarberos(data); // data debe ser un array de barberos
-        console.log("Barberos recibidos:", data);
-      })
-      .catch((error) => {
-        console.error("Error al obtener barberos:", error);
-        // toast.error("Error al cargar los barberos", { id: toastId });
-      })
-      .finally(() => {
-        setLoading(false); // Termina el loading
-      });
+        if (barberosResponse.ok) {
+          const barberosData = await barberosResponse.json();
+          setBarberos(barberosData);
+          console.log("Barberos recibidos:", barberosData);
+        } else {
+          toast.error("Error al cargar los barberos");
+        }
+
+        if (sucursalesResponse.ok) {
+          const sucursalesData = await sucursalesResponse.json();
+          // Convertir array a objeto para búsqueda rápida
+          const sucursalesMap = sucursalesData.reduce(
+            (acc: { [key: string]: Sucursal }, sucursal: Sucursal) => {
+              acc[sucursal.codSucursal] = sucursal;
+              return acc;
+            },
+            {}
+          );
+          setSucursales(sucursalesMap);
+          console.log("Sucursales recibidas:", sucursalesData);
+        } else {
+          toast.error("Error al cargar las sucursales");
+        }
+      } catch (error) {
+        console.error("Error al obtener datos:", error);
+        toast.error("Error al cargar los datos");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
+
+  // Función para obtener el nombre de la sucursal
+  const getSucursalNombre = (codSucursal: string): string => {
+    return sucursales[codSucursal]?.nombre || "Sucursal no encontrada";
+  };
+
   // loading state
   if (loading) {
     return <div className={styles.loadingState}>Cargando barberos...</div>;
@@ -71,12 +107,12 @@ const IndexBarbers = () => {
                 background: "#e53e3e",
                 color: "white",
                 border: "none",
-                padding: "12px 24px", 
+                padding: "12px 24px",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "16px", 
+                fontSize: "16px",
                 fontWeight: "600",
-                minWidth: "120px", 
+                minWidth: "120px",
                 transition: "all 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -94,12 +130,12 @@ const IndexBarbers = () => {
                 background: "#718096",
                 color: "white",
                 border: "none",
-                padding: "12px 24px", 
+                padding: "12px 24px",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "16px", 
+                fontSize: "16px",
                 fontWeight: "600",
-                minWidth: "120px", 
+                minWidth: "120px",
                 transition: "all 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -134,7 +170,9 @@ const IndexBarbers = () => {
 
       if (response.ok) {
         toast.success("Barbero eliminado correctamente", { id: toastId });
-        setBarberos(barberos.filter((barbero) => barbero.codUsuario !== codUsuario));
+        setBarberos(
+          barberos.filter((barbero) => barbero.codUsuario !== codUsuario)
+        );
       } else if (response.status === 404) {
         toast.error("Barbero no encontrado", { id: toastId });
       } else {
@@ -162,6 +200,12 @@ const IndexBarbers = () => {
                   {barbero.apellido}, {barbero.nombre}
                 </div>
                 <div className={styles.barberoCode}>CUIL: {barbero.cuil}</div>
+                <div className={styles.barberoSucursal}>
+                  Sucursal: {getSucursalNombre(barbero.codSucursal)}
+                </div>
+                <div className={styles.barberoContacto}>
+                  Tel: {barbero.telefono} | Email: {barbero.email}
+                </div>
               </div>
               <div className={styles.actionButtons}>
                 <Link
