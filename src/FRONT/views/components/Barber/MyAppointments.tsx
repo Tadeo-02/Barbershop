@@ -16,10 +16,22 @@ const MyAppointments: React.FC = () => {
       const myBarberAppointments =
         reservations?.filter((r) => r.codBarbero === user.codUsuario) || [];
 
-      if (myBarberAppointments.length === 0) {
+      // Limpiar turnos antiguos que no tienen email/telefono o tienen IDs viejos
+      const needsUpdate = myBarberAppointments.some(
+        (r) =>
+          !r.clienteEmail ||
+          !r.clienteTelefono ||
+          r.id.includes("turno-barbero")
+      );
+
+      if (myBarberAppointments.length === 0 || needsUpdate) {
+        // Limpiar turnos antiguos primero
+        myBarberAppointments.forEach((appointment) => {
+          removeReservation(appointment.id);
+        });
         const sampleAppointments = [
           {
-            id: "turno-barbero-1",
+            id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
             fecha: "2025-10-15",
             hora: "09:00",
             codBarbero: user.codUsuario,
@@ -28,12 +40,16 @@ const MyAppointments: React.FC = () => {
             codCliente: "cliente-001",
             clienteNombre: "Juan",
             clienteApellido: "Pérez",
+            clienteEmail: "juan.perez@gmail.com",
+            clienteTelefono: "+54 9 341 5123456",
+            tipoCorte: "Corte clásico",
+            precioTurno: 2500,
             fechaTurno: "2025-10-15",
             horaDesde: "09:00",
             horaHasta: "09:30",
           },
           {
-            id: "turno-barbero-2",
+            id: "b2c3d4e5-f6g7-8901-bcde-f23456789012",
             fecha: "2025-10-15",
             hora: "14:30",
             codBarbero: user.codUsuario,
@@ -42,13 +58,17 @@ const MyAppointments: React.FC = () => {
             codCliente: "cliente-002",
             clienteNombre: "María",
             clienteApellido: "González",
+            clienteEmail: "maria.gonzalez@hotmail.com",
+            clienteTelefono: "+54 9 341 7891234",
             codCorte: "corte-002",
+            tipoCorte: "Corte con barba",
+            precioTurno: 3200,
             fechaTurno: "2025-10-15",
             horaDesde: "14:30",
             horaHasta: "15:00",
           },
           {
-            id: "turno-barbero-3",
+            id: "c3d4e5f6-g7h8-9012-cdef-345678901234",
             fecha: "2025-10-16",
             hora: "11:00",
             codBarbero: user.codUsuario,
@@ -57,6 +77,10 @@ const MyAppointments: React.FC = () => {
             codCliente: "cliente-003",
             clienteNombre: "Carlos",
             clienteApellido: "López",
+            clienteEmail: "carlos.lopez@outlook.com",
+            clienteTelefono: "+54 9 341 2567890",
+            tipoCorte: "Corte degradado",
+            precioTurno: 2800,
             fechaTurno: "2025-10-16",
             horaDesde: "11:00",
             horaHasta: "11:30",
@@ -68,7 +92,7 @@ const MyAppointments: React.FC = () => {
         });
       }
     }
-  }, [reservations, user, addReservation]);
+  }, [reservations, user, addReservation, removeReservation]);
 
   if (!reservations || reservations.length === 0) {
     return (
@@ -114,12 +138,25 @@ const MyAppointments: React.FC = () => {
     setToModify(null);
   };
 
+  // Debug: ver qué datos tenemos
+  console.log("Turnos filtrados:", deduped);
+
   return (
     <div className={barberStyles.appointmentsContainer}>
       <h2>Mis turnos pendientes</h2>
       <div className={barberStyles.appointmentList}>
         {deduped.map((r) => (
           <div key={r.id} className={barberStyles.appointmentItem}>
+            <div
+              style={{
+                marginTop: 6,
+                color: "#4a5568",
+                fontSize: "0.85rem",
+                fontStyle: "italic",
+              }}
+            >
+              Código Turno: {r.id}
+            </div>
             <div className={barberStyles.appointmentDate}>
               {r.fecha} - {r.hora}
             </div>
@@ -129,7 +166,20 @@ const MyAppointments: React.FC = () => {
                 ? `${r.clienteNombre} ${r.clienteApellido}`
                 : r.codCliente || "Cliente sin nombre"}
             </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+
+            {r.clienteEmail && (
+              <div style={{ marginTop: 4, color: "#666", fontSize: "0.9rem" }}>
+                Email: {r.clienteEmail}
+              </div>
+            )}
+
+            {r.clienteTelefono && (
+              <div style={{ marginTop: 4, color: "#666", fontSize: "0.9rem" }}>
+                Teléfono: {r.clienteTelefono}
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button
                 className={barberStyles.pageButton}
                 onClick={() => setToModify(r)}
