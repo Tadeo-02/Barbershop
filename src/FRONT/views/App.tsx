@@ -52,7 +52,7 @@ function App() {
               />
               <Route
                 path="/barbers/:codBarbero/appointments"
-                element={<AppointmentsByBarber />}
+                element={<ScheduleByBranch />}
               />
               {/* Selección de horario primero */}
               <Route

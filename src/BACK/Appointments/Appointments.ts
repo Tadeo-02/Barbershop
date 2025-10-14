@@ -3,9 +3,8 @@ import { z } from "zod";
 
 // schema de validación con Zod (más robusto que las funciones manuales)
 const AppointmentsSchema = z.object({
-  codTurno: z.string().uuid("ID de turno inválido"),
+  codTurno: z.string().uuid("ID de turno inválido").optional(),
   codCorte: z.string().min(1, "Código de corte es requerido").optional(),
-  codHorario: z.string().min(1, "Código de horario es requerido"),
   codCliente: z.string().min(1, "Código de cliente es requerido"),
   codBarbero: z.string().min(1, "Código de barbero es requerido"),
   precioTurno: z
@@ -58,8 +57,10 @@ export const store = async (
       horaHasta: sanitizeInput(horaHasta),
     };
 
-    // validación con zod (you may need to update your schema to include codBarbero)
-    const validatedData = AppointmentsSchema.parse(sanitizedData);
+    // validación con zod - omitir codTurno para creación
+    const validatedData = AppointmentsSchema.omit({ codTurno: true }).parse(
+      sanitizedData
+    );
     console.log("Creating turno");
 
     // convertir strings a Date objects para Prisma
@@ -222,8 +223,8 @@ export const findByAvailableDate = async (
         } else {
           // El barbero está disponible a esta hora
           horasDisponibles.push({
-            barbero: barbero.codUsuario,
-            fecha: fechaTurno,
+            // barbero: barbero.codUsuario,
+            // fecha: fechaTurno,
             hora: horaString,
           });
         }
@@ -258,7 +259,14 @@ export const findByBarberId = async (
         codBarbero: sanitizedCodBarbero,
         fechaTurno: new Date(sanitizedFechaTurno),
       },
+      orderBy: {
+        horaDesde: "asc",
+      },
     });
+
+    console.log(
+      `Found ${turnos.length} existing appointments for barber ${sanitizedCodBarbero} on ${sanitizedFechaTurno}`
+    );
 
     const horasDisponibles = [];
     for (let hora = 8; hora <= 20; hora += 0.5) {
@@ -271,23 +279,24 @@ export const findByBarberId = async (
         .padStart(2, "0")}`;
 
       // Verificar si existe un turno para este barbero en esta hora específica
-      const turnoExistente = turnos.find(
-        (t) =>
-          t.codBarbero === codBarbero &&
-          t.horaDesde.toTimeString().substring(0, 5) === horaString
-      );
+      const turnoExistente = turnos.find((t) => {
+        const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
 
-      if (turnoExistente) {
-        // El barbero ya tiene un turno a esta hora
-        continue;
-      } else {
-        // El barbero está disponible a esta hora
+        return (
+          t.codBarbero === sanitizedCodBarbero &&
+          turnoHoraCorrecta === horaString
+        );
+      });
+
+      if (!turnoExistente) {
         horasDisponibles.push({
           hora: horaString,
         });
       }
+
     }
 
+    console.log(`Found ${horasDisponibles.length} available slots for barber`);
     return horasDisponibles;
   } catch (error) {
     if (error instanceof DatabaseError) {
