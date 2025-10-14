@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import styles from "./login.module.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
 import {useUserRedirect} from "../Redirect.tsx";
-import { toast } from "react-hot-toast";
+// toast removed because not used in this file
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -86,7 +86,7 @@ function Login() {
                 className="form-control"
                 type="password"
                 name="claveUsuario"
-                pattern="[a-zA-Z0-9$@.-]{7,100}"
+                pattern="[a-zA-Z0-9$@.\-]{7,100}"
                 maxLength={100}
                 placeholder="********"
                 required

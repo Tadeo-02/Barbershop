@@ -21,6 +21,8 @@ import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
 import MyReservations from "./components/Client/MyReservations";
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
+import BarberHome from "./components/Barber/home/home.tsx";
+import BarberAppointments from "./components/Barber/appointments/endAppointment.tsx";
 
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
@@ -86,6 +88,22 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["barber"]}>
                     <HomePageBarber />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/barber/home"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberHome />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/appointments/endAppointment"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberAppointments />
                   </ProtectedRoute>
                 }
               />

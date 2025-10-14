@@ -3,11 +3,6 @@ import { useAuth } from "./login/AuthContext";
 import React from "react";
 import { toast } from "react-hot-toast";
 
-interface RedirectProps {
-  user: any; //todo Cambiar para que otaduy no nos asesine
-  message?: string;
-}
-
 export const useUserRedirect = () => {
   const navigate = useNavigate();
 
@@ -22,8 +17,8 @@ export const useUserRedirect = () => {
       console.log("Redirecting to admin page");
       navigate("/Admin/HomePageAdmin");
     } else if (userType === "barber") {
-      console.log("Redirecting to barber page");
-      navigate("/barber/HomePageBarber");
+      console.log("Redirecting to barber home");
+      navigate("/barber/home");
     } else {
       console.log("Redirecting to client page");
       navigate("/");
