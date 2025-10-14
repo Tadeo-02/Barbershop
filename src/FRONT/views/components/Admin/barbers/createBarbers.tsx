@@ -1,8 +1,7 @@
-//! TERMINAR
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./barbers.module.css";
-import toast from "react-hot-toast"; // importar librería de alerts
+import toast from "react-hot-toast";
 
 const CreateBarbers: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ const CreateBarbers: React.FC = () => {
   const [contraseña, setContraseña] = useState("");
   const [confirmarContraseña, setConfirmarContraseña] = useState("");
 
-  //funcion para darle formato cuil al imut
+  //funcion para darle formato cuil al input
   const formatCuil = (value: string) => {
     const numbersOnly = value.replace(/\D/g, "");
     const limited = numbersOnly.slice(0, 11);
@@ -38,7 +37,7 @@ const CreateBarbers: React.FC = () => {
     cuilValue: string,
     dniValue: string
   ): boolean => {
-    if (!cuilValue || !dniValue) return true; // Si alguno está vacío, no validar aún
+    if (!cuilValue || !dniValue) return true;
 
     const cuilRegex = /^\d{2}-\d{8}-\d{1}$/;
     if (!cuilRegex.test(cuilValue)) return false;
@@ -53,37 +52,28 @@ const CreateBarbers: React.FC = () => {
   };
 
   const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ""); // Solo números
-    setDni(value);
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length <= 8) {
+      setDni(value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Debugging
 
     if (contraseña !== confirmarContraseña) {
       toast.error("Las contraseñas no coinciden");
       return;
     }
-    // Validar CUIL con DNI antes de enviar
+
     if (cuil && !validateCUILWithDNI(cuil, dni)) {
       toast.error("El DNI en el CUIL no coincide con el DNI proporcionado");
       return;
     }
-    const toastId = toast.loading("Creando Usuario..."); // loading
+
+    const toastId = toast.loading("Creando Usuario...");
 
     try {
-      console.log(
-        "Enviando POST a /usuarios con datos:",
-        dni,
-        nombre,
-        apellido,
-        telefono,
-        email,
-        contraseña,
-        cuil
-      );
-
       const response = await fetch("/usuarios", {
         method: "POST",
         headers: {
@@ -100,17 +90,12 @@ const CreateBarbers: React.FC = () => {
         }),
       });
 
-      console.log("Después de fetch, status:", response.status);
-
       const text = await response.text();
-      console.log("Respuesta cruda del backend:", text);
-      console.log("Response.ok:", response.ok);
 
       let data;
       if (text) {
         try {
           data = JSON.parse(text);
-          console.log("Después de JSON.parse, data:", data);
         } catch (parseError) {
           toast.error("Error al parsear JSON", { id: toastId });
           throw parseError;
@@ -121,18 +106,10 @@ const CreateBarbers: React.FC = () => {
       }
 
       if (response.ok) {
-        console.log("Entrando en response.ok, preparando toast de éxito...");
-
-        // Probar directamente reemplazando el toast de loading
         toast.success(data.message || "Usuario creado exitosamente", {
-          id: toastId, // Usar el mismo ID para reemplazar
-          duration: 4000, // 4 segundos de duración
+          id: toastId,
+          duration: 4000,
         });
-
-        console.log(
-          "Toast de éxito mostrado:",
-          data.message || "Usuario creado exitosamente"
-        );
 
         // Limpiar campos del formulario
         setDni("");
@@ -143,11 +120,11 @@ const CreateBarbers: React.FC = () => {
         setCuil("");
         setContraseña("");
         setConfirmarContraseña("");
+
+        // Navegar de vuelta a la página de barberos
         navigate("/Admin/BarbersPage");
       } else {
-        toast.error(data.message || "Error al crear usuario", {
-          id: toastId,
-        });
+        toast.error(data.message || "Error al crear usuario", { id: toastId });
       }
     } catch (error) {
       console.error("Error en handleSubmit:", error);
@@ -156,149 +133,154 @@ const CreateBarbers: React.FC = () => {
   };
 
   return (
-    <section className={styles.about}>
-      <div className="container-fluid">
-        <div className="row">
-          <div className="col-12">
-            <form className={styles.form} onSubmit={handleSubmit}>
-              <br />
-              <br />
-              <br />
-              <h1>Crear Barbero</h1>
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <h1>Crear Barbero</h1>
-              <br />
+    <div className={styles.formContainer}>
+      <h2 className={styles.pageTitle}>Crear Barbero</h2>
 
-              {/* DNI */}
-              <label>DNI:</label>
-              <input
-                type="text"
-                name="dni"
-                placeholder="40300123"
-                maxLength={8}
-                required
-                value={dni}
-                onChange={handleDniChange}
-              />
-
-              {/* NOMBRE */}
-              <label>Nombre:</label>
-              <input
-                type="text"
-                name="nombre"
-                placeholder="Juan"
-                maxLength={50}
-                required
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-              />
-
-              {/* APELLIDO */}
-              <label>Apellido:</label>
-              <input
-                type="text"
-                name="apellido"
-                placeholder="Pérez"
-                maxLength={50}
-                required
-                value={apellido}
-                onChange={(e) => setApellido(e.target.value)}
-              />
-
-              {/* TELÉFONO */}
-              <label>Teléfono:</label>
-              <input
-                type="text"
-                name="telefono"
-                placeholder="+54 11 1234-5678"
-                maxLength={20}
-                required
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-              />
-
-              {/* EMAIL */}
-              <label>Correo electrónico:</label>
-              <input
-                className={styles.formInput}
-                type="email"
-                name="email"
-                placeholder="juan@ejemplo.com"
-                maxLength={50}
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              {/* CUIL */}
-              <label>CUIL:</label>
-              <input
-                className={styles.formInput}
-                type="text"
-                name="cuil"
-                id="cuil"
-                placeholder="20-40300123-4"
-                value={cuil}
-                onChange={handleCuilChange}
-                required
-              />
-              {cuil && !validateCUILWithDNI(cuil, dni) && dni && (
-                <small style={{ color: "red" }}>
-                  El DNI en el CUIL debe coincidir con el DNI proporcionado
-                </small>
-              )}
-
-              {/* CONTRASEÑA */}
-              <label>Contraseña:</label>
-              <input
-                type="password"
-                name="contraseña"
-                placeholder="********"
-                minLength={6}
-                maxLength={50}
-                required
-                value={contraseña}
-                onChange={(e) => setContraseña(e.target.value)}
-              />
-
-              {/* CONFIRMAR CONTRASEÑA */}
-              <label>Confirmar contraseña:</label>
-              <input
-                type="password"
-                name="confirmarContraseña"
-                placeholder="********"
-                minLength={6}
-                maxLength={50}
-                required
-                value={confirmarContraseña}
-                onChange={(e) => setConfirmarContraseña(e.target.value)}
-              />
-
-              <p className="has-text-centered">
-                <br />
-                <button type="submit" className="btn btn-primary">
-                  Crear Cuenta
-                </button>
-                <br />
-                <br />
-                <button type="button" onClick={() => navigate("/login")}>
-                  Volver al Login
-                </button>
-              </p>
-            </form>
-          </div>
+      <form onSubmit={handleSubmit}>
+        {/* DNI */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>DNI:</label>
+          <input
+            className={styles.formInput}
+            type="text"
+            name="dni"
+            placeholder="40300123"
+            maxLength={8}
+            required
+            value={dni}
+            onChange={handleDniChange}
+          />
         </div>
-      </div>
-    </section>
+
+        {/* NOMBRE */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Nombre:</label>
+          <input
+            className={styles.formInput}
+            type="text"
+            name="nombre"
+            placeholder="Juan"
+            maxLength={50}
+            required
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+          />
+        </div>
+
+        {/* APELLIDO */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Apellido:</label>
+          <input
+            className={styles.formInput}
+            type="text"
+            name="apellido"
+            placeholder="Pérez"
+            maxLength={50}
+            required
+            value={apellido}
+            onChange={(e) => setApellido(e.target.value)}
+          />
+        </div>
+
+        {/* TELÉFONO */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Teléfono:</label>
+          <input
+            className={styles.formInput}
+            type="text"
+            name="telefono"
+            placeholder="+54 11 1234-5678"
+            maxLength={20}
+            required
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
+          />
+        </div>
+
+        {/* EMAIL */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Correo electrónico:</label>
+          <input
+            className={styles.formInput}
+            type="email"
+            name="email"
+            placeholder="juan@ejemplo.com"
+            maxLength={50}
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        {/* CUIL */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>CUIL:</label>
+          <input
+            className={styles.formInput}
+            type="text"
+            name="cuil"
+            id="cuil"
+            placeholder="20-40300123-4"
+            value={cuil}
+            onChange={handleCuilChange}
+            required
+          />
+          {cuil && !validateCUILWithDNI(cuil, dni) && dni && (
+            <div className={styles.errorMessage}>
+              El DNI en el CUIL debe coincidir con el DNI proporcionado
+            </div>
+          )}
+        </div>
+
+        {/* CONTRASEÑA */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Contraseña:</label>
+          <input
+            className={styles.formInput}
+            type="password"
+            name="contraseña"
+            placeholder="********"
+            minLength={6}
+            maxLength={50}
+            required
+            value={contraseña}
+            onChange={(e) => setContraseña(e.target.value)}
+          />
+        </div>
+
+        {/* CONFIRMAR CONTRASEÑA */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Confirmar contraseña:</label>
+          <input
+            className={styles.formInput}
+            type="password"
+            name="confirmarContraseña"
+            placeholder="********"
+            minLength={6}
+            maxLength={50}
+            required
+            value={confirmarContraseña}
+            onChange={(e) => setConfirmarContraseña(e.target.value)}
+          />
+        </div>
+
+        <div className={styles.actionButtons}>
+          <button
+            type="submit"
+            className={`${styles.button} ${styles.buttonPrimary}`}
+          >
+            Crear Barbero
+          </button>
+          <button
+            type="button"
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            onClick={() => navigate("/Admin/BarbersPage")}
+          >
+            Volver
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
