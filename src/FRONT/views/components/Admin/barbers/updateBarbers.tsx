@@ -12,6 +12,12 @@ interface Barbero {
   email: string;
   contrase_a: string;
   cuil: string;
+  sucursales?: string[];
+}
+
+interface Sucursal {
+  codSucursal: string;
+  nombre: string;
 }
 
 const UpdateBarber: React.FC = () => {
@@ -23,8 +29,31 @@ const UpdateBarber: React.FC = () => {
   const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
-  const [contraseña, setContraseña] = useState(""); // Cambiar de contrase_a a contraseña
+  const [contraseña, setContraseña] = useState("");
   const [cuil, setCuil] = useState("");
+  const [sucursalesSeleccionadas, setSucursalesSeleccionadas] = useState<
+    string[]
+  >([]);
+  const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
+    Sucursal[]
+  >([]);
+
+  useEffect(() => {
+    // Cargar sucursales disponibles
+    const fetchSucursales = async () => {
+      try {
+        const response = await fetch("/sucursales");
+        if (response.ok) {
+          const data = await response.json();
+          setSucursalesDisponibles(data);
+        }
+      } catch (error) {
+        console.error("Error fetching sucursales:", error);
+      }
+    };
+
+    fetchSucursales();
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -55,15 +84,7 @@ const UpdateBarber: React.FC = () => {
           setTelefono(data.telefono || "");
           setEmail(data.email || "");
           setContraseña("");
-
-          console.log("🔍 Debug - States after setting:", {
-            dni: data.dni,
-            nombre: data.nombre,
-            apellido: data.apellido,
-            telefono: data.telefono,
-            email: data.email,
-            cuil: data.cuil,
-          });
+          setSucursalesSeleccionadas(data.sucursales || []);
 
           toast.dismiss(toastId);
         } else if (response.status === 404) {
@@ -90,8 +111,23 @@ const UpdateBarber: React.FC = () => {
     };
   }, [codUsuario, navigate]);
 
+  const handleSucursalChange = (codSucursal: string) => {
+    setSucursalesSeleccionadas((prev) => {
+      if (prev.includes(codSucursal)) {
+        return prev.filter((id) => id !== codSucursal);
+      } else {
+        return [...prev, codSucursal];
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (sucursalesSeleccionadas.length === 0) {
+      toast.error("Debe seleccionar al menos una sucursal");
+      return;
+    }
 
     const toastId = toast.loading("Actualizando barbero...");
 
@@ -104,6 +140,7 @@ const UpdateBarber: React.FC = () => {
         telefono,
         email,
         cuil,
+        sucursales: sucursalesSeleccionadas,
       };
 
       if (contraseña.trim() !== "") {
@@ -246,6 +283,32 @@ const UpdateBarber: React.FC = () => {
             required
           />
         </div>
+        {/* ASIGNAR SUCURSALES */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Sucursales:</label>
+          <div className={styles.checkboxGroup}>
+            {sucursalesDisponibles.map((sucursal) => (
+              <div key={sucursal.codSucursal} className={styles.checkboxItem}>
+                <input
+                  type="checkbox"
+                  id={`sucursal-${sucursal.codSucursal}`}
+                  checked={sucursalesSeleccionadas.includes(
+                    sucursal.codSucursal
+                  )}
+                  onChange={() => handleSucursalChange(sucursal.codSucursal)}
+                  className={styles.checkbox}
+                />
+                <label
+                  htmlFor={`sucursal-${sucursal.codSucursal}`}
+                  className={styles.checkboxLabel}
+                >
+                  {sucursal.nombre}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className={styles.buttonGroup}>
           <button
             className={`${styles.button} ${styles.buttonSuccess}`}

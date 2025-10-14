@@ -61,6 +61,9 @@ const UserSchema = z
         },
         { message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X" }
       ),
+      codSucursal: z
+      .string()
+      .optional(),
   })
   .refine(
     (data) => {
@@ -84,7 +87,8 @@ export const store = async (
   telefono: string,
   email: string,
   contraseña: string,
-  cuil?: string
+  cuil?: string,
+  codSucursal?: string
 ) => {
   try {
     // Sanitizar inputs
@@ -121,6 +125,7 @@ export const store = async (
         telefono: validatedData.telefono,
         email: validatedData.email,
         contrase_a: hashedPassword,
+        codSucursal: codSucursal || null,
       },
     });
 
@@ -262,6 +267,7 @@ interface UpdateUserParams {
   email: string;
   contraseña?: string;
   cuil?: string;
+  codSucursal?: string;
 }
 
 export const update = async (codUsuario: string, params: UpdateUserParams) => {
@@ -281,6 +287,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
         ? sanitizeInput(params.contraseña)
         : undefined,
       cuil: params.cuil ? sanitizeInput(params.cuil) : undefined,
+      codSucursal: params.codSucursal ? sanitizeInput(params.codSucursal) : undefined,
     };
 
 
@@ -292,6 +299,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       email: sanitizedData.email,
       contraseña: sanitizedData.contraseña,
       cuil: sanitizedData.cuil,
+      codSucursal: sanitizedData.codSucursal,
     });
 
     console.log(
@@ -330,6 +338,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       apellido: validatedData.apellido,
       telefono: validatedData.telefono,
       email: validatedData.email,
+      codSucursal: validatedData.codSucursal,
     };
 
     // Solo encriptar y actualizar contraseña si se proporciona una nueva
