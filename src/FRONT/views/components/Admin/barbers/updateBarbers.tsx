@@ -12,6 +12,12 @@ interface Barbero {
   email: string;
   contrase_a: string;
   cuil: string;
+  sucursales?: string[];
+}
+
+interface Sucursal {
+  codSucursal: string;
+  nombre: string;
 }
 
 const UpdateBarber: React.FC = () => {
@@ -23,8 +29,30 @@ const UpdateBarber: React.FC = () => {
   const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
-  const [contraseña, setContraseña] = useState(""); // Cambiar de contrase_a a contraseña
+  const [contraseña, setContraseña] = useState("");
   const [cuil, setCuil] = useState("");
+  // Cambiar a string único
+  const [sucursalSeleccionada, setSucursalSeleccionada] = useState<string>("");
+  const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
+    Sucursal[]
+  >([]);
+
+  useEffect(() => {
+    // Cargar sucursales disponibles
+    const fetchSucursales = async () => {
+      try {
+        const response = await fetch("/sucursales");
+        if (response.ok) {
+          const data = await response.json();
+          setSucursalesDisponibles(data);
+        }
+      } catch (error) {
+        console.error("Error fetching sucursales:", error);
+      }
+    };
+
+    fetchSucursales();
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -33,13 +61,7 @@ const UpdateBarber: React.FC = () => {
       const toastId = toast.loading("Cargando datos del barbero...");
 
       try {
-        console.log("🔍 Debug - codUsuario from params:", codUsuario);
-        console.log("🔍 Debug - Making request to:", `/usuarios/${codUsuario}`);
-
         const response = await fetch(`/usuarios/${codUsuario}`);
-
-        console.log("🔍 Debug - Response status:", response.status);
-        console.log("🔍 Debug - Response ok:", response.ok);
 
         if (!isMounted) return;
 
@@ -55,25 +77,14 @@ const UpdateBarber: React.FC = () => {
           setTelefono(data.telefono || "");
           setEmail(data.email || "");
           setContraseña("");
-
-          console.log("🔍 Debug - States after setting:", {
-            dni: data.dni,
-            nombre: data.nombre,
-            apellido: data.apellido,
-            telefono: data.telefono,
-            email: data.email,
-            cuil: data.cuil,
-          });
+          // Cambiar para obtener la sucursal única
+          setSucursalSeleccionada(data.codSucursal || "");
 
           toast.dismiss(toastId);
         } else if (response.status === 404) {
-          console.log("🔍 Debug - Barbero not found");
           toast.error("Barbero no encontrado", { id: toastId });
           navigate("/BarbersPage");
         } else {
-          console.log("🔍 Debug - Other error:", response.status);
-          const errorData = await response.json().catch(() => ({}));
-          console.log("🔍 Debug - Error data:", errorData);
           toast.error("Error al cargar los datos del barbero", { id: toastId });
         }
       } catch (error) {
@@ -90,13 +101,23 @@ const UpdateBarber: React.FC = () => {
     };
   }, [codUsuario, navigate]);
 
+  // Cambiar handler para radio button
+  const handleSucursalChange = (codSucursal: string) => {
+    setSucursalSeleccionada(codSucursal);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Cambiar validación
+    if (!sucursalSeleccionada) {
+      toast.error("Debe seleccionar una sucursal");
+      return;
+    }
 
     const toastId = toast.loading("Actualizando barbero...");
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const requestData: any = {
         dni,
         nombre,
@@ -104,6 +125,7 @@ const UpdateBarber: React.FC = () => {
         telefono,
         email,
         cuil,
+        codSucursal: sucursalSeleccionada, // Enviar como string único
       };
 
       if (contraseña.trim() !== "") {
@@ -111,7 +133,6 @@ const UpdateBarber: React.FC = () => {
       }
 
       console.log("🔍 Debug - Request data being sent:", requestData);
-      console.log("🔍 Debug - URL:", `/usuarios/${barbero?.codUsuario}`);
 
       const response = await fetch(`/usuarios/${barbero?.codUsuario}`, {
         method: "PUT",
@@ -246,6 +267,32 @@ const UpdateBarber: React.FC = () => {
             required
           />
         </div>
+        {/* ASIGNAR SUCURSAL - Cambiar a radio buttons */}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Sucursal:</label>
+          <div className={styles.radioGroup}>
+            {sucursalesDisponibles.map((sucursal) => (
+              <div key={sucursal.codSucursal} className={styles.radioItem}>
+                <input
+                  type="radio"
+                  id={`sucursal-${sucursal.codSucursal}`}
+                  name="sucursal"
+                  value={sucursal.codSucursal}
+                  checked={sucursalSeleccionada === sucursal.codSucursal}
+                  onChange={() => handleSucursalChange(sucursal.codSucursal)}
+                  className={styles.radio}
+                />
+                <label
+                  htmlFor={`sucursal-${sucursal.codSucursal}`}
+                  className={styles.radioLabel}
+                >
+                  {sucursal.nombre}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className={styles.buttonGroup}>
           <button
             className={`${styles.button} ${styles.buttonSuccess}`}
