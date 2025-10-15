@@ -38,6 +38,7 @@ app.use("/usuarios", usersRouter);
 
 app.use("/tipoCortes", typeOfHaircutRouter);
 
+
 app.use("/sucursales", branchesRouter);
 // Ruta específica para login
 app.post("/login", login);
