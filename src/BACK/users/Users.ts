@@ -114,9 +114,10 @@ export const store = async (
       // Limpiar CUIL para almacenamiento
       cuilValue = validatedData.cuil.replace(/[-\s]/g, "");
     }
-
+    // transaccion para crear usuario y categoria_vigente
+    const usuario = await prisma.$transaction(async (tx) => {
     // Crear usuario (mapeando contraseña -> contrase_a, sin CUIL)
-    const usuario = await prisma.usuarios.create({
+    const nuevoUsuario = await tx.usuarios.create({
       data: {
         dni: validatedData.dni,
         cuil: cuilValue, // Los usuarios normales no tienen CUIL !
@@ -128,7 +129,31 @@ export const store = async (
         codSucursal: codSucursal || null,
       },
     });
+// Solo crear categoría vigente para clientes (sin CUIL)
+      if (!cuilValue) {
+        // Buscar categoría inicial
+        const categoriaInicial = await tx.categoria.findFirst({
+          where: { nombreCategoria: 'Inicial' }
+        });
 
+        if (!categoriaInicial) {
+          throw new DatabaseError('Categoría inicial no encontrada en el sistema');
+        }
+
+        // Crear categoría vigente inicial para el cliente
+        await tx.categoria_vigente.create({
+          data: {
+            codCategoria: categoriaInicial.codCategoria,
+            codCliente: nuevoUsuario.codUsuario,
+            ultimaFechaInicio: new Date()
+          }
+        });
+
+        console.log('Client created with initial category assigned');
+      }
+
+      return nuevoUsuario;
+    });
     const userType =
       cuilValue === "1" ? "admin" : cuilValue ? "barber" : "client";
     console.log(`${userType} created successfully`);
@@ -138,6 +163,7 @@ export const store = async (
       "Error creating user:",
       error instanceof Error ? error.message : "Unknown error"
     );
+ 
 
     // Manejo de errores de validación
     if (error instanceof z.ZodError) {
