@@ -1,14 +1,14 @@
 # FRONT:
 ## Usuarios:
     - [ ] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal (?)
-    - [ ] Pantalla de perfil de usuario
+    - [X] Pantalla de perfil de usuario
     - [ ] Pantalla de cancelar turnos
 ## Barberos:
     - [ ] Pantalla de modificar turno
     - [ ] Pantalla de ver turnos
 ## Admin:
-    - [ ] Pantalla general admin
-    - [ ] Pantalla CRUD sucursales
+    - [X] Pantalla general admin
+    - [X?] Pantalla CRUD sucursales
     - [ ] Listado de clientes (proposal.md)
     - [ ] Listado de rentabilidad (proposal.md)
 ## General:
@@ -19,7 +19,7 @@
 ## - Usuarios:
     - [ ] Pedir turnos
     - [X] Ver perfil
-    - [X--] Ver beneficios de categoría (en ver perfil) 
+    - [X] Ver beneficios de categoría (en ver perfil) 
     - [ ] Cancelar Turnos
     - [X] Encriptar Contraseña
 ## Barberos:
