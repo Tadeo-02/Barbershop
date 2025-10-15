@@ -20,9 +20,8 @@ const CreateBarbers: React.FC = () => {
   const [cuil, setCuil] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [confirmarContraseña, setConfirmarContraseña] = useState("");
-  const [sucursalesSeleccionadas, setSucursalesSeleccionadas] = useState<
-    string[]
-  >([]);
+  // Cambiar a string único en lugar de array
+  const [sucursalSeleccionada, setSucursalSeleccionada] = useState<string>("");
   const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
     Sucursal[]
   >([]);
@@ -89,14 +88,9 @@ const CreateBarbers: React.FC = () => {
     }
   };
 
+  // Cambiar el handler para radio buttons en lugar de checkboxes
   const handleSucursalChange = (codSucursal: string) => {
-    setSucursalesSeleccionadas((prev) => {
-      if (prev.includes(codSucursal)) {
-        return prev.filter((id) => id !== codSucursal);
-      } else {
-        return [...prev, codSucursal];
-      }
-    });
+    setSucursalSeleccionada(codSucursal);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,8 +106,9 @@ const CreateBarbers: React.FC = () => {
       return;
     }
 
-    if (sucursalesSeleccionadas.length === 0) {
-      toast.error("Debe seleccionar al menos una sucursal");
+    // Cambiar la validación
+    if (!sucursalSeleccionada) {
+      toast.error("Debe seleccionar una sucursal");
       return;
     }
 
@@ -133,7 +128,7 @@ const CreateBarbers: React.FC = () => {
           email,
           contraseña,
           cuil,
-          sucursales: sucursalesSeleccionadas,
+          codSucursal: sucursalSeleccionada, // Enviar como string único
         }),
       });
 
@@ -167,7 +162,7 @@ const CreateBarbers: React.FC = () => {
         setCuil("");
         setContraseña("");
         setConfirmarContraseña("");
-        setSucursalesSeleccionadas([]);
+        setSucursalSeleccionada(""); // Limpiar sucursal
 
         // Navegar de vuelta a la página de barberos
         navigate("/Admin/BarbersPage");
@@ -312,33 +307,33 @@ const CreateBarbers: React.FC = () => {
           />
         </div>
 
-        {/* ASIGNAR SUCURSALES */}
+        {/* ASIGNAR SUCURSAL - Cambiar a radio buttons */}
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Sucursales:</label>
-          <div className={styles.checkboxGroup}>
+          <label className={styles.formLabel}>Sucursal:</label>
+          <div className={styles.radioGroup}>
             {sucursalesDisponibles.map((sucursal) => (
-              <div key={sucursal.codSucursal} className={styles.checkboxItem}>
+              <div key={sucursal.codSucursal} className={styles.radioItem}>
                 <input
-                  type="checkbox"
+                  type="radio"
                   id={`sucursal-${sucursal.codSucursal}`}
-                  checked={sucursalesSeleccionadas.includes(
-                    sucursal.codSucursal
-                  )}
+                  name="sucursal"
+                  value={sucursal.codSucursal}
+                  checked={sucursalSeleccionada === sucursal.codSucursal}
                   onChange={() => handleSucursalChange(sucursal.codSucursal)}
-                  className={styles.checkbox}
+                  className={styles.radio}
                 />
                 <label
                   htmlFor={`sucursal-${sucursal.codSucursal}`}
-                  className={styles.checkboxLabel}
+                  className={styles.radioLabel}
                 >
                   {sucursal.nombre}
                 </label>
               </div>
             ))}
           </div>
-          {sucursalesSeleccionadas.length === 0 && (
+          {!sucursalSeleccionada && (
             <div className={styles.errorMessage}>
-              Debe seleccionar al menos una sucursal
+              Debe seleccionar una sucursal
             </div>
           )}
         </div>
