@@ -1,3 +1,4 @@
+import { exit } from "process";
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importamos todo desde Base
 import { z } from "zod";
 
@@ -200,7 +201,7 @@ export const findByAvailableDate = async (
     });
 
     const horasDisponibles = [];
-    for (let hora = 8; hora <= 20; hora += 0.5) {
+    for (let hora = 8; hora <= 19.5; hora += 0.5) {
       // Convertir la hora del bucle a formato de tiempo
       const horaString = `${Math.floor(hora).toString().padStart(2, "0")}:${(
         (hora % 1) *
@@ -221,12 +222,13 @@ export const findByAvailableDate = async (
           );
         });
 
-        if (!turnoExistente) {
+        if (turnoExistente) {
           horasDisponibles.push({
             // barbero: barbero.codUsuario,
             // fecha: fechaTurno,
             hora: horaString,
           });
+          break; // Salir del bucle de barberos una vez que se encuentra disponibilidad
         }
       }
     }
@@ -238,7 +240,7 @@ export const findByAvailableDate = async (
     }
 
     console.error(
-      "Error finding turnos:",
+      "Error finding appointments:",
       error instanceof Error ? error.message : "Unknown error"
     );
     throw new DatabaseError("Error al buscar turnos");
@@ -269,7 +271,7 @@ export const findByBarberId = async (
     );
 
     const horasDisponibles = [];
-    for (let hora = 8; hora <= 20; hora += 0.5) {
+    for (let hora = 8; hora <= 19.5; hora += 0.5) {
       // Convertir la hora del bucle a formato de tiempo
       const horaString = `${Math.floor(hora).toString().padStart(2, "0")}:${(
         (hora % 1) *

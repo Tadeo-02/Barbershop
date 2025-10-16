@@ -82,7 +82,7 @@ const ScheduleByBranch = () => {
       ? `/turnos/barber/${codigo}/${fechaTurno || tomorrow()}`
       : `/turnos/available/${fechaTurno || tomorrow()}/${codigo}`;
 
-    // console.log("Llamando a endpoint:", endpoint);
+    console.log("Llamando a endpoint:", endpoint);
 
     fetch(endpoint)
       .then(async (res) => {
@@ -105,7 +105,6 @@ const ScheduleByBranch = () => {
       .then((response) => {
         // console.log("Fetched response:", response);
 
-        // Ambos endpoints devuelven objetos con propiedad 'hora'
         let horariosData: Horario[] = [];
 
         if (response.success && Array.isArray(response.data)) {
@@ -166,7 +165,7 @@ const ScheduleByBranch = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // CORREGIR: mover preventDefault al principio
+    e.preventDefault();
 
     // Validar autenticación
     if (!isAuthenticated || !user || !user.codUsuario) {
@@ -187,7 +186,7 @@ const ScheduleByBranch = () => {
       return;
     }
 
-    const toastId = toast.loading("Creando Turno..."); // CORREGIR mensaje
+    const toastId = toast.loading("Creando Turno...");
 
     try {
       // Calcular horaHasta
@@ -195,7 +194,7 @@ const ScheduleByBranch = () => {
 
       console.log("Enviando POST a /turnos con datos:", {
         codCliente: user.codUsuario,
-        codBarbero: codBarbero, // Usar codBarbero de params, no codigo genérico
+        codBarbero: codBarbero,
         fechaTurno: fechaTurno,
         horaDesde: selectedHorario,
         horaHasta: horaHasta,
@@ -208,10 +207,10 @@ const ScheduleByBranch = () => {
         },
         body: JSON.stringify({
           codCliente: user.codUsuario,
-          codBarbero: codBarbero, // CORREGIR: usar codBarbero específico
+          codBarbero: codBarbero,
           fechaTurno: fechaTurno,
           horaDesde: selectedHorario,
-          horaHasta: horaHasta, // CORREGIR: usar horaHasta calculada
+          horaHasta: horaHasta,
         }),
       });
 
@@ -244,7 +243,7 @@ const ScheduleByBranch = () => {
         setFechaTurno(tomorrow());
         setSelectedDate(getTomorrowDate());
 
-        navigate("");
+        navigate("/");
       } else {
         toast.error("Error al reservar turno", {
           id: toastId,
