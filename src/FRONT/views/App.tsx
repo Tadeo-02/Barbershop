@@ -96,7 +96,7 @@ function App() {
                 element={<ScheduleByBranch />}
               />
               <Route
-                path="/branches/:codSucursal/schedule/:scheduleId/barbers"
+                path="/branches/:codSucursal/schedule/:fechaTurno/:horaDesde/barbers"
                 element={<BarbersByBranch />}
               />
               {/* Vista de categorias para todos los usuarios (puede definirse para cliente pero da igual)*/}

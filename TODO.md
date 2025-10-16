@@ -1,6 +1,7 @@
 # FRONT:
 ## Usuarios:
     - [ ] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal (?)
+    - [ ] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
     - [X] Pantalla de perfil de usuario
     - [ ] Pantalla de cancelar turnos
 ## Barberos:
@@ -17,7 +18,7 @@
     - [ ] Fix de Toasts de error cuando hay succes (ej: create barberos desde admin)
 # BACK:
 ## - Usuarios:
-    - [ ] Pedir turnos
+    - [X] Pedir turnos
     - [X] Ver perfil
     - [X] Ver beneficios de categoría (en ver perfil) 
     - [ ] Cancelar Turnos
