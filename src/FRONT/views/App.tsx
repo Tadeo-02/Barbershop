@@ -18,6 +18,7 @@ import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import AppointmentsByBarber from "./components/Client/appointmentsByBarber.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
+import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 
@@ -97,6 +98,11 @@ function App() {
               <Route
                 path="/branches/:codSucursal/schedule/:fechaTurno/:horaDesde/barbers"
                 element={<BarbersByBranch />}
+              />
+              {/* Vista de categorias para todos los usuarios (puede definirse para cliente pero da igual)*/}
+              <Route
+                path="/categorias/:codCategoria"
+                element={<ShowCategories />}
               />
 
               {/* Rutas protegidas por tipo de usuario */}
