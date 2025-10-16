@@ -149,20 +149,10 @@ const ScheduleByBranch = () => {
   };
 
   const handleNavigateToBarbers = () => {
-    if (selectedHorario) {
-      if (isBarbero) {
-        // Si es barbero específico, ir a confirmación
-        navigate(
-          `/barbers/${codigo}/appointments/${fechaTurno}/${selectedHorario}/confirm`
-        );
-      } else {
-        // Si es sucursal, ir a seleccionar barbero
-        navigate(
-          `/branches/${codigo}/schedule/${fechaTurno}/${selectedHorario}/barbers`
-        );
-      }
-    }
-  };
+      navigate(
+        `/branches/${codigo}/schedule/${fechaTurno}/${selectedHorario}/barbers`
+      );
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
