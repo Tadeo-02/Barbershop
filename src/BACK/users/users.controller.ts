@@ -155,7 +155,10 @@ class UsersController extends BaseController<any> {
 
 const usersController = new UsersController();
 
-export const findByBranchId = async (req: any, res: any): Promise<void> => {
+export const findByBranchId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { codSucursal } = req.params;
 
@@ -178,6 +181,40 @@ export const findByBranchId = async (req: any, res: any): Promise<void> => {
     res.status(500).json({
       success: false,
       message: error.message || "Error al buscar usuarios por sucursal",
+    });
+  }
+};
+
+export const findBySchedule = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codSucursal, fechaTurno, horaDesde } = req.params;
+
+    if (!codSucursal || !fechaTurno || !horaDesde) {
+      res.status(400).json({
+        success: false,
+        message: "codSucursal, fechaTurno y horaDesde son requeridos",
+      });
+      return;
+    }
+
+    const barberosDisponibles = await model.findBySchedule(
+      codSucursal,
+      fechaTurno,
+      horaDesde
+    );
+
+    res.status(200).json({
+      success: true,
+      data: barberosDisponibles,
+      message: `Se encontraron ${barberosDisponibles.length} barberos disponibles`,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al buscar barberos disponibles",
     });
   }
 };
