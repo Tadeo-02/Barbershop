@@ -256,6 +256,45 @@ export const findByBranchId = async (codSucursal: string) => {
     throw new DatabaseError("Error al buscar usuarios por sucursal");
   }
 };
+
+export const findBySchedule = async (codSucursal: string, fechaTurno: string, horaDesde: string) => {
+  try {
+    // Sanitizar y validar
+    const sanitizedCodSucursal = sanitizeInput(codSucursal);
+    const sanitizedFechaTurno = sanitizeInput(fechaTurno);
+    const sanitizedHoraDesde = sanitizeInput(horaDesde);
+
+    // Convertir horaDesde string a Date para comparación
+    const horaDesdeDate = new Date(`1970-01-01T${sanitizedHoraDesde}:00.000Z`);
+
+    // Buscar barberos que NO tienen turnos en la fecha y hora específica
+    const barberos = await prisma.usuarios.findMany({
+      where: {
+        codSucursal: sanitizedCodSucursal,
+        NOT: {
+          turnos_turnos_codBarberoTousuarios: {
+            some: {
+              fechaTurno: new Date(sanitizedFechaTurno),
+              horaDesde: horaDesdeDate,
+            },
+          },
+        },
+      },
+    });
+
+    return barberos;
+  } catch (error) {
+      if (error instanceof DatabaseError) {
+        throw error;
+      }
+      console.error(
+        "Error finding available barbers:",
+        error instanceof Error ? error.message : "Unknown error"
+      );
+      throw new DatabaseError("Error al buscar barberos disponibles");
+  }
+};
+
 const UpdateUserSchema = UserSchema.omit({ contraseña: true }).extend({
   contraseña: UserSchema.shape.contraseña.optional(),
 });
