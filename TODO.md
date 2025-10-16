@@ -9,7 +9,7 @@
     - [ ] Pantalla de ver turnos
 ## Admin:
     - [X] Pantalla general admin
-    - [X?] Pantalla CRUD sucursales
+    - [X] Pantalla CRUD sucursales
     - [ ] Listado de clientes (proposal.md)
     - [ ] Listado de rentabilidad (proposal.md)
 ## General:
@@ -23,6 +23,7 @@
     - [X] Ver beneficios de categoría (en ver perfil) 
     - [ ] Cancelar Turnos
     - [X] Encriptar Contraseña
+    - [ ] API Facturación
 ## Barberos:
     - [ ] Modificar Turnos
 ## Admin:
