@@ -1,4 +1,3 @@
-import { exit } from "process";
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importamos todo desde Base
 import { z } from "zod";
 
@@ -8,6 +7,7 @@ const AppointmentsSchema = z.object({
   codCorte: z.string().min(1, "Código de corte es requerido").optional(),
   codCliente: z.string().min(1, "Código de cliente es requerido"),
   codBarbero: z.string().min(1, "Código de barbero es requerido"),
+  codEstado: z.string().min(1, "Código de estado es requerido"),
   precioTurno: z
     .string()
     .min(1, "Precio es requerido")
@@ -58,10 +58,11 @@ export const store = async (
       horaHasta: sanitizeInput(horaHasta),
     };
 
-    // validación con zod - omitir codTurno para creación
-    const validatedData = AppointmentsSchema.omit({ codTurno: true }).parse(
-      sanitizedData
-    );
+    // validación con zod - omitir codTurno y codEstado para creación
+    const validatedData = AppointmentsSchema.omit({
+      codTurno: true,
+      codEstado: true,
+    }).parse(sanitizedData);
     console.log("Creating turno");
 
     // convertir strings a Date objects para Prisma
@@ -73,6 +74,18 @@ export const store = async (
       `1970-01-01T${sanitizedData.horaHasta}:00.000Z`
     );
 
+    const estado = await prisma.estado_turno.findFirst({
+      where: {
+        nombreEstado: "Programado",
+      },
+    });
+
+    if (!estado) {
+      throw new DatabaseError(
+        "Estado 'Programado' no encontrado en la base de datos"
+      );
+    }
+
     // crear turno
     const turno = await prisma.turno.create({
       data: {
@@ -81,11 +94,12 @@ export const store = async (
         fechaTurno: fechaDate,
         horaDesde: horaDesdeDate,
         horaHasta: horaHastaDate,
+        codEstado: estado.codEstado,
       },
     });
 
     console.log("Turno created successfully");
-    return turno;
+    return [turno];
   } catch (error) {
     console.error(
       "Error creating turno:",
@@ -153,6 +167,10 @@ export const findByClientId = async (codCliente: string) => {
       where: { codCliente: sanitizedCodCliente },
     });
 
+    // console.log(
+    //   `Found ${turnos.length} turnos for client ${sanitizedCodCliente}`
+    // );
+    // console.log(turnos);
     return turnos;
   } catch (error) {
     if (error instanceof DatabaseError) {
@@ -222,7 +240,7 @@ export const findByAvailableDate = async (
           );
         });
 
-        if (turnoExistente) {
+        if (!turnoExistente) {
           horasDisponibles.push({
             // barbero: barbero.codUsuario,
             // fecha: fechaTurno,
@@ -309,6 +327,30 @@ export const findByBarberId = async (
       error instanceof Error ? error.message : "Unknown error"
     );
     throw new DatabaseError("Error al buscar turnos");
+  }
+};
+
+export const findState = async (codEstado: string) => {
+  try {
+    const estado = await prisma.estado_turno.findUnique({
+      where: { codEstado },
+    });
+
+    if (!estado) {
+      throw new DatabaseError("Estado no encontrado");
+    }
+
+    return estado;
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding state:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al buscar estado");
   }
 };
 
@@ -422,6 +464,51 @@ export const update = async (
     }
 
     throw new DatabaseError("Error al actualizar turno");
+  }
+};
+
+export const cancelAppointment = async (codTurno: string) => {
+  try {
+    // sanitizar y validar
+    const sanitizedCodTurno = sanitizeInput(codTurno);
+
+    // cancelar turno
+    const estadoCancelado = await prisma.estado_turno.findFirst({
+      where: { nombreEstado: "Cancelado" },
+    });
+
+    if (!estadoCancelado) {
+      throw new DatabaseError(
+        "Error interno: estado 'Cancelado' no encontrado"
+      );
+    }
+
+    // verificar que el turno existe y pertenece al cliente
+    const existingTurno = await prisma.turno.update({
+      where: { codTurno: sanitizedCodTurno },
+      data: { codEstado: estadoCancelado.codEstado },
+    });
+
+    console.log("Turno canceled successfully");
+    return existingTurno;
+  } catch (error) {
+    console.error(
+      "Error canceling turno:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+
+    // manejo de errores de validacion
+    if (error instanceof z.ZodError) {
+      const firstError = error.issues[0];
+      throw new DatabaseError(firstError.message);
+    }
+
+    // manejar errores de DB
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError("Error al cancelar turno");
   }
 };
 
