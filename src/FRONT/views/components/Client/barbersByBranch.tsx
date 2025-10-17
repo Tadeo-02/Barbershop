@@ -252,10 +252,9 @@ const BarbersByBranch = () => {
           )}
         </div>
       )}
-      {/* {showSchedule && (
+      {showSchedule && (
         <div className={styles.optionsContainer}>
           <button className={`${styles.button} ${styles.buttonPrimary} ${styles.optionButton}`} onClick={handleSchedule}>
-            {/* inline clock icon */}
             <span aria-hidden="true" style={{display: 'inline-flex', alignItems: 'center'}}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path d="M12 7V12L15.5 14.5" stroke="rgba(255,255,255,0.95)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
@@ -265,7 +264,7 @@ const BarbersByBranch = () => {
             <span>Ver horarios disponibles</span>
           </button>
         </div>
-      )} */}
+      )}
     </div>
   );
 };

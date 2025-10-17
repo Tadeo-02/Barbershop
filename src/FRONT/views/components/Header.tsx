@@ -77,11 +77,6 @@ function Header() {
           Cerrar
         </button>
         <ul className={styles.sidebarMenu}>
-          <li>
-            <Link to="/" onClick={() => setOpen(false)}>
-              Inicio
-            </Link>
-          </li>
 
           {/* Mostrar diferentes opciones según el estado de autenticación */}
           {!isAuthenticated ? (
@@ -100,16 +95,21 @@ function Header() {
           ) : (
             <>
               {/* Opciones para usuarios autenticados */}
-              <li>
+              <li className={styles.dataUser}>
                 <span style={{ color: "#ccc", fontSize: "0.9em" }}>
                   Bienvenido, {user?.nombre || user?.email}
                 </span>
-              </li>
-              <li>
+                <br />
                 <span style={{ color: "#999", fontSize: "0.8em" }}>
                   Tipo: {userType}
                 </span>
               </li>
+
+          <li>
+            <Link to="/" onClick={() => setOpen(false)}>
+              Inicio
+            </Link>
+          </li>
 
               {/* Opciones específicas por tipo de usuario */}
               {userType === "client" && (
@@ -117,16 +117,8 @@ function Header() {
                   <Link to="/client/profile" onClick={() => setOpen(false)}>
                     Mi Perfil
                   </Link>
-                  <br />
                   <Link to="/client/appointments" onClick={() => setOpen(false)}>
                     Mis Turnos
-                  </Link>
-                </li>
-              )}
-              {userType === "client" && (
-                <li>
-                  <Link to="/client/reservations" onClick={() => setOpen(false)}>
-                    Mis turnos
                   </Link>
                 </li>
               )}
@@ -150,25 +142,7 @@ function Header() {
                 </li>
               )}
 
-              <li>
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "inherit",
-                    cursor: "pointer",
-                    fontSize: "inherit",
-                    textAlign: "left",
-                    width: "100%",
-                  }}
-                >
-                  Cerrar Sesión
-                </button>
-              </li>
-            </>
-          )}
-
+{/* lo saco para desarrollo
           <li>
             <Link
               to="/productos/mainProductos.tsx"
@@ -177,6 +151,17 @@ function Header() {
               Productos
             </Link>
           </li>
+*/}
+
+              <li>
+                <button className={styles.logOut}
+                  onClick={handleLogout}>
+                  Cerrar Sesión
+                </button>
+              </li>
+            </>
+          )}
+
         </ul>
       </div>
 

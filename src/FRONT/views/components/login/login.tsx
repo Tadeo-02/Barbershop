@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import styles from "./login.module.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
 import {useUserRedirect} from "../Redirect.tsx";
-// toast removed because not used in this file
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -68,6 +67,9 @@ function Login() {
               autoComplete="on"
               onSubmit={handleSubmit}
             >
+              <br />
+              <br />
+              <br />
               <h1>INICIO DE SESIÓN</h1>
               <br />
               <label>Correo electrónico:</label>
@@ -86,7 +88,7 @@ function Login() {
                 className="form-control"
                 type="password"
                 name="claveUsuario"
-                pattern="[a-zA-Z0-9$@.\-]{7,100}"
+                pattern="[a-zA-Z0-9$@.-]{7,100}"
                 maxLength={100}
                 placeholder="********"
                 required

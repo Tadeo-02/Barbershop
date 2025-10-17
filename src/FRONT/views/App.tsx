@@ -17,7 +17,6 @@ import Home from "./components/Client/home/home.tsx";
 import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
-import MyReservations from "./components/Client/MyReservations";
 
 import ClientAppointments from "./components/Client/clientAppointments.tsx";
 import ShowCategories from "./components/Admin/categories/showCategories.tsx";
@@ -48,6 +47,11 @@ function App() {
                 {/*esto lo agregué para poder ver la home del cliente directamente*/}
               </Route>
               <Route path="/branches" element={<Branches />} />
+
+              <Route path="/client" element={<HomePageClient />} />
+              <Route path="/client/profile" element={<ProfilePage />} />
+
+
               {/* Selección de barbero primero */}
               
 
@@ -77,10 +81,6 @@ function App() {
                 element={<ScheduleByBranch />}
               />
               {/* Selección de horario primero */}
-              <Route
-                path="/branches/:codSucursal/schedule"
-                element={<ScheduleByBranch />}
-              />
               <Route
                 path="/branches/:codSucursal/schedule"
                 element={<ScheduleByBranch />}
@@ -146,10 +146,6 @@ function App() {
                 path="/barber/myAppointments"
                 element={<MyAppointments />}
               />
-
-              <Route path="/client" element={<HomePageClient />} />
-              <Route path="/client/profile" element={<ProfilePage />} />
-              <Route path="/client/reservations" element={<MyReservations />} />
 
               {/* Rutas de administración protegidas */}
 

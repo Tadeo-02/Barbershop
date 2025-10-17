@@ -1,3 +1,4 @@
+{/* 
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../login/AuthContext";
 import barberStyles from "./appointmentsByBarber.module.css";
@@ -234,7 +235,7 @@ const ScheduleByBranch = () => {
                         const cod = String(a.codBarbero || a.barberId || a.codBarbero || '');
                         if (cod) occupiedBarbers.add(cod);
                     }
-                } catch (e) { /* ignore */ }
+                } catch (e) 
             }
 
             // filter users: those with role 'barbero' or that belong to branch. Heuristic: field 'codSucursal' or 'sucursalId'
@@ -251,7 +252,7 @@ const ScheduleByBranch = () => {
                     if (!cod) continue;
                     if (occupiedBarbers.has(cod)) continue;
                     candidates.push({ codUsuario: cod, nombre: u.nombre, apellido: u.apellido, telefono: u.telefono ?? u.phone ?? undefined, email: u.email ?? undefined });
-                } catch (e) { /* ignore malformed user */ }
+                } catch (e) 
             }
 
             setAvailableBarbers(candidates);
@@ -293,7 +294,7 @@ const ScheduleByBranch = () => {
                         codSucursal: branchId,
                     };
                     auth.addReservation(reservation);
-                } catch (e) { /* ignore if auth missing */ }
+                } catch (e) 
                 return [];
             }
 
@@ -398,7 +399,10 @@ const ScheduleByBranch = () => {
                     </div>
                 </div>
           )}</div>)}
-{/* import { useEffect, useState } from "react";
+
+*/}
+
+import { useEffect, useState } from "react";
 import styles from "./scheduleByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
@@ -728,6 +732,6 @@ const ScheduleByBranch = () => {
       )}
     </div>
   );
-}; */}
+}; 
 
 export default ScheduleByBranch;
