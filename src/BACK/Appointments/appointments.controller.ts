@@ -93,5 +93,57 @@ export const findByClientId = async (req: Request, res: Response): Promise<void>
   }
 };
 
+export const findState = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { codEstado } = req.params;
+
+    if (!codEstado) {
+      res.status(400).json({
+        success: false,
+        message: "codEstado es requerido",
+      });
+      return;
+    }
+
+    const estado = await model.findState(codEstado);
+
+    res.status(200).json({
+      success: true,
+      data: estado,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al buscar estado",
+    });
+  }
+};
+
+export const cancelAppointment = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { codTurno } = req.params;
+
+    if (!codTurno) {
+      res.status(400).json({
+        success: false,
+        message: "codTurno es requerido",
+      });
+      return;
+    }
+
+    const result = await model.cancelAppointment(codTurno);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al cancelar turno",
+    });
+  }
+};
+
 export const { create, store, index, show, edit, update, destroy } =
   appointmentsController;

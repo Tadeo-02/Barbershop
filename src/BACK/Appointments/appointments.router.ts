@@ -11,5 +11,7 @@ const router = createRouter(controller, {
 router.get("/available/:fechaTurno/:codSucursal", controller.findByAvailableDate);
 router.get("/barber/:codBarbero/:fechaTurno", controller.findByBarberId);
 router.get("/client/:codCliente", controller.findByClientId);
+router.get("/state/:codEstado", controller.findState);
+router.get("/client/:codTurno", controller.cancelAppointment);
 
 export default router;

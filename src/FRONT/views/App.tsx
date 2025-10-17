@@ -17,6 +17,7 @@ import Home from "./components/Client/home/home.tsx";
 import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
+import ClientAppointments from "./components/Client/clientAppointments.tsx";
 import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
@@ -62,6 +63,10 @@ function App() {
               <Route
                 path="/branches/:codSucursal/schedule/:scheduleId/barbers"
                 element={<BarbersByBranch />}
+              />
+              <Route
+                path="/client/appointments"
+                element={<ClientAppointments />}
               />
 
               {/* Ruta temporal para testing */}
