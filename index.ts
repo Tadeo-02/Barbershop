@@ -7,6 +7,7 @@ import path from "path";
 import categoriesRouter from "./src/BACK/Admin/categories/categories.router";
 import branchesRouter from "./src/BACK/Admin/branches/branches.router";
 import usersRouter from "./src/BACK/users/users.router";
+import appointmentsRouter from "./src/BACK/Appointments/appointments.router";
 import { login } from "./src/BACK/users/users.controller";
 //import typeOfCutRouter from "./src/BACK/typeOfCut/typeOfCut.router";
 console.log("🔍 Categories router:", categoriesRouter);
@@ -37,9 +38,12 @@ app.use("/usuarios", usersRouter);
 
 app.use("/tipoCortes", typeOfHaircutRouter);
 
+
 app.use("/sucursales", branchesRouter);
 // Ruta específica para login
 app.post("/login", login);
+
+app.use("/turnos", appointmentsRouter);
 
 // Root route
 app.get("/", (_req, res) => {

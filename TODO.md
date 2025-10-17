@@ -1,14 +1,16 @@
 # FRONT:
 ## Usuarios:
     - [ ] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal (?)
-    - [ ] Pantalla de perfil de usuario
-    - [ ] Pantalla de cancelar turnos
+    - [ ] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
+    - [X] Pantalla de perfil de usuario
+    - [X?] Pantalla de cancelar turnos
 ## Barberos:
     - [ ] Pantalla de modificar turno
     - [ ] Pantalla de ver turnos
 ## Admin:
-    - [ ] Pantalla general admin
-    - [ ] Pantalla CRUD sucursales
+    - [X] Pantalla general admin
+    - [X] Pantalla CRUD sucursales
+    - [ ] Pantalla CRUD estados?? Decidir si la hacemos
     - [ ] Listado de clientes (proposal.md)
     - [ ] Listado de rentabilidad (proposal.md)
 ## General:
@@ -17,17 +19,19 @@
     - [ ] Fix de Toasts de error cuando hay succes (ej: create barberos desde admin)
 # BACK:
 ## - Usuarios:
-    - [ ] Pedir turnos
+    - [X] Pedir turnos
     - [X] Ver perfil
-    - [X--] Ver beneficios de categoría (en ver perfil) 
-    - [ ] Cancelar Turnos
+    - [X] Ver beneficios de categoría (en ver perfil) 
+    - [X] Cancelar Turnos
     - [X] Encriptar Contraseña
+    - [ ] API Facturación
 ## Barberos:
     - [ ] Modificar Turnos
 ## Admin:
     - [X] CRUD Sucursal
     - [X] CRUD Barberos
     - [X] CRUD Categorias
+    - [ ] CRUD Estados turno - Modificar funcionalidades de Appointments para que utilizan esta CRUD
 ## General:
     - [ ] Revisar validaciones zod en general
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)

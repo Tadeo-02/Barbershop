@@ -16,10 +16,11 @@ import ProfilePage from "./pages/Client/ProfilePage.tsx";
 import Home from "./components/Client/home/home.tsx";
 import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
-import AppointmentsByBarber from "./components/Client/appointmentsByBarber.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
 import MyReservations from "./components/Client/MyReservations";
 
+import ClientAppointments from "./components/Client/clientAppointments.tsx";
+import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 
@@ -31,6 +32,7 @@ import MyAppointments from "./components/Barber/MyAppointments.tsx";
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
 import BarbersPage from "./pages/Admin/BarbersPage.tsx";
 import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
+import BranchesPage from "./pages/Admin/BranchesPage.tsx";
 import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
 import CancelAppointment from "./components/Client/appointments/cancelAppointment.tsx";
 
@@ -47,17 +49,32 @@ function App() {
               </Route>
               <Route path="/branches" element={<Branches />} />
               {/* Selección de barbero primero */}
+              
+
+              {/* REVISAR porque está 3 veces repetida y son distintas 
               <Route
                 path="/branches/:codSucursal/barbers"
                 element={<BarbersByBranch />}
               />
               <Route
+                path="/branches/:codSucursal/schedule/:scheduleId/barbers"
+                element={<BarbersByBranch />}
+              />
+              */}
+              <Route
+                path="/branches/:codSucursal/schedule/:fechaTurno/:horaDesde/barbers"
+                element={<BarbersByBranch />}
+              />
+
+              <Route
                 path="/appointments/cancelar/:appointmentId"
                 element={<CancelAppointment />}
               />
+
+
               <Route
                 path="/barbers/:codBarbero/appointments"
-                element={<AppointmentsByBarber />}
+                element={<ScheduleByBranch />}
               />
               {/* Selección de horario primero */}
               <Route
@@ -65,8 +82,14 @@ function App() {
                 element={<ScheduleByBranch />}
               />
               <Route
-                path="/branches/:codSucursal/schedule/:scheduleId/barbers"
-                element={<BarbersByBranch />}
+                path="/branches/:codSucursal/schedule"
+                element={<ScheduleByBranch />}
+              />
+
+
+              <Route
+                path="/client/appointments"
+                element={<ClientAppointments />}
               />
 
               {/* Ruta temporal para testing */}
@@ -83,6 +106,14 @@ function App() {
                     TEST ROUTE WORKING
                   </div>
                 }
+              />
+
+
+
+              {/* Vista de categorias para todos los usuarios (puede definirse para cliente pero da igual)*/}
+              <Route
+                path="/categorias/:codCategoria"
+                element={<ShowCategories />}
               />
 
               {/* Rutas protegidas por tipo de usuario */}
@@ -150,7 +181,16 @@ function App() {
               />
 
               <Route
-                path="/Admin/HaircutTypesPage"
+                path="/Admin/BranchesPage/*"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <BranchesPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/Admin/HaircutTypesPage/*"
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <HairCutTypesPage />

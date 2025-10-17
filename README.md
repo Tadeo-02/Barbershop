@@ -6,8 +6,8 @@ Instruccions de uso: <br>
 1 - Clonar repositorio (borrar viejo node_modules si da problemas) <br>
 2 - Ejecutar en consola: 'pnpm install' <br>
 3 - Ejecutar en consola: 'pnpm prisma db pull' -> 'pnpm exec prisma generate'<br>
-4 - Iniciar Frontend: 'pnpm run dev' -> Abrir Enlace <br>
-5 - Iniciar Backend: 'pnpm run dev:backend' <br>
+4 - Iniciar Frontend: 'pnpm dev' -> Abrir Enlace <br>
+5 - Iniciar Backend: 'pnpm dev:backend' <br>
 
 
 

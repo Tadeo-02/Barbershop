@@ -1,10 +1,19 @@
 import { useAuth } from "../../login/AuthContext";
 import { useEffect, useState } from "react";
 import styles from "./profile.module.css";
-import toast from "react-hot-toast";
+// import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
 //! ADAPTAR A MOBILE
+interface CategoriaActual {
+  codCategoria: string;
+  nombreCategoria: string;
+  descCategoria: string;
+  descuentoCorte: number;
+  descuentoProducto: number;
+  fechaInicio: string;
+}
+
 interface UserProfile {
   codUsuario: string;
   dni: string;
@@ -14,7 +23,7 @@ interface UserProfile {
   apellido: string;
   telefono: string;
   email: string;
-  //! obtener cod_categoria de la relacion con la tabla vigente
+  categoriaActual: CategoriaActual | null;
 }
 
 const MyProfile = () => {
@@ -28,33 +37,62 @@ const MyProfile = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/client/profiles/${user.codUsuario}`);
+        console.log(
+          "🔥 PROFILE DEBUG - Fetching profile for user:",
+          user.codUsuario
+        );
+
+        const response = await fetch(`/usuarios/profiles/${user.codUsuario}`);
+
+        console.log("🔥 PROFILE DEBUG - Response status:", response.status);
+        console.log("🔥 PROFILE DEBUG - Response ok:", response.ok);
 
         if (!response.ok) {
-          // Solo mostrar error si realmente falla la petición HTTP
-          console.warn("Response not ok, using fallback data");
-          setProfile(user);
+          console.warn(
+            "🔥 PROFILE DEBUG - Response not ok, using fallback data"
+          );
+          setProfile({ ...user, categoriaActual: null });
           return;
         }
 
         const data = await response.json();
+        console.log("🔥 PROFILE DEBUG - Raw response data:", data);
 
-        if (data.success && data.data) { 
+        if (data.success && data.data) {
+          console.log(
+            "🔥 PROFILE DEBUG - Setting profile with data.data:",
+            data.data
+          );
+          console.log(
+            "🔥 PROFILE DEBUG - categoriaActual in data.data:",
+            data.data.categoriaActual
+          );
           setProfile(data.data);
         } else {
-          // Si no hay data.success pero sí hay data, usar los datos directamente
+          console.log(
+            "🔥 PROFILE DEBUG - No success/data structure, checking raw data:",
+            data
+          );
           if (data && typeof data === "object") {
+            console.log(
+              "🔥 PROFILE DEBUG - Setting profile with raw data:",
+              data
+            );
+            console.log(
+              "🔥 PROFILE DEBUG - categoriaActual in raw data:",
+              data.categoriaActual
+            );
             setProfile(data);
           } else {
-            console.warn("No profile data received, using fallback");
-            setProfile(user);
+            console.warn(
+              "🔥 PROFILE DEBUG - No profile data received, using fallback"
+            );
+            setProfile({ ...user, categoriaActual: null });
           }
         }
-      } catch (error) { //todo Revisar el por que de este error que se printea en consola
-        console.error("Error al obtener el perfil:", error);
-        // toast.error("Error al cargar los datos del perfil");
-        // Si falla, usar los datos del contexto como fallback
-        setProfile(user);
+      } catch (error) {
+        console.error("🔥 PROFILE DEBUG - Error al obtener el perfil:", error);
+        setProfile({ ...user, categoriaActual: null });
       } finally {
         setLoading(false);
       }
@@ -63,19 +101,16 @@ const MyProfile = () => {
     fetchProfile();
   }, [user]);
 
-  //? util para perfil de barbero
-  // const getUserTypeLabel = () => {
-  //   switch (userType) {
-  //     case "admin":
-  //       return "Administrador";
-  //     case "barber":
-  //       return "Barbero";
-  //     case "client":
-  //       return "Cliente";
-  //     default:
-  //       return "Usuario";
-  //   }
-  // };
+  // Agregar console.log cuando cambie el profile
+  useEffect(() => {
+    if (profile) {
+      console.log("🔥 PROFILE DEBUG - Profile state updated:", profile);
+      console.log(
+        "🔥 PROFILE DEBUG - categoriaActual:",
+        profile.categoriaActual
+      );
+    }
+  }, [profile]);
 
   if (!user) {
     return (
@@ -93,8 +128,14 @@ const MyProfile = () => {
     );
   }
 
-  // Usar los datos del perfil obtenidos del backend, o los del contexto como fallback
-  const displayUser = profile || user;
+  const displayUser = profile || { ...user, categoriaActual: null };
+
+  // Console.log cada vez que se renderiza
+  console.log("🔥 PROFILE DEBUG - Rendering with displayUser:", displayUser);
+  console.log(
+    "🔥 PROFILE DEBUG - displayUser.categoriaActual:",
+    displayUser.categoriaActual
+  );
 
   return (
     <div className={styles.formContainer}>
@@ -111,58 +152,32 @@ const MyProfile = () => {
             <strong>DNI:</strong> {displayUser.dni}
           </div>
 
-          {/* Util para mostrar perfil al admin si es necesasrio 
-          {displayUser.cuil && (
-            <div className={styles.profileField}>
-              <strong>CUIL:</strong> {displayUser.cuil}
-            </div>
-          )} */}
-
-          
-       
           <h3>Información de Contacto</h3>
           <div className={styles.profileField}>
             <strong>Teléfono:</strong> {displayUser.telefono}
-          
-        </div>
+          </div>
           <div className={styles.profileField}>
             <strong>Email:</strong> {displayUser.email}
           </div>
+
           <div className={styles.profileField}>
-            <strong>Categoria:</strong> {"Inicial"}
-            <div className={styles.actionButtons}>
-              {/* displayUser.codCategoria ? (
+            <strong>Categoría:</strong>{" "}
+            {displayUser.categoriaActual
+              ? displayUser.categoriaActual.nombreCategoria
+              : "Sin categoría asignada"}
+            {displayUser.categoriaActual && (
+              <div className={styles.actionButtons}>
                 <Link
-                  to={`/categorias/${displayUser.codCategoria}`}
+                  to={`/categorias/${displayUser.categoriaActual.codCategoria}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  Ver Detalles
-              </Link> */}
-            </div>
+                  Ver Beneficios
+                </Link>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* {displayUser.codSucursal && (
-          <div className={styles.profileSection}>
-            <h3>Información Laboral</h3>
-            <div className={styles.profileField}>
-              <strong>Código de Sucursal:</strong> {displayUser.codSucursal}
-            </div>
-          </div>
-        )} */}
       </div>
-
-      {/* <div className={styles.actionButtons}>
-        <button
-          className={styles.editButton}
-          onClick={() => {
-            console.log("Editar perfil clicked");
-            toast.info("Función de editar perfil próximamente");
-          }}
-        >
-          Editar Perfil
-        </button>
-      </div> */}
     </div>
   );
 };

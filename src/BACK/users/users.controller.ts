@@ -3,14 +3,12 @@ import * as model from "./Users";
 import { BaseController } from "../base/base.controller";
 import { Request, Response } from "express";
 
-// Crear la clase UsersController para manejar usuarios normales
 class UsersController extends BaseController<any> {
   protected model = model;
   protected entityName = "usuario";
   protected idFieldName = "codUsuario";
 
-  // Metodo especifico para mostar barberos o clientes
-  index = async (req: Request, res: Response) => {
+  index = async (req: Request, res: Response): Promise<void> => {
     try {
       const userType = req.query.type as "client" | "barber" | undefined;
       const entities = await model.findAll(userType);
@@ -19,15 +17,74 @@ class UsersController extends BaseController<any> {
       this.handleError(error, res);
     }
   };
-// update especializado ya que el update puede ser para barber o usuario, lo que cambia los parametros enviados
-  update = async (req: Request, res: Response) => {
+
+  store = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { codUsuario } = req.params; // codUsuario viene de la URL
+      const {
+        dni,
+        nombre,
+        apellido,
+        telefono,
+        email,
+        contraseña,
+        cuil,
+        codSucursal,
+      } = req.body;
 
-      const { dni, nombre, apellido, telefono, email, contraseña, cuil } =
-        req.body;
+      if (cuil && !codSucursal) {
+        res.status(400).json({
+          message: "Los barberos deben tener una sucursal asignada",
+        });
+        return;
+      }
 
-      // Llamar a la función update con codUsuario como primer parámetro
+      const newUser = await model.store(
+        dni,
+        nombre,
+        apellido,
+        telefono,
+        email,
+        contraseña,
+        cuil,
+        codSucursal
+      );
+
+      const userType = cuil ? "barbero" : "cliente";
+
+      res.status(201).json({
+        message: `${
+          userType.charAt(0).toUpperCase() + userType.slice(1)
+        } creado exitosamente`,
+        user: newUser,
+      });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      this.handleError(error, res);
+    }
+  };
+
+  update = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { codUsuario } = req.params;
+
+      const {
+        dni,
+        nombre,
+        apellido,
+        telefono,
+        email,
+        contraseña,
+        cuil,
+        codSucursal,
+      } = req.body;
+
+      if (cuil && !codSucursal) {
+        res.status(400).json({
+          message: "Los barberos deben tener una sucursal asignada",
+        });
+        return;
+      }
+
       const updatedUser = await model.update(codUsuario, {
         dni,
         nombre,
@@ -36,10 +93,15 @@ class UsersController extends BaseController<any> {
         email,
         contraseña,
         cuil,
+        codSucursal,
       });
 
+      const userType = cuil ? "barbero" : "cliente";
+
       res.status(200).json({
-        message: "Usuario actualizado exitosamente",
+        message: `${
+          userType.charAt(0).toUpperCase() + userType.slice(1)
+        } actualizado exitosamente`,
         user: updatedUser,
       });
     } catch (error) {
@@ -48,13 +110,11 @@ class UsersController extends BaseController<any> {
     }
   };
 
-  // Método específico para login de usuarios
-  async login(req: Request, res: Response) {
+  async login(req: Request, res: Response): Promise<void> {
     try {
       console.log("Login request received");
       console.log("Request body:", req.body);
 
-      // Aceptar tanto email/contraseña como correo/clave para compatibilidad
       const { email, contraseña, correo, clave } = req.body;
 
       console.log("Extracted fields:", { email, contraseña, correo, clave });
@@ -66,9 +126,10 @@ class UsersController extends BaseController<any> {
 
       if (!userEmail || !userPassword) {
         console.log("Missing credentials");
-        return res.status(400).json({
+        res.status(400).json({
           message: "Email y contraseña son requeridos",
         });
+        return;
       }
 
       const usuario = await model.validateLogin(userEmail, userPassword);
@@ -83,7 +144,6 @@ class UsersController extends BaseController<any> {
       const errorMessage =
         error instanceof Error ? error.message : "Error interno del servidor";
 
-      // Si es error de credenciales, devolver 401, sino 500
       const statusCode = errorMessage.includes("incorrectos") ? 401 : 500;
 
       res.status(statusCode).json({
@@ -95,34 +155,72 @@ class UsersController extends BaseController<any> {
 
 const usersController = new UsersController();
 
-// Función personalizada para buscar usuarios por sucursal
-export const findByBranchId = async (req: any, res: any) => {
+export const findByBranchId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { codSucursal } = req.params;
 
     if (!codSucursal) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "codSucursal es requerido",
       });
+      return;
     }
 
     const usuarios = await model.findByBranchId(codSucursal);
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: usuarios,
+      message: `Se encontraron ${usuarios.length} barberos en la sucursal`,
     });
   } catch (error: any) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: error.message || "Error al buscar usuarios por sucursal",
     });
   }
 };
 
-export const { create, store, index, show, edit, update, destroy } =
-  usersController;
+export const findBySchedule = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codSucursal, fechaTurno, horaDesde } = req.params;
 
-// Exportar también el método login
+    if (!codSucursal || !fechaTurno || !horaDesde) {
+      res.status(400).json({
+        success: false,
+        message: "codSucursal, fechaTurno y horaDesde son requeridos",
+      });
+      return;
+    }
+
+    const barberosDisponibles = await model.findBySchedule(
+      codSucursal,
+      fechaTurno,
+      horaDesde
+    );
+
+    res.status(200).json({
+      success: true,
+      data: barberosDisponibles,
+      message: `Se encontraron ${barberosDisponibles.length} barberos disponibles`,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al buscar barberos disponibles",
+    });
+  }
+};
+
+export const { create, show, edit, destroy } = usersController;
+export const store = usersController.store.bind(usersController);
+export const index = usersController.index.bind(usersController);
+export const update = usersController.update.bind(usersController);
 export const login = usersController.login.bind(usersController);

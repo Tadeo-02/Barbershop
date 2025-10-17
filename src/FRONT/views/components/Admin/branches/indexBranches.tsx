@@ -1,40 +1,43 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import styles from "./typeOfHaircut.module.css";
+import styles from "./branches.module.css";
 import toast from "react-hot-toast";
 
-interface TipoCorte {
-  codCorte: string;
-  nombreCorte: string;
-  valorBase: number;
+interface Sucursal {
+  codSucursal: string;
+  calle: string;
+  altura: number;
 }
 
-const IndexTypeOfHaircut = () => {
-  const [tipoCortes, setTipoCortes] = useState<TipoCorte[]>([]);
+const IndexBranches = () => {
+  const [sucursales, setSucursales] = useState<Sucursal[]>([]);
   const [loading, setLoading] = useState(true); // loading inicial
 
   useEffect(() => {
-    // llama al backend para obtener los tipos de corte
-    fetch("/tipoCortes")
+    //alert de loading para carga inicial
+    // const toastId = toast.loading("Cargando sucursales...");
+
+    // Llama al backend para obtener las sucursales
+    fetch("/sucursales")
       .then((res) => res.json())
       .then((data) => {
-        setTipoCortes(data); // data debe ser un array de tipoCortes
-        console.log("Tipos de corte recibidos:", data);
+        setSucursales(data); // data debe ser un array de sucursales
+        console.log("Sucursales recibidos:", data);
       })
       .catch((error) => {
-        console.error("Error al obtener tipos de corte:", error);
+        console.error("Error al obtener sucursales:", error);
+        // toast.error("Error al cargar las sucursales", { id: toastId });
       })
       .finally(() => {
         setLoading(false); // Termina el loading
       });
   }, []);
-
   // loading state
   if (loading) {
-    return <div className={styles.loadingState}>Cargando tipo de corte...</div>;
+    return <div className={styles.loadingState}>Cargando sucursales...</div>;
   }
 
-  const handleDelete = async (codCorte: string) => {
+  const handleDelete = async (codSucursal: string) => {
     //alert personalizado para confirmacion:
     toast(
       (t) => (
@@ -46,7 +49,7 @@ const IndexTypeOfHaircut = () => {
               fontWeight: "600",
             }}
           >
-            ¿Estás seguro de que querés borrar este tipo de corte?
+            ¿Estás seguro de que querés borrar esta sucursal?
           </p>
           <div
             style={{
@@ -59,18 +62,18 @@ const IndexTypeOfHaircut = () => {
             <button
               onClick={() => {
                 toast.dismiss(t.id);
-                confirmedDelete(codCorte);
+                confirmedDelete(codSucursal);
               }}
               style={{
                 background: "#e53e3e",
                 color: "white",
                 border: "none",
-                padding: "12px 24px",
+                padding: "12px 24px", 
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "16px",
+                fontSize: "16px", 
                 fontWeight: "600",
-                minWidth: "120px",
+                minWidth: "120px", 
                 transition: "all 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -88,12 +91,12 @@ const IndexTypeOfHaircut = () => {
                 background: "#718096",
                 color: "white",
                 border: "none",
-                padding: "12px 24px",
+                padding: "12px 24px", 
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "16px",
+                fontSize: "16px", 
                 fontWeight: "600",
-                minWidth: "120px",
+                minWidth: "120px", 
                 transition: "all 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -118,23 +121,21 @@ const IndexTypeOfHaircut = () => {
     );
   };
 
-  const confirmedDelete = async (codCorte: string) => {
-    const toastId = toast.loading("Eliminando tipo de corte...");
+  const confirmedDelete = async (codSucursal: string) => {
+    const toastId = toast.loading("Eliminando sucursal...");
 
     try {
-      const response = await fetch(`/tipoCortes/${codCorte}`, {
+      const response = await fetch(`/sucursales/${codSucursal}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        toast.success("Tipo de corte eliminado correctamente", { id: toastId });
-        setTipoCortes(
-          tipoCortes.filter((corte) => corte.codCorte !== codCorte)
-        );
+        toast.success("Sucursal eliminada correctamente", { id: toastId });
+        setSucursales(sucursales.filter((sucursal) => sucursal.codSucursal !== codSucursal));
       } else if (response.status === 404) {
-        toast.error("Tipo de corte no encontrado", { id: toastId });
+        toast.error("Sucursal no encontrada", { id: toastId });
       } else {
-        toast.error("Error al borrar el tipo de corte", { id: toastId });
+        toast.error("Error al borrar la sucursal", { id: toastId });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
@@ -143,34 +144,37 @@ const IndexTypeOfHaircut = () => {
   };
 
   return (
-    <div className={styles.indexTipoCortes}>
-      <h2>Gestión de Tipos de Corte</h2>
-      {tipoCortes.length === 0 ? (
+    <div className={styles.indexSucursales}>
+      <h2>Gestión de Sucursales</h2>
+      {sucursales.length === 0 ? (
         <div className={styles.emptyState}>
-          <p>No hay tipos de corte disponibles.</p>
+          <p>No hay sucursales disponibles.</p>
         </div>
       ) : (
         <ul>
-          {tipoCortes.map((corte, idx) => (
+          {sucursales.map((sucursal, idx) => (
             <li key={idx}>
-              <div className={styles.corteInfo}>
-                <div className={styles.corteTitle}>
-                  <strong>{corte.nombreCorte}</strong>
-                </div>
-                <div className={styles.cortePrice}>
-                  Valor Base: ${corte.valorBase}
+              <div className={styles.sucursalInfo}>
+                <div className={styles.sucursalTitle}>
+                  {sucursal.calle}, {sucursal.altura}
                 </div>
               </div>
               <div className={styles.actionButtons}>
                 <Link
-                  to={`updateTypeOfHaircut/${corte.codCorte}`}
+                  to={`/Admin/BranchesPage/${sucursal.codSucursal}`}
+                  className={`${styles.button} ${styles.buttonPrimary}`}
+                >
+                  Ver Detalles
+                </Link>
+                <Link
+                  to={`/Admin/BranchesPage/updateBranches/${sucursal.codSucursal}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   Modificar
                 </Link>
                 <button
                   className={`${styles.button} ${styles.buttonDanger}`}
-                  onClick={() => handleDelete(corte.codCorte)}
+                  onClick={() => handleDelete(sucursal.codSucursal)}
                 >
                   Eliminar
                 </button>
@@ -183,4 +187,4 @@ const IndexTypeOfHaircut = () => {
   );
 };
 
-export default IndexTypeOfHaircut;
+export default IndexBranches;

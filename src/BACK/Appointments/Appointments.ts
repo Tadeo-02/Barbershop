@@ -3,11 +3,11 @@ import { z } from "zod";
 
 // schema de validación con Zod (más robusto que las funciones manuales)
 const AppointmentsSchema = z.object({
-  codTurno: z.string().uuid("ID de turno inválido"),
+  codTurno: z.string().uuid("ID de turno inválido").optional(),
   codCorte: z.string().min(1, "Código de corte es requerido").optional(),
-  codHorario: z.string().min(1, "Código de horario es requerido"),
   codCliente: z.string().min(1, "Código de cliente es requerido"),
   codBarbero: z.string().min(1, "Código de barbero es requerido"),
+  codEstado: z.string().min(1, "Código de estado es requerido"),
   precioTurno: z
     .string()
     .min(1, "Precio es requerido")
@@ -58,8 +58,11 @@ export const store = async (
       horaHasta: sanitizeInput(horaHasta),
     };
 
-    // validación con zod (you may need to update your schema to include codBarbero)
-    const validatedData = AppointmentsSchema.parse(sanitizedData);
+    // validación con zod - omitir codTurno y codEstado para creación
+    const validatedData = AppointmentsSchema.omit({
+      codTurno: true,
+      codEstado: true,
+    }).parse(sanitizedData);
     console.log("Creating turno");
 
     // convertir strings a Date objects para Prisma
@@ -71,6 +74,18 @@ export const store = async (
       `1970-01-01T${sanitizedData.horaHasta}:00.000Z`
     );
 
+    const estado = await prisma.estado_turno.findFirst({
+      where: {
+        nombreEstado: "Programado",
+      },
+    });
+
+    if (!estado) {
+      throw new DatabaseError(
+        "Estado 'Programado' no encontrado en la base de datos"
+      );
+    }
+
     // crear turno
     const turno = await prisma.turno.create({
       data: {
@@ -79,11 +94,12 @@ export const store = async (
         fechaTurno: fechaDate,
         horaDesde: horaDesdeDate,
         horaHasta: horaHastaDate,
+        codEstado: estado.codEstado,
       },
     });
 
     console.log("Turno created successfully");
-    return turno;
+    return [turno];
   } catch (error) {
     console.error(
       "Error creating turno:",
@@ -151,6 +167,10 @@ export const findByClientId = async (codCliente: string) => {
       where: { codCliente: sanitizedCodCliente },
     });
 
+    // console.log(
+    //   `Found ${turnos.length} turnos for client ${sanitizedCodCliente}`
+    // );
+    // console.log(turnos);
     return turnos;
   } catch (error) {
     if (error instanceof DatabaseError) {
@@ -199,7 +219,7 @@ export const findByAvailableDate = async (
     });
 
     const horasDisponibles = [];
-    for (let hora = 8; hora <= 20; hora += 0.5) {
+    for (let hora = 8; hora <= 19.5; hora += 0.5) {
       // Convertir la hora del bucle a formato de tiempo
       const horaString = `${Math.floor(hora).toString().padStart(2, "0")}:${(
         (hora % 1) *
@@ -210,21 +230,23 @@ export const findByAvailableDate = async (
 
       for (const barbero of barberos) {
         // Verificar si existe un turno para este barbero en esta hora específica
-        const turnoExistente = turnos.find(
-          (t) =>
-            t.codBarbero === barbero.codUsuario &&
-            t.horaDesde.toTimeString().substring(0, 5) === horaString
-        );
+        const turnoExistente = turnos.find((t) => {
+          // Usar toISOString() para obtener la hora correcta sin conversiones de zona horaria
+          const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
 
-        if (turnoExistente) {
-          // El barbero ya tiene un turno a esta hora
-          continue;
-        } else {
-          // El barbero está disponible a esta hora
+          return (
+            t.codBarbero === barbero.codUsuario &&
+            turnoHoraCorrecta === horaString
+          );
+        });
+
+        if (!turnoExistente) {
           horasDisponibles.push({
+            // barbero: barbero.codUsuario,
+            // fecha: fechaTurno,
             hora: horaString,
-            barbero: barbero.codUsuario,
           });
+          break; // Salir del bucle de barberos una vez que se encuentra disponibilidad
         }
       }
     }
@@ -236,7 +258,7 @@ export const findByAvailableDate = async (
     }
 
     console.error(
-      "Error finding turnos:",
+      "Error finding appointments:",
       error instanceof Error ? error.message : "Unknown error"
     );
     throw new DatabaseError("Error al buscar turnos");
@@ -257,10 +279,17 @@ export const findByBarberId = async (
         codBarbero: sanitizedCodBarbero,
         fechaTurno: new Date(sanitizedFechaTurno),
       },
+      orderBy: {
+        horaDesde: "asc",
+      },
     });
 
+    console.log(
+      `Found ${turnos.length} existing appointments for barber ${sanitizedCodBarbero} on ${sanitizedFechaTurno}`
+    );
+
     const horasDisponibles = [];
-    for (let hora = 8; hora <= 20; hora += 0.5) {
+    for (let hora = 8; hora <= 19.5; hora += 0.5) {
       // Convertir la hora del bucle a formato de tiempo
       const horaString = `${Math.floor(hora).toString().padStart(2, "0")}:${(
         (hora % 1) *
@@ -270,23 +299,23 @@ export const findByBarberId = async (
         .padStart(2, "0")}`;
 
       // Verificar si existe un turno para este barbero en esta hora específica
-      const turnoExistente = turnos.find(
-        (t) =>
-          t.codBarbero === codBarbero &&
-          t.horaDesde.toTimeString().substring(0, 5) === horaString
-      );
+      const turnoExistente = turnos.find((t) => {
+        const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
 
-      if (turnoExistente) {
-        // El barbero ya tiene un turno a esta hora
-        continue;
-      } else {
-        // El barbero está disponible a esta hora
+        return (
+          t.codBarbero === sanitizedCodBarbero &&
+          turnoHoraCorrecta === horaString
+        );
+      });
+
+      if (!turnoExistente) {
         horasDisponibles.push({
           hora: horaString,
         });
       }
     }
 
+    console.log(`Found ${horasDisponibles.length} available slots for barber`);
     return horasDisponibles;
   } catch (error) {
     if (error instanceof DatabaseError) {
@@ -298,6 +327,30 @@ export const findByBarberId = async (
       error instanceof Error ? error.message : "Unknown error"
     );
     throw new DatabaseError("Error al buscar turnos");
+  }
+};
+
+export const findState = async (codEstado: string) => {
+  try {
+    const estado = await prisma.estado_turno.findUnique({
+      where: { codEstado },
+    });
+
+    if (!estado) {
+      throw new DatabaseError("Estado no encontrado");
+    }
+
+    return estado;
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding state:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al buscar estado");
   }
 };
 
@@ -411,6 +464,51 @@ export const update = async (
     }
 
     throw new DatabaseError("Error al actualizar turno");
+  }
+};
+
+export const cancelAppointment = async (codTurno: string) => {
+  try {
+    // sanitizar y validar
+    const sanitizedCodTurno = sanitizeInput(codTurno);
+
+    // cancelar turno
+    const estadoCancelado = await prisma.estado_turno.findFirst({
+      where: { nombreEstado: "Cancelado" },
+    });
+
+    if (!estadoCancelado) {
+      throw new DatabaseError(
+        "Error interno: estado 'Cancelado' no encontrado"
+      );
+    }
+
+    // verificar que el turno existe y pertenece al cliente
+    const existingTurno = await prisma.turno.update({
+      where: { codTurno: sanitizedCodTurno },
+      data: { codEstado: estadoCancelado.codEstado },
+    });
+
+    console.log("Turno canceled successfully");
+    return existingTurno;
+  } catch (error) {
+    console.error(
+      "Error canceling turno:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+
+    // manejo de errores de validacion
+    if (error instanceof z.ZodError) {
+      const firstError = error.issues[0];
+      throw new DatabaseError(firstError.message);
+    }
+
+    // manejar errores de DB
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError("Error al cancelar turno");
   }
 };
 

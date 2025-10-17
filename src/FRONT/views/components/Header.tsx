@@ -117,6 +117,10 @@ function Header() {
                   <Link to="/client/profile" onClick={() => setOpen(false)}>
                     Mi Perfil
                   </Link>
+                  <br />
+                  <Link to="/client/appointments" onClick={() => setOpen(false)}>
+                    Mis Turnos
+                  </Link>
                 </li>
               )}
               {userType === "client" && (

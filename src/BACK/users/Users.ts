@@ -61,6 +61,9 @@ const UserSchema = z
         },
         { message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X" }
       ),
+      codSucursal: z
+      .string()
+      .optional(),
   })
   .refine(
     (data) => {
@@ -84,7 +87,8 @@ export const store = async (
   telefono: string,
   email: string,
   contraseña: string,
-  cuil?: string
+  cuil?: string,
+  codSucursal?: string
 ) => {
   try {
     // Sanitizar inputs
@@ -110,9 +114,10 @@ export const store = async (
       // Limpiar CUIL para almacenamiento
       cuilValue = validatedData.cuil.replace(/[-\s]/g, "");
     }
-
+    // transaccion para crear usuario y categoria_vigente
+    const usuario = await prisma.$transaction(async (tx) => {
     // Crear usuario (mapeando contraseña -> contrase_a, sin CUIL)
-    const usuario = await prisma.usuarios.create({
+    const nuevoUsuario = await tx.usuarios.create({
       data: {
         dni: validatedData.dni,
         cuil: cuilValue, // Los usuarios normales no tienen CUIL !
@@ -121,9 +126,34 @@ export const store = async (
         telefono: validatedData.telefono,
         email: validatedData.email,
         contrase_a: hashedPassword,
+        codSucursal: codSucursal || null,
       },
     });
+// Solo crear categoría vigente para clientes (sin CUIL)
+      if (!cuilValue) {
+        // Buscar categoría inicial
+        const categoriaInicial = await tx.categoria.findFirst({
+          where: { nombreCategoria: 'Inicial' }
+        });
 
+        if (!categoriaInicial) {
+          throw new DatabaseError('Categoría inicial no encontrada en el sistema');
+        }
+
+        // Crear categoría vigente inicial para el cliente
+        await tx.categoria_vigente.create({
+          data: {
+            codCategoria: categoriaInicial.codCategoria,
+            codCliente: nuevoUsuario.codUsuario,
+            ultimaFechaInicio: new Date()
+          }
+        });
+
+        console.log('Client created with initial category assigned');
+      }
+
+      return nuevoUsuario;
+    });
     const userType =
       cuilValue === "1" ? "admin" : cuilValue ? "barber" : "client";
     console.log(`${userType} created successfully`);
@@ -133,6 +163,7 @@ export const store = async (
       "Error creating user:",
       error instanceof Error ? error.message : "Unknown error"
     );
+ 
 
     // Manejo de errores de validación
     if (error instanceof z.ZodError) {
@@ -228,6 +259,57 @@ export const findById = async (codUsuario: string) => {
   }
 };
 
+export const findByIdWithCategory = async (codUsuario: string) => {
+  try {
+    console.log("🔍 Debug - findByIdWithCategory called with:", codUsuario);
+
+    const sanitizedCodUsuario = sanitizeInput(codUsuario);
+    const usuario = await prisma.usuarios.findUnique({
+      where: { codUsuario: sanitizedCodUsuario },
+      include: {
+        categoria_vigente: {
+          orderBy: { ultimaFechaInicio: "desc" },
+          take: 1, // Solo la más reciente
+          include: {
+            categorias: true, // Incluir datos de la categoría
+          },
+        },
+      },
+    });
+
+    console.log("🔍 Debug - User with category found:", usuario ? "YES" : "NO");
+    if (!usuario) {
+      throw new DatabaseError("Usuario no encontrado");
+    }
+    const categoriaActual = usuario.categoria_vigente[0];
+    return {
+      ...usuario,
+      categoriaActual: categoriaActual
+        ? {
+            codCategoria: categoriaActual.codCategoria,
+            nombreCategoria: categoriaActual.categorias.nombreCategoria,
+            descCategoria: categoriaActual.categorias.descCategoria,
+            descuentoCorte: categoriaActual.categorias.descuentoCorte,
+            descuentoProducto: categoriaActual.categorias.descuentoProducto,
+            fechaInicio: categoriaActual.ultimaFechaInicio,
+          }
+        : null,
+      categoria_vigente: undefined, // Remover para limpiar la respuesta
+    };
+  } catch (error) {
+    console.error("🔍 Debug - findByIdWithCategory error:", error);
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding user with category:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al buscar usuario con categoría");
+  }
+};
+
 export const findByBranchId = async (codSucursal: string) => {
   try {
     // Sanitizar y validar
@@ -251,6 +333,45 @@ export const findByBranchId = async (codSucursal: string) => {
     throw new DatabaseError("Error al buscar usuarios por sucursal");
   }
 };
+
+export const findBySchedule = async (codSucursal: string, fechaTurno: string, horaDesde: string) => {
+  try {
+    // Sanitizar y validar
+    const sanitizedCodSucursal = sanitizeInput(codSucursal);
+    const sanitizedFechaTurno = sanitizeInput(fechaTurno);
+    const sanitizedHoraDesde = sanitizeInput(horaDesde);
+
+    // Convertir horaDesde string a Date para comparación
+    const horaDesdeDate = new Date(`1970-01-01T${sanitizedHoraDesde}:00.000Z`);
+
+    // Buscar barberos que NO tienen turnos en la fecha y hora específica
+    const barberos = await prisma.usuarios.findMany({
+      where: {
+        codSucursal: sanitizedCodSucursal,
+        NOT: {
+          turnos_turnos_codBarberoTousuarios: {
+            some: {
+              fechaTurno: new Date(sanitizedFechaTurno),
+              horaDesde: horaDesdeDate,
+            },
+          },
+        },
+      },
+    });
+
+    return barberos;
+  } catch (error) {
+      if (error instanceof DatabaseError) {
+        throw error;
+      }
+      console.error(
+        "Error finding available barbers:",
+        error instanceof Error ? error.message : "Unknown error"
+      );
+      throw new DatabaseError("Error al buscar barberos disponibles");
+  }
+};
+
 const UpdateUserSchema = UserSchema.omit({ contraseña: true }).extend({
   contraseña: UserSchema.shape.contraseña.optional(),
 });
@@ -262,6 +383,7 @@ interface UpdateUserParams {
   email: string;
   contraseña?: string;
   cuil?: string;
+  codSucursal?: string;
 }
 
 export const update = async (codUsuario: string, params: UpdateUserParams) => {
@@ -281,6 +403,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
         ? sanitizeInput(params.contraseña)
         : undefined,
       cuil: params.cuil ? sanitizeInput(params.cuil) : undefined,
+      codSucursal: params.codSucursal ? sanitizeInput(params.codSucursal) : undefined,
     };
 
 
@@ -292,6 +415,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       email: sanitizedData.email,
       contraseña: sanitizedData.contraseña,
       cuil: sanitizedData.cuil,
+      codSucursal: sanitizedData.codSucursal,
     });
 
     console.log(
@@ -330,6 +454,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       apellido: validatedData.apellido,
       telefono: validatedData.telefono,
       email: validatedData.email,
+      codSucursal: validatedData.codSucursal,
     };
 
     // Solo encriptar y actualizar contraseña si se proporciona una nueva
