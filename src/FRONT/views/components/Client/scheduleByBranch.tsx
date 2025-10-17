@@ -86,8 +86,8 @@ const ScheduleByBranch = () => {
 
     fetch(endpoint)
       .then(async (res) => {
-        // console.log("Response status:", res.status);
-        // console.log("Response headers:", res.headers.get("content-type"));
+        console.log("Response status:", res.status);
+        console.log("Response headers:", res.headers.get("content-type"));
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
