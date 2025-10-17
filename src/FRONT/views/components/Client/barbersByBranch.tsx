@@ -217,7 +217,7 @@ const BarbersByBranch = () => {
         ) : (
           barberos.map((barbero) => (
             <li
-              key={barbero.codUsuario} // Use codUsuario as key instead of idx
+              key={barbero.codUsuario}
               className={styles.barberItem}
               onClick={() => handleSelectBarber(barbero.codUsuario)} // Add click handler
               style={{ cursor: "pointer" }}
