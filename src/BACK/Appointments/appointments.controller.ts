@@ -67,19 +67,19 @@ export const findByBarberId = async (req: Request, res: Response): Promise<void>
   }
 };
 
-export const findByClientId = async (req: Request, res: Response): Promise<void> => {
+export const findByUserId = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { codCliente } = req.params;
+    const { codUsuario } = req.params;
 
-    if (!codCliente) {
+    if (!codUsuario) {
       res.status(400).json({
         success: false,
-        message: "codCliente es requerido",
+        message: "codUsuario es requerido",
       });
       return;
     }
 
-    const turno = await model.findByClientId(codCliente);
+    const turno = await model.findByUserId(codUsuario);
 
     res.status(200).json({
       success: true,

@@ -10,7 +10,7 @@ const router = createRouter(controller, {
 // Rutas adicionales específicas para appointments
 router.get("/available/:fechaTurno/:codSucursal", controller.findByAvailableDate);
 router.get("/barber/:codBarbero/:fechaTurno", controller.findByBarberId);
-router.get("/client/:codCliente", controller.findByClientId);
+router.get("/user/:codUsuario", controller.findByUserId);
 router.get("/state/:codEstado", controller.findState);
 router.get("/client/:codTurno", controller.cancelAppointment);
 

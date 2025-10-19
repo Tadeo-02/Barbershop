@@ -158,14 +158,21 @@ export const findById = async (codTurno: string) => {
   }
 };
 
-export const findByClientId = async (codCliente: string) => {
+export const findByUserId = async (codUsuario: string ) => {
   try {
     //sanitizar y validar
-    const sanitizedCodCliente = sanitizeInput(codCliente);
+    const sanitizedCodUsuario = sanitizeInput(codUsuario);
 
     const turnos = await prisma.turno.findMany({
-      where: { codCliente: sanitizedCodCliente },
+      where: { codCliente: sanitizedCodUsuario },
     });
+
+    if (turnos.length === 0) {
+      const turnos = await prisma.turno.findMany({
+        where: { codBarbero: sanitizedCodUsuario },
+      });
+      return turnos;
+    }
 
     // console.log(
     //   `Found ${turnos.length} turnos for client ${sanitizedCodCliente}`
