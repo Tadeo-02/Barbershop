@@ -46,6 +46,29 @@ function HomePageBarber() {
             borderRadius: "8px",
           }}
         >
+          <h3>Entregar pedidos</h3>
+          <p>Entregar pedidos al cliente</p>
+          <Link
+            to="/barber/deliveries"
+            style={{
+              background: "#007bff",
+              color: "white",
+              padding: "10px 20px",
+              textDecoration: "none",
+              borderRadius: "4px",
+            }}
+          >
+            Entregar pedidos
+          </Link>
+        </div>
+
+        <div
+          style={{
+            padding: "20px",
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+          }}
+        >
           <h3>Mi Perfil</h3>
           <p>Editar información personal</p>
           <Link

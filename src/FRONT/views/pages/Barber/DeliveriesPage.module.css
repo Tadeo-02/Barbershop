@@ -1,0 +1,146 @@
+/* Categorias.module.css */
+
+/* General Body and Root Styling */
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #f8f8f8;
+  color: #333;
+  margin: 0;
+  padding: 10px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.pageTitle,
+h2 {
+  font-size: 2rem;
+  color: #1a202c;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.formContainer {
+  display: inline;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  margin: 20px auto;
+  padding: 15px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.formInput,
+.formTextarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #a0aec0;
+  /* Border más oscuro para distinción */
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #2d3748;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* Sombra interna para profundidad */
+}
+
+.formInput:focus,
+.formTextarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  /* Borde azul brillante al enfocar */
+  box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.6);
+  /* Sombra externa más visible */
+  background-color: #e6f4ff;
+  /* Fondo ligeramente azulado al enfocar */
+}
+
+/* Buttons */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  /* Eliminar borde para botones */
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease,
+    box-shadow 0.3s ease;
+  text-decoration: none;
+  margin: 10px 0 0 0;
+}
+
+
+.buttonSuccess {
+  background-color: #38a169;
+  /* Verde para botones de éxito */
+  color: #ffffff;
+  box-shadow: 0 6px 15px rgba(56, 161, 105, 0.4);
+}
+
+.buttonSuccess:hover {
+  background-color: #2f855a;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(56, 161, 105, 0.5);
+}
+
+
+/* DESKTOP: ajustes para pantallas grandes */
+@media (min-width: 769px) {
+
+  .pageTitle,
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+  }
+
+  .indexCategories,
+  .formContainer {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+  }
+
+  .button {
+    width: auto;
+    margin-right: 10px;
+    margin-top: 10px;
+    margin-bottom: 0;
+  }
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+}

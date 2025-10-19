@@ -22,6 +22,8 @@ import ClientAppointments from "./components/Client/clientAppointments.tsx";
 import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
+import DeliveriesPage from "./pages/Barber/DeliveriesPage.tsx";
+import OrderPage from "./pages/Barber/OrderPage.tsx";
 
 import BarberHome from "./components/Barber/home/home.tsx";
 import BarberAppointments from "./components/Barber/appointments/endAppointment.tsx";
@@ -142,10 +144,32 @@ function App() {
                 }
               />
 
+
               <Route
                 path="/barber/myAppointments"
                 element={<MyAppointments />}
               />
+
+              <Route //! BARBER
+                path="/barber/deliveries"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <DeliveriesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route //! BARBER
+                path="/barber/order"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <OrderPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route path="/client" element={<HomePageClient />} />
+              <Route path="/client/profile" element={<ProfilePage />} />
+              <Route path="/client/reservations" element={<MyReservations />} />
 
               {/* Rutas de administración protegidas */}
 

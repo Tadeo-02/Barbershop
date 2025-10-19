@@ -1,0 +1,155 @@
+.orderContainer {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 15px;
+  font-family: "Inter", sans-serif;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.pageTitle {
+  font-size: 2rem;
+  color: #1a202c;
+  text-align: center;
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+
+.orderDetails {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 25px;
+}
+
+.detailSection {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 20px;
+}
+
+.detailSection:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.detailSection h3 {
+  font-size: 1.2rem;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.detailSection p {
+  margin: 8px 0;
+  color: #4a5568;
+  font-size: 1rem;
+}
+
+.detailSection strong {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.status {
+  font-weight: 700;
+  color: #dd6b20;
+  /* Naranja para "Listo para retirar" */
+  background-color: #feebc8;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.detailSection ul {
+  list-style: none;
+  padding: 0;
+}
+
+.detailSection li {
+  background-color: #f7fafc;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.button {
+  display: block;
+  width: 100%;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  text-decoration: none;
+  margin-top: 20px;
+}
+
+.buttonDeliver {
+  background-color: #38a169;
+  /* Verde */
+  color: #ffffff;
+  box-shadow: 0 6px 15px rgba(56, 161, 105, 0.4);
+}
+
+.buttonDeliver:hover {
+  background-color: #2f855a;
+  transform: translateY(-2px);
+}
+
+.successMessage {
+  background-color: #c6f6d5;
+  color: #22543d;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 5px solid #38a169;
+  font-weight: 600;
+  text-align: center;
+}
+
+
+/*
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  /* Eliminar borde para botones 
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease,
+    box-shadow 0.3s ease;
+  text-decoration: none;
+  margin: 10px 0 0 0;
+}
+
+.buttonSuccess {
+  background-color: #38a169;
+  /* Verde para botones de éxito 
+  color: #ffffff;
+  box-shadow: 0 6px 15px rgba(56, 161, 105, 0.4);
+}
+
+.buttonSuccess:hover {
+  background-color: #2f855a;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(56, 161, 105, 0.5);
+}*/
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
