@@ -16,7 +16,8 @@ interface Appointment {
   metodoPago?: string;
   codEstado: string;
 }
-interface Barber {
+
+interface Client {
   codUsuario: string;
   nombre: string;
   apellido: string;
@@ -46,7 +47,7 @@ const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   //   const [toCancel, setToCancel] = useState<any | null>(null);
   const [turnos, setTurnos] = useState<Appointment[]>([]);
-  const [barberos, setBarberos] = useState<Barber[]>([]);
+  const [clientes, setClientes] = useState<Client[]>([]);
   const [cortes, setCortes] = useState<Cut[]>([]);
   const [sucursales, setSucursales] = useState<Branch[]>([]);
   const [estados, setEstados] = useState<State[]>([]);
@@ -134,45 +135,41 @@ const ClientAppointments: React.FC = () => {
     if (turnos.length === 0) return;
 
     // Limpiar datos anteriores
-    setBarberos([]);
+    setClientes([]);
     setSucursales([]);
     setEstados([]);
     setCortes([]);
 
     turnos.forEach((turno) => {
       // Fetch barber
-      fetch(`/usuarios/${turno.codBarbero}`)
+      fetch(`/usuarios/${turno.codCliente}`)
         .then((res) => res.json())
         .then((data) => {
-          setBarberos((prev) => {
-            // Evitar duplicados
+          setClientes((prev) => {
             if (prev.some((b) => b.codUsuario === data.codUsuario)) {
               return prev;
             }
             return [...prev, data];
           });
-
-          // Fetch branch después de obtener el barbero
-          if (data.codSucursal) {
-            fetch(`/sucursales/${data.codSucursal}`)
-              .then((res) => res.json())
-              .then((branchData) => {
-                setSucursales((prev) => {
-                  if (
-                    prev.some((s) => s.codSucursal === branchData.codSucursal)
-                  ) {
-                    return prev;
-                  }
-                  return [...prev, branchData];
-                });
-              })
-              .catch((error) => {
-                console.error("Error fetching branch:", error);
-              });
-          }
         })
         .catch((error) => {
-          console.error("Error fetching barber:", error);
+          console.error("Error fetching client:", error);
+        });
+
+      fetch(`/sucursales/${user.codSucursal}`)
+        .then((res) => res.json())
+        .then((branchData) => {
+          setSucursales((prev) => {
+            if (
+              prev.some((s) => s.codSucursal === branchData.codSucursal)
+            ) {
+              return prev;
+            }
+            return [...prev, branchData];
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching branch:", error);
         });
 
       // Fetch estado
@@ -209,115 +206,9 @@ const ClientAppointments: React.FC = () => {
           .catch((error) => {
             console.error("Error fetching cut type:", error);
           });
-      }
+      }    
     });
-  }, [turnos]);
-
-  const handleDelete = async (codTurno: string) => {
-    //alert personalizado para confirmacion:
-    toast(
-      (t) => (
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-              fontWeight: "600",
-            }}
-          >
-            ¿Estás seguro de que deseas cancelar esta reserva?
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              style={{
-                background: "#718096",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#4a5568";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#718096";
-              }}
-            >
-              Atras
-            </button>
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                confirmedDelete(codTurno);
-              }}
-              style={{
-                background: "#e53e3e",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#c53030";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#e53e3e";
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        style: {
-          minWidth: "350px", // botones mas anchos
-          padding: "24px",
-        },
-      }
-    );
-  };
-
-  const confirmedDelete = async (codTurno: string) => {
-    const toastId = toast.loading("Eliminando turno...");
-
-    try {
-      const response = await fetch(`/client/${codTurno}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        toast.success("Turno eliminado correctamente", { id: toastId });
-        setTurnos(turnos.filter((turno) => turno.codTurno !== codTurno));
-      } else if (response.status === 404) {
-        toast.error("Turno no encontrado", { id: toastId });
-      } else {
-        toast.error("Error al borrar el turno", { id: toastId });
-      }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
-    }
-  };
+  }, [turnos, user.codSucursal]);
 
   return (
     <div className={barberStyles.appointmentsContainer}>
@@ -329,9 +220,9 @@ const ClientAppointments: React.FC = () => {
           </li>
         ) : (
           turnos.map((t) => {
-            const barber = barberos.find((b) => b.codUsuario === t.codBarbero);
+            const client = clientes.find((b) => b.codUsuario === t.codCliente);
             const branch = sucursales.find(
-              (s) => s.codSucursal === barber?.codSucursal
+              (s) => s.codSucursal === client?.codSucursal
             );
             const cut = cortes.find((c) => c.codCorte === t.codCorte);
             const state = estados.find((e) => e.codEstado === t.codEstado);
@@ -351,11 +242,11 @@ const ClientAppointments: React.FC = () => {
                       {formatTime(t.horaDesde)} - {formatTime(t.horaHasta)}
                     </span>
                   </div>
-                  {barber && (
+                  {client && (
                     <div className={barberStyles.detailRow}>
-                      <span className={barberStyles.detailLabel}>Barbero:</span>
+                      <span className={barberStyles.detailLabel}>Cliente:</span>
                       <span className={barberStyles.detailValue}>
-                        {barber.nombre} {barber.apellido}
+                        {client.nombre} {client.apellido}
                       </span>
                     </div>
                   )}
@@ -403,7 +294,7 @@ const ClientAppointments: React.FC = () => {
                     onClick={() => handleDelete(t.codTurno)}
                     disabled={state?.nombreEstado !== "Programado"}
                   >
-                    Cancelar Turno
+                    Modificar Turno
                   </button>
                 </div>
               </li>

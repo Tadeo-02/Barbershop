@@ -22,7 +22,7 @@ export const useUserRedirect = () => {
       navigate("/Admin/HomePageAdmin");
     } else if (userType === "barber") {
       console.log("Redirecting to barber page");
-      navigate("/barber/HomePageBarber");
+      navigate("/Barber/HomePageBarber");
     } else {
       console.log("Redirecting to client page");
       navigate("/");
