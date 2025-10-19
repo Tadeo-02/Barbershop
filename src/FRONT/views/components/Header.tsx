@@ -118,7 +118,10 @@ function Header() {
                     Mi Perfil
                   </Link>
                   <br />
-                  <Link to="/client/appointments" onClick={() => setOpen(false)}>
+                  <Link
+                    to="/client/appointments"
+                    onClick={() => setOpen(false)}
+                  >
                     Mis Turnos
                   </Link>
                 </li>
@@ -126,8 +129,12 @@ function Header() {
 
               {userType === "barber" && (
                 <li>
-                  <Link to="/barber" onClick={() => setOpen(false)}>
-                    Panel Barbero
+                  <Link to="/client/profile" onClick={() => setOpen(false)}>
+                    Mi Perfil
+                  </Link>
+                  <br />
+                  <Link to="/Barber/MyAppointments" onClick={() => setOpen(false)}>
+                    Mis Turnos
                   </Link>
                 </li>
               )}

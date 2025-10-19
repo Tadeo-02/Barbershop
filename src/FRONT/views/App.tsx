@@ -14,14 +14,17 @@ import { AutoRedirect } from "./components/Redirect.tsx"; // puede ser que no ha
 import HomePageClient from "./pages/Client/HomePageClient.tsx";
 import ProfilePage from "./pages/Client/ProfilePage.tsx";
 import Home from "./components/Client/home/home.tsx";
+
 import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
 import ClientAppointments from "./components/Client/clientAppointments.tsx";
 import ShowCategories from "./components/Admin/categories/showCategories.tsx";
+
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
-
+// import HomeBarber from "./components/Barber/home/home.tsx";
+import BarberAppointments from "./components/Barber/barberAppointments.tsx";
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
 import BarbersPage from "./pages/Admin/BarbersPage.tsx";
@@ -107,10 +110,19 @@ function App() {
 
               {/* Rutas protegidas por tipo de usuario */}
               <Route //! BARBER
-                path="/barber"
+                path="/Barber/HomePageBarber"
                 element={
                   <ProtectedRoute allowedRoles={["barber"]}>
                     <HomePageBarber />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route //! BARBER
+                path="/Barber/MyAppointments"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberAppointments />
                   </ProtectedRoute>
                 }
               />
