@@ -45,6 +45,14 @@ app.post("/login", login);
 
 app.use("/turnos", appointmentsRouter);
 
+app.use("/arca", ARCARouter);
+// You can create invoices when appointments are completed
+//router.post('/appointments/:id/invoice', async (req, res) => {
+// Get appointment data
+// Create invoice using AFIP service
+// Save invoice data to database
+// Return invoice information
+//});
 // Root route
 app.get("/", (_req, res) => {
   res.send("Server is running! Barbershop backend is up.");
