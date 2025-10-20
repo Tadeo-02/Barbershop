@@ -9,6 +9,7 @@ import branchesRouter from "./src/BACK/Admin/branches/branches.router";
 import usersRouter from "./src/BACK/users/users.router";
 import appointmentsRouter from "./src/BACK/Appointments/appointments.router";
 import { login } from "./src/BACK/users/users.controller";
+import ARCARouter from "./src/API/ARCA/ARCA.router";
 //import typeOfCutRouter from "./src/BACK/typeOfCut/typeOfCut.router";
 console.log("🔍 Categories router:", categoriesRouter);
 console.log("🔍 Branches router:", branchesRouter);
@@ -38,7 +39,6 @@ app.use("/usuarios", usersRouter);
 
 app.use("/tipoCortes", typeOfHaircutRouter);
 
-
 app.use("/sucursales", branchesRouter);
 // Ruta específica para login
 app.post("/login", login);
@@ -65,11 +65,11 @@ app.use(
     _req: express.Request,
     res: express.Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: express.NextFunction
+    _next: express.NextFunction,
   ) => {
     console.error("Error:", err);
     res.status(500).json({ message: "Internal Server Error" });
-  }
+  },
 );
 
 const PORT = process.env.PORT || 3001;
