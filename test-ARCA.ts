@@ -47,6 +47,14 @@ async function testARCA() {
       console.error('Status:', error.response.status);
       console.error('Response:', error.response.data);
       console.error('Headers:', error.response.headers);
+      
+      // Specific handling for authentication errors
+      if (error.response.data?.error?.includes('alreadyAuthenticated')) {
+        console.error('\n💡 Authentication Conflict Solution:');
+        console.error('- Wait 5-10 minutes for the current AFIP token to expire');
+        console.error('- Or run: npx ts-node test-ARCA.ts --force-auth');
+        console.error('- Or restart your backend server to clear tokens');
+      }
     } else if (error.request) {
       // Request was made but no response received
       console.error('No response received. Is your server running?');
@@ -61,11 +69,13 @@ async function testARCA() {
     console.error('- Make sure your server is running on port 3001');
     console.error('- Check if ARCA router is properly connected');
     console.error('- Verify your certificates are in the correct path');
+    console.error('- Current certificate path: ./src/API/ARCA/CertificadoBarbershopAutorizado.pem');
+    console.error('- Current private key path: ./src/API/ARCA/ARCAKey.key');
   }
 }
 
 // Helper function to test just authentication (direct import)
-async function testARCAAuthDirect() {
+async function testARCAAuthDirect(forceAuth: boolean = false) {
   console.log('🔐 Testing ARCA Authentication directly...');
   
   try {
@@ -82,15 +92,32 @@ async function testARCAAuthDirect() {
     console.log('Config:', config);
     
     const authService = new ARCAAuthService(config);
-    const tokens = await authService.getAuthTokens();
+    
+    // Clear tokens if forcing new auth
+    if (forceAuth) {
+      authService.clearTokens();
+      console.log('🗑️ Cleared existing tokens (force mode)');
+    }
+    
+    const tokens = await authService.getAuthTokens(forceAuth);
     
     console.log('✅ Direct authentication successful!');
     console.log('Token (first 50 chars):', tokens.token.substring(0, 50) + '...');
     console.log('Sign (first 50 chars):', tokens.sign.substring(0, 50) + '...');
     console.log('Expires at:', tokens.expirationTime);
     
-  } catch (error) {
-    console.error('❌ Direct authentication failed:', error);
+  } catch (error: any) {
+    console.error('❌ Direct authentication failed:', error.message);
+    
+    if (error.message.includes('alreadyAuthenticated') || error.message.includes('ya posee un TA valido')) {
+      console.error('\n💡 This is an AFIP authentication conflict.');
+      console.error('Solutions:');
+      console.error('1. Wait 5-10 minutes for the current token to expire');
+      console.error('2. Run with --force-auth flag: npx ts-node test-ARCA.ts --auth-only --force-auth');
+      console.error('3. The current certificate paths are correct:');
+      console.error('   - Certificate: ./src/API/ARCA/CertificadoBarbershopAutorizado.pem');
+      console.error('   - Private Key: ./src/API/ARCA/ARCAKey.key');
+    }
   }
 }
 
@@ -102,12 +129,19 @@ async function main() {
   console.log('==================');
   
   if (args.includes('--auth-only')) {
-    await testARCAAuthDirect();
+    const forceAuth = args.includes('--force-auth');
+    await testARCAAuthDirect(forceAuth);
   } else if (args.includes('--help')) {
     console.log('Usage:');
-    console.log('  npx ts-node test-ARCA.ts           # Run full test suite');
-    console.log('  npx ts-node test-ARCA.ts --auth-only  # Test authentication only');
-    console.log('  npx ts-node test-ARCA.ts --help       # Show this help');
+    console.log('  npx ts-node test-ARCA.ts                    # Run full test suite');
+    console.log('  npx ts-node test-ARCA.ts --auth-only        # Test authentication only');
+    console.log('  npx ts-node test-ARCA.ts --auth-only --force-auth  # Force new authentication');
+    console.log('  npx ts-node test-ARCA.ts --help             # Show this help');
+    console.log('');
+    console.log('Troubleshooting:');
+    console.log('- If you get "alreadyAuthenticated" error, wait 5-10 minutes or use --force-auth');
+    console.log('- Current SSL certificate path: ./src/API/ARCA/CertificadoBarbershopAutorizado.pem');
+    console.log('- Current SSL private key path: ./src/API/ARCA/ARCAKey.key');
   } else {
     await testARCA();
   }

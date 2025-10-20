@@ -148,6 +148,7 @@ export class WSFEService {
 
       const detailResponse = response.FeDetResp.FECAEDetResponse[0];
       
+      
       return {
         success: true,
         cae: detailResponse.CAE,
@@ -155,12 +156,24 @@ export class WSFEService {
         voucherNumber: nextVoucherNumber
       };
 
-
     } catch (error) {
       return {
         success: false,
         errors: [`Failed to create invoice: ${error}`]
       };
     }
+  }
+
+  // Authentication management methods
+  async clearAuthenticationTokens(): Promise<void> {
+    this.authService.clearTokens();
+  }
+
+  async forceNewAuthentication(): Promise<AuthTokens> {
+    return this.authService.forceNewAuthentication();
+  }
+
+  isAuthenticationValid(): boolean {
+    return this.authService.isTokenValid();
   }
 }

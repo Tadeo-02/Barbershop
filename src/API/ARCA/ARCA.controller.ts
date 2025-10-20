@@ -30,8 +30,6 @@ class ARCAController {
     this.wsfeService = new WSFEService(arcaConfig);
   }
 
-  // ... rest of your methods
-
   async getServerStatus(req: Request, res: Response) {
     try {
       const status = await this.wsfeService.getServerStatus();
@@ -63,7 +61,7 @@ class ARCAController {
     } catch (error) {
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: `Failed to get last voucher number: ${error instanceof Error ? error.message : "Unknown error"}`,
       });
     }
   }
@@ -108,6 +106,40 @@ class ARCAController {
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+
+  async clearAuthTokens(req: Request, res: Response) {
+    try {
+      // Access the auth service from WSFEService to clear tokens
+      await this.wsfeService.clearAuthenticationTokens();
+      
+      res.json({
+        success: true,
+        message: "Authentication tokens cleared successfully. Next request will authenticate with AFIP again.",
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+
+  async forceReauth(req: Request, res: Response) {
+    try {
+      // Force new authentication
+      await this.wsfeService.forceNewAuthentication();
+      
+      res.json({
+        success: true,
+        message: "Forced new authentication with AFIP successful",
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: `Force authentication failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       });
     }
   }
