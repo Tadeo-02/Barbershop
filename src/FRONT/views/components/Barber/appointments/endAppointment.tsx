@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./endAppointments.module.css";
 import { useAuth } from "../../login/AuthContext.tsx";
+import { toast } from "react-hot-toast";
 
 interface TurnoRaw {
     codTurno: string;
@@ -24,10 +25,11 @@ interface Turno extends TurnoRaw {
     metodoPago?: string;
     codCorte?: string;
     nombreCorte?: string;
+    codSucursal?: string;
 }
 
 // Generador de turnos ficticios para testing/preview
-const createMockTurnos = (codBarbero: string, count = 6): Turno[] => {
+const createMockTurnos = (codBarbero: string, count = 6, codSucursal?: string): Turno[] => {
     const mockNames = [
         { nombre: "Carlos", apellido: "González", dni: "12345678" },
         { nombre: "María", apellido: "Pérez", dni: "23456789" },
@@ -42,13 +44,18 @@ const createMockTurnos = (codBarbero: string, count = 6): Turno[] => {
 
     for (let i = 0; i < count; i++) {
         const fecha = new Date(today);
-        fecha.setDate(today.getDate() + Math.floor(i / 3)); // algunos en distintos días
+        // Hacer que el primer turno (i === 0) sea para hoy. Los demás serán futuros.
+        const diaOffset = i === 0 ? 0 : i + 1;
+        fecha.setDate(today.getDate() + diaOffset);
+        // Normalizar hora para evitar problemas de comparación (ej.: 09:00)
+        fecha.setHours(9 + (i % 8), 0, 0, 0);
         const cliente = mockNames[i % mockNames.length];
 
         turnos.push({
             codTurno: `mock-${codBarbero}-${i}`,
             fechaTurno: fecha.toISOString(),
             codBarbero,
+            codSucursal: codSucursal || `sucursal-mock-${(i % 3) + 1}`,
             codCliente: `mock-cliente-${i}`,
             usuarios_turnos_codClienteTousuarios: {
                 codUsuario: `mock-cliente-${i}`,
@@ -77,7 +84,7 @@ const IndexAppointments = () => {
         { codCorte: "corte-3", nombreCorte: "Barba" },
     ];
     const metodosPago = ["Efectivo", "Tarjeta", "MercadoPago", "Transferencia"];
-    const estados = ["Pendiente", "Confirmado", "Completado", "Cancelado"];
+    const estados = ["No asistido", "Cobrado", "Sin cobrar"];
 
     // Usar siempre datos ficticios (sin fetch al backend)
     useEffect(() => {
@@ -85,18 +92,70 @@ const IndexAppointments = () => {
         const saved = localStorage.getItem(key);
         if (saved) {
             try {
-                setTurnos(JSON.parse(saved));
+                const parsed: Turno[] = JSON.parse(saved);
+
+                // Si la mayoría de los turnos están en el pasado, regenerar nuevos turnos futuros
+                const ahora = new Date();
+                const pastCount = parsed.reduce((acc, t) => acc + (new Date(t.fechaTurno) < ahora ? 1 : 0), 0);
+                if (parsed.length > 0 && pastCount / parsed.length > 0.5) {
+                    const mock = createMockTurnos(user?.codUsuario || "mock-barbero", 8);
+                    setTurnos(mock);
+                    localStorage.setItem(key, JSON.stringify(mock));
+                    return;
+                }
+
+                // Si no hay ningún turno para hoy entre los guardados, añadir uno para hoy
+                const hasToday = parsed.some((t) => {
+                    try {
+                        return new Date(t.fechaTurno).toDateString() === ahora.toDateString();
+                    } catch {
+                        return false;
+                    }
+                });
+                if (!hasToday) {
+                    // Crear un turno para hoy pero forzar que pertenezca a OTRO barbero
+                    const todayMock = createMockTurnos(user?.codUsuario || "mock-barbero", 1, user?.codSucursal || undefined)[0];
+                    todayMock.codBarbero = user ? `other-${user.codUsuario}` : "other-mock-barbero";
+                    // Forzar fecha exactamente a hoy (manteniendo hora razonable)
+                    const f = new Date();
+                    f.setHours(10, 0, 0, 0);
+                    todayMock.fechaTurno = f.toISOString();
+                    const next = [...parsed, todayMock];
+                    setTurnos(next);
+                    localStorage.setItem(key, JSON.stringify(next));
+                    return;
+                }
+
+                setTurnos(parsed);
                 return;
             } catch {}
         }
 
-        const mock = createMockTurnos(user?.codUsuario || "mock-barbero", 8);
+    const mock = createMockTurnos(user?.codUsuario || "mock-barbero", 8, user?.codSucursal || undefined);
         setTurnos(mock);
         localStorage.setItem(key, JSON.stringify(mock));
     }, [user]);
 
     // helpers para edición local
     const startEdit = (t: Turno) => {
+        // Verificar correspondencia de barbero y sucursal antes de proceder
+        if (user && t.codBarbero && user.codUsuario && t.codBarbero !== user.codUsuario) {
+            toast.error("El turno no corresponde a esta sucursal.");
+            return;
+        }
+        if (user && t.codSucursal && user.codSucursal && t.codSucursal !== user.codSucursal) {
+            toast.error("El turno no corresponde a esta sucursal.");
+            return;
+        }
+
+        // Si la fecha del turno es posterior al momento actual, impedir finalizar y mostrar toast
+        const turnoFecha = new Date(t.fechaTurno);
+        const ahora = new Date();
+        if (turnoFecha > ahora) {
+            toast.error("No se puede finalizar un turno cuya fecha aún no pasó.");
+            return;
+        }
+
         setEditingId(t.codTurno);
         setDrafts((d) => ({
             ...d,
@@ -107,6 +166,21 @@ const IndexAppointments = () => {
                 nombreCorte: t.nombreCorte || tiposCorte[0].nombreCorte,
             },
         }));
+    };
+
+    // Función de utilidad para regenerar y persistir turnos demo (útil para testing)
+    const regenerateMocks = (count = 8) => {
+        const key = `mock_turnos_${user?.codUsuario || 'mock'}`;
+        const mock = createMockTurnos(user?.codUsuario || "mock-barbero", count, user?.codSucursal || undefined);
+        // Añadir explicitamente un turno para hoy que pertenezca a otro barbero
+    const todayMock = createMockTurnos(user?.codUsuario || "mock-barbero", 1, user?.codSucursal || undefined)[0];
+        todayMock.codBarbero = user ? `other-${user.codUsuario}` : "other-mock-barbero";
+        const f = new Date();
+        f.setHours(10, 0, 0, 0);
+        todayMock.fechaTurno = f.toISOString();
+        mock.unshift(todayMock);
+        setTurnos(mock);
+        try { localStorage.setItem(key, JSON.stringify(mock)); } catch {}
     };
 
     const changeDraft = (codTurno: string, field: keyof Turno, value: any) => {
@@ -149,9 +223,12 @@ const IndexAppointments = () => {
 
     return (
         <div className={styles.indexAppointments}>
-            <h2>Mis Turnos</h2>
+            <h2>Turnos Pendientes</h2>
 
             <div style={{ marginBottom: 12 }}>
+                <div style={{ marginBottom: 8 }}>
+                    <button className={`${styles.button} ${styles.buttonPrimary}`} onClick={() => regenerateMocks(8)}>Regenerar turnos demo</button>
+                </div>
                 <input
                     className={styles.searchInput}
                     placeholder="Buscar por código, nombre o DNI"
@@ -162,7 +239,11 @@ const IndexAppointments = () => {
 
             {filtered.length === 0 ? (
                 <div className={styles.emptyState}>
-                    <p>No hay turnos disponibles.</p>
+                    {query ? (
+                        <p>No se encuentran turnos con ese código.</p>
+                    ) : (
+                        <p>No hay turnos disponibles.</p>
+                    )}
                 </div>
             ) : (
                 <ul>
@@ -192,7 +273,7 @@ const IndexAppointments = () => {
                                 <div className={styles.actionButtons}>
                                     {!isEditing ? (
                                         <>
-                                            <button className={`${styles.button} ${styles.buttonPrimary}`} onClick={() => startEdit(turno)}>Editar</button>
+                                            <button className={`${styles.button} ${styles.buttonPrimary}`} onClick={() => startEdit(turno)}>Finalizar Turno</button>
                                             <Link to={`/appointments/${turno.codTurno}`} className={`${styles.button} ${styles.buttonPrimary}`}>Ver Detalles</Link>
                                         </>
                                     ) : (

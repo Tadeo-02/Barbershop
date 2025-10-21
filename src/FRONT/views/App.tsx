@@ -169,7 +169,7 @@ function App() {
 
               <Route path="/client" element={<HomePageClient />} />
               <Route path="/client/profile" element={<ProfilePage />} />
-              <Route path="/client/reservations" element={<MyReservations />} />
+
 
               {/* Rutas de administración protegidas */}
 

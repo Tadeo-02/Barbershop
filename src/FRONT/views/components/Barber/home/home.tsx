@@ -39,9 +39,10 @@ const Home = () => {
     return (
         <div className={styles.homeContainer}>
             <h2>Bienvenido</h2>
+            <h3>Panel de Barbero</h3>
             <div className={styles.optionsContainer}>
                 <button className={styles.optionButton} onClick={handleVerTurnos}>
-                    Ver turnos
+                    Finalizar turnos
                 </button>
                 <button className={styles.optionButton} onClick={handleEntregarPedidos}>
                     Entregar pedidos
