@@ -1,20 +1,13 @@
-// import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import styles from "./DeliveriesPage.module.css";
 
 function DeliveriesPage() {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Mostrar toast de error
-    toast.error(
-      "Número de orden ingresado pertenece a un pedido cancelado."
-    );
-
     // Es mejor práctica mantener las rutas anidadas
-    // navigate("/barber/order");
+    navigate("/barber/order");
   };
 
   return (

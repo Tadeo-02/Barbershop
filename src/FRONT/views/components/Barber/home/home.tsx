@@ -33,7 +33,7 @@ const Home = () => {
 
     const handleEntregarPedidos = () => {
         console.log("Navigating to orders..."); // Debug log
-        navigate("/barber/deliveries");
+        navigate("/orders/orders");
     };
 
     return (
