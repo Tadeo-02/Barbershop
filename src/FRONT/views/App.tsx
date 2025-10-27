@@ -53,9 +53,7 @@ function App() {
               <Route path="/client" element={<HomePageClient />} />
               <Route path="/client/profile" element={<ProfilePage />} />
 
-
               {/* Selección de barbero primero */}
-              
 
               {/* REVISAR porque está 3 veces repetida y son distintas 
               <Route
@@ -77,7 +75,6 @@ function App() {
                 element={<CancelAppointment />}
               />
 
-
               <Route
                 path="/barbers/:codBarbero/appointments"
                 element={<ScheduleByBranch />}
@@ -87,7 +84,6 @@ function App() {
                 path="/branches/:codSucursal/schedule"
                 element={<ScheduleByBranch />}
               />
-
 
               <Route
                 path="/client/appointments"
@@ -109,8 +105,6 @@ function App() {
                   </div>
                 }
               />
-
-
 
               {/* Vista de categorias para todos los usuarios (puede definirse para cliente pero da igual)*/}
               <Route
@@ -144,7 +138,6 @@ function App() {
                 }
               />
 
-
               <Route
                 path="/barber/myAppointments"
                 element={<MyAppointments />}
@@ -159,7 +152,7 @@ function App() {
                 }
               />
               <Route //! BARBER
-                path="/barber/order"
+                path="/barber/orders"
                 element={
                   <ProtectedRoute allowedRoles={["barber"]}>
                     <OrderPage />
@@ -169,7 +162,11 @@ function App() {
 
               <Route path="/client" element={<HomePageClient />} />
               <Route path="/client/profile" element={<ProfilePage />} />
+<<<<<<< Updated upstream
 
+=======
+              {/* <Route path="/client/reservations" element={<MyReservations />} /> */}
+>>>>>>> Stashed changes
 
               {/* Rutas de administración protegidas */}
 
