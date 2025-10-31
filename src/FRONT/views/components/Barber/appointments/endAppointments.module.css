@@ -162,3 +162,26 @@ body {
   /* keep action buttons and selects stacked vertically for clarity */
   .editSelect { width: 100%; }
 }
+
+/* Success message shown after a virtual wallet payment inside a turno card */
+.successMessage {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #e6ffed;
+  border: 1px solid #b6f0c9;
+  border-radius: 6px;
+  color: #22543d;
+  font-weight: 600;
+}
+
+.redirectMessage {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #fff7ed;
+  border: 1px solid #f6d6a8;
+  border-radius: 6px;
+  color: #663c00;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
