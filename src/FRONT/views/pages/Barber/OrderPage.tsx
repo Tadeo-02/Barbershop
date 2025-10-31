@@ -6,7 +6,6 @@ interface Order {
   orderNumber: string;
   status: string;
   date: string;
-  time: string;
   totalPrice: number;
   paymentMethod: string;
   client: {
@@ -25,20 +24,19 @@ interface Order {
 
 // 2. Datos de prueba (sin cambios)
 const sampleOrder: Order = {
-  orderNumber: "0078923",
+  orderNumber: "BS-1761935916215-5860",
   status: "Pagado",
-  date: "2025-10-26",
-  time: "15:30",
-  totalPrice: 2500,
-  paymentMethod: "Mercado Pago",
+  date: "2025-10-31",
+  totalPrice: 20,
+  paymentMethod: "Billetera virtual",
   client: {
     dni: "35.123.456",
-    name: "Carlos",
-    lastName: "Santana",
+    name: "Chris",
+    lastName: "Paul",
   },
   items: [
-    { id: 1, quantity: 2, product: { name: "Cera para peinar de alta fijación" } },
-    { id: 2, quantity: 1, product: { name: "Shampoo para barba" } },
+    { id: 1, quantity: 1, product: { name: "Cera modeladora mate" } },
+
   ],
 };
 
@@ -82,7 +80,6 @@ function OrderPage() {
           <p><strong>Número de Orden:</strong> {order.orderNumber}</p>
           <p><strong>Estado:</strong> <span className={styles.status}>{order.status}</span></p>
           <p><strong>Fecha:</strong> {new Date(order.date).toLocaleDateString()}</p>
-          <p><strong>Hora:</strong> {order.time}</p>
           <p><strong>Precio Total:</strong> ${order.totalPrice.toFixed(2)}</p>
           <p><strong>Medio de Pago:</strong> {order.paymentMethod}</p>
         </div>

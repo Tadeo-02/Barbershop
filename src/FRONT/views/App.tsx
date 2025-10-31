@@ -153,17 +153,16 @@ function App() {
               <Route //! BARBER
                 path="/barber/deliveries"
                 element={
-                  <ProtectedRoute allowedRoles={["barber"]}>
+            
                     <DeliveriesPage />
-                  </ProtectedRoute>
                 }
               />
               <Route //! BARBER
                 path="/barber/order"
                 element={
-                  <ProtectedRoute allowedRoles={["barber"]}>
+
                     <OrderPage />
-                  </ProtectedRoute>
+
                 }
               />
 
