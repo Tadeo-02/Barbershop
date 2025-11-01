@@ -19,9 +19,9 @@ const Home = () => {
         <button className={styles.optionButton} onClick={handleSolicitarTurno}>
           Solicitar turno
         </button>
-        <button className={styles.optionButton} disabled>
+        {/* <button className={styles.optionButton} disabled>
           Comprar productos
-        </button>
+        </button> */}
       </div>
     </div>
   );
