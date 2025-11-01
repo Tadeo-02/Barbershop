@@ -1,7 +1,8 @@
 import * as controller from "./appointments.controller";
 import { createRouter } from "../base/base.router";
+import { Router } from "express";
 
-const router = createRouter(controller, {
+const router: Router = createRouter(controller, {
   create: "/create",
   idParam: "codTurno",
   updatePath: "/update",

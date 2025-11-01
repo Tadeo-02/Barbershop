@@ -1,8 +1,9 @@
 import * as controller from "./users.controller";
 import { createRouter } from "../base/base.router";
 import { findByIdWithCategory } from "./Users";
+import { Router } from "express";
 
-const router = createRouter(controller, {
+const router: Router = createRouter(controller, {
   create: "/create",
   idParam: "codUsuario",
   updatePath: "/update",
