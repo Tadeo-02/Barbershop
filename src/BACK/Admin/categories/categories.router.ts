@@ -1,8 +1,11 @@
 import * as controller from "./categories.controller";
 import { createRouter } from "../../base/base.router";
+import { Router } from "express";
 
-export default createRouter(controller, {
-  create: "/create", //? estas rutas se pueden generalizar, salvo el ID
+const router: Router = createRouter(controller, {
+  create: "/create",
   idParam: "codCategoria",
   updatePath: "/update",
 });
+
+export default router;
