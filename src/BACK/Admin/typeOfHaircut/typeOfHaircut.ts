@@ -52,16 +52,6 @@ export const store = async (nombreCorte: string, valorBase: string) => {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
-    //manejo de errores db
-    //! Adaptar para tipos de corte
-    // if (error && typeof error === "object" && "code" in error) {
-    //   const prismaError = error as { code: string; message: string };
-
-    //   if (prismaError.code === "P2002") {
-    //     throw new DatabaseError("El CUIL ya existe en el sistema");
-    //   }
-    // }
-
     throw new DatabaseError("Error interno del servidor");
   }
 };
@@ -159,20 +149,6 @@ export const update = async (
       throw new DatabaseError(firstError.message);
     }
 
-    // manejar errores de DB
-    //! Adaptar para tipos de corte
-    // if (error && typeof error === "object" && "code" in error) {
-    //   const prismaError = error as { code: string };
-
-    //   if (prismaError.code === "P2002") {
-    //     throw new DatabaseError("El nuevo CUIL ya existe en el sistema");
-    //   }
-
-    //   if (prismaError.code === "P2025") {
-    //     throw new DatabaseError("Barbero no encontrado");
-    //   }
-    // }
-
     if (error instanceof DatabaseError) {
       throw error;
     }
@@ -207,22 +183,6 @@ export const destroy = async (codCorte: string) => {
       "Error deleting tipo de corte:",
       error instanceof Error ? error.message : "Unknown error"
     );
-
-    // manejo de errores de DB
-    // ! Adaptar para tipos de corte
-    // if (error && typeof error === "object" && "code" in error) {
-    //   const prismaError = error as { code: string };
-
-    //   if (prismaError.code === "P2025") {
-    //     throw new DatabaseError("Tipo de corte no encontrado");
-    //   }
-
-    //   if (prismaError.code === "P2003") {
-    //     throw new DatabaseError(
-    //       "No se puede eliminar: el tipo de corte tiene turnos asociados"
-    //     );
-    //   }
-    // }
 
     if (error instanceof DatabaseError) {
       throw error;

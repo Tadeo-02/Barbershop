@@ -1,5 +1,5 @@
 import * as controller from "./appointments.controller";
-import { createRouter } from "../base/base.router";
+import  createRouter  from "../base/base.router";
 import { Router } from "express";
 
 const router: Router = createRouter(controller, {
@@ -9,7 +9,10 @@ const router: Router = createRouter(controller, {
 });
 
 // Rutas adicionales específicas para appointments
-router.get("/available/:fechaTurno/:codSucursal", controller.findByAvailableDate);
+router.get(
+  "/available/:fechaTurno/:codSucursal",
+  controller.findByAvailableDate
+);
 router.get("/barber/:codBarbero/:fechaTurno", controller.findByBarberId);
 router.get("/user/:codUsuario", controller.findByUserId);
 router.get("/state/:codEstado", controller.findState);

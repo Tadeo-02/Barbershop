@@ -1,5 +1,5 @@
 import * as controller from "./users.controller";
-import { createRouter } from "../base/base.router";
+import createRouter from "../base/base.router";
 import { findByIdWithCategory } from "./Users";
 import { Router } from "express";
 

@@ -70,7 +70,7 @@ export const store = async (
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; message: string };
 
-      if (prismaError.code === "P2002") { //? a lo mejor se pueden generalizar este error pero es innecesario y complicado
+      if (prismaError.code === "P2002") { 
         throw new DatabaseError("Ya existe una categoría con ese nombre");
       }
     }
@@ -147,7 +147,7 @@ export const update = async (
     });
 
     // verificar que la categoría existe
-    const existingCategoria = await prisma.categoria.findUnique({ //? se podría reutilizar
+    const existingCategoria = await prisma.categoria.findUnique({
       where: { codCategoria: sanitizedData.codCategoria },
     });
 
@@ -156,7 +156,7 @@ export const update = async (
     }
 
     // actualizar categoría
-    const updatedCategoria = await prisma.categoria.update({ //? verificar si es seguro
+    const updatedCategoria = await prisma.categoria.update({ 
       where: { codCategoria: sanitizedData.codCategoria },
       data: {
         nombreCategoria: validatedData.nombreCategoria,

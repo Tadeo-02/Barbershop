@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import express from "express";
+import {Router} from "express";
 
 export interface RouterConfig {
   create: string;
@@ -7,14 +8,14 @@ export interface RouterConfig {
   updatePath: string;
 }
 // creacion de router general
-export const createRouter = (
+const createRouter = (
   controller: any,
   config: RouterConfig = {
     create: "/create",
     idParam: "id",
     updatePath: "/update",
   }
-) => {
+): Router => {
   const router = express.Router();
 
   router.get(config.create, controller.create);
@@ -27,3 +28,4 @@ export const createRouter = (
 
   return router;
 };
+export default createRouter;
