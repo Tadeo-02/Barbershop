@@ -29,7 +29,7 @@ model Turno {
   fechaTurno                           DateTime           @db.Date
   horaDesde                            DateTime           @db.Time(0)
   horaHasta                            DateTime           @db.Time(0)
-  codEstado                            String             @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codEstado                            String             @db.VarChar(36)
   estado_del_turno                     estado_del_turno[]
   usuarios_turnos_codBarberoTousuarios usuarios           @relation("turnos_codBarberoTousuarios", fields: [codBarbero], references: [codUsuario], onUpdate: Restrict, map: "fk_turnos_barbero")
   usuarios_turnos_codClienteTousuarios usuarios           @relation("turnos_codClienteTousuarios", fields: [codCliente], references: [codUsuario], onUpdate: Restrict, map: "fk_turnos_cliente")
