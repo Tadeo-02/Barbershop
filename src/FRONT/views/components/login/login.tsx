@@ -67,9 +67,6 @@ function Login() {
               autoComplete="on"
               onSubmit={handleSubmit}
             >
-              <br />
-              <br />
-              <br />
               <h1>INICIO DE SESIÓN</h1>
               <br />
               <label>Correo electrónico:</label>

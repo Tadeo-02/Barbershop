@@ -10,7 +10,7 @@
 ## Admin:
     - [X] Pantalla general admin
     - [X] Pantalla CRUD sucursales
-    - [ ] Pantalla CRUD estados?? Decidir si la hacemos
+    - [ ] Pantalla CRUD estados?? Decidir si la hacemos // no se hace
     - [ ] Listado de clientes (proposal.md)
     - [ ] Listado de rentabilidad (proposal.md)
 ## General:
@@ -31,7 +31,7 @@
     - [X] CRUD Sucursal
     - [X] CRUD Barberos
     - [X] CRUD Categorias
-    - [ ] CRUD Estados turno - Modificar funcionalidades de Appointments para que utilizan esta CRUD
+    - [ ] CRUD Estados turno - Modificar funcionalidades de Appointments para que utilizan esta CRUD // la crud de estados tampoco se hace
 ## General:
     - [ ] Revisar validaciones zod en general
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
