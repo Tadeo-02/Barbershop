@@ -116,16 +116,8 @@ const CreateUser: React.FC = () => {
         <div className="row">
           <div className="col-12">
             <form className={styles.form} onSubmit={handleSubmit}>
-              <br />
-              <br />
-              <br />
-              <h1>CREAR CUENTA</h1>
-              <br />
-              <br />
-              <br />
-              <br />
-              <h1>CREAR CUENTA</h1>
-              <br />
+              <h1 className={styles.titleSignUp}>CREAR CUENTA</h1>
+
 
               {/* DNI */}
               <label>DNI:</label>
@@ -219,11 +211,12 @@ const CreateUser: React.FC = () => {
                 <button type="submit" className="btn btn-primary">
                   Crear Cuenta
                 </button>
-                <br />
-                <br />
+
                 <button type="button" onClick={() => navigate("/login")}>
                   Volver al Login
                 </button>
+                <br />
+                <br />
               </p>
             </form>
           </div>

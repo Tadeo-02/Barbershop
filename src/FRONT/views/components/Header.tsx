@@ -18,7 +18,7 @@ function Header() {
 //determino tipo de usuario
   const getHomeRoute = () => {
     if (!isAuthenticated) {
-      return "/login"; // Si no está autenticado, ir a login
+      return "/"; // Si no está autenticado, ir a landingPage
     }
 
     switch (userType) {
@@ -29,7 +29,7 @@ function Header() {
       case "client":
         return "/client/home";
       default:
-        return "/login"; //no hace falta
+        return "/"; 
     }
   };
   return (

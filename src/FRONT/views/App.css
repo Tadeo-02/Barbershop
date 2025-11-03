@@ -30,6 +30,8 @@ body {
   align-items: center;
   justify-content: center;
   padding-top: 4rem; /* Height of header */
+  /* Make room for sticky footer to avoid content being covered */
+  padding-bottom: 5rem;
 }
 
 .logo {
@@ -121,6 +123,10 @@ body {
 
 /* DESKTOP: estilos para pantallas grandes */
 @media (min-width: 769px) {
+  .mainContent {
+    /* larger footer on desktop */
+    padding-bottom: 6rem;
+  }
   [data-sonner-toaster] {
     top: 30% !important;
   }
