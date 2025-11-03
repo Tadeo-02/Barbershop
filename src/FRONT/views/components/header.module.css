@@ -1,4 +1,14 @@
 /*HEADER*/
+@import "https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800;900&display=swap"; 
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+
 .header {
   position: fixed;
   top: 0;
@@ -7,12 +17,13 @@
   height: 3.5rem; /* más bajo en móviles */
   background-color: #1f2937; /* bg-gray-800 */
   color: white;
-  padding-left: 0.5rem; 
-  padding-right: 0.5rem; 
+  padding: 0.45rem 2rem 0.45rem 1.27rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 50;
+  border-bottom: 1px solid var(--border-color);
+  width: 100%;
+  z-index: 200;
 }
 
 .logo {
@@ -36,24 +47,19 @@
 
 .button {
   background-color: white;
-  color: #1f2937;
-  padding-left: 0.5rem; 
-  padding-right: 0.5rem;
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
-  border-radius: 0.25rem;
+  color: #1f2937; /* text-gray-800 */
+  padding-left: 0.5rem; /* px-4 */
+  padding-right: 0.5rem; /* px-4 */
+  padding-top: 0.4rem; /* py-2 */
+  padding-bottom: 0.4rem; /* py-2 */
+  border-radius: 0.25rem; /* rounded */
   border: none;
   cursor: pointer;
 }
 
-.closeButton {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  color: #1f2937;
-  background: none;
-  border: none;
-  cursor: pointer;
+.menuButton {
+position: absolute;
+right: 0.5rem;
 }
 
 .sidebarMenu {
@@ -67,8 +73,8 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  bottom: 0; /* inset-0 */
+  background-color: rgba(0, 0, 0, 0.4); /* bg-black bg-opacity-40 */
   z-index: 40;
 }
 
@@ -79,32 +85,38 @@
   top: 0;
   right: 0;
   height: 100vh;
+  padding: 1.1rem 0;
   background-color: white;
+  overflow-y: auto;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  z-index: 50;
+  z-index: 100;
   transition: transform 300ms ease-in-out;
 }
 
+
 .sidebarMenu a, .logOut {
-  border: 2px solid green;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  gap: 1.3 rem;
+  gap: 1.3rem;
   padding: 0.9rem 0.7rem;
   margin: 0 0.5rem;
   border-radius: 0.5rem;
   overflow: hidden;
   white-space: nowrap;
+  border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
 }
 
-.logOut {
-padding-right: 14.4rem;
+.logOut{
+  position: absolute;
+  bottom: 0rem;
+  right: 0rem;
+  border-bottom: none;
 }
 
 .sidebarMenu a:hover, .logOut:hover {
-  background-color: #f3f4f6;
+  background-color: #f3f4f6; /* bg-gray-100 */
 }
 
 .sidebar-open {
@@ -119,7 +131,11 @@ padding-right: 14.4rem;
   margin-bottom: 1.5rem;
   padding: 0.5rem 1rem;
   text-align: right;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 2px solid #e5e7eb; /* border-gray-200 */
+}
+
+.sidebarMenu img {
+  width: 1.7rem;
 }
 
 /* TABLET Y DESKTOP: ajustes para pantallas grandes */
@@ -145,8 +161,5 @@ padding-right: 14.4rem;
     margin-top: 4rem;
     padding: 1rem;
   }
-  .closeButton {
-    top: 1rem;
-    right: 1rem;
-  }
+
 }

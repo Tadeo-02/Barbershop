@@ -10,8 +10,9 @@ import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
 import { AuthProvider } from "./components/login/AuthContext.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { AutoRedirect } from "./components/Redirect.tsx"; // puede ser que no haga falta
+
 // Client
-import HomePageClient from "./pages/Client/HomePageClient.tsx";
+// import HomePageClient from "./pages/Client/HomePageClient.tsx"; no se usa
 import ProfilePage from "./pages/Client/ProfilePage.tsx";
 import Home from "./components/Client/home/home.tsx";
 
@@ -25,6 +26,7 @@ import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 // import HomeBarber from "./components/Barber/home/home.tsx";
 import BarberAppointments from "./components/Barber/barberAppointments.tsx";
+
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
 import BarbersPage from "./pages/Admin/BarbersPage.tsx";
@@ -41,15 +43,31 @@ function App() {
           <Header />
           <main className="mainContent">
             <Routes>
-              <Route path="/" element={<Home />}>
-                {/*esto lo agregué para poder ver la home del cliente directamente*/}
-              </Route>
-              <Route path="/branches" element={<Branches />} />
-              {/* Selección de barbero primero */}
+
+            <Route path="/" element={<Login />} />
+            
+              {/* Ruta temporal para testing */}
               <Route
-                path="/branches/:codSucursal/barbers"
-                element={<BarbersByBranch />}
+                path="/test"
+                element={
+                  <div
+                    style={{
+                      padding: "20px",
+                      background: "red",
+                      color: "white",
+                    }}
+                  >
+                    TEST ROUTE WORKING
+                  </div>
+                }
               />
+
+              <Route path="/Client/Home" element={<Home />}>
+              </Route>
+
+               {/* Rutas del cliente para navegación por sucursales y barberos */}
+              {/*Revisar cuales se van a usar*/}
+              
               <Route
                 path="/appointments/cancelar/:appointmentId"
                 element={<CancelAppointment />}
@@ -72,23 +90,9 @@ function App() {
                 element={<ClientAppointments />}
               />
 
-              {/* Ruta temporal para testing */}
-              <Route
-                path="/test"
-                element={
-                  <div
-                    style={{
-                      padding: "20px",
-                      background: "red",
-                      color: "white",
-                    }}
-                  >
-                    TEST ROUTE WORKING
-                  </div>
-                }
-              />
 
-              {/* Rutas del cliente para navegación por sucursales y barberos */}
+
+              
               <Route path="/branches" element={<Branches />} />
               <Route
                 path="/branches/:codSucursal/barbers"
@@ -127,7 +131,7 @@ function App() {
                 }
               />
 
-              <Route path="/client" element={<HomePageClient />} />
+              {/* <Route path="/client" element={<HomePageClient />} /> */} {/* no se usa */}
               <Route path="/client/profile" element={<ProfilePage />} />
 
               {/* Rutas de administración protegidas */}
