@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
 import { AuthProvider } from "./components/login/AuthContext.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { AutoRedirect } from "./components/Redirect.tsx"; // puede ser que no haga falta
+import LandingPage from "./components/landingPage.tsx";
 
 // Client
 // import HomePageClient from "./pages/Client/HomePageClient.tsx"; no se usa
@@ -35,6 +36,8 @@ import BranchesPage from "./pages/Admin/BranchesPage.tsx";
 import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
 import CancelAppointment from "./components/Client/appointments/cancelAppointment.tsx";
 
+
+
 function App() {
   return (
     <AuthProvider>
@@ -42,10 +45,9 @@ function App() {
         <div className="appContainer">
           <Header />
           <main className="mainContent">
-            <Routes>
 
-            <Route path="/" element={<Login />} />
-            
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
               {/* Ruta temporal para testing */}
               <Route
                 path="/test"

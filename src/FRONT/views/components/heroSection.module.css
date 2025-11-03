@@ -1,0 +1,137 @@
+/* HeroSection styles - mobile-first */
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: stretch;
+    padding: 18px 12px;
+    font-family: 'Poppins', sans-serif;
+    color: #e6eef6;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.logo {
+    width: 250px;
+    margin: auto;
+    margin-top: auto;
+    margin-bottom: 10px;
+    height: auto;
+}
+
+.title {
+    font-size: 1.5rem;
+    line-height: 1.05;
+    margin: 6px 0 0 0;
+    color: #00152b;
+}
+
+.accent {
+    display: inline-block;
+    background: linear-gradient(90deg, #0b0047, #181aa5);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    margin-left: 6px;
+    font-size: 1rem;
+}
+
+.description {
+    color: rgba(0, 21, 43, 0.85);
+    font-size: 1.2rem;
+    line-height: 1.4; 
+}
+
+.ctaRow {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.primaryButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    background: linear-gradient(90deg,#000220,#002357);
+    color: #edf3ff;
+}
+
+
+.mediaWrap {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.imageOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(11,18,32,0.0) 0%, rgba(11,18,32,0.45) 100%);
+}
+
+@media (min-width: 768px) {
+    /* Desktop: keep a single-column layout but center content and put image below */
+    .section {
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+        padding: 32px 48px;
+    }
+
+    .content {
+        flex: 0 0 auto;
+        max-width: 900px;
+        text-align: center;
+        margin: 0 auto;
+    }
+
+    .mediaWrap {
+        width: 80%;
+        max-width: 900px;
+        height: 420px;
+    }
+
+    .image {
+        height: 100%;
+        width: 100%;
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+
+    .logo {
+        width: 300px;
+        margin: 0 auto;
+    }
+
+    .ctaRow {
+        justify-content: center;
+    }
+
+    .features {
+        justify-content: center;
+    }
+
+    .primaryButton {
+        align-self: center;
+        width: 50%;
+    }
+}

@@ -1,5 +1,4 @@
 /*HEADER*/
-@import "https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800;900&display=swap"; 
 
 * {
   box-sizing: border-box;
@@ -110,7 +109,7 @@ right: 0.5rem;
 
 .logOut{
   position: absolute;
-  bottom: 0rem;
+  bottom: 3rem;
   right: 0rem;
   border-bottom: none;
 }

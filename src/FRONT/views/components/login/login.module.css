@@ -92,6 +92,10 @@
   color: red;
 }
 
+.titleSignUp {
+  margin-top: 300px;
+}
+
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
   .form {

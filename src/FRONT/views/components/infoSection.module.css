@@ -1,0 +1,103 @@
+.infoSection {
+/* Mobile-first */
+    position: relative;
+    margin: 10px 8px;
+    padding: 12px;
+    background: linear-gradient(180deg, #0b1220 0%, #0f1724 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.45);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.infoSectionTitle {
+    color: #f8fafc;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 2px 0;
+}
+
+.infoSectionContent {
+    color: rgba(248, 250, 252, 0.85);
+    font-size: 0.9rem;
+    margin: 0 0 8px 0;
+}
+
+
+.cardsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.sucursalContainer,
+.barberoContainer {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+    color: #e6eef6;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sucursalContainer h3,
+.barberoContainer h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #f8fafc;
+}
+
+.sucursalInfo,
+.barberoInfo {
+    font-size: 0.9rem;
+    color: rgba(248,250,252,0.8);
+}
+
+.loadingState,
+.emptyState {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.01);
+    color: rgba(248,250,252,0.85);
+}
+
+
+@media (min-width: 640px) {
+    .infoSection {
+        margin: 14px auto;
+        width: 90%;
+        max-width: 900px;
+        padding: 18px 20px;
+        border-radius: 14px;
+        box-shadow: 0 8px 26px rgba(2, 6, 23, 0.5);
+    }
+
+    .infoSectionTitle {
+        font-size: 1.25rem;
+    }
+
+    .cardsGrid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+    }
+
+    .sucursalContainer,
+    .barberoContainer {
+        padding: 12px 14px;
+        border-radius: 12px;
+        transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .sucursalContainer:hover,
+    .barberoContainer:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 24px rgba(2,6,23,0.6);
+    }
+}
