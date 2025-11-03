@@ -25,7 +25,7 @@ export const useUserRedirect = () => {
       navigate("/Barber/HomePageBarber");
     } else {
       console.log("Redirecting to client page");
-      navigate("/");
+      navigate("/Client/Home");
     }
 
     if (message) {
@@ -45,8 +45,8 @@ export const AutoRedirect = () => {
     if (user) {
       redirectUser(user);
     } else {
-      // Si no hay usuario autenticado, ir a home
-      navigate("/");
+      // Si no hay usuario autenticado, ir a login
+      navigate("/login");
     }
   }, [user, redirectUser, navigate]);
 
