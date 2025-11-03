@@ -18,18 +18,18 @@ function Header() {
 //determino tipo de usuario
   const getHomeRoute = () => {
     if (!isAuthenticated) {
-      return "/"; // Si no está autenticado, ir a home general
+      return "/login"; // Si no está autenticado, ir a login
     }
 
     switch (userType) {
       case "admin":
         return "/Admin/HomePageAdmin";
       case "barber":
-        return "/barber";
+        return "/Barber/HomePageBarber";
       case "client":
-        return "/client";
+        return "/client/home";
       default:
-        return "/";
+        return "/login"; //no hace falta
     }
   };
   return (
@@ -56,8 +56,8 @@ function Header() {
         </div>
 
         {/* boton a la derecha */}
-        <div>
-          <button className={styles.button} onClick={() => setOpen(true)}>
+        <div className={styles.menuButton}>
+          <button className={styles.button} onClick={open ? () => setOpen(false) : () => setOpen(true)}>
             <FaBars style={{ fontSize: "2.2rem" }} />
           </button>
         </div>
@@ -73,15 +73,8 @@ function Header() {
           maxWidth: 400,
         }}
       >
-        <button className={styles.closeButton} onClick={() => setOpen(false)}>
-          Cerrar
-        </button>
+
         <ul className={styles.sidebarMenu}>
-          <li>
-            <Link to="/" onClick={() => setOpen(false)}>
-              Inicio
-            </Link>
-          </li>
 
           {/* Mostrar diferentes opciones según el estado de autenticación */}
           {!isAuthenticated ? (
@@ -100,28 +93,31 @@ function Header() {
           ) : (
             <>
               {/* Opciones para usuarios autenticados */}
-              <li>
+              <li className={styles.dataUser}>
                 <span style={{ color: "#ccc", fontSize: "0.9em" }}>
                   Bienvenido, {user?.nombre || user?.email}
                 </span>
-              </li>
-              <li>
+                <br />
                 <span style={{ color: "#999", fontSize: "0.8em" }}>
                   Tipo: {userType}
                 </span>
               </li>
 
+
               {/* Opciones específicas por tipo de usuario */}
               {userType === "client" && (
                 <li>
+                  <Link to="/client/home" onClick={() => setOpen(false)}>
+                    <img src="/images/home.png" alt="Inicio" />
+                    Inicio
+                  </Link>
+                
                   <Link to="/client/profile" onClick={() => setOpen(false)}>
+                    <img src="/images/user.png" alt="Mi Perfil" />
                     Mi Perfil
                   </Link>
-                  <br />
-                  <Link
-                    to="/client/appointments"
-                    onClick={() => setOpen(false)}
-                  >
+                  <Link to="/client/appointments" onClick={() => setOpen(false)}>
+                    <img src="/images/calendar.png" alt="Mis Turnos" />
                     Mis Turnos
                   </Link>
                 </li>
@@ -129,46 +125,31 @@ function Header() {
 
               {userType === "barber" && (
                 <li>
-                  <Link to="/client/profile" onClick={() => setOpen(false)}>
-                    Mi Perfil
+                  <Link to="/Barber/HomePageBarber" onClick={() => setOpen(false)}>
+                    <img src="/images/home.png" alt="Inicio"/>
+                    Inicio
                   </Link>
-                  <br />
-                  <Link to="/Barber/MyAppointments" onClick={() => setOpen(false)}>
-                    Mis Turnos
+                  <Link to="/Barber/myAppointments" onClick={() => setOpen(false)}>
+                  <img src="/images/calendar.png" alt="Mis Turnos" />
+                    Mis turnos
                   </Link>
                 </li>
               )}
 
               {userType === "admin" && (
                 <li>
-                  <Link
-                    to="/Admin/CategoriesPage"
-                    onClick={() => setOpen(false)}
-                  >
+                  <Link to="/Admin/HomePageAdmin" onClick={() => setOpen(false)}>
+                    <img src="/images/home.png" alt="Inicio"/>
+                    Inicio
+                  </Link>
+                  <Link to="/Admin/CategoriesPage" onClick={() => setOpen(false)}>
+                    <img src="/images/panel.png" alt="Panel Admin" />
                     Panel Admin
                   </Link>
                 </li>
               )}
 
-              <li>
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "inherit",
-                    cursor: "pointer",
-                    fontSize: "inherit",
-                    textAlign: "left",
-                    width: "100%",
-                  }}
-                >
-                  Cerrar Sesión
-                </button>
-              </li>
-            </>
-          )}
-
+{/* lo saco para desarrollo
           <li>
             <Link
               to="/productos/mainProductos.tsx"
@@ -177,6 +158,18 @@ function Header() {
               Productos
             </Link>
           </li>
+*/}
+
+              <li>
+                <button className={styles.logOut}
+                  onClick={handleLogout}>
+                  <img src="/images/logOut.png" alt="Cerrar Sesión" />
+                  Cerrar Sesión
+                </button>
+              </li>
+            </>
+          )}
+
         </ul>
       </div>
 
