@@ -6,11 +6,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100vw;
-  margin-top: auto;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 100%;
+  /* Sticky footer: fixed to bottom of viewport */
+  position: fixed;
+  left: 0;
+  bottom: env(safe-area-inset-bottom, 0);
+  z-index: 1000;
   font-size: 0.95rem;
   padding: 0 10px;
 }
