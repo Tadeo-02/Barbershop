@@ -25,6 +25,7 @@ function Header() {
       case "admin":
         return "/Admin/HomePageAdmin";
       case "barber":
+        return "/Barber/HomePageBarber";
       case "client":
         return "/client/home";
       default:
