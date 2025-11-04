@@ -164,7 +164,7 @@ const IndexBranches = () => {
                   to={`/Admin/BranchesPage/${sucursal.codSucursal}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  Ver Detalles
+                  Ver
                 </Link>
                 <Link
                   to={`/Admin/BranchesPage/updateBranches/${sucursal.codSucursal}`}
