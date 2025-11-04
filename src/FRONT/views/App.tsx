@@ -36,6 +36,7 @@ import BranchesPage from "./pages/Admin/BranchesPage.tsx";
 import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
 import CancelAppointment from "./components/Client/appointments/cancelAppointment.tsx";
 import ClientsPage from "./pages/Admin/ClientsPage.tsx";
+import RentabilityByBranch from "./pages/Admin/RentabilityByBranch.tsx";
 
 
 function App() {
@@ -189,6 +190,15 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <ClientsPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/Admin/RentabilityByBranch"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <RentabilityByBranch />
                   </ProtectedRoute>
                 }
               />
