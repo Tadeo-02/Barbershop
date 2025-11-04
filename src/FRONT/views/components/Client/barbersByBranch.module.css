@@ -30,8 +30,25 @@
 }
 
 .barberItem:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 12px 32px rgba(43, 108, 176, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+    background-color: #e3eafc;
+    border-color: #2b6cb0;
+}
+
+.selected {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 12px 32px rgba(43, 108, 176, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+    background-color: #e3eafc;
+    border-color: #2b6cb0;
+}
+
+.barberItem:not(.selected):hover {
+    transform: none;
+    box-shadow: none;
+    background-color: #f0f4f8;
+    border: 1px solid #e2e8f0;
+    cursor: default;
 }
 
 .barberName {
@@ -79,29 +96,30 @@
 }
 
 .backButton {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: all 0.3s ease;
-  width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: none;
+    background-color: #2b6cb0;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(43, 108, 176, 0.4);
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.5px;
+    outline: none;
 }
 
 .backButton:hover:not(:disabled) {
-  background: #0056b3;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
 .backButton:disabled {
-  background: #ccc;
-  color: #666;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }

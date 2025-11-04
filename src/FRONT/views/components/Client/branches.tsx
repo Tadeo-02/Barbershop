@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
 // import toast from "react-hot-toast";
@@ -14,6 +13,7 @@ const IndexBranches = () => {
   const navigate = useNavigate();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [showOptions, setShowOptions] = React.useState(false);
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [loading, setLoading] = useState(true); // loading inicial
 
   useEffect(() => {
@@ -36,15 +36,25 @@ const IndexBranches = () => {
   }
 
   const handleSelectBranch = (codSucursal: string) => {
-    setBranches(branches.filter(branch => branch.codSucursal === codSucursal));
-    setShowOptions(true);
+    // Toggle selection: si ya está seleccionada, la deseleccionamos
+    if (selectedBranch === codSucursal) {
+      setSelectedBranch(null);
+      setShowOptions(false);
+    } else {
+      setSelectedBranch(codSucursal);
+      setShowOptions(true);
+    }
   };
 
   const handleBarberFirst = () => {
-    navigate(`/branches/${branches[0].codSucursal}/barbers`);
+    const cod = selectedBranch ?? (branches[0] && branches[0].codSucursal);
+    if (!cod) return;
+    navigate(`/branches/${cod}/barbers`);
   };
   const handleScheduleFirst = () => {
-    navigate(`/branches/${branches[0].codSucursal}/schedule`);
+    const cod = selectedBranch ?? (branches[0] && branches[0].codSucursal);
+    if (!cod) return;
+    navigate(`/branches/${cod}/schedule`);
   };
 
   return (
@@ -59,9 +69,13 @@ const IndexBranches = () => {
           {branches.map((branch, idx) => (
             <li
               key={idx}
-              className={styles.branchItem}
+              className={`${styles.branchItem} ${
+                selectedBranch === branch.codSucursal ? styles.branchItemSelected : ""
+              }`}
               onClick={() => handleSelectBranch(branch.codSucursal)}
               style={{ cursor: "pointer" }}
+              role="button"
+              aria-pressed={selectedBranch === branch.codSucursal}
             >
               <div className={styles.branchName}>{branch.nombre}</div>
               <div className={styles.branchAddress}>
