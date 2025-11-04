@@ -1,6 +1,6 @@
 # FRONT:
 ## Usuarios:
-    - [ ] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal (?)
+    - [ ] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal
     - [ ] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
     - [X] Pantalla de perfil de usuario
     - [X?] Pantalla de cancelar turnos
@@ -10,7 +10,7 @@
 ## Admin:
     - [X] Pantalla general admin
     - [X] Pantalla CRUD sucursales
-    - [ ] Pantalla CRUD estados?? Decidir si la hacemos // no se hace
+    - [NO] Pantalla CRUD estados?? Decidir si la hacemos
     - [casi] Listado de clientes (proposal.md) // faltaria la cantidad de cortes de cada cliente y la fecha de registro que creo q nuestra  bd no la tiene
     - [ ] Listado de rentabilidad (proposal.md)
 ## General:
@@ -31,9 +31,10 @@
     - [X] CRUD Sucursal
     - [X] CRUD Barberos
     - [X] CRUD Categorias
-    - [ ] CRUD Estados turno - Modificar funcionalidades de Appointments para que utilizan esta CRUD // la crud de estados tampoco se hace
+    - [NO] CRUD Estados turno - Modificar funcionalidades de Appointments para que utilizan esta CRUD 
 ## General:
     - [ ] Revisar validaciones zod en general
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
     - [ ] Sección Productos
     - [X] Cambiar NPM por PNPM
+    - [ ] Cambiar logica del estado de turnos
