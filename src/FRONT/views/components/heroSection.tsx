@@ -1,15 +1,14 @@
 
 import styles from "./heroSection.module.css";
-import Logo from "../../../assets/mechaLogo.png";
 import Interior from "../../../assets/interiorBarberia.avif";
 
 const HeroSection = () => {
     return (
         <section className={styles.section}>
             <div className={styles.content}>
-                <img src={Logo} className={styles.logo} alt="Mecha's Barbershop Logo" /> 
+            <h2 className={styles.accent}>Mecha's Barbershop</h2>
                 <p className={styles.description}>
-                    En Mecha's Barbershop, nos dedicamos a ofrecer servicios de barbería de alta calidad en un ambiente acogedor y profesional. Nuestro equipo de barberos expertos está comprometido a brindarte el mejor corte de cabello y afeitado, adaptándose a tus necesidades y estilo personal.
+                    Nos dedicamos a ofrecer servicios de barbería de alta calidad. Nuestro equipo de barberos expertos está comprometido a brindarte el mejor corte de cabello y afeitado, adaptándose a tus necesidades y estilo personal.
                 </p>
                 <p className={styles.description}>
                 ¡Registrate para agendar tu primer turno!

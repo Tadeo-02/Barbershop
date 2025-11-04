@@ -32,13 +32,12 @@
 
 .accent {
     display: inline-block;
-    background: linear-gradient(90deg, #0b0047, #181aa5);
+    background: linear-gradient(90deg, #00152b, #00024b);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-weight: 700;
-    margin-left: 6px;
-    font-size: 1rem;
+    font-weight: 800;
+    font-size: 2.2rem;
 }
 
 .description {
@@ -54,15 +53,23 @@
 }
 
 .primaryButton {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 14px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
-    background: linear-gradient(90deg,#000220,#002357);
-    color: #edf3ff;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	margin-right: 0;
+	margin-bottom: 10px;
+	font-size: 1rem;
+	padding: 1rem;
+	border: none;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+	text-decoration: none;
+	background-color: #2b6cb0;
+	color: #ffffff;
+	box-shadow: 0 6px 15px rgba(43, 108, 176, 0.4);
 }
 
 
