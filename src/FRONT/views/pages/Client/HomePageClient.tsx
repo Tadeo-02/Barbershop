@@ -1,3 +1,8 @@
+//no se usa
+
+
+
+
 import { Link } from "react-router-dom";
 import styles from "./HomePageClient.module.css";
 import React, { useState, useEffect } from "react";
