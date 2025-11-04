@@ -44,11 +44,13 @@ body {
   background-color: #f0f4f8;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 1px;
+  padding: 16px;
+  margin-bottom: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row; /* info left, actions right — match branches */
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -195,29 +197,29 @@ body {
 /* Action buttons container */
 .actionButtons {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-top: 10px;
-  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end; /* push buttons to the right like branches */
 }
 
 /* Category info styling */
 .categoryInfo {
+  flex: 1; /* allow info area to grow like .sucursalInfo */
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .categoryTitle {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #2d3748;
   margin-bottom: 4px;
 }
 
 .categoryCode {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #718096;
   font-weight: 500;
 }
@@ -294,7 +296,7 @@ body {
   .actionButtons {
     flex-direction: row;
     gap: 10px;
-    margin-top: 15px;
+    margin-top: 0;
   }
   .categoryTitle {
     font-size: 1.4rem;
@@ -316,6 +318,24 @@ body {
   .errorMessage {
     padding: 12px 16px;
     margin-bottom: 20px;
+  }
+}
+
+/* Responsive para móvil: same behavior as branches */
+@media (max-width: 768px) {
+  .indexCategories li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .actionButtons {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .actionButtons .button {
+    flex: 1;
   }
 }
 

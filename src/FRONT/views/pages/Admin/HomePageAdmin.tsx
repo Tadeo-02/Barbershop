@@ -57,6 +57,18 @@ function HomePageAdmin() {
           <h3>Sucursales</h3>
           <p>Administrar sucursales y ubicaciones</p>
         </Link>
+        
+        {/*Boton para Listado de clientes */}
+        <Link
+          to="/Admin/ClientsPage"
+          className={`${styles.dashboardCard} ${styles.clientsCard}`}
+        >
+          <div className={styles.cardIcon}>
+            <i className="fas fa-users"></i>
+          </div>
+          <h3>Clientes</h3>
+          <p>Ver listado de clientes</p>
+        </Link>
       </div>
     </div>
   );
