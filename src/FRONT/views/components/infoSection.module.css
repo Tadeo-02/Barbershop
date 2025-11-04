@@ -1,30 +1,28 @@
 .infoSection {
-/* Mobile-first */
-    position: relative;
-    margin: 10px 8px;
-    padding: 12px;
-    background: linear-gradient(180deg, #0b1220 0%, #0f1724 100%);
+    max-width: 100%;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #ffffff;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.45);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.5s ease-out;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: center;
 }
 
 .infoSectionTitle {
-    color: #f8fafc;
-    font-size: 1.05rem;
+    color: #002041;
+    font-size: 1.5rem;
     font-weight: 700;
     margin: 0 0 2px 0;
 }
 
 .infoSectionContent {
-    color: rgba(248, 250, 252, 0.85);
+    color: rgba(0, 0, 0, 0.85);
     font-size: 0.9rem;
     margin: 0 0 8px 0;
 }
-
 
 .cardsGrid {
     display: grid;
@@ -35,27 +33,37 @@
 
 .sucursalContainer,
 .barberoContainer {
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
-    color: #e6eef6;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    background-color: #f0f4f8;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 
 .sucursalContainer h3,
 .barberoContainer h3 {
-    margin: 0;
-    font-size: 1rem;
-    color: #f8fafc;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2d3748;
 }
 
 .sucursalInfo,
 .barberoInfo {
-    font-size: 0.9rem;
-    color: rgba(248,250,252,0.8);
+    font-size: 0.95rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+.sucursalLink {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    width: 100%;
 }
 
 .loadingState,
@@ -64,10 +72,9 @@
     text-align: center;
     padding: 10px;
     border-radius: 8px;
-    background: rgba(255,255,255,0.01);
-    color: rgba(248,250,252,0.85);
+    background: rgba(252, 252, 252, 0.01);
+    color: rgba(0, 0, 0, 0.85);
 }
-
 
 @media (min-width: 640px) {
     .infoSection {
@@ -97,7 +104,9 @@
 
     .sucursalContainer:hover,
     .barberoContainer:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 24px rgba(2,6,23,0.6);
+        transform: translateY(-6px) scale(1.03);
+        box-shadow: 0 12px 32px rgba(43, 108, 176, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+        background-color: #e3eafc;
+        border-color: #2b6cb0;
     }
 }
