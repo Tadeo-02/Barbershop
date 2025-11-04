@@ -29,6 +29,8 @@ const IndexClients = () => {
     const [loading, setLoading] = useState(true);
     const [expandedClient, setExpandedClient] = useState<string | null>(null);
     const [profilesCache, setProfilesCache] = useState<Record<string, ClienteProfile>>({});
+    const [appointmentCounts, setAppointmentCounts] = useState<Record<string, { total: number; canceled: number }>>({});
+    const [statesCache, setStatesCache] = useState<Record<string, { codEstado: string; nombreEstado: string }>>({});
     const [categorias, setCategorias] = useState<Array<{codCategoria: string; nombreCategoria: string}>>([]);
     const [selectedCategoria, setSelectedCategoria] = useState<string>("all");
     const [visibleClients, setVisibleClients] = useState<Cliente[]>([]);
@@ -48,9 +50,20 @@ const IndexClients = () => {
                 if (Array.isArray(data)) {
                     setClientes(data as Cliente[]);
                     setVisibleClients(data as Cliente[]);
+                    // después de cargar clientes, obtener contadores de turnos
+                    try {
+                        fetchCountsForClients(data as Cliente[]);
+                    } catch (err) {
+                        console.error("Error fetching appointment counts:", err);
+                    }
                 } else if (data && Array.isArray((data as any).data)) {
                     setClientes((data as any).data as Cliente[]);
                     setVisibleClients((data as any).data as Cliente[]);
+                    try {
+                        fetchCountsForClients((data as any).data as Cliente[]);
+                    } catch (err) {
+                        console.error("Error fetching appointment counts:", err);
+                    }
                 } else {
                     setClientes([]);
                 }
@@ -94,6 +107,74 @@ const IndexClients = () => {
 
         await fetchProfile(codUsuario);
         setExpandedClient(codUsuario);
+    };
+
+    // obtiene los contadores de turnos (total y cancelados) para una lista de clientes
+    const fetchCountsForClients = async (clients: Cliente[]) => {
+        if (!Array.isArray(clients) || clients.length === 0) return;
+
+        // limitar a evitar demasiadas peticiones simultáneas (pero por simplicidad usamos Promise.all)
+        const promises = clients.map(async (c) => {
+            try {
+                const res = await fetch(`/turnos/user/${c.codUsuario}`);
+                if (!res.ok) {
+                    // tratar como 0
+                    return { codUsuario: c.codUsuario, total: 0, canceled: 0 };
+                }
+
+                const json = await res.json();
+                let turnos = [] as any[];
+                if (json && json.data && Array.isArray(json.data)) turnos = json.data;
+                else if (Array.isArray(json)) turnos = json;
+
+                // recopilar codEstado únicos
+                const estadosUnicos = Array.from(new Set(turnos.map((t) => t.codEstado).filter(Boolean)));
+
+                // obtener nombres de estado no cacheados (usar caché local para cómputo inmediato)
+                const toFetchStates = estadosUnicos.filter((e) => !statesCache[e]);
+                const localFetchedStates: Record<string, any> = {};
+                await Promise.all(
+                    toFetchStates.map(async (cod) => {
+                        try {
+                            const r = await fetch(`/turnos/state/${cod}`);
+                            if (!r.ok) return;
+                            const sjson = await r.json();
+                            const state = sjson && sjson.data ? sjson.data : sjson;
+                            if (state && state.codEstado) {
+                                localFetchedStates[cod] = state;
+                            }
+                        } catch (err) {
+                            console.error("Error fetching state:", err);
+                        }
+                    })
+                );
+
+                // usar la caché actual más cualquier estado recién traído para el cálculo
+                const mergedStates = { ...statesCache, ...localFetchedStates };
+
+                const canceled = turnos.filter((t) => {
+                    const s = mergedStates[t.codEstado];
+                    return s ? s.nombreEstado === "Cancelado" : false;
+                }).length;
+
+                // actualizar la caché global con lo que se bajó ahora
+                if (Object.keys(localFetchedStates).length > 0) {
+                    setStatesCache((prev) => ({ ...prev, ...localFetchedStates }));
+                }
+
+                return { codUsuario: c.codUsuario, total: turnos.length, canceled };
+            } catch (error) {
+                console.error("Error fetching turnos for client", c.codUsuario, error);
+                return { codUsuario: c.codUsuario, total: 0, canceled: 0 };
+            }
+        });
+
+        const results = await Promise.all(promises);
+        const map: Record<string, { total: number; canceled: number }> = {};
+        results.forEach((r) => {
+            if (r && r.codUsuario) map[r.codUsuario] = { total: r.total, canceled: r.canceled };
+        });
+        setAppointmentCounts((prev) => ({ ...prev, ...map }));
     };
 
     // fetch categories para el filtrado
@@ -141,6 +222,14 @@ const IndexClients = () => {
         applyFilter();
     }, [selectedCategoria, clientes]);
 
+    // Si visibleClients cambia y hay clientes sin conteo, obtenerlos
+    useEffect(() => {
+        const missing = visibleClients.filter((c) => appointmentCounts[c.codUsuario] === undefined);
+        if (missing.length > 0) {
+            fetchCountsForClients(missing);
+        }
+    }, [visibleClients]);
+
     if (loading) return <div className={styles.loading}>Cargando clientes...</div>;
 
     return (
@@ -176,6 +265,9 @@ const IndexClients = () => {
                                     <div>
                                         <div className={styles.smallMuted}>DNI: {cliente.dni}</div>
                                         <div>{cliente.nombre} {cliente.apellido}</div>
+                                        <div className={styles.smallMuted}>
+                                            Turnos: {appointmentCounts[cliente.codUsuario]?.total ?? 0} &nbsp;(Cancelados: {appointmentCounts[cliente.codUsuario]?.canceled ?? 0})
+                                        </div>
                                     </div>
                                     <div className={styles.actions}>
                                         <button type="button" className={`${styles.btn} ${styles.btnView}`} onClick={() => toggleExpand(cliente.codUsuario)}>
@@ -212,6 +304,7 @@ const IndexClients = () => {
                             <tr>
                                 <th>ID</th>
                                 <th>DNI</th>
+                                <th>Turnos (cancel.)</th>
                                 <th>Nombre</th>
                                 <th>Acciones</th>
                             </tr>
@@ -227,6 +320,7 @@ const IndexClients = () => {
                                         <tr>
                                             <td className={styles.code}>{cliente.codUsuario}</td>
                                             <td>{cliente.dni}</td>
+                                            <td>{appointmentCounts[cliente.codUsuario]?.total ?? 0} ({appointmentCounts[cliente.codUsuario]?.canceled ?? 0})</td>
                                             <td>{cliente.nombre} {cliente.apellido}</td>
                                             <td>
                                                 <div className={styles.actions}>
