@@ -1,7 +1,7 @@
 # FRONT:
 ## Usuarios:
-    - [ ] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal
-    - [ ] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
+    - [X] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal
+    - [X] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
     - [X] Pantalla de perfil de usuario
     - [ ] Pantalla de cancelar turnos // la pantalla ya está habria que cambiar el DELETE por un UPDATE de estado que será diferente dependiendo de si mantenemos a los estados como clase o si son solo un atributo del turno.
 ## Barberos:
