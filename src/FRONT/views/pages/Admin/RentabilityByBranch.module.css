@@ -1,0 +1,53 @@
+.controlsRow {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-left: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.labelBold {
+    font-weight: 600;
+}
+
+.smallInput {
+    width: 110px;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.rentTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.thLeft {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.thRight {
+    text-align: right;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.tdCell {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.tdRight {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: right;
+}
+
+.emptyRow {
+    padding: 12px;
+    text-align: center;
+}
