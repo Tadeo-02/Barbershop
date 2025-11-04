@@ -6,43 +6,34 @@ body {
   background-color: #f8f8f8;
   color: #333;
   margin: 0;
-  padding: 20px;
+  padding: 10px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Headings */
-.pageTitle {
-  font-size: 2.5rem;
-  color: #1a202c;
-  text-align: center;
-  margin-bottom: 30px;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-}
-
+/* headings */
 h2 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   color: #1a202c;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   font-weight: 700;
   letter-spacing: -0.025em;
 }
 
-/* Container for IndexSucursales */
+/* container de IndexSucursales */
 .indexSucursales {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 30px;
+  max-width: 100%;
+  margin: 20px auto;
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   animation: fadeIn 0.5s ease-out;
 }
 
-/* List of Sucursales */
+/* lista de Sucursales */
 .indexSucursales ul {
   list-style: none;
   padding: 0;
@@ -52,11 +43,13 @@ h2 {
   background-color: #f0f4f8;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 15px;
+  padding: 16px;
+  margin-bottom: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -66,7 +59,7 @@ h2 {
 }
 
 .indexSucursales li strong {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: #2d3748;
 }
 
@@ -75,11 +68,11 @@ h2 {
   color: #4a5568;
 }
 
-/* Form Styles (for Create and Update) */
+/* Formulario (create y modificar) */
 .formContainer {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 30px;
+  max-width: 100%;
+  margin: 20px 0;
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -87,23 +80,23 @@ h2 {
 }
 
 .formGroup {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .formLabel {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-weight: 600;
   color: #4a5568;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .formInput {
   width: 100%;
-  padding: 12px 15px;
+  padding: 10px 12px;
   border: 2px solid #a0aec0;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #2d3748;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   box-sizing: border-box;
@@ -112,18 +105,18 @@ h2 {
 
 .formInput:focus {
   outline: none;
-  border-color: #4299e1;
+  border-color: #4299e1; /* borde azul brillante al enfocar */
   box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.6);
-  background-color: #e6f4ff;
+  background-color: #e6f4ff; /* fondo ligeramente azulado al enfocar */
 }
 
-/* Select styles */
+/* Select styles (reutilizable) */
 .formSelect {
   width: 100%;
-  padding: 12px 15px;
+  padding: 10px 12px;
   border: 2px solid #a0aec0;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #2d3748;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   box-sizing: border-box;
@@ -143,8 +136,9 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 25px;
-  border: none;
+  width: 100%;
+  padding: 10px;
+  border: none; /* eliminar borde para botones */
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
@@ -152,8 +146,7 @@ h2 {
   transition: background-color 0.3s ease, transform 0.2s ease,
     box-shadow 0.3s ease;
   text-decoration: none;
-  margin-right: 10px;
-  margin-top: 10px;
+  margin: 10px 0 0 0;
 }
 
 .buttonPrimary {
@@ -192,32 +185,62 @@ h2 {
   box-shadow: 0 8px 20px rgba(56, 161, 105, 0.5);
 }
 
-/* Specific adjustment for buttons within list items in IndexSucursales */
 .indexSucursales li .button {
   margin-top: 0;
+  width: auto;
 }
 
-/* Action buttons container */
-.actionButtons {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-  justify-content: center;
-  align-items: center;
+/* animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* sucursal info styling */
+/* DESKTOP: ajustes para pantallas grandes */
+@media (min-width: 769px) {
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+  }
+
+  .indexSucursales,
+  .formContainer {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+  }
+
+  .indexSucursales li {
+    padding: 20px;
+    gap: 10px;
+  }
+
+  .button {
+    width: auto;
+    margin-right: 10px;
+    margin-top: 10px;
+  }
+}
+
+/* Información de la sucursal */
 .sucursalInfo {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .sucursalTitle {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #2d3748;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .sucursalCode {
@@ -226,93 +249,56 @@ h2 {
   font-weight: 500;
 }
 
-.sucursalDisponibilidad {
-  color: #4a5568;
-  line-height: 1.5;
-  margin-top: 5px;
-}
-
-.sucursalDisponible {
+.sucursalPrice {
+  font-size: 1rem;
   color: #38a169;
   font-weight: 600;
 }
 
-.sucursalNoDisponible {
-  color: #e53e3e;
-  font-weight: 600;
+/* Botones de acción */
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
 }
 
-/* Loading and empty states */
-.loadingState {
-  text-align: center;
-  padding: 40px;
-  color: #718096;
-  font-size: 1.1rem;
-}
-
+/* Estado vacío y loading */
 .emptyState {
   text-align: center;
-  padding: 40px;
+  padding: 40px 20px;
   color: #718096;
-}
-
-.emptyState p {
   font-size: 1.1rem;
-  margin-bottom: 20px;
 }
 
-/* Responsive adjustments */
+.loadingState {
+  text-align: center;
+  padding: 40px 20px;
+  color: #718096;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Responsive para móvil */
 @media (max-width: 768px) {
-
-  h1,
-  h2 {
-    font-size: 2rem;
-  }
-
-  .indexSucursales,
-  .formContainer {
-    margin: 20px;
-    padding: 20px;
-  }
-
   .indexSucursales li {
-    padding: 15px;
-  }
-
-  .button {
-    width: 100%;
-    margin-right: 0;
-    margin-bottom: 10px;
-  }
-
-  .indexSucursales li .button {
-    width: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
   .actionButtons {
-    flex-direction: column;
-    gap: 5px;
+    width: 100%;
+    justify-content: stretch;
   }
 
-  .sucursalTitle {
-    font-size: 1.2rem;
-  }
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .actionButtons .button {
+    flex: 1;
   }
 }
 
-/* Success message styling */
+/* Mensajes */
 .successMessage {
   background-color: #c6f6d5;
   color: #22543d;
@@ -322,7 +308,6 @@ h2 {
   border-left: 4px solid #38a169;
 }
 
-/* Error message styling */
 .errorMessage {
   background-color: #fed7d7;
   color: #742a2a;

@@ -204,7 +204,9 @@ const IndexBarbers = () => {
                   Sucursal: {getSucursalNombre(barbero.codSucursal)}
                 </div>
                 <div className={styles.barberoContacto}>
-                  Tel: {barbero.telefono} | Email: {barbero.email}
+                  Tel: {barbero.telefono} 
+                  <br />
+                  Email: {barbero.email}
                 </div>
               </div>
               <div className={styles.actionButtons}>

@@ -173,12 +173,6 @@ const IndexCategories = () => {
                   <div className={styles.categoryDescription}>
                     {categoria.descCategoria}
                   </div>
-                  <div className={styles.categoryDiscounts}>
-                    <span>Descuento Corte: {categoria.descuentoCorte}%</span>
-                    <span>
-                      Descuento Producto: {categoria.descuentoProducto}%
-                    </span>
-                  </div>
                 </div>
                 <div className={styles.actionButtons}>
                   <Link
