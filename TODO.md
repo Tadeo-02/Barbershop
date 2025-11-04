@@ -1,7 +1,7 @@
 # FRONT:
 ## Usuarios:
-    - [ ] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal
-    - [ ] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
+    - [X] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal
+    - [X] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
     - [X] Pantalla de perfil de usuario
     - [X?] Pantalla de cancelar turnos
 ## Barberos:

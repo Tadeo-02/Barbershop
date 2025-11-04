@@ -110,8 +110,14 @@ const BarbersByBranch = () => {
   }
 
   const handleSelectBarber = (codUsuario: string) => {
-    setSelectedBarber(codUsuario);
-    setShowSchedule(true);
+    // Toggle selection: if the same barber is clicked again, deselect
+    if (selectedBarber === codUsuario) {
+      setSelectedBarber(null);
+      setShowSchedule(false);
+    } else {
+      setSelectedBarber(codUsuario);
+      setShowSchedule(true);
+    }
   };
 
   const handleSchedule = () => {
@@ -172,19 +178,19 @@ const BarbersByBranch = () => {
       const text = await response.text();
       console.log("Respuesta cruda del backend:", text);
 
-      let data;
-      if (text) {
-        try {
-          data = JSON.parse(text);
-        } catch (parseError) {
-          console.error("Error parsing JSON:", parseError);
-          toast.error("Error al procesar respuesta del servidor", {
-            id: toastId,
-          });
-          return;
-        }
-      } else {
+      if (!text) {
         toast.error("Respuesta vacía del servidor", { id: toastId });
+        return;
+      }
+
+      // Intentamos parsear sólo para verificar que la respuesta es JSON válido
+      try {
+        JSON.parse(text);
+      } catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+        toast.error("Error al procesar respuesta del servidor", {
+          id: toastId,
+        });
         return;
       }
 
@@ -218,8 +224,10 @@ const BarbersByBranch = () => {
           barberos.map((barbero) => (
             <li
               key={barbero.codUsuario}
-              className={styles.barberItem}
-              onClick={() => handleSelectBarber(barbero.codUsuario)} // Add click handler
+              className={`${styles.barberItem} ${
+                selectedBarber === barbero.codUsuario ? styles.selected : ""
+              }`}
+              onClick={() => handleSelectBarber(barbero.codUsuario)}
               style={{ cursor: "pointer" }}
             >
               <div className={styles.barberName}>
