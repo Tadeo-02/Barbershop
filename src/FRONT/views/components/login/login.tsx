@@ -85,8 +85,7 @@ function Login() {
                 className="form-control"
                 type="password"
                 name="claveUsuario"
-                // Escape the hyphen inside the character class to avoid creating an unintended range
-                pattern="[a-zA-Z0-9$@.\-]{7,100}"
+                pattern="[a-zA-Z0-9$@.-]{7,100}"
                 maxLength={100}
                 placeholder="********"
                 required
