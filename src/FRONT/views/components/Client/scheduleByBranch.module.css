@@ -35,7 +35,7 @@
 }
 
 .scheduleItem:hover {
-  background: #007bff;
+  background: #2b6cb0;
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
@@ -69,7 +69,7 @@
 }
 
 .backButton {
-  background: #007bff;
+  background: #2b6cb0;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -82,8 +82,10 @@
   width: 100%;
 }
 
+
+
 .backButton:hover:not(:disabled) {
-  background: #0056b3;
+  background: #2b6cb0;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
@@ -97,7 +99,7 @@
 }
 
 .scheduleItem.selected {
-  background: #007bff;
+  background: #2b6cb0;
   color: white;
   border-color: #0056b3;
   transform: translateY(-2px);
