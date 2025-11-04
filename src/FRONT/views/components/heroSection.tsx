@@ -5,11 +5,7 @@ import Interior from "../../../assets/interiorBarberia.avif";
 const HeroSection = () => {
     return (
         <section className={styles.section}>
-            <div className={styles.content}>
-            <h2 className={styles.accent}>Mecha's Barbershop</h2>
-                <p className={styles.description}>
-                    Nos dedicamos a ofrecer servicios de barbería de alta calidad. Nuestro equipo de barberos expertos está comprometido a brindarte el mejor corte de cabello y afeitado, adaptándose a tus necesidades y estilo personal.
-                </p>
+            <div className={styles.content}>             
                 <p className={styles.description}>
                 ¡Registrate para agendar tu primer turno!
                 </p>
