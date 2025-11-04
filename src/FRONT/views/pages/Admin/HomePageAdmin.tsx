@@ -57,7 +57,7 @@ function HomePageAdmin() {
           <h3>Sucursales</h3>
           <p>Administrar sucursales y ubicaciones</p>
         </Link>
-        
+
         {/*Boton para Listado de clientes */}
         <Link
           to="/Admin/ClientsPage"
@@ -68,6 +68,18 @@ function HomePageAdmin() {
           </div>
           <h3>Clientes</h3>
           <p>Ver listado de clientes</p>
+        </Link>
+
+        {/* Botón para Listado de Rentabilidad */}
+        <Link
+          to="/Admin/RentabilityByBranch"
+          className={`${styles.dashboardCard} ${styles.rentabilityCard}`}
+        >
+          <div className={styles.cardIcon}>
+            <i className="fas fa-chart-line"></i>
+          </div>
+          <h3>Rentabilidad</h3>
+          <p>Listado de rentabilidad por sucursal</p>
         </Link>
       </div>
     </div>

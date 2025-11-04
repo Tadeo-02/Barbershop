@@ -12,7 +12,7 @@
     - [X] Pantalla CRUD sucursales
     - [NO] Pantalla CRUD estados?? Decidir si la hacemos
     - [casi] Listado de clientes (proposal.md) // faltaria la cantidad de cortes de cada cliente y la fecha de registro que creo q nuestra  bd no la tiene
-    - [ ] Listado de rentabilidad (proposal.md)
+    - [X] Listado de rentabilidad (proposal.md)
 ## General:
     - [X] Definir estructura mobile first en estilos
     - [ ] Sección Productos

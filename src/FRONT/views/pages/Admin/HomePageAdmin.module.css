@@ -118,7 +118,8 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%; /* Mantener para casos normales */
+  width: 100%;
+  /* Mantener para casos normales */
   padding: 10px 0;
   border: none;
   border-radius: 8px;
@@ -126,7 +127,7 @@ h2 {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease,
-  box-shadow 0.3s ease;
+    box-shadow 0.3s ease;
   text-decoration: none;
   margin: 10px 0 0 0;
 }
@@ -366,44 +367,31 @@ h2 {
   margin-bottom: 0;
 }
 
-/* Colores específicos para cada tarjeta */
-.categoriesCard:hover {
-  border-color: #4caf50;
-}
-
 .categoriesCard .cardIcon {
-  color: #4caf50;
-}
-
-.barbersCard:hover {
-  border-color: #2196f3;
+  color: #ff2600;
 }
 
 .barbersCard .cardIcon {
-  color: #2196f3;
+  color: #f3aa21;
+  width: 60px;
+  height: 60px;
 }
 
-.haircutCard:hover {
-  border-color: #ff9800;
-}
 
 .haircutCard .cardIcon {
-  color: #ff9800;
-}
-
-.branchesCard:hover {
-  border-color: #9c27b0;
+  color: #fffb00;
 }
 
 .branchesCard .cardIcon {
-  color: #9c27b0;
+  color: #30aa00;
 }
 
-.clientsCard:hover {
-  border-color: #e91e63;
-}
 .clientsCard .cardIcon {
-  color: #e91e63;
+  color: #1e2ce9;
+}
+
+.rentabilityCard .cardIcon {
+  color: #8b00e9;
 }
 
 /* DESKTOP: ajustes para pantallas grandes (overrides mobile-first) */
@@ -490,18 +478,46 @@ h2 {
 
   /* Desktop overrides (mobile-first): make container buttons intrinsic width */
   .buttonContainer .button {
-    width: auto !important; /* override base 100% */
+    width: auto !important;
+    /* override base 100% */
     max-width: 280px;
     min-width: 200px;
     padding: 12px 24px;
   }
+
   /* Desktop: primary button should fit its content and be centered */
-  .buttonContainer > .button.buttonPrimary {
+  .buttonContainer>.button.buttonPrimary {
     width: fit-content !important;
     margin-left: auto;
     margin-right: auto;
     padding: 12px 24px;
   }
+
+  /* Colores específicos para cada tarjeta */
+  .categoriesCard:hover {
+    border-color: #ff2600;
+  }
+
+  .barbersCard:hover {
+    border-color: #f3aa21;
+  }
+
+  .haircutCard:hover {
+    border-color: #fffb00;
+  }
+
+  .branchesCard:hover {
+    border-color: #30aa00;
+  }
+
+  .clientsCard:hover {
+    border-color: #1e2ce9;
+  }
+
+  .rentabilityCard:hover {
+    border-color: #8b00e9;
+  }
+
 }
 
 .adminDashboard {
