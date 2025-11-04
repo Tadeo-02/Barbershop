@@ -33,18 +33,18 @@ const Home = () => {
   const handleEntregarPedidos = () => {
     console.log("Navigating to orders..."); // Debug log
     navigate("/orders/orders");
-  };
+  }; //Solo para el seminario
 
   return (
     <div className={styles.homeContainer}>
       <h2>Bienvenido</h2>
       <div className={styles.optionsContainer}>
         <button className={styles.optionButton} onClick={handleVerTurnos}>
-          Ver turnos
+          Atender turnos
         </button>
-        <button className={styles.optionButton} onClick={handleEntregarPedidos}>
+        {/*<button className={styles.optionButton} onClick={handleEntregarPedidos}>
           Entregar pedidos
-        </button>
+        </button>*/} {/* Botón deshabilitado para desarrollo */}
       </div>
     </div>
   );
