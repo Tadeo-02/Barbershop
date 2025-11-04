@@ -142,10 +142,6 @@ function Header() {
                     <img src="/images/home.png" alt="Inicio"/>
                     Inicio
                   </Link>
-                  <Link to="/Admin/CategoriesPage" onClick={() => setOpen(false)}>
-                    <img src="/images/panel.png" alt="Panel Admin" />
-                    Panel Admin
-                  </Link>
                 </li>
               )}
 
