@@ -26,7 +26,7 @@ import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 // import HomeBarber from "./components/Barber/home/home.tsx";
-import BarberAppointments from "./components/Barber/barberAppointments.tsx";
+import BarberAppointments from "./components/Barber/appointments/barberAppointments.tsx";
 
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
