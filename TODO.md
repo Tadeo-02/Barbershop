@@ -11,7 +11,7 @@
     - [X] Pantalla general admin
     - [X] Pantalla CRUD sucursales
     - [ ] Pantalla CRUD estados?? Decidir si la hacemos // no se hace
-    - [ ] Listado de clientes (proposal.md)
+    - [casi] Listado de clientes (proposal.md) // faltaria la cantidad de cortes de cada cliente y la fecha de registro que creo q nuestra  bd no la tiene
     - [ ] Listado de rentabilidad (proposal.md)
 ## General:
     - [X] Definir estructura mobile first en estilos

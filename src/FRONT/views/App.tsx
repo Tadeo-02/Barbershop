@@ -35,7 +35,7 @@ import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
 import BranchesPage from "./pages/Admin/BranchesPage.tsx";
 import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
 import CancelAppointment from "./components/Client/appointments/cancelAppointment.tsx";
-
+import ClientsPage from "./pages/Admin/ClientsPage.tsx";
 
 
 function App() {
@@ -179,6 +179,16 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <HairCutTypesPage />
+                  </ProtectedRoute>
+                }
+              />
+
+
+              <Route
+                path="/Admin/ClientsPage/*"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <ClientsPage />
                   </ProtectedRoute>
                 }
               />
