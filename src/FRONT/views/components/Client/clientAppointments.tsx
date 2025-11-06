@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../login/AuthContext";
 import barberStyles from "../Client/clientAppointments.module.css";
-import { toast } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 interface Appointment {

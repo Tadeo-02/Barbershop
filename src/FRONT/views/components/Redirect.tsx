@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./login/AuthContext";
 import React from "react";
 import "./Redirect.module.css";
+import toast from "react-hot-toast";
 
 
 export const useUserRedirect = () => {
@@ -22,7 +23,7 @@ export const useUserRedirect = () => {
       navigate(target, { replace: true });
     }
 
-    if (message) alert(message);
+  if (message) toast.success(message);
   }, [navigate, location]);
 
   return { redirectUser };
@@ -57,14 +58,13 @@ export const AutoRedirect = () => {
       } else {
         navigate(target, { replace: true });
       }
-      // If navigation didn't unmount this component (same pathname), hide overlay
-      // Small timeout to allow transition/visual feedback; will be cancelled by unmount on actual navigation
+
       const t = setTimeout(() => setIsRedirecting(false), 800);
       return () => clearTimeout(t);
     }
   }, [user]);
 
-  // Render an overlay while redirecting so the user has feedback
+
   if (isRedirecting) {
     return (
       <div className="redirect-overlay">
