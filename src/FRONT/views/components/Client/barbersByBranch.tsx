@@ -12,6 +12,13 @@ interface Barbero {
   telefono: string;
 }
 
+interface Sucursal {
+  codSucursal: string;
+  nombre: string;
+  calle?: string;
+  altura?: number | null;
+}
+
 const BarbersByBranch = () => {
   const params = useParams();
   const { codSucursal, fechaTurno, horaDesde } = params;
@@ -20,6 +27,7 @@ const BarbersByBranch = () => {
   const isHorario = !!fechaTurno && !!horaDesde;
 
   const [barberos, setBarberos] = useState<Barbero[]>([]);
+  const [sucursal, setSucursal] = useState<Sucursal | null>(null);
   const [selectedBarber, setSelectedBarber] = useState<string | null>(null);
   const [showSchedule, setShowSchedule] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -41,6 +49,35 @@ const BarbersByBranch = () => {
       .padStart(2, "0")}`;
   };
 
+  // Formatea una fecha recibida (posible 'YYYY-MM-DD' o con 'T') a 'DD/MM/AAAA'
+  const formatFecha = (fecha?: string | null): string => {
+    if (!fecha) return "";
+    let f = fecha;
+    // Si viene con hora (ISO), tomamos la parte de fecha
+    if (f.includes("T")) f = f.split("T")[0];
+
+    if (f.includes("-")) {
+      const parts = f.split("-");
+      if (parts.length === 3) {
+        const [year, month, day] = parts;
+        return `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${year}`;
+      }
+    }
+
+    if (f.includes("/")) return f; // ya está formateada
+
+    // Fallback: intentar parsear con Date
+    const d = new Date(f);
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+
+    return fecha; // si no conseguimos formatear, devolver original
+  };
+
   useEffect(() => {
     console.log(
       "codSucursal from params:",
@@ -55,46 +92,61 @@ const BarbersByBranch = () => {
       return;
     }
 
-    const endpoint = isHorario
+    // Endpoints: barberos y detalle de sucursal
+    const barberosEndpoint = isHorario
       ? `/usuarios/schedule/${codSucursal}/${fechaTurno}/${horaDesde}`
       : `/usuarios/branch/${codSucursal}`;
+    const sucursalEndpoint = `/sucursales/${codSucursal}`;
 
-    console.log("Fetching barbers from endpoint:", endpoint);
+    console.log("Fetching barbers from endpoint:", barberosEndpoint);
+    console.log("Fetching sucursal from endpoint:", sucursalEndpoint);
 
-    fetch(endpoint)
-      .then(async (res) => {
-        console.log("Response status:", res.status);
-
-        if (!res.ok) {
-          throw new Error(`Error ${res.status}: ${res.statusText}`);
+    // Hacemos las dos peticiones en paralelo
+    Promise.all([
+      fetch(barberosEndpoint),
+      fetch(sucursalEndpoint),
+    ])
+      .then(async ([resBarberos, resSucursal]) => {
+        if (!resBarberos.ok) {
+          throw new Error(`Error barberos ${resBarberos.status}: ${resBarberos.statusText}`);
+        }
+        if (!resSucursal.ok) {
+          throw new Error(`Error sucursal ${resSucursal.status}: ${resSucursal.statusText}`);
         }
 
-        const contentType = res.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          const text = await res.text();
-          console.error("Expected JSON but received:", text.substring(0, 100));
-          throw new Error("El servidor no devolvió datos JSON válidos");
+        const contentTypeBarberos = resBarberos.headers.get("content-type");
+        if (!contentTypeBarberos || !contentTypeBarberos.includes("application/json")) {
+          const text = await resBarberos.text();
+          console.error("Expected JSON for barberos but received:", text.substring(0, 100));
+          throw new Error("El servidor no devolvió datos JSON válidos para barberos");
         }
 
-        return res.json();
+        const contentTypeSucursal = resSucursal.headers.get("content-type");
+        if (!contentTypeSucursal || !contentTypeSucursal.includes("application/json")) {
+          const text = await resSucursal.text();
+          console.error("Expected JSON for sucursal but received:", text.substring(0, 100));
+          throw new Error("El servidor no devolvió datos JSON válidos para sucursal");
+        }
+
+        const dataBarberos = await resBarberos.json();
+        const dataSucursal = await resSucursal.json();
+
+        return { dataBarberos, dataSucursal };
       })
-      .then((data) => {
-        console.log(
-          "Data received:",
-          data,
-          "Type:",
-          typeof data,
-          "Is Array:",
-          Array.isArray(data)
-        );
-        // Extract the actual array from the response object
-        const barbersArray = data.data || data; // Use data.data if it exists, otherwise fallback to data
+      .then(({ dataBarberos, dataSucursal }) => {
+        const barbersArray = dataBarberos.data || dataBarberos;
         setBarberos(Array.isArray(barbersArray) ? barbersArray : []);
+
+        const suc = dataSucursal.data || dataSucursal;
+        // si la respuesta es un array por alguna razon tomamos el primero
+        const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
+        setSucursal(sucObj);
       })
       .catch((error) => {
-        console.error("Error al obtener barberos:", error);
+        console.error("Error al obtener datos:", error);
         setError(error.message);
-        setBarberos([]); // Ensure it's an empty array on error
+        setBarberos([]);
+        setSucursal(null);
       })
       .finally(() => {
         setLoading(false);
@@ -200,7 +252,7 @@ const BarbersByBranch = () => {
         });
         setSelectedBarber(null);
 
-        navigate("/");
+        navigate("/Home");
       } else {
         toast.error("Error al reservar turno", {
           id: toastId,
@@ -214,6 +266,27 @@ const BarbersByBranch = () => {
 
   return (
     <div className={styles.barbersContainer}>
+      <div className={styles.infoRow}>
+        {sucursal && (
+          <div className={styles.branchInfo}>
+            <h3>{sucursal.nombre}</h3>
+            <p>
+              {sucursal.calle}
+              {sucursal.altura ? `, ${sucursal.altura}` : ""}
+            </p>
+          </div>
+        )}
+
+        {/* Mostrar horario seleccionado en tarjeta idéntica a la de sucursal */}
+        {isHorario && (
+          <div className={styles.branchInfo}>
+            <h3>Horario </h3>
+            <p>
+              {formatFecha(fechaTurno)} - {horaDesde}
+            </p>
+          </div>
+        )}
+      </div>
       <h2>Elige un barbero</h2>
       <ul className={styles.barberList}>
         {barberos.length === 0 ? (
