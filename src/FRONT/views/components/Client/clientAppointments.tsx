@@ -14,7 +14,7 @@ interface Appointment {
   horaHasta: string;
   precioTurno?: number;
   metodoPago?: string;
-  codEstado: string;
+  estado: string;
 }
 interface Barber {
   codUsuario: string;
@@ -37,19 +37,12 @@ interface Cut {
   valorBase: number;
 }
 
-interface State {
-  codEstado: string;
-  nombreEstado: string;
-}
-
 const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  //   const [toCancel, setToCancel] = useState<any | null>(null);
   const [turnos, setTurnos] = useState<Appointment[]>([]);
   const [barberos, setBarberos] = useState<Barber[]>([]);
   const [cortes, setCortes] = useState<Cut[]>([]);
   const [sucursales, setSucursales] = useState<Branch[]>([]);
-  const [estados, setEstados] = useState<State[]>([]);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
@@ -69,6 +62,24 @@ const ClientAppointments: React.FC = () => {
     const hours = date.getUTCHours().toString().padStart(2, "0");
     const minutes = date.getUTCMinutes().toString().padStart(2, "0");
     return `${hours}:${minutes}`;
+  };
+
+  // Función para obtener la clase CSS según el estado del turno
+  const getStatusClass = (estado: string): string => {
+    switch (estado) {
+      case "Programado":
+        return barberStyles.statusProgramado;
+      case "Cancelado":
+        return barberStyles.statusCancelado;
+      case "Cobrado":
+        return barberStyles.statusCobrado;
+      case "Sin cobrar":
+        return barberStyles.statusSinCobrar;
+      case "No asistido":
+        return barberStyles.statusNoAsistido;
+      default:
+        return barberStyles.statusProgramado; // Valor por defecto
+    }
   };
 
   // Primer efecto: verificar autenticación
@@ -136,7 +147,6 @@ const ClientAppointments: React.FC = () => {
     // Limpiar datos anteriores
     setBarberos([]);
     setSucursales([]);
-    setEstados([]);
     setCortes([]);
 
     turnos.forEach((turno) => {
@@ -173,25 +183,6 @@ const ClientAppointments: React.FC = () => {
         })
         .catch((error) => {
           console.error("Error fetching barber:", error);
-        });
-
-      // Fetch estado
-      fetch(`/turnos/state/${turno.codEstado}`)
-        .then((res) => res.json())
-        .then((response) => {
-          // Manejar respuesta envuelta en { success: true, data: {...} }
-          const estadoData = response.success ? response.data : response;
-          console.log("Estado data:", estadoData);
-
-          setEstados((prev) => {
-            if (prev.some((e) => e.codEstado === estadoData.codEstado)) {
-              return prev;
-            }
-            return [...prev, estadoData];
-          });
-        })
-        .catch((error) => {
-          console.error("Error fetching status:", error);
         });
 
       // Fetch corte si existe
@@ -298,20 +289,33 @@ const ClientAppointments: React.FC = () => {
   };
 
   const confirmedDelete = async (codTurno: string) => {
-    const toastId = toast.loading("Eliminando turno...");
+    const toastId = toast.loading("Cancelando turno...");
 
     try {
-      const response = await fetch(`/client/${codTurno}`, {
-        method: "DELETE",
+      const response = await fetch(`/turnos/${codTurno}/cancel`, {
+        method: "PUT",
       });
 
       if (response.ok) {
-        toast.success("Turno eliminado correctamente", { id: toastId });
-        setTurnos(turnos.filter((turno) => turno.codTurno !== codTurno));
+        await response.json();
+        toast.success("Turno cancelado correctamente", { id: toastId });
+
+        // Actualizar el estado local del turno en lugar de eliminarlo
+        setTurnos(
+          turnos.map((turno) =>
+            turno.codTurno === codTurno
+              ? { ...turno, estado: "Cancelado" }
+              : turno
+          )
+        );
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
-        toast.error("Error al borrar el turno", { id: toastId });
+        const errorData = await response.json();
+        console.error("Error response:", errorData);
+        toast.error(errorData.message || "Error al cancelar el turno", {
+          id: toastId,
+        });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
@@ -334,7 +338,6 @@ const ClientAppointments: React.FC = () => {
               (s) => s.codSucursal === barber?.codSucursal
             );
             const cut = cortes.find((c) => c.codCorte === t.codCorte);
-            const state = estados.find((e) => e.codEstado === t.codEstado);
 
             return (
               <li key={t.codTurno} className={barberStyles.appointmentItem}>
@@ -386,22 +389,22 @@ const ClientAppointments: React.FC = () => {
                       </span>
                     </div>
                   )}
-                  {state && (
-                    <div className={barberStyles.detailRow}>
-                      <span className={barberStyles.detailLabel}>Estado:</span>
-                      <span
-                        className={`${barberStyles.detailValue} ${barberStyles.statusBadge}`}
-                      >
-                        {state.nombreEstado}
-                      </span>
-                    </div>
-                  )}
+                  <div className={barberStyles.detailRow}>
+                    <span className={barberStyles.detailLabel}>Estado:</span>
+                    <span
+                      className={`${barberStyles.detailValue} ${
+                        barberStyles.statusBadge
+                      } ${getStatusClass(t.estado)}`}
+                    >
+                      {t.estado}
+                    </span>
+                  </div>
                 </div>
                 <div className={barberStyles.appointmentActions}>
                   <button
                     className={barberStyles.deleteButton}
                     onClick={() => handleDelete(t.codTurno)}
-                    disabled={state?.nombreEstado !== "Programado"}
+                    disabled={t.estado !== "Programado"}
                   >
                     Cancelar Turno
                   </button>

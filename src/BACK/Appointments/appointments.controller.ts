@@ -12,7 +12,10 @@ class AppointmentsController extends BaseController<any> {
 const appointmentsController = new AppointmentsController();
 
 // Funciones personalizadas para appointments
-export const findByAvailableDate = async (req: Request, res: Response): Promise<void> => {
+export const findByAvailableDate = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { fechaTurno, codSucursal } = req.params;
 
@@ -41,7 +44,10 @@ export const findByAvailableDate = async (req: Request, res: Response): Promise<
   }
 };
 
-export const findByBarberId = async (req: Request, res: Response): Promise<void> => {
+export const findByBarberId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { codBarbero, fechaTurno } = req.params;
 
@@ -67,7 +73,10 @@ export const findByBarberId = async (req: Request, res: Response): Promise<void>
   }
 };
 
-export const findByUserId = async (req: Request, res: Response): Promise<void> => {
+export const findByUserId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { codUsuario } = req.params;
 
@@ -93,33 +102,10 @@ export const findByUserId = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-export const findState = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { codEstado } = req.params;
-
-    if (!codEstado) {
-      res.status(400).json({
-        success: false,
-        message: "codEstado es requerido",
-      });
-      return;
-    }
-
-    const estado = await model.findState(codEstado);
-
-    res.status(200).json({
-      success: true,
-      data: estado,
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message || "Error al buscar estado",
-    });
-  }
-};
-
-export const cancelAppointment = async (req: Request, res: Response): Promise<void> => {
+export const cancelAppointment = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { codTurno } = req.params;
 

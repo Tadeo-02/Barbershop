@@ -209,6 +209,7 @@ const BarbersByBranch = () => {
         fechaTurno: fechaTurno,
         horaDesde: horaDesde,
         horaHasta: horaHasta,
+        estado: "Programado",
       });
 
       const response = await fetch("/turnos", {
@@ -222,6 +223,7 @@ const BarbersByBranch = () => {
           fechaTurno: fechaTurno,
           horaDesde: horaDesde,
           horaHasta: horaHasta,
+          estado: "Programado",
         }),
       });
 

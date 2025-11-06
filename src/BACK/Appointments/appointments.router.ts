@@ -1,5 +1,5 @@
 import * as controller from "./appointments.controller";
-import  createRouter  from "../base/base.router";
+import createRouter from "../base/base.router";
 import { Router } from "express";
 
 const router: Router = createRouter(controller, {
@@ -15,7 +15,6 @@ router.get(
 );
 router.get("/barber/:codBarbero/:fechaTurno", controller.findByBarberId);
 router.get("/user/:codUsuario", controller.findByUserId);
-router.get("/state/:codEstado", controller.findState);
-router.get("/client/:codTurno", controller.cancelAppointment);
+router.put("/:codTurno/cancel", controller.cancelAppointment);
 
 export default router;
