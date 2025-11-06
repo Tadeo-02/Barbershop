@@ -19,27 +19,24 @@ model Categoria {
 }
 
 model Turno {
-  codTurno                             String             @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  codCorte                             String?            @db.VarChar(36)
-  codCliente                           String             @db.VarChar(36)
-  precioTurno                          Float?             @db.Float
-  metodoPago                           String?            @db.VarChar(20)
-  fechaCancelacion                     DateTime?          @db.Date
-  codBarbero                           String             @db.VarChar(36)
-  fechaTurno                           DateTime           @db.Date
-  horaDesde                            DateTime           @db.Time(0)
-  horaHasta                            DateTime           @db.Time(0)
-  codEstado                            String             @db.VarChar(36)
-  estado_del_turno                     estado_del_turno[]
-  usuarios_turnos_codBarberoTousuarios usuarios           @relation("turnos_codBarberoTousuarios", fields: [codBarbero], references: [codUsuario], onUpdate: Restrict, map: "fk_turnos_barbero")
-  usuarios_turnos_codClienteTousuarios usuarios           @relation("turnos_codClienteTousuarios", fields: [codCliente], references: [codUsuario], onUpdate: Restrict, map: "fk_turnos_cliente")
-  tipos_corte                          tipos_corte?       @relation(fields: [codCorte], references: [codCorte], onDelete: Restrict, onUpdate: Restrict, map: "fk_turnos_corte")
-  estado_turno                         estado_turno       @relation(fields: [codEstado], references: [codEstado], onUpdate: Restrict, map: "fk_turnos_estado")
+  codTurno                             String       @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codCorte                             String?      @db.VarChar(36)
+  codCliente                           String       @db.VarChar(36)
+  precioTurno                          Float?       @db.Float
+  metodoPago                           String?      @db.VarChar(20)
+  fechaCancelacion                     DateTime?    @db.Date
+  codBarbero                           String       @db.VarChar(36)
+  fechaTurno                           DateTime     @db.Date
+  horaDesde                            DateTime     @db.Time(0)
+  horaHasta                            DateTime     @db.Time(0)
+  estado                               String       @db.VarChar(20)
+  usuarios_turnos_codBarberoTousuarios usuarios     @relation("turnos_codBarberoTousuarios", fields: [codBarbero], references: [codUsuario], onUpdate: Restrict, map: "fk_turnos_barbero")
+  usuarios_turnos_codClienteTousuarios usuarios     @relation("turnos_codClienteTousuarios", fields: [codCliente], references: [codUsuario], onUpdate: Restrict, map: "fk_turnos_cliente")
+  tipos_corte                          tipos_corte? @relation(fields: [codCorte], references: [codCorte], onDelete: Restrict, onUpdate: Restrict, map: "fk_turnos_corte")
 
   @@index([codBarbero], map: "codBarbero")
   @@index([codCliente], map: "codCliente")
   @@index([codCorte], map: "codCorte")
-  @@index([codEstado], map: "codEstado")
   @@map("turnos")
 }
 
@@ -53,25 +50,6 @@ model categoria_vigente {
 
   @@index([codCategoria], map: "codCategoria")
   @@index([codCliente], map: "codCliente")
-}
-
-model estado_del_turno {
-  codEstadoDelTurno String       @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  codEstado         String       @db.VarChar(36)
-  codTurno          String       @db.VarChar(36)
-  estado_turno      estado_turno @relation(fields: [codEstado], references: [codEstado], onUpdate: Restrict, map: "fk_edt_estado")
-  turnos            Turno        @relation(fields: [codTurno], references: [codTurno], onUpdate: Restrict, map: "fk_edt_turno")
-
-  @@index([codEstado], map: "codEstado")
-  @@index([codTurno], map: "codTurno")
-}
-
-model estado_turno {
-  codEstado        String             @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  nombreEstado     String             @db.VarChar(50)
-  descEstado       String             @db.VarChar(250)
-  estado_del_turno estado_del_turno[]
-  turnos           Turno[]
 }
 
 model sucursales {
