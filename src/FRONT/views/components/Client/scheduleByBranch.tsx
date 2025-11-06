@@ -288,6 +288,7 @@ const ScheduleByBranch = () => {
         fechaTurno: fechaTurno,
         horaDesde: selectedHorario,
         horaHasta: horaHasta,
+        estado: "Programado",
       });
 
       const response = await fetch("/turnos", {
@@ -301,6 +302,7 @@ const ScheduleByBranch = () => {
           fechaTurno: fechaTurno,
           horaDesde: selectedHorario,
           horaHasta: horaHasta,
+          estado: "Programado",
         }),
       });
 
