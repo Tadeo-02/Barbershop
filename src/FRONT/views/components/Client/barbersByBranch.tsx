@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import styles from "./barbersByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useAuth } from "../login/AuthContext.tsx";
 
 interface Barbero {

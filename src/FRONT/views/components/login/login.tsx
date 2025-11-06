@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import styles from "./login.module.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
 import {useUserRedirect} from "../Redirect.tsx";
+import toast from "react-hot-toast";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -24,11 +25,11 @@ function Login() {
         try {
           data = JSON.parse(text);
         } catch {
-          alert("Respuesta inválida del servidor");
+          toast.error("Respuesta inválida del servidor");
           return;
         }
       } else {
-        alert("El servidor no devolvió respuesta.");
+        toast.error("El servidor no devolvió respuesta.");
         return;
       }
       if (response.ok) {
@@ -45,15 +46,15 @@ function Login() {
           redirectUser(data.user, data.message || "Login exitoso");
         } else {
           console.log("No user data in response");
-          alert("Datos de usuario no encontrados");
+          toast.error("Datos de usuario no encontrados");
         }
       } else {
         console.log("Login failed, server response:", data);
-        alert(data.message || "Error de login");
+        toast.error(data?.message || "Error de login");
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      alert("Error de conexión");
+      toast.error("Error de conexión");
     }
   };
 
