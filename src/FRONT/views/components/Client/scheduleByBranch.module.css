@@ -82,8 +82,6 @@
   width: 100%;
 }
 
-
-
 .backButton:hover:not(:disabled) {
   background: #2b6cb0;
   transform: translateY(-2px);
@@ -142,6 +140,44 @@
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
+
+.branchInfo,
+.selectedBarberInfo {
+  width: 100%;
+  text-align: center;
+  background: #f9f9f9;
+  border: 2px solid #ddd;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 18px rgba(43, 108, 176, 0.04);
+}
+
+
+.infoRow {
+  display: flex;
+  margin-bottom: 1rem;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  gap: 0.75rem;
+}
+
+.branchInfo h3,
+.selectedBarberInfo h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1f2937;
+  font-weight: 800;
+}
+
+.branchInfo p,
+.selectedBarberInfo p {
+  margin: 6px 0 0 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
 .loadingState {
   display: flex;
   justify-content: center;
@@ -188,12 +224,15 @@
     min-height: 50px;
     border-width: 2px;
   }
+
   .scheduleDate {
     font-size: 1.1rem;
   }
+
   .scheduleHour {
     font-size: 1rem;
   }
+
   .emptyState {
     font-size: 1rem;
     padding: 1.5rem;

@@ -14,6 +14,21 @@ interface HorarioResponse {
   hora: string;
 }
 
+interface Sucursal {
+  codSucursal: string;
+  nombre: string;
+  calle: string;
+  altura: number;
+}
+
+interface Barbero {
+  codUsuario: string;
+  codSucursal?: string;
+  nombre?: string;
+  apellido?: string;
+  telefono?: string;
+}
+
 const tomorrow = () => {
   const date = new Date();
   date.setDate(date.getDate() + 1);
@@ -40,6 +55,8 @@ const ScheduleByBranch = () => {
   const isBarbero = !!codBarbero;
 
   const [horarios, setHorarios] = useState<Horario[]>([]);
+  const [sucursal, setSucursal] = useState<Sucursal | null>(null);
+  const [barberoInfo, setBarberoInfo] = useState<Barbero | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(getTomorrowDate());
   const [fechaTurno, setFechaTurno] = useState<string>(selectedDate.toISOString().split("T")[0]);
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
@@ -81,6 +98,89 @@ const ScheduleByBranch = () => {
     const endpoint = isBarbero
       ? `/turnos/barber/${codigo}/${fechaTurno || tomorrow()}`
       : `/turnos/available/${fechaTurno || tomorrow()}/${codigo}`;
+
+    // Si tenemos codSucursal en params, pedimos también la sucursal (no bloqueante)
+    if (codSucursal) {
+      const sucursalEndpoint = `/sucursales/${codSucursal}`;
+      fetch(sucursalEndpoint)
+        .then(async (res) => {
+          if (!res.ok) {
+            throw new Error(`Error sucursal ${res.status}: ${res.statusText}`);
+          }
+          const contentType = res.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            const text = await res.text();
+            console.error("Expected JSON for sucursal but received:", text.substring(0, 100));
+            throw new Error("El servidor no devolvió datos JSON válidos para sucursal");
+          }
+          return res.json();
+        })
+        .then((data) => {
+          const suc = data.data || data;
+          const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
+          setSucursal(sucObj);
+        })
+        .catch((err) => {
+          console.error("Error al obtener sucursal:", err);
+          // No setError global para no bloquear la vista de horarios
+        });
+    }
+
+    // Si hay un barbero seleccionado (codBarbero en params), traemos su info (no bloqueante)
+    if (codBarbero) {
+      const barberoEndpoint = `/usuarios/profiles/${codBarbero}`;
+      fetch(barberoEndpoint)
+        .then(async (res) => {
+          if (!res.ok) {
+            throw new Error(`Error barbero ${res.status}: ${res.statusText}`);
+          }
+          const contentType = res.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            const text = await res.text();
+            console.error("Expected JSON for barbero but received:", text.substring(0, 200));
+            throw new Error("El servidor no devolvió datos JSON válidos para barbero");
+          }
+          return res.json();
+        })
+        .then((data) => {
+          const b = data.data || data;
+          const bObj = Array.isArray(b) ? b[0] || null : b || null;
+          setBarberoInfo(bObj);
+
+          // Si el barbero trae codSucursal y aún no tenemos la sucursal, pedirla para mostrar ambos datos
+          try {
+            if (bObj && bObj.codSucursal && !sucursal) {
+              const sucursalEndpointFromBarber = `/sucursales/${bObj.codSucursal}`;
+              fetch(sucursalEndpointFromBarber)
+                .then(async (res) => {
+                  if (!res.ok) {
+                    throw new Error(`Error sucursal ${res.status}: ${res.statusText}`);
+                  }
+                  const contentType = res.headers.get("content-type");
+                  if (!contentType || !contentType.includes("application/json")) {
+                    const text = await res.text();
+                    console.error("Expected JSON for sucursal but received:", text.substring(0, 100));
+                    throw new Error("El servidor no devolvió datos JSON válidos para sucursal");
+                  }
+                  return res.json();
+                })
+                .then((sdata) => {
+                  const suc = sdata.data || sdata;
+                  const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
+                  setSucursal(sucObj);
+                })
+                .catch((err) => {
+                  console.error("Error al obtener sucursal desde barbero:", err);
+                });
+            }
+          } catch (err) {
+            console.error("Error procesando sucursal desde barbero:", err);
+          }
+        })
+        .catch((err) => {
+          console.error("Error al obtener barbero:", err);
+        });
+    }
 
     console.log("Llamando a endpoint:", endpoint);
 
@@ -209,10 +309,9 @@ const ScheduleByBranch = () => {
       const text = await response.text();
       console.log("Respuesta cruda del backend:", text);
 
-      let data;
       if (text) {
         try {
-          data = JSON.parse(text);
+          JSON.parse(text);
         } catch (parseError) {
           console.error("Error parsing JSON:", parseError);
           toast.error("Error al procesar respuesta del servidor", {
@@ -233,7 +332,7 @@ const ScheduleByBranch = () => {
         setFechaTurno(tomorrow());
         setSelectedDate(getTomorrowDate());
 
-        navigate("/");
+        navigate("/Home");
       } else {
         toast.error("Error al reservar turno", {
           id: toastId,
@@ -252,11 +351,31 @@ const ScheduleByBranch = () => {
   if (error) {
     return <div className={styles.errorState}>Error: {error}</div>;
   }
-
   return (
     <div className={styles.scheduleContainer}>
+      <div className={styles.infoRow}>
+        {sucursal && (
+          <div className={styles.branchInfo}>
+            <h3>{sucursal.nombre}</h3>
+            <p>
+              {sucursal.calle}
+              {sucursal.altura ? `, ${sucursal.altura}` : ""}
+            </p>
+          </div>
+        )}
+
+        {barberoInfo && (
+          <div className={styles.selectedBarberInfo}>
+            <h4>
+              {barberoInfo.apellido ? `${barberoInfo.apellido}, ` : ""}
+              {barberoInfo.nombre}
+            </h4>
+          </div>
+        )}
+      </div>
+
       <h2>
-        {isBarbero ? "Horarios disponibles del barbero" : "Elige un horario"}
+        Elige un horario
       </h2>
 
       <div className={styles.datePickerContainer}>

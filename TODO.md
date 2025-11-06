@@ -4,7 +4,7 @@
     - [X] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
     - [X] Pantalla de perfil de usuario
     - [ ] Pantalla de cancelar turnos // la pantalla ya está habria que cambiar el DELETE por un UPDATE de estado que será diferente dependiendo de si mantenemos a los estados como clase o si son solo un atributo del turno.
-    - [ ] Mostrar sucursal seleccionada en pantalla de seleccion barbero y mostrar barbero seleccionado en pantalla de sucursal seleccionada
+    - [X] Mostrar sucursal seleccionada en pantalla de seleccion barbero y mostrar barbero seleccionado en pantalla de sucursal seleccionada
 ## Barberos:
     - [ ] Pantalla de modificar turno
     - [ ] Pantalla de ver turnos pendientes
@@ -18,7 +18,7 @@
     - [X] Definir estructura mobile first en estilos
     - [ ] Sección Productos
     - [ ] Fix de Toasts de error cuando hay succes (ej: create barberos desde admin)
-    - [ ] Fix boton de login en Landing Page
+    - [X] Fix boton de login en Landing Page
 # BACK:
 ## - Usuarios:
     - [X] Pedir turnos
