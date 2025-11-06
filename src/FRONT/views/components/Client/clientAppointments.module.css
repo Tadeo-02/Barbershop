@@ -185,12 +185,32 @@
 }
 
 .statusBadge {
-  background-color: #48bb78;
   color: white;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 0.85rem;
   font-weight: 600;
+}
+
+/* Estados específicos con colores distintos */
+.statusProgramado {
+  background-color: #4299e1; /* Azul - turno activo y programado */
+}
+
+.statusCancelado {
+  background-color: #e53e3e; /* Rojo - cancelado por el cliente */
+}
+
+.statusCobrado {
+  background-color: #48bb78; /* Verde - completado y pagado exitosamente */
+}
+
+.statusSinCobrar {
+  background-color: #ed8936; /* Naranja - servicio realizado pero no pagado */
+}
+
+.statusNoAsistido {
+  background-color: #718096; /* Gris - cliente no se presentó */
 }
 
 .deleteButton {
