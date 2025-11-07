@@ -6,6 +6,7 @@
     - [X] Pantalla de cancelar turnos // la pantalla ya está habria que cambiar el DELETE por un UPDATE de estado que depende del cambio q se haga en la lógica de los estados
     - [X] Mostrar sucursal seleccionada en pantalla de seleccion barbero y mostrar barbero seleccionado en pantalla de sucursal seleccionada
 ## Barberos:
+    - [X] Pantalla de modificar turno
     - [X] Pantalla de ver turnos pendientes
     - [ ] Buscador de turnos medianto nro de orden en branchAppointments
 ## Admin:
@@ -30,6 +31,7 @@
     - [ ] Verificar logica de envio de fecha de cancelacion de turno
 ## Barberos:
     - [ ] Modificar Turnos
+    - [ ] Validar que el turno que completa sea de ese mismo día
 ## Admin:
     - [X] CRUD Sucursal
     - [X] CRUD Barberos

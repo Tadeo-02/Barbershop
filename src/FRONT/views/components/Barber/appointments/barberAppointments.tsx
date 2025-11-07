@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../login/AuthContext";
-import barberStyles from "../../Client/clientAppointments.module.css";
+import barberStyles from "./barberAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -14,7 +14,7 @@ interface Appointment {
   horaHasta: string;
   precioTurno?: number;
   metodoPago?: string;
-  codEstado: string;
+  estado: string;
 }
 
 interface Client {
@@ -38,29 +38,19 @@ interface Cut {
   valorBase: number;
 }
 
-interface State {
-  codEstado: string;
-  nombreEstado: string;
-}
-
-const ClientAppointments: React.FC = () => {
+const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  //   const [toCancel, setToCancel] = useState<any | null>(null);
   const [turnos, setTurnos] = useState<Appointment[]>([]);
   const [clientes, setClientes] = useState<Client[]>([]);
   const [cortes, setCortes] = useState<Cut[]>([]);
   const [sucursales, setSucursales] = useState<Branch[]>([]);
-  const [estados, setEstados] = useState<State[]>([]);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
   // Función para formatear la fecha en formato legible (DD/MM/YYYY)
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
+    const [year, month, day] = dateString.split("T")[0].split("-");
     return `${day}/${month}/${year}`;
   };
 
@@ -70,6 +60,24 @@ const ClientAppointments: React.FC = () => {
     const hours = date.getUTCHours().toString().padStart(2, "0");
     const minutes = date.getUTCMinutes().toString().padStart(2, "0");
     return `${hours}:${minutes}`;
+  };
+
+  // Función para obtener la clase CSS según el estado del turno
+  const getStatusClass = (estado: string): string => {
+    switch (estado) {
+      case "Programado":
+        return barberStyles.statusProgramado;
+      case "Cancelado":
+        return barberStyles.statusCancelado;
+      case "Cobrado":
+        return barberStyles.statusCobrado;
+      case "Sin cobrar":
+        return barberStyles.statusSinCobrar;
+      case "No asistido":
+        return barberStyles.statusNoAsistido;
+      default:
+        return barberStyles.statusProgramado; // Valor por defecto
+    }
   };
 
   // Primer efecto: verificar autenticación
@@ -137,16 +145,15 @@ const ClientAppointments: React.FC = () => {
     // Limpiar datos anteriores
     setClientes([]);
     setSucursales([]);
-    setEstados([]);
     setCortes([]);
 
     turnos.forEach((turno) => {
-      // Fetch barber
+      // Fetch client
       fetch(`/usuarios/${turno.codCliente}`)
         .then((res) => res.json())
         .then((data) => {
           setClientes((prev) => {
-            if (prev.some((b) => b.codUsuario === data.codUsuario)) {
+            if (prev.some((c) => c.codUsuario === data.codUsuario)) {
               return prev;
             }
             return [...prev, data];
@@ -156,13 +163,12 @@ const ClientAppointments: React.FC = () => {
           console.error("Error fetching client:", error);
         });
 
+      // Fetch branch
       fetch(`/sucursales/${user.codSucursal}`)
         .then((res) => res.json())
         .then((branchData) => {
           setSucursales((prev) => {
-            if (
-              prev.some((s) => s.codSucursal === branchData.codSucursal)
-            ) {
+            if (prev.some((s) => s.codSucursal === branchData.codSucursal)) {
               return prev;
             }
             return [...prev, branchData];
@@ -170,25 +176,6 @@ const ClientAppointments: React.FC = () => {
         })
         .catch((error) => {
           console.error("Error fetching branch:", error);
-        });
-
-      // Fetch estado
-      fetch(`/turnos/state/${turno.codEstado}`)
-        .then((res) => res.json())
-        .then((response) => {
-          // Manejar respuesta envuelta en { success: true, data: {...} }
-          const estadoData = response.success ? response.data : response;
-          console.log("Estado data:", estadoData);
-
-          setEstados((prev) => {
-            if (prev.some((e) => e.codEstado === estadoData.codEstado)) {
-              return prev;
-            }
-            return [...prev, estadoData];
-          });
-        })
-        .catch((error) => {
-          console.error("Error fetching status:", error);
         });
 
       // Fetch corte si existe
@@ -206,9 +193,125 @@ const ClientAppointments: React.FC = () => {
           .catch((error) => {
             console.error("Error fetching cut type:", error);
           });
-      }    
+      }
     });
   }, [turnos, user.codSucursal]);
+
+  const handleDelete = async (codTurno: string) => {
+    //alert personalizado para confirmacion:
+    toast(
+      (t) => (
+        <div className={barberStyles.modalContainer}>
+          <p className={barberStyles.modalTitle}>
+            ¿Estás seguro de que deseas cancelar esta reserva?
+          </p>
+          <div className={barberStyles.modalButtons}>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className={barberStyles.buttonCancel}
+            >
+              Atrás
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                confirmedDelete(codTurno);
+              }}
+              className={barberStyles.buttonConfirm}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        style: {
+          minWidth: "350px",
+          padding: "24px",
+        },
+      }
+    );
+  };
+
+  const confirmedDelete = async (codTurno: string) => {
+    const toastId = toast.loading("Cancelando turno...");
+
+    try {
+      // Obtener la fecha actual en formato YYYY-MM-DD
+      const fechaCancelacion = new Date().toISOString().split("T")[0];
+
+      const response = await fetch(`/turnos/${codTurno}/cancel`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fechaCancelacion }),
+      });
+
+      if (response.ok) {
+        await response.json();
+        toast.success("Turno cancelado correctamente", { id: toastId });
+
+        // Actualizar el estado local del turno en lugar de eliminarlo
+        setTurnos(
+          turnos.map((turno) =>
+            turno.codTurno === codTurno
+              ? { ...turno, estado: "Cancelado" }
+              : turno
+          )
+        );
+      } else if (response.status === 404) {
+        toast.error("Turno no encontrado", { id: toastId });
+      } else {
+        const errorData = await response.json();
+        console.error("Error response:", errorData);
+        toast.error(errorData.message || "Error al cancelar el turno", {
+          id: toastId,
+        });
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      toast.error("Error de conexión con el servidor", { id: toastId });
+    }
+  };
+
+  // const handleUpdate = (codTurno: string) => {
+    
+  //   toast(
+  //     (t) => (
+  //       <div className={barberStyles.modalContainer}>
+  //         <p className={barberStyles.modalTitle}>
+  //           Fecha:
+  //         </p>
+  //         <div className={barberStyles.modalButtons}>
+  //           <button
+  //             onClick={() => toast.dismiss(t.id)}
+  //             className={barberStyles.buttonCancel}
+  //           >
+  //             Atrás
+  //           </button>
+  //           <button
+  //             onClick={() => {
+  //               toast.dismiss(t.id);
+  //               confirmedDelete(codTurno);
+  //             }}
+  //             className={barberStyles.buttonConfirm}
+  //           >
+  //             Cancelar
+  //           </button>
+  //         </div>
+  //       </div>
+  //     ),
+  //     {
+  //       duration: Infinity,
+  //       style: {
+  //         minWidth: "350px",
+  //         padding: "24px",
+  //       },
+  //     }
+  //   );
+  // };
 
   return (
     <div className={barberStyles.appointmentsContainer}>
@@ -220,12 +323,11 @@ const ClientAppointments: React.FC = () => {
           </li>
         ) : (
           turnos.map((t) => {
-            const client = clientes.find((b) => b.codUsuario === t.codCliente);
+            const client = clientes.find((c) => c.codUsuario === t.codCliente);
             const branch = sucursales.find(
               (s) => s.codSucursal === client?.codSucursal
             );
             const cut = cortes.find((c) => c.codCorte === t.codCorte);
-            const state = estados.find((e) => e.codEstado === t.codEstado);
 
             return (
               <li key={t.codTurno} className={barberStyles.appointmentItem}>
@@ -277,26 +379,34 @@ const ClientAppointments: React.FC = () => {
                       </span>
                     </div>
                   )}
-                  {state && (
-                    <div className={barberStyles.detailRow}>
-                      <span className={barberStyles.detailLabel}>Estado:</span>
-                      <span
-                        className={`${barberStyles.detailValue} ${barberStyles.statusBadge}`}
-                      >
-                        {state.nombreEstado}
-                      </span>
-                    </div>
-                  )}
+                  <div className={barberStyles.detailRow}>
+                    <span className={barberStyles.detailLabel}>Estado:</span>
+                    <span
+                      className={`${barberStyles.detailValue} ${
+                        barberStyles.statusBadge
+                      } ${getStatusClass(t.estado)}`}
+                    >
+                      {t.estado}
+                    </span>
+                  </div>
                 </div>
-                <div className={barberStyles.appointmentActions}>
-                  <button
-                    className={barberStyles.deleteButton}
-                    onClick={() => handleDelete(t.codTurno)}
-                    disabled={state?.nombreEstado !== "Programado"}
-                  >
-                    Modificar Turno
-                  </button>
-                </div>
+                {t.estado === "Programado" && (
+                  <div className={barberStyles.appointmentActions}>
+                    <button
+                      className={barberStyles.deleteButton}
+                      onClick={() => handleDelete(t.codTurno)}
+                    >
+                      Cancelar Turno
+                    </button>
+                    <button
+                      className={barberStyles.updateButton}
+                      disabled={true}
+                      // onClick={() => handleUpdate(t.codTurno)}
+                    >
+                      Modificar Turno
+                    </button>
+                  </div>
+                )}
               </li>
             );
           })
@@ -306,4 +416,4 @@ const ClientAppointments: React.FC = () => {
   );
 };
 
-export default ClientAppointments;
+export default BarberAppointments;
