@@ -369,7 +369,7 @@ export const findByBranchId = async (codSucursal: string) => {
           },
         },
       },
-      orderBy: [{ fechaTurno: "desc" }, { horaDesde: "desc" }],
+      orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
     });
 
     console.log(
