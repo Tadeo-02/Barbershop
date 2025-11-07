@@ -6,14 +6,14 @@
 ·        Rufine, Tadeo – 52064 <br>
 ·        Dominguez, Dolores – 52072<br>
 ### Repositorio
-* [frontend y backend](http://hyperlinkToGihubOrGitlab)
+* [frontend y backend](https://github.com/Tadeo-02/Barbershop.git)
 
 ## Tema
 ### Descripción
 Sistema de gestión de turnos de una barbería que cuenta con varias sucursales y barberos. El sistema deberá registrar a los clientes quienes podrán solicitar turnos con los diferentes barberos. Por otro lado, el barbero será capaz de gestionar los turnos solicitados. Los clientes tendrán diferentes categorías que les permitirán acceder a descuentos, y para eso se llevará un historial de todos los turnos solicitados por cada cliente. El sistema ofrecerá la opción de realizar la facturación del corte una vez atendido al cliente.
 
 ### Modelo
-![image](https://github.com/user-attachments/assets/a12d6f49-9e6f-48b2-93dd-02db4d63cd49)
+![image](public/images/dsw-MD.jpg)
 
 
 ## Alcance Funcional 
