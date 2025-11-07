@@ -1,0 +1,353 @@
+/* Branch Appointments Styles */
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #f8f8f8;
+  color: #333;
+  margin: 0;
+  padding: 10px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.appointmentsContainer {
+  max-width: 100%;
+  margin: 12px 0;
+  padding: 12px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  animation: fadeIn 0.35s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: visible;
+  margin-bottom: 60px;
+}
+
+.pageTitle {
+  font-size: 1.6rem;
+  color: #1a202c;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.appointmentList {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+  overflow: visible;
+}
+
+.appointmentItem {
+  background-color: #f0f4f8;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.appointmentItem:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+}
+
+.appointmentDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.detailLabel {
+  font-weight: 600;
+  color: #4a5568;
+  min-width: 100px;
+}
+
+.detailValue {
+  color: #2d3748;
+}
+
+.statusBadge {
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Estados específicos con colores distintos */
+.statusProgramado {
+  background-color: #4299e1; /* Azul - turno activo y programado */
+}
+
+.statusCancelado {
+  background-color: #e53e3e; /* Rojo - cancelado por el cliente */
+}
+
+.statusCobrado {
+  background-color: #48bb78; /* Verde - completado y pagado exitosamente */
+}
+
+.statusSinCobrar {
+  background-color: #ed8936; /* Naranja - servicio realizado pero no pagado */
+}
+
+.statusNoAsistido {
+  background-color: #718096; /* Gris - cliente no se presentó */
+}
+
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f7fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.formGroup {
+  margin-bottom: 0;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.formInput,
+.formSelect {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #2d3748;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+.formInput:focus,
+.formSelect:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease,
+    box-shadow 0.3s ease;
+  text-decoration: none;
+  margin: 5px 0;
+}
+
+.buttonSuccess {
+  background-color: #38a169;
+  color: #ffffff;
+  box-shadow: 0 6px 15px rgba(56, 161, 105, 0.4);
+}
+
+.buttonSuccess:hover {
+  background-color: #2f855a;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(56, 161, 105, 0.5);
+}
+
+.buttonSuccess:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.loadingState,
+.emptyState {
+  text-align: center;
+  padding: 30px;
+  color: #718096;
+  font-size: 1rem;
+}
+
+.emptyState p {
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+/* Modal Toast Styles */
+.modalContainer {
+  text-align: center;
+}
+
+.modalTitle {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.modalDescription {
+  margin: 0 0 24px 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+.modalButtons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.modalButtonCancel {
+  background: #e2e8f0;
+  color: #2d3748;
+  border: 1px solid #cbd5e0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  min-width: 110px;
+  transition: all 0.2s ease;
+}
+
+.modalButtonCancel:hover {
+  background: #cbd5e0;
+  border-color: #a0aec0;
+}
+
+.modalButtonConfirm {
+  background: #38a169;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  min-width: 110px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(56, 161, 105, 0.3);
+}
+
+.modalButtonConfirm:hover {
+  background: #2f855a;
+  box-shadow: 0 6px 8px rgba(56, 161, 105, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* DESKTOP: ajustes para pantallas grandes */
+@media (min-width: 769px) {
+  body {
+    padding: 20px;
+  }
+
+  .pageTitle {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+  }
+
+  .appointmentsContainer {
+    max-width: 100%;
+    margin: 40px auto;
+    padding: 30px;
+  }
+
+  .appointmentItem {
+    padding: 20px;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+
+  .detailRow {
+    font-size: 1rem;
+  }
+
+  .detailLabel {
+    min-width: 120px;
+  }
+
+  .button {
+    width: auto;
+    margin-right: 10px;
+    margin-top: 10px;
+    margin-bottom: 0;
+  }
+
+  .actionButtons {
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .loadingState,
+  .emptyState {
+    padding: 40px;
+    font-size: 1.1rem;
+  }
+
+  .emptyState p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+  }
+
+  .modalTitle {
+    font-size: 1.35rem;
+  }
+
+  .modalDescription {
+    font-size: 1rem;
+  }
+
+  .modalButtonCancel,
+  .modalButtonConfirm {
+    padding: 12px 24px;
+    font-size: 1rem;
+    min-width: 120px;
+  }
+}
