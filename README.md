@@ -1,4 +1,4 @@
-# Boilerplate-Barber
+# Mecha's Barbershop
 
 Aplicación de Gestión de Turnos y Usuarios de Mecha's Barbershop
 
