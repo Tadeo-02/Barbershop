@@ -18,5 +18,6 @@ router.get("/user/:codUsuario", controller.findByUserId);
 router.put("/:codTurno/cancel", controller.cancelAppointment);
 router.get("/branch/:codSucursal", controller.findByBranchId);
 router.put("/:codTurno/checkout", controller.checkoutAppointment);
+router.put("/:codTurno/update", controller.updateAppointment);
 
 export default router;
