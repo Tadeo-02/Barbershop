@@ -329,6 +329,66 @@ export const findByBarberId = async (
   }
 };
 
+export const findByBranchId = async (codSucursal: string) => {
+  try {
+    //sanitizar y validar
+    const sanitizedCodSucursal = sanitizeInput(codSucursal);
+
+    // Equivalente a la consulta SQL con tabla temporal
+    // Buscar turnos programados donde el barbero pertenece a la sucursal especificada
+    const turnos = await prisma.turno.findMany({
+      where: {
+        estado: "Programado",
+        usuarios_turnos_codBarberoTousuarios: {
+          codSucursal: sanitizedCodSucursal,
+        },
+      },
+      include: {
+        usuarios_turnos_codBarberoTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            codSucursal: true,
+          },
+        },
+        usuarios_turnos_codClienteTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            email: true,
+          },
+        },
+        tipos_corte: {
+          select: {
+            codCorte: true,
+            nombreCorte: true,
+            valorBase: true,
+          },
+        },
+      },
+      orderBy: [{ fechaTurno: "desc" }, { horaDesde: "desc" }],
+    });
+
+    console.log(
+      `Found ${turnos.length} scheduled appointments for branch ${sanitizedCodSucursal}`
+    );
+    return turnos;
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding sucursal:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al buscar sucursal");
+  }
+};
+
 export const update = async (
   codTurno: string,
   codCorte: string,
