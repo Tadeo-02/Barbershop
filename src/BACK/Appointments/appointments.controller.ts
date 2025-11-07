@@ -203,5 +203,40 @@ export const checkoutAppointment = async (
   }
 };
 
+export const updateAppointment = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codTurno } = req.params;
+    const { fechaTurno, horaDesde, horaHasta } = req.body;
+
+    if (!codTurno) {
+      res.status(400).json({
+        success: false,
+        message: "codTurno es requerido",
+      });
+      return;
+    }
+
+    const result = await model.updateAppointment(
+      codTurno,
+      fechaTurno,
+      horaDesde,
+      horaHasta
+    );
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al actualizar turno",
+    });
+  }
+};
+
 export const { create, store, index, show, edit, update, destroy } =
   appointmentsController;
