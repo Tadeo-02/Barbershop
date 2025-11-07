@@ -507,6 +507,76 @@ export const update = async (
   }
 };
 
+export const updateAppointment = async (
+  codTurno: string,
+  fechaTurno: string,
+  horaDesde: string,
+  horaHasta: string,
+) => {
+  try {
+    // sanitizar y validar
+    const sanitizedCodTurno = sanitizeInput(codTurno);
+    const sanitizedFechaTurno = sanitizeInput(fechaTurno);
+    const sanitizedHoraDesde = sanitizeInput(horaDesde);
+    const sanitizedHoraHasta = sanitizeInput(horaHasta);
+
+        // convertir strings a Date objects para Prisma
+    const fechaDate = new Date(sanitizedFechaTurno);
+    const horaDesdeDate = new Date(
+      `1970-01-01T${sanitizedHoraDesde}:00.000Z`
+    );
+    const horaHastaDate = new Date(
+      `1970-01-01T${sanitizedHoraHasta}:00.000Z`
+    );
+
+    console.log("🔍 Buscando turno para actualizar:", sanitizedCodTurno);
+
+    // Buscar el turno existente
+    const existingTurno = await prisma.turno.findUnique({
+      where: { codTurno: sanitizedCodTurno },
+    });
+
+    if (!existingTurno) {
+      console.log("Turno no encontrado");
+      throw new DatabaseError("Turno no encontrado");
+    }
+
+    console.log("Turno encontrado, actualizando...");
+
+    // Actualizar el turno
+    const updatedTurno = await prisma.turno.update({
+      where: { codTurno: sanitizedCodTurno },
+      data: {
+        fechaTurno: fechaDate,
+        horaDesde: horaDesdeDate,
+        horaHasta: horaHastaDate,
+      },
+    });
+
+    console.log("Turno actualizado exitosamente");
+    return updatedTurno;
+  } catch (error) {
+    console.error(
+      "Error actualizando turno:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    console.error("Error completo:", error);
+
+    // manejo de errores de validacion
+    if (error instanceof z.ZodError) {
+      const firstError = error.issues[0];
+      throw new DatabaseError(firstError.message);
+    }
+
+    // manejar errores de DB
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError("Error al actualizar turno");
+  }
+};
+
 export const checkoutAppointment = async (
   codTurno: string,
   codCorte: string,
