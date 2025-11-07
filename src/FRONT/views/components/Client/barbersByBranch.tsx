@@ -254,7 +254,7 @@ const BarbersByBranch = () => {
         });
         setSelectedBarber(null);
 
-        navigate("/Home");
+        navigate("/client/home");
       } else {
         toast.error("Error al reservar turno", {
           id: toastId,
