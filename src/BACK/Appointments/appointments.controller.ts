@@ -169,5 +169,39 @@ export const cancelAppointment = async (
   }
 };
 
+export const checkoutAppointment = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codTurno } = req.params;
+    const { codCorte, precioTurno } = req.body;
+
+    if (!codTurno) {
+      res.status(400).json({
+        success: false,
+        message: "codTurno es requerido",
+      });
+      return;
+    }
+
+    const result = await model.checkoutAppointment(
+      codTurno,
+      codCorte,
+      precioTurno
+    );
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al realizar checkout del turno",
+    });
+  }
+};
+
 export const { create, store, index, show, edit, update, destroy } =
   appointmentsController;
