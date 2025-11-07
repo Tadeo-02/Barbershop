@@ -49,10 +49,7 @@ const ClientAppointments: React.FC = () => {
 
   // Función para formatear la fecha en formato legible (DD/MM/YYYY)
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
+    const [year, month, day] = dateString.split("T")[0].split("-");
     return `${day}/${month}/${year}`;
   };
 
@@ -208,70 +205,23 @@ const ClientAppointments: React.FC = () => {
     //alert personalizado para confirmacion:
     toast(
       (t) => (
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-              fontWeight: "600",
-            }}
-          >
+        <div className={barberStyles.modalContainer}>
+          <p className={barberStyles.modalTitle}>
             ¿Estás seguro de que deseas cancelar esta reserva?
           </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
+          <div className={barberStyles.modalButtons}>
             <button
               onClick={() => toast.dismiss(t.id)}
-              style={{
-                background: "#718096",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#4a5568";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#718096";
-              }}
+              className={barberStyles.buttonCancel}
             >
-              Atras
+              Atrás
             </button>
             <button
               onClick={() => {
                 toast.dismiss(t.id);
                 confirmedDelete(codTurno);
               }}
-              style={{
-                background: "#e53e3e",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#c53030";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#e53e3e";
-              }}
+              className={barberStyles.buttonConfirm}
             >
               Cancelar
             </button>
@@ -281,7 +231,7 @@ const ClientAppointments: React.FC = () => {
       {
         duration: Infinity,
         style: {
-          minWidth: "350px", // botones mas anchos
+          minWidth: "350px",
           padding: "24px",
         },
       }
