@@ -155,21 +155,21 @@ export const findByUserId = async (codUsuario: string) => {
     //sanitizar y validar
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
 
+    // Buscar turnos donde el usuario es cliente o barbero
     const turnos = await prisma.turno.findMany({
-      where: { codCliente: sanitizedCodUsuario },
+      where: {
+        OR: [
+          { codCliente: sanitizedCodUsuario },
+          { codBarbero: sanitizedCodUsuario },
+        ],
+      },
+      orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
     });
 
-    if (turnos.length === 0) {
-      const turnos = await prisma.turno.findMany({
-        where: { codBarbero: sanitizedCodUsuario },
-      });
-      return turnos;
-    }
+    console.log(
+      `Found ${turnos.length} turnos for user ${sanitizedCodUsuario}`
+    );
 
-    // console.log(
-    //   `Found ${turnos.length} turnos for client ${sanitizedCodCliente}`
-    // );
-    // console.log(turnos);
     return turnos;
   } catch (error) {
     if (error instanceof DatabaseError) {
@@ -279,6 +279,7 @@ export const findByBarberId = async (
         fechaTurno: new Date(sanitizedFechaTurno),
       },
       orderBy: {
+        fechaTurno: "asc",
         horaDesde: "asc",
       },
     });

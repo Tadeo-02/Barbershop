@@ -3,11 +3,11 @@
     - [X] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal
     - [X] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
     - [X] Pantalla de perfil de usuario
-    - [ ] Pantalla de cancelar turnos // la pantalla ya está habria que cambiar el DELETE por un UPDATE de estado que depende del cambio q se haga en la lógica de los estados
+    - [X] Pantalla de cancelar turnos // la pantalla ya está habria que cambiar el DELETE por un UPDATE de estado que depende del cambio q se haga en la lógica de los estados
     - [X] Mostrar sucursal seleccionada en pantalla de seleccion barbero y mostrar barbero seleccionado en pantalla de sucursal seleccionada
 ## Barberos:
-    - [ ] Pantalla de modificar turno
-    - [ ] Pantalla de ver turnos pendientes
+    - [X] Pantalla de ver turnos pendientes
+    - [ ] Buscador de turnos medianto nro de orden en branchAppointments
 ## Admin:
     - [X] Pantalla general admin
     - [X] Pantalla CRUD sucursales
@@ -40,6 +40,6 @@
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
     - [ ] Sección Productos
     - [X] Cambiar NPM por PNPM
-    - [ ] Cambiar logica del estado de turnos
+    - [X] Cambiar logica del estado de turnos
     - [ ] Lógica de cambio de categoría (AD)
     - [ ] Reutilizar funcion update turnos para todos los tipos de modificacions. Borrar funciones redundantes
