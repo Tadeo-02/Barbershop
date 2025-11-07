@@ -16,5 +16,6 @@ router.get(
 router.get("/barber/:codBarbero/:fechaTurno", controller.findByBarberId);
 router.get("/user/:codUsuario", controller.findByUserId);
 router.put("/:codTurno/cancel", controller.cancelAppointment);
+router.get("/branch/:codSucursal", controller.findByBranchId);
 
 export default router;
