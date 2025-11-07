@@ -61,7 +61,6 @@ const BranchAppointments: React.FC = () => {
 
   // Función para formatear la fecha en formato legible (DD/MM/YYYY)
   const formatDate = (dateString: string): string => {
-    // Usar la fecha directamente sin conversión de zona horaria
     const [year, month, day] = dateString.split("T")[0].split("-");
     return `${day}/${month}/${year}`;
   };
