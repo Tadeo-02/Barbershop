@@ -102,6 +102,35 @@ export const findByUserId = async (
   }
 };
 
+export const findByBranchId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codSucursal } = req.params;
+
+    if (!codSucursal) {
+      res.status(400).json({
+        success: false,
+        message: "codSucursal es requerido",
+      });
+      return;
+    }
+
+    const turnos = await model.findByBranchId(codSucursal);
+
+    res.status(200).json({
+      success: true,
+      data: turnos,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al buscar turnos de la sucursal",
+    });
+  }
+};
+
 export const cancelAppointment = async (
   req: Request,
   res: Response
