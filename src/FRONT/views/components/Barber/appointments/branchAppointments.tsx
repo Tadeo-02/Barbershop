@@ -323,7 +323,7 @@ const BranchAppointments: React.FC = () => {
               }}
               className={styles.modalButtonConfirm}
             >
-              ✓ Confirmar cobro
+              Confirmar cobro
             </button>
           </div>
         </div>
@@ -331,10 +331,12 @@ const BranchAppointments: React.FC = () => {
       {
         duration: Infinity,
         style: {
-          minWidth: "380px",
-          padding: "28px",
+          minWidth: "400px",
+          maxWidth: "500px",
+          padding: "24px",
           borderRadius: "12px",
-          boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)",
+          boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
+          background: "#ffffff",
         },
       }
     );
