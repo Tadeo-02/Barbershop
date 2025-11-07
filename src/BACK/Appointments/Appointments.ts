@@ -329,6 +329,66 @@ export const findByBarberId = async (
   }
 };
 
+export const findByBranchId = async (codSucursal: string) => {
+  try {
+    //sanitizar y validar
+    const sanitizedCodSucursal = sanitizeInput(codSucursal);
+
+    // Equivalente a la consulta SQL con tabla temporal
+    // Buscar turnos programados donde el barbero pertenece a la sucursal especificada
+    const turnos = await prisma.turno.findMany({
+      where: {
+        estado: "Programado",
+        usuarios_turnos_codBarberoTousuarios: {
+          codSucursal: sanitizedCodSucursal,
+        },
+      },
+      include: {
+        usuarios_turnos_codBarberoTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            codSucursal: true,
+          },
+        },
+        usuarios_turnos_codClienteTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            email: true,
+          },
+        },
+        tipos_corte: {
+          select: {
+            codCorte: true,
+            nombreCorte: true,
+            valorBase: true,
+          },
+        },
+      },
+      orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
+    });
+
+    console.log(
+      `Found ${turnos.length} scheduled appointments for branch ${sanitizedCodSucursal}`
+    );
+    return turnos;
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding sucursal:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al buscar sucursal");
+  }
+};
+
 export const update = async (
   codTurno: string,
   codCorte: string,
@@ -446,10 +506,71 @@ export const update = async (
   }
 };
 
-export const cancelAppointment = async (codTurno: string) => {
+export const checkoutAppointment = async (
+  codTurno: string,
+  codCorte: string,
+  precioTurno: number
+) => {
   try {
     // sanitizar y validar
     const sanitizedCodTurno = sanitizeInput(codTurno);
+    const sanitizedCodCorte = sanitizeInput(codCorte);
+    console.log("🔍 Buscando turno para checkout:", sanitizedCodTurno);
+
+    // Primero verificar que el turno existe
+    const turnoExistente = await prisma.turno.update({
+      where: { codTurno: sanitizedCodTurno },
+      data: {
+        codCorte: sanitizedCodCorte,
+        precioTurno: precioTurno,
+        estado: "Cobrado",
+      },
+    });
+
+    console.log("✅ Turno cobrado exitosamente");
+    return turnoExistente;
+  } catch (error) {
+    console.error(
+      "❌ Error cobrando turno:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    console.error("Error completo:", error);
+
+    // manejo de errores de validacion
+    if (error instanceof z.ZodError) {
+      const firstError = error.issues[0];
+      throw new DatabaseError(firstError.message);
+    }
+
+    // manejar errores de DB
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    // Manejar errores específicos de Prisma
+    if (error && typeof error === "object" && "code" in error) {
+      const prismaError = error as { code: string; meta?: unknown };
+      console.error("Prisma error code:", prismaError.code);
+
+      if (prismaError.code === "P2025") {
+        throw new DatabaseError("Turno no encontrado");
+      }
+    }
+
+    throw new DatabaseError("Error al cobrar turno");
+  }
+};
+
+export const cancelAppointment = async (
+  codTurno: string,
+  fechaCancelacion: string
+) => {
+  try {
+    // sanitizar y validar
+    const sanitizedCodTurno = sanitizeInput(codTurno);
+    const sanitizedFechaCancelacion = sanitizeInput(fechaCancelacion);
+
+    const fechaDate = new Date(sanitizedFechaCancelacion);
 
     console.log("🔍 Buscando turno para cancelar:", sanitizedCodTurno);
 
@@ -468,7 +589,7 @@ export const cancelAppointment = async (codTurno: string) => {
     // Actualizar el estado del turno
     const existingTurno = await prisma.turno.update({
       where: { codTurno: sanitizedCodTurno },
-      data: { estado: "Cancelado" },
+      data: { fechaCancelacion: fechaDate, estado: "Cancelado" },
     });
 
     console.log("✅ Turno cancelado exitosamente");

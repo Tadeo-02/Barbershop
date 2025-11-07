@@ -102,12 +102,42 @@ export const findByUserId = async (
   }
 };
 
+export const findByBranchId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codSucursal } = req.params;
+
+    if (!codSucursal) {
+      res.status(400).json({
+        success: false,
+        message: "codSucursal es requerido",
+      });
+      return;
+    }
+
+    const turnos = await model.findByBranchId(codSucursal);
+
+    res.status(200).json({
+      success: true,
+      data: turnos,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al buscar turnos de la sucursal",
+    });
+  }
+};
+
 export const cancelAppointment = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
     const { codTurno } = req.params;
+    const { fechaCancelacion } = req.body;
 
     if (!codTurno) {
       res.status(400).json({
@@ -117,7 +147,15 @@ export const cancelAppointment = async (
       return;
     }
 
-    const result = await model.cancelAppointment(codTurno);
+    if (!fechaCancelacion) {
+      res.status(400).json({
+        success: false,
+        message: "fechaCancelacion es requerida",
+      });
+      return;
+    }
+
+    const result = await model.cancelAppointment(codTurno, fechaCancelacion);
 
     res.status(200).json({
       success: true,
@@ -127,6 +165,40 @@ export const cancelAppointment = async (
     res.status(500).json({
       success: false,
       message: error.message || "Error al cancelar turno",
+    });
+  }
+};
+
+export const checkoutAppointment = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codTurno } = req.params;
+    const { codCorte, precioTurno } = req.body;
+
+    if (!codTurno) {
+      res.status(400).json({
+        success: false,
+        message: "codTurno es requerido",
+      });
+      return;
+    }
+
+    const result = await model.checkoutAppointment(
+      codTurno,
+      codCorte,
+      precioTurno
+    );
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al realizar checkout del turno",
     });
   }
 };

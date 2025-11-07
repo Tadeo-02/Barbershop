@@ -27,6 +27,7 @@
     - [X] Cancelar Turnos
     - [X] Encriptar Contraseña
     - [ ] API Facturación
+    - [ ] Verificar logica de envio de fecha de cancelacion de turno
 ## Barberos:
     - [ ] Modificar Turnos
 ## Admin:
@@ -41,3 +42,4 @@
     - [X] Cambiar NPM por PNPM
     - [ ] Cambiar logica del estado de turnos
     - [ ] Lógica de cambio de categoría (AD)
+    - [ ] Reutilizar funcion update turnos para todos los tipos de modificacions. Borrar funciones redundantes
