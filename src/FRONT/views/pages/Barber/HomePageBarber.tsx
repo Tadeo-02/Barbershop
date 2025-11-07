@@ -27,13 +27,13 @@ const Home = () => {
 
   const handleVerTurnos = () => {
     console.log("Navigating to appointments..."); // Debug log
-    navigate("/appointments/endAppointment");
+    navigate("/Barber/BranchAppointments");
   };
 
-  const handleEntregarPedidos = () => {
-    console.log("Navigating to orders..."); // Debug log
-    navigate("/orders/orders");
-  }; //Solo para el seminario
+  // const handleEntregarPedidos = () => {
+  //   console.log("Navigating to orders..."); // Debug log
+  //   navigate("/orders/orders");
+  // }; //Solo para el seminario
 
   return (
     <div className={styles.homeContainer}>
@@ -44,7 +44,8 @@ const Home = () => {
         </button>
         {/*<button className={styles.optionButton} onClick={handleEntregarPedidos}>
           Entregar pedidos
-        </button>*/} {/* Botón deshabilitado para desarrollo */}
+        </button>*/}{" "}
+        {/* Botón deshabilitado para desarrollo */}
       </div>
     </div>
   );

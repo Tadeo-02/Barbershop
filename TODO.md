@@ -27,6 +27,7 @@
     - [X] Cancelar Turnos
     - [X] Encriptar Contraseña
     - [ ] API Facturación
+    - [ ] Verificar logica de envio de fecha de cancelacion de turno
 ## Barberos:
     - [ ] Modificar Turnos
 ## Admin:
