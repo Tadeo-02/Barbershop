@@ -357,15 +357,16 @@ const ClientAppointments: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <div className={barberStyles.appointmentActions}>
-                  <button
-                    className={barberStyles.deleteButton}
-                    onClick={() => handleDelete(t.codTurno)}
-                    disabled={t.estado !== "Programado"}
-                  >
-                    Cancelar Turno
-                  </button>
-                </div>
+                {t.estado === "Programado" && (
+                  <div className={barberStyles.appointmentActions}>
+                    <button
+                      className={barberStyles.deleteButton}
+                      onClick={() => handleDelete(t.codTurno)}
+                    >
+                      Cancelar Turno
+                    </button>
+                  </div>
+                )}
               </li>
             );
           })
