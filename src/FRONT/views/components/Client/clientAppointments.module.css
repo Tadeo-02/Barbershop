@@ -269,6 +269,58 @@
   font-size: 1rem;
 }
 
+/* Modal de confirmación de cancelación */
+.modalContainer {
+  text-align: center;
+}
+
+.modalTitle {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modalButtons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.buttonCancel {
+  background: #718096;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 120px;
+  transition: all 0.2s ease;
+}
+
+.buttonCancel:hover {
+  background: #4a5568;
+}
+
+.buttonConfirm {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 120px;
+  transition: all 0.2s ease;
+}
+
+.buttonConfirm:hover {
+  background: #c53030;
+}
+
 .pagination {
   display: flex;
   gap: 8px;

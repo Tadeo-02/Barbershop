@@ -27,6 +27,7 @@ import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 // import HomeBarber from "./components/Barber/home/home.tsx";
 import BarberAppointments from "./components/Barber/appointments/barberAppointments.tsx";
+import BranchAppointments from "./components/Barber/appointments/branchAppointments.tsx";
 
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
@@ -38,7 +39,6 @@ import CancelAppointment from "./components/Client/appointments/cancelAppointmen
 import ClientsPage from "./pages/Admin/ClientsPage.tsx";
 import RentabilityByBranch from "./pages/Admin/RentabilityByBranch.tsx";
 
-
 function App() {
   return (
     <AuthProvider>
@@ -46,7 +46,6 @@ function App() {
         <div className="appContainer">
           <Header />
           <main className="mainContent">
-
             <Routes>
               <Route path="/" element={<LandingPage />} />
               {/* Ruta temporal para testing */}
@@ -64,13 +63,9 @@ function App() {
                   </div>
                 }
               />
-
-              <Route path="/Client/Home" element={<Home />}>
-              </Route>
-
-               {/* Rutas del cliente para navegación por sucursales y barberos */}
+              <Route path="/Client/Home" element={<Home />}></Route>
+              {/* Rutas del cliente para navegación por sucursales y barberos */}
               {/*Revisar cuales se van a usar*/}
-              
               <Route
                 path="/appointments/cancelar/:appointmentId"
                 element={<CancelAppointment />}
@@ -92,10 +87,6 @@ function App() {
                 path="/client/appointments"
                 element={<ClientAppointments />}
               />
-
-
-
-              
               <Route path="/branches" element={<Branches />} />
               <Route
                 path="/branches/:codSucursal/barbers"
@@ -114,7 +105,6 @@ function App() {
                 path="/categorias/:codCategoria"
                 element={<ShowCategories />}
               />
-
               {/* Rutas protegidas por tipo de usuario */}
               <Route //! BARBER
                 path="/Barber/HomePageBarber"
@@ -124,7 +114,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route //! BARBER
                 path="/Barber/MyAppointments"
                 element={
@@ -133,12 +122,18 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
-              {/* <Route path="/client" element={<HomePageClient />} /> */} {/* no se usa */}
+              <Route //! BARBER
+                path="/Barber/BranchAppointments"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BranchAppointments />
+                  </ProtectedRoute>
+                }
+              />
+              {/* <Route path="/client" element={<HomePageClient />} /> */}{" "}
+              {/* no se usa */}
               <Route path="/client/profile" element={<ProfilePage />} />
-
               {/* Rutas de administración protegidas */}
-
               <Route //! ADMIN
                 path="/Admin/HomePageAdmin"
                 element={
@@ -147,7 +142,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/Admin/CategoriesPage/*"
                 element={
@@ -156,7 +150,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/Admin/BarbersPage/*" //! Añadir * para las rutas anidadas al usar Pages
                 element={
@@ -165,7 +158,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/Admin/BranchesPage/*"
                 element={
@@ -174,7 +166,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/Admin/HaircutTypesPage/*"
                 element={
@@ -183,8 +174,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
-
               <Route
                 path="/Admin/ClientsPage/*"
                 element={
@@ -193,7 +182,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/Admin/RentabilityByBranch"
                 element={
@@ -202,12 +190,10 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               {/* Rutas de Login y Signup */}
               <Route path="/login" element={<Login />} />
               <Route path="/signUp" element={<CreateUser />} />
               <Route path="/" element={<AutoRedirect />} />
-
               {/* con el '*' indico que tiene rutas anidadas*/}
             </Routes>
           </main>
