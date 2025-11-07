@@ -334,7 +334,7 @@ const ScheduleByBranch = () => {
         setFechaTurno(tomorrow());
         setSelectedDate(getTomorrowDate());
 
-        navigate("/Home");
+        navigate("/client/home");
       } else {
         toast.error("Error al reservar turno", {
           id: toastId,
