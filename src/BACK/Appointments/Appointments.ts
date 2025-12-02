@@ -278,10 +278,6 @@ export const findByBarberId = async (
         codBarbero: sanitizedCodBarbero,
         fechaTurno: new Date(sanitizedFechaTurno),
       },
-      orderBy: {
-        fechaTurno: "asc",
-        horaDesde: "asc",
-      },
     });
 
     console.log(
