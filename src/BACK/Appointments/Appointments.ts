@@ -199,6 +199,7 @@ export const findByAvailableDate = async (
         usuarios_turnos_codBarberoTousuarios: {
           codSucursal: sanitizedCodSucursal,
         },
+        estado: "Programado",
       },
       include: {
         usuarios_turnos_codBarberoTousuarios: {
