@@ -3,144 +3,6 @@
   max-width: 100%;
 }
 
-.scheduleList {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 0.5rem;
-}
-
-.scheduleList label {
-  grid-column: 1 / -1;
-  margin-bottom: 1rem;
-  font-weight: 600;
-  color: #333;
-  font-size: 1rem;
-}
-
-.scheduleItem {
-  background: #f5f5f5;
-  padding: 0.75rem 0.5rem;
-  border-radius: 8px;
-  border: 2px solid #1f2937;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-  text-align: center;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
-}
-
-.scheduleItem:hover {
-  background: #2b6cb0;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-  border-color: #1f2937;
-}
-
-.scheduleDate {
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-.scheduleHour {
-  color: #000000;
-  font-size: 0.9rem;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: color 0.3s ease;
-}
-
-.scheduleItem:hover .scheduleHour {
-  color: white;
-}
-
-.emptyState {
-  color: #999;
-  font-style: italic;
-  font-size: 0.95rem;
-  padding: 1rem;
-  text-align: center;
-  grid-column: 1 / -1;
-}
-
-.backButton {
-  background: #2b6cb0;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.backButton:hover:not(:disabled) {
-  background: #2b6cb0;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-}
-
-.backButton:disabled {
-  background: #ccc;
-  color: #666;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.scheduleItem.selected {
-  background: #2b6cb0;
-  color: white;
-  border-color: #0056b3;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-}
-
-.scheduleItem.selected .scheduleHour {
-  color: white;
-}
-
-.datePickerContainer {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: #f9f9f9;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-}
-
-.datePickerContainer label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #333;
-  font-size: 1rem;
-}
-
-.datePicker {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.2s;
-  background: white;
-}
-
-.datePicker:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-
 .branchInfo,
 .selectedBarberInfo {
   width: 100%;
@@ -152,7 +14,6 @@
   margin-bottom: 14px;
   box-shadow: 0 6px 18px rgba(43, 108, 176, 0.04);
 }
-
 
 .infoRow {
   display: flex;
@@ -208,58 +69,13 @@
     margin: 0 auto;
   }
 
-  .scheduleList {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 0.75rem;
+  .branchInfo h3,
+  .selectedBarberInfo h4 {
+    font-size: 1.2rem;
   }
 
-  .scheduleList label {
-    font-size: 1.1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .scheduleItem {
-    padding: 1rem 0.75rem;
+  .branchInfo p,
+  .selectedBarberInfo p {
     font-size: 1rem;
-    min-height: 50px;
-    border-width: 2px;
-  }
-
-  .scheduleDate {
-    font-size: 1.1rem;
-  }
-
-  .scheduleHour {
-    font-size: 1rem;
-  }
-
-  .emptyState {
-    font-size: 1rem;
-    padding: 1.5rem;
-  }
-
-  .backButton {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    margin-top: 1.5rem;
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-  }
-
-  .datePickerContainer {
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-  }
-
-  .datePickerContainer label {
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .datePicker {
-    padding: 1rem;
-    font-size: 1.1rem;
   }
 }
