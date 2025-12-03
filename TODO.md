@@ -30,18 +30,20 @@
     - [ ] API Facturación
     - [ ] Verificar logica de envio de fecha de cancelacion de turno
 ## Barberos:
-    - [ ] Modificar Turnos
+    - [X] Modificar Turnos
     - [ ] Validar que el turno que completa sea de ese mismo día
 ## Admin:
     - [X] CRUD Sucursal
     - [X] CRUD Barberos
     - [X] CRUD Categorias
-    - [X] CRUD Estados turno - Modificar funcionalidades de Appointments para que utilizan esta CRUD 
+    - [ ] Dar de baja barbero en vez de eliminar 
 ## General:
     - [ ] Revisar validaciones zod en general
+    - [ ] Validar datos en front y back
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
     - [ ] Sección Productos
     - [X] Cambiar NPM por PNPM
     - [X] Cambiar logica del estado de turnos
     - [ ] Lógica de cambio de categoría (AD)
     - [ ] Reutilizar funcion update turnos para todos los tipos de modificacions. Borrar funciones redundantes
+    - [ ] Manejo horarios ocupados del barbero
