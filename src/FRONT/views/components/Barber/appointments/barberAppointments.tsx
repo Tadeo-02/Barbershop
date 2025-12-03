@@ -288,6 +288,7 @@ const BarberAppointments: React.FC = () => {
     setSelectedUpdateTime("");
     setIsUpdateModalOpen(true);
   };
+  
   const handleTimeSlotSelect = (fecha: string, hora: string) => {
     setSelectedUpdateDate(fecha);
     setSelectedUpdateTime(hora);
