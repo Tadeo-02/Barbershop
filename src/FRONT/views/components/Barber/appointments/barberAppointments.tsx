@@ -3,6 +3,7 @@ import { useAuth } from "../../login/AuthContext";
 import barberStyles from "./barberAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import TimeSlotPicker from "../../shared/TimeSlotPicker";
 
 interface Appointment {
   codTurno: string;
@@ -44,8 +45,14 @@ const BarberAppointments: React.FC = () => {
   const [clientes, setClientes] = useState<Client[]>([]);
   const [cortes, setCortes] = useState<Cut[]>([]);
   const [sucursales, setSucursales] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
+
+  // Estados para el modal de modificación
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [turnoToUpdate, setTurnoToUpdate] = useState<Appointment | null>(null);
+  const [selectedUpdateDate, setSelectedUpdateDate] = useState<string>("");
+  const [selectedUpdateTime, setSelectedUpdateTime] = useState<string>("");
+
   const navigate = useNavigate();
 
   // Función para formatear la fecha en formato legible (DD/MM/YYYY)
@@ -102,7 +109,6 @@ const BarberAppointments: React.FC = () => {
 
     // Si no está autenticado, no hacer fetch
     if (!isAuthenticated || !user || !user.codUsuario) {
-      setLoading(false);
       return;
     }
 
@@ -129,18 +135,16 @@ const BarberAppointments: React.FC = () => {
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
-        setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching appointments:", error);
         setTurnos([]);
-        setLoading(false);
       });
   }, [authChecked, isAuthenticated, user, navigate]);
 
   // Efecto separado para cargar datos relacionados cuando cambien los turnos
   useEffect(() => {
-    if (turnos.length === 0) return;
+    if (turnos.length === 0 || !user) return;
 
     // Limpiar datos anteriores
     setClientes([]);
@@ -164,19 +168,21 @@ const BarberAppointments: React.FC = () => {
         });
 
       // Fetch branch
-      fetch(`/sucursales/${user.codSucursal}`)
-        .then((res) => res.json())
-        .then((branchData) => {
-          setSucursales((prev) => {
-            if (prev.some((s) => s.codSucursal === branchData.codSucursal)) {
-              return prev;
-            }
-            return [...prev, branchData];
+      if (user.codSucursal) {
+        fetch(`/sucursales/${user.codSucursal}`)
+          .then((res) => res.json())
+          .then((branchData) => {
+            setSucursales((prev) => {
+              if (prev.some((s) => s.codSucursal === branchData.codSucursal)) {
+                return prev;
+              }
+              return [...prev, branchData];
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching branch:", error);
           });
-        })
-        .catch((error) => {
-          console.error("Error fetching branch:", error);
-        });
+      }
 
       // Fetch corte si existe
       if (turno.codCorte) {
@@ -195,7 +201,7 @@ const BarberAppointments: React.FC = () => {
           });
       }
     });
-  }, [turnos, user.codSucursal]);
+  }, [turnos, user]);
 
   const handleDelete = async (codTurno: string) => {
     //alert personalizado para confirmacion:
@@ -276,42 +282,78 @@ const BarberAppointments: React.FC = () => {
     }
   };
 
-  // const handleUpdate = (codTurno: string) => {
-    
-  //   toast(
-  //     (t) => (
-  //       <div className={barberStyles.modalContainer}>
-  //         <p className={barberStyles.modalTitle}>
-  //           Fecha:
-  //         </p>
-  //         <div className={barberStyles.modalButtons}>
-  //           <button
-  //             onClick={() => toast.dismiss(t.id)}
-  //             className={barberStyles.buttonCancel}
-  //           >
-  //             Atrás
-  //           </button>
-  //           <button
-  //             onClick={() => {
-  //               toast.dismiss(t.id);
-  //               confirmedDelete(codTurno);
-  //             }}
-  //             className={barberStyles.buttonConfirm}
-  //           >
-  //             Cancelar
-  //           </button>
-  //         </div>
-  //       </div>
-  //     ),
-  //     {
-  //       duration: Infinity,
-  //       style: {
-  //         minWidth: "350px",
-  //         padding: "24px",
-  //       },
-  //     }
-  //   );
-  // };
+  const handleUpdate = (turno: Appointment) => {
+    setTurnoToUpdate(turno);
+    setSelectedUpdateDate("");
+    setSelectedUpdateTime("");
+    setIsUpdateModalOpen(true);
+  };
+  const handleTimeSlotSelect = (fecha: string, hora: string) => {
+    setSelectedUpdateDate(fecha);
+    setSelectedUpdateTime(hora);
+  };
+
+  const confirmedUpdate = async () => {
+    if (!turnoToUpdate || !selectedUpdateDate || !selectedUpdateTime) {
+      toast.error("Por favor selecciona fecha y horario");
+      return;
+    }
+
+    const toastId = toast.loading("Modificando turno...");
+
+    try {
+      // Calcular horaHasta (30 minutos después)
+      const [hours, minutes] = selectedUpdateTime.split(":").map(Number);
+      const totalMinutes = hours * 60 + minutes + 30;
+      const newHours = Math.floor(totalMinutes / 60);
+      const newMinutes = totalMinutes % 60;
+      const horaHasta = `${newHours.toString().padStart(2, "0")}:${newMinutes
+        .toString()
+        .padStart(2, "0")}`;
+
+      const response = await fetch(`/turnos/${turnoToUpdate.codTurno}/update`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fechaTurno: selectedUpdateDate,
+          horaDesde: selectedUpdateTime,
+          horaHasta: horaHasta,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Turno modificado exitosamente", { id: toastId });
+
+        // Actualizar el estado local
+        setTurnos(
+          turnos.map((t) =>
+            t.codTurno === turnoToUpdate.codTurno
+              ? {
+                  ...t,
+                  fechaTurno: selectedUpdateDate,
+                  horaDesde: selectedUpdateTime,
+                  horaHasta: horaHasta,
+                }
+              : t
+          )
+        );
+
+        // Cerrar modal
+        setIsUpdateModalOpen(false);
+        setTurnoToUpdate(null);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Error al modificar el turno", {
+          id: toastId,
+        });
+      }
+    } catch (error) {
+      console.error("Error modificando turno:", error);
+      toast.error("Error de conexión con el servidor", { id: toastId });
+    }
+  };
 
   return (
     <div className={barberStyles.appointmentsContainer}>
@@ -400,8 +442,7 @@ const BarberAppointments: React.FC = () => {
                     </button>
                     <button
                       className={barberStyles.updateButton}
-                      disabled={true}
-                      // onClick={() => handleUpdate(t.codTurno)}
+                      onClick={() => handleUpdate(t)}
                     >
                       Modificar Turno
                     </button>
@@ -412,6 +453,41 @@ const BarberAppointments: React.FC = () => {
           })
         )}
       </ul>
+
+      {/* Modal de modificación de turno */}
+      {isUpdateModalOpen && turnoToUpdate && user && (
+        <div className={barberStyles.modalOverlay}>
+          <div className={barberStyles.modalContent}>
+            <div className={barberStyles.modalHeader}>
+              <h3>Modificar Turno</h3>
+              <button
+                className={barberStyles.closeButton}
+                onClick={() => setIsUpdateModalOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className={barberStyles.modalBody}>
+              <p className={barberStyles.currentAppointmentInfo}>
+                <strong>Turno actual:</strong>
+                <br />
+                Fecha: {formatDate(turnoToUpdate.fechaTurno)}
+                <br />
+                Hora: {formatTime(turnoToUpdate.horaDesde)} -{" "}
+                {formatTime(turnoToUpdate.horaHasta)}
+              </p>
+              <TimeSlotPicker
+                codBarbero={user.codUsuario}
+                onTimeSlotSelect={handleTimeSlotSelect}
+                showConfirmButton={true}
+                confirmButtonText="Confirmar Modificación"
+                onConfirm={confirmedUpdate}
+                minDate={new Date()}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
