@@ -766,23 +766,23 @@ export const cancelAppointment = async (
     });
 
     if (!turnoExistente) {
-      console.log("❌ Turno no encontrado");
+      console.log("Turno no encontrado");
       throw new DatabaseError("Turno no encontrado");
     }
 
-    console.log("✅ Turno encontrado, actualizando estado...");
+    console.log("Turno encontrado, actualizando estado...");
 
     // Actualizar el estado del turno
     const existingTurno = await prisma.turno.update({
       where: { codTurno: sanitizedCodTurno },
-      data: { fechaCancelacion: fechaDate, estado: "Cancelado" },
+      data: { fechaCancelacion: fechaDate },
     });
 
-    console.log("✅ Turno cancelado exitosamente");
+    console.log("Turno cancelado exitosamente");
     return existingTurno;
   } catch (error) {
     console.error(
-      "❌ Error canceling turno:",
+      "Error cancelando turno:",
       error instanceof Error ? error.message : "Unknown error"
     );
     console.error("Error completo:", error);
@@ -809,6 +809,81 @@ export const cancelAppointment = async (
     }
 
     throw new DatabaseError("Error al cancelar turno");
+  }
+};
+
+export const markAsNoShow = async (codTurno: string) => {
+  try {
+    // sanitizar y validar
+    const sanitizedCodTurno = sanitizeInput(codTurno);
+
+    const turnoExistente = await prisma.turno.findUnique({
+      where: { codTurno: sanitizedCodTurno },
+    });
+
+    if (!turnoExistente) {
+      console.log("Turno no encontrado");
+      throw new DatabaseError("Turno no encontrado");
+    }
+
+    // Validar que la fecha/hora del turno ya haya pasado
+    const now = new Date();
+    const fechaTurno = new Date(turnoExistente.fechaTurno);
+
+    // Combinar fecha del turno con hora hasta para obtener el momento exacto de finalización
+    const horaHasta = turnoExistente.horaHasta;
+    const [hours, minutes] = horaHasta
+      .toISOString()
+      .substring(11, 16)
+      .split(":");
+    fechaTurno.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+    if (fechaTurno > now) {
+      console.log("El turno aún no ha finalizado");
+      throw new DatabaseError(
+        "No se puede marcar como no asistido un turno que aún no ha finalizado"
+      );
+    }
+
+    console.log("Turno encontrado y validado, actualizando estado...");
+
+    // Actualizar el estado del turno a "No asistido"
+    const updatedTurno = await prisma.turno.update({
+      where: { codTurno: sanitizedCodTurno },
+      data: { estado: "No asistido" },
+    });
+
+    console.log("Turno marcado como No asistido exitosamente");
+    return updatedTurno;
+  } catch (error) {
+    console.error(
+      "Error marcando turno como No asistido:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    console.error("Error completo:", error);
+
+    // manejo de errores de validacion
+    if (error instanceof z.ZodError) {
+      const firstError = error.issues[0];
+      throw new DatabaseError(firstError.message);
+    }
+
+    // manejar errores de DB
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    // Manejar errores específicos de Prisma
+    if (error && typeof error === "object" && "code" in error) {
+      const prismaError = error as { code: string; meta?: unknown };
+      console.error("Prisma error code:", prismaError.code);
+
+      if (prismaError.code === "P2025") {
+        throw new DatabaseError("Turno no encontrado");
+      }
+    }
+
+    throw new DatabaseError("Error al marcar turno como No asistido");
   }
 };
 
