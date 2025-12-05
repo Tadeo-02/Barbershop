@@ -8,7 +8,7 @@
 ## Barberos:
     - [X] Pantalla de modificar turno
     - [X] Pantalla de ver turnos pendientes
-    - [ ] Buscador de turnos medianto nro de orden en branchAppointments
+    - [X] Buscador de turnos medianto nombre y/o apellido del cliente o barbero en branchAppointments
 ## Admin:
     - [X] Pantalla general admin
     - [X] Pantalla CRUD sucursales
