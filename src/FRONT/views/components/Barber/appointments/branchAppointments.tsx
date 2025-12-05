@@ -21,21 +21,19 @@ interface Appointment {
   precioTurno?: number;
   metodoPago?: string;
   estado: string;
-}
-interface Barber {
-  codUsuario: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  codSucursal: string;
-}
-
-interface Client {
-  codUsuario: string;
-  nombre: string;
-  apellido: string;
-  dni: string;
-  telefono: string;
+  usuarios_turnos_codBarberoTousuarios?: {
+    codUsuario: string;
+    nombre: string;
+    apellido: string;
+    codSucursal: string;
+  };
+  usuarios_turnos_codClienteTousuarios?: {
+    codUsuario: string;
+    nombre: string;
+    apellido: string;
+    telefono: string;
+    email: string;
+  };
 }
 
 interface Cut {
@@ -47,9 +45,6 @@ interface Cut {
 const BranchAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<Appointment[]>([]);
-  const [barberos, setBarberos] = useState<Barber[]>([]);
-  const [clientes, setClientes] = useState<Client[]>([]);
-  const [cortes, setCortes] = useState<Cut[]>([]);
   const [allCortes, setAllCortes] = useState<Cut[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingData, setLoadingData] = useState(false);
@@ -136,107 +131,14 @@ const BranchAppointments: React.FC = () => {
 
   useEffect(() => {
     if (turnos.length === 0) {
-      // No turnos: ensure both loading flags are cleared so UI shows empty state
       setLoadingData(false);
       setLoading(false);
       return;
     }
 
-    setLoadingData(true);
-    setBarberos([]);
-    setClientes([]);
-    setCortes([]);
-
-    const uniqueBarbers = [...new Set(turnos.map((t) => t.codBarbero))];
-    const uniqueClients = [...new Set(turnos.map((t) => t.codCliente))];
-    const uniqueCuts = [
-      ...new Set(turnos.map((t) => t.codCorte).filter(Boolean)),
-    ];
-    let loadedBarbers = 0;
-    let loadedClients = 0;
-    let loadedCuts = 0;
-
-    const checkAllLoaded = () => {
-      if (
-        loadedBarbers === uniqueBarbers.length &&
-        loadedClients === uniqueClients.length &&
-        loadedCuts === uniqueCuts.length
-      ) {
-        setLoadingData(false);
-        // All related data loaded: hide overall loading as well
-        setLoading(false);
-      }
-    };
-
-    // Fetch barber data
-    uniqueBarbers.forEach((codBarbero) => {
-      fetch(`/usuarios/${codBarbero}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setBarberos((prev) => {
-            if (!prev.find((b) => b.codUsuario === data.codUsuario)) {
-              return [...prev, data];
-            }
-            return prev;
-          });
-          loadedBarbers++;
-          checkAllLoaded();
-        })
-        .catch((error) => {
-          console.error("Error fetching barber data:", error);
-          loadedBarbers++;
-          checkAllLoaded();
-        });
-    });
-
-    // Fetch client data
-    uniqueClients.forEach((codCliente) => {
-      fetch(`/usuarios/${codCliente}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setClientes((prev) => {
-            if (!prev.find((c) => c.codUsuario === data.codUsuario)) {
-              return [...prev, data];
-            }
-            return prev;
-          });
-          loadedClients++;
-          checkAllLoaded();
-        })
-        .catch((error) => {
-          console.error("Error fetching client data:", error);
-          loadedClients++;
-          checkAllLoaded();
-        });
-    });
-
-    // Fetch cut data
-    if (uniqueCuts.length === 0) {
-      loadedCuts = 0;
-      checkAllLoaded();
-    } else {
-      uniqueCuts.forEach((codCorte) => {
-        if (codCorte) {
-          fetch(`/tipoCortes/${codCorte}`)
-            .then((res) => res.json())
-            .then((data) => {
-              setCortes((prev) => {
-                if (!prev.find((c) => c.codCorte === data.codCorte)) {
-                  return [...prev, data];
-                }
-                return prev;
-              });
-              loadedCuts++;
-              checkAllLoaded();
-            })
-            .catch((error) => {
-              console.error("Error fetching cut data:", error);
-              loadedCuts++;
-              checkAllLoaded();
-            });
-        }
-      });
-    }
+    // Los datos de barberos y clientes ya vienen incluidos en turnos
+    setLoadingData(false);
+    setLoading(false);
   }, [turnos]);
 
   // Cargar todos los tipos de corte disponibles
@@ -271,14 +173,12 @@ const BranchAppointments: React.FC = () => {
   const filteredTurnos = turnos.filter((turno) => {
     if (!debouncedSearch || debouncedSearch.trim() === "") return true;
     const q = debouncedSearch.toLowerCase();
-    const barbero = barberos.find((b) => b.codUsuario === turno.codBarbero);
-    const cliente = clientes.find((c) => c.codUsuario === turno.codCliente);
 
-    const barberoName = barbero
-      ? `${barbero.nombre} ${barbero.apellido}`.toLowerCase()
+    const barberoName = turno.usuarios_turnos_codBarberoTousuarios
+      ? `${turno.usuarios_turnos_codBarberoTousuarios.nombre} ${turno.usuarios_turnos_codBarberoTousuarios.apellido}`.toLowerCase()
       : "";
-    const clienteName = cliente
-      ? `${cliente.nombre} ${cliente.apellido}`.toLowerCase()
+    const clienteName = turno.usuarios_turnos_codClienteTousuarios
+      ? `${turno.usuarios_turnos_codClienteTousuarios.nombre} ${turno.usuarios_turnos_codClienteTousuarios.apellido}`.toLowerCase()
       : "";
 
     return barberoName.includes(q) || clienteName.includes(q);
@@ -456,12 +356,8 @@ const BranchAppointments: React.FC = () => {
       ) : (
         <ul className={styles.appointmentList}>
           {filteredTurnos.map((turno) => {
-            const barbero = barberos.find(
-              (b) => b.codUsuario === turno.codBarbero
-            );
-            const cliente = clientes.find(
-              (c) => c.codUsuario === turno.codCliente
-            );
+            const barbero = turno.usuarios_turnos_codBarberoTousuarios;
+            const cliente = turno.usuarios_turnos_codClienteTousuarios;
             const currentForm = formData[turno.codTurno] || {
               codCorte: "",
               precioTurno: 0,
