@@ -36,7 +36,7 @@
     - [X] CRUD Sucursal
     - [X] CRUD Barberos
     - [X] CRUD Categorias
-    - [ ] Dar de baja barbero en vez de eliminar 
+    - [ ] Dar de baja barbero en vez de eliminar (crear una categoria llamada Baja en lugar de crear un atributo estado?)
 ## General:
     - [ ] Revisar validaciones zod en general
     - [ ] Validar datos en front y back
