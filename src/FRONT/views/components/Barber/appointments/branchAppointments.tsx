@@ -58,6 +58,15 @@ const BranchAppointments: React.FC = () => {
     {}
   );
   const navigate = useNavigate();
+  // Client-side search state (search by barber or client name)
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>(searchQuery);
+
+  // Debounce search input to avoid recalculating on every keystroke
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
   // Función para formatear la fecha en formato legible (DD/MM/YYYY)
   const formatDate = (dateString: string): string => {
@@ -79,7 +88,7 @@ const BranchAppointments: React.FC = () => {
       setAuthChecked(true);
 
       if (!isAuthenticated || !user || !user.codUsuario) {
-        toast.error("Debes iniciar sesión para ver tus turnos");
+        toast.error("Debes iniciar sesión para ver los turnos");
         navigate("/login");
       }
     }, 100);
@@ -88,7 +97,10 @@ const BranchAppointments: React.FC = () => {
   }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
-    fetch(`/turnos/branch/${user.codSucursal}`)
+    if (!authChecked || !isAuthenticated || !user) return;
+
+    const endpoint = `/turnos/branch/${user?.codSucursal}`;
+    fetch(endpoint)
       .then(async (res) => {
         console.log("Response status:", res.status);
         console.log("Response headers:", res.headers.get("content-type"));
@@ -111,19 +123,22 @@ const BranchAppointments: React.FC = () => {
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
-        setLoading(false);
       })
 
       .catch((error) => {
         console.error("Error fetching appointments:", error);
         setTurnos([]);
+        // On error, stop both loading flags so UI shows the error/empty state
+        setLoadingData(false);
         setLoading(false);
       });
   }, [authChecked, isAuthenticated, user, navigate]);
 
   useEffect(() => {
     if (turnos.length === 0) {
+      // No turnos: ensure both loading flags are cleared so UI shows empty state
       setLoadingData(false);
+      setLoading(false);
       return;
     }
 
@@ -137,7 +152,6 @@ const BranchAppointments: React.FC = () => {
     const uniqueCuts = [
       ...new Set(turnos.map((t) => t.codCorte).filter(Boolean)),
     ];
-
     let loadedBarbers = 0;
     let loadedClients = 0;
     let loadedCuts = 0;
@@ -149,6 +163,8 @@ const BranchAppointments: React.FC = () => {
         loadedCuts === uniqueCuts.length
       ) {
         setLoadingData(false);
+        // All related data loaded: hide overall loading as well
+        setLoading(false);
       }
     };
 
@@ -250,6 +266,23 @@ const BranchAppointments: React.FC = () => {
         toast.error("Error al cargar tipos de corte");
       });
   }, []);
+
+  // Client-side filtered results based on debounced search (barber or client name)
+  const filteredTurnos = turnos.filter((turno) => {
+    if (!debouncedSearch || debouncedSearch.trim() === "") return true;
+    const q = debouncedSearch.toLowerCase();
+    const barbero = barberos.find((b) => b.codUsuario === turno.codBarbero);
+    const cliente = clientes.find((c) => c.codUsuario === turno.codCliente);
+
+    const barberoName = barbero
+      ? `${barbero.nombre} ${barbero.apellido}`.toLowerCase()
+      : "";
+    const clienteName = cliente
+      ? `${cliente.nombre} ${cliente.apellido}`.toLowerCase()
+      : "";
+
+    return barberoName.includes(q) || clienteName.includes(q);
+  });
 
   const handleFormChange = (
     codTurno: string,
@@ -401,15 +434,28 @@ const BranchAppointments: React.FC = () => {
     <div className={styles.appointmentsContainer}>
       <h2 className={styles.pageTitle}>Turnos de la Sucursal</h2>
 
+      <input
+        type="text"
+        name="search"
+        placeholder="Buscar por barbero o cliente"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className={styles.searchInput}
+      />
+      <br />
       {loading || loadingData ? (
         <div className={styles.loadingState}>Cargando turnos...</div>
       ) : turnos.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No hay turnos programados para esta sucursal</p>
         </div>
+      ) : filteredTurnos.length === 0 ? (
+        <div className={styles.emptyState}>
+          <p>No se encontraron coincidencias para la búsqueda.</p>
+        </div>
       ) : (
         <ul className={styles.appointmentList}>
-          {turnos.map((turno) => {
+          {filteredTurnos.map((turno) => {
             const barbero = barberos.find(
               (b) => b.codUsuario === turno.codBarbero
             );
