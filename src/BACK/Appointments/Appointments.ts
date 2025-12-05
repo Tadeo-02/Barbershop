@@ -43,6 +43,16 @@ const AppointmentsSchema = z.object({
     .max(50, "Estado no puede tener más de 50 caracteres"),
 });
 
+// Umbrales configurables (pueden ser sobreescritos por env vars durante pruebas)
+const INITIAL_TO_MEDIUM_DAYS = parseInt(
+  process.env.INITIAL_TO_MEDIUM_DAYS || "30",
+  10
+);
+const INITIAL_TO_MEDIUM_COUNT = parseInt(
+  process.env.INITIAL_TO_MEDIUM_COUNT || "5",
+  10
+);
+
 // funciones backend
 export const store = async (
   codCliente: string,
@@ -508,7 +518,7 @@ export const updateAppointment = async (
   codTurno: string,
   fechaTurno: string,
   horaDesde: string,
-  horaHasta: string,
+  horaHasta: string
 ) => {
   try {
     // sanitizar y validar
@@ -517,14 +527,10 @@ export const updateAppointment = async (
     const sanitizedHoraDesde = sanitizeInput(horaDesde);
     const sanitizedHoraHasta = sanitizeInput(horaHasta);
 
-        // convertir strings a Date objects para Prisma
+    // convertir strings a Date objects para Prisma
     const fechaDate = new Date(sanitizedFechaTurno);
-    const horaDesdeDate = new Date(
-      `1970-01-01T${sanitizedHoraDesde}:00.000Z`
-    );
-    const horaHastaDate = new Date(
-      `1970-01-01T${sanitizedHoraHasta}:00.000Z`
-    );
+    const horaDesdeDate = new Date(`1970-01-01T${sanitizedHoraDesde}:00.000Z`);
+    const horaHastaDate = new Date(`1970-01-01T${sanitizedHoraHasta}:00.000Z`);
 
     console.log("🔍 Buscando turno para actualizar:", sanitizedCodTurno);
 
@@ -595,11 +601,94 @@ export const checkoutAppointment = async (
       },
     });
 
-    console.log("✅ Turno cobrado exitosamente");
+    await prisma.$transaction(async (tx) => {
+      const codCliente = turnoExistente.codCliente;
+
+      const latestCv = await tx.categoria_vigente.findFirst({
+        where: { codCliente },
+        orderBy: { ultimaFechaInicio: "desc" },
+      });
+
+      if (!latestCv) {
+        console.warn(
+          `No categoria_vigente encontrada para cliente ${codCliente}`
+        );
+        return;
+      }
+
+      const currentCategoria = await tx.categoria.findUnique({
+        where: { codCategoria: latestCv.codCategoria },
+      });
+      const nombreCategoria = currentCategoria?.nombreCategoria || null;
+      const ultimaFechaInicio = latestCv.ultimaFechaInicio;
+
+      const cobradoCount = await tx.turno.count({
+        where: {
+          codCliente,
+          estado: "Cobrado",
+          fechaTurno: ultimaFechaInicio ? { gt: ultimaFechaInicio } : undefined,
+        },
+      });
+
+      const now = new Date();
+
+      if (nombreCategoria === "Inicial") {
+        // Comprobar N días y N cortes (configurables) para promoción Inicial -> Medium
+        const threshold = new Date(ultimaFechaInicio);
+        threshold.setDate(threshold.getDate() + INITIAL_TO_MEDIUM_DAYS);
+        if (now >= threshold && cobradoCount >= INITIAL_TO_MEDIUM_COUNT) {
+          const mediumCat = await tx.categoria.findFirst({
+            where: { nombreCategoria: "Medium" },
+          });
+          if (mediumCat) {
+            await tx.categoria_vigente.create({
+              data: {
+                codCategoria: mediumCat.codCategoria,
+                codCliente,
+                ultimaFechaInicio: new Date(),
+              },
+            });
+            console.log(`Cliente ${codCliente} promovido a Medium`);
+          } else {
+            console.warn(
+              "Categoría 'Medium' no encontrada en la tabla categorias"
+            );
+          }
+        }
+      } else if (nombreCategoria === "Medium") {
+        const threshold = new Date(ultimaFechaInicio);
+        threshold.setFullYear(threshold.getFullYear() + 3);
+        if (now >= threshold && cobradoCount >= 25) {
+          const premiumCat = await tx.categoria.findFirst({
+            where: { nombreCategoria: "Premium" },
+          });
+          if (premiumCat) {
+            await tx.categoria_vigente.create({
+              data: {
+                codCategoria: premiumCat.codCategoria,
+                codCliente,
+                ultimaFechaInicio: new Date(),
+              },
+            });
+            console.log(`Cliente ${codCliente} promovido a Premium`);
+          } else {
+            console.warn(
+              "Categoría 'Premium' no encontrada en la tabla categorias"
+            );
+          }
+        }
+      }
+    });
+
+    console.log("Turno cobrado exitosamente", {
+      codTurno: sanitizedCodTurno,
+      codCliente: turnoExistente.codCliente,
+    });
+
     return turnoExistente;
   } catch (error) {
     console.error(
-      "❌ Error cobrando turno:",
+      "Error cobrando turno:",
       error instanceof Error ? error.message : "Unknown error"
     );
     console.error("Error completo:", error);
