@@ -78,6 +78,22 @@ const BranchAppointments: React.FC = () => {
     return `${hours}:${minutes}`;
   };
 
+  // Función para verificar si el turno ya pasó (fecha + horaHasta < ahora)
+  const hasTurnoPassed = (fechaTurno: string, horaHasta: string): boolean => {
+    const now = new Date();
+    const fecha = new Date(fechaTurno);
+    const horaHastaDate = new Date(horaHasta);
+
+    // Extraer horas y minutos de horaHasta
+    const hours = horaHastaDate.getUTCHours();
+    const minutes = horaHastaDate.getUTCMinutes();
+
+    // Combinar fecha del turno con hora hasta
+    fecha.setHours(hours, minutes, 0, 0);
+
+    return fecha < now;
+  };
+
   useEffect(() => {
     // Dar tiempo para que el AuthContext cargue desde localStorage
     const timer = setTimeout(() => {
@@ -287,6 +303,96 @@ const BranchAppointments: React.FC = () => {
         },
       }
     );
+  };
+
+  const handleMarkAsNoShow = (codTurno: string) => {
+    toast(
+      (t) => (
+        <div className={styles.modalContainer}>
+          <p className={styles.modalTitle}>Marcar como No asistido</p>
+          <p className={styles.modalDescription}>
+            ¿Confirmar que el cliente no asistió a este turno?
+          </p>
+          <div className={styles.modalButtons}>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className={styles.modalButtonCancel}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                confirmedMarkAsNoShow(codTurno);
+              }}
+              className={styles.modalButtonConfirm}
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        style: {
+          minWidth: "400px",
+          maxWidth: "500px",
+          padding: "24px",
+          borderRadius: "12px",
+          boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
+          background: "#ffffff",
+        },
+      }
+    );
+  };
+
+  const confirmedMarkAsNoShow = async (codTurno: string) => {
+    const toastId = toast.loading("Marcando como No asistido...");
+
+    try {
+      const response = await fetch(`/turnos/${codTurno}/no-show`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        await response.json();
+        toast.success("Turno marcado como No asistido", { id: toastId });
+
+        // Recargar turnos
+        if (user) {
+          const res = await fetch(`/turnos/branch/${user.codSucursal}`);
+          const data = await res.json();
+
+          let turnosArray: Appointment[] = [];
+          if (data.success && Array.isArray(data.data)) {
+            turnosArray = data.data;
+          } else if (Array.isArray(data)) {
+            turnosArray = data;
+          }
+
+          setTurnos(turnosArray);
+        }
+      } else if (response.status === 404) {
+        toast.error("Turno no encontrado", { id: toastId });
+      } else {
+        const errorData = await response.json();
+        console.error("Error response:", errorData);
+        toast.error(
+          errorData.message || "Error al marcar turno como No asistido",
+          {
+            id: toastId,
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast.error("Error de red al marcar turno como No asistido", {
+        id: toastId,
+      });
+    }
   };
 
   const confirmedCheckOut = async (
@@ -507,6 +613,15 @@ const BranchAppointments: React.FC = () => {
                       }
                     >
                       Completar y cobrar
+                    </button>
+                    <button
+                      onClick={() => handleMarkAsNoShow(turno.codTurno)}
+                      className={`${styles.button} ${styles.buttonWarning}`}
+                      disabled={
+                        !hasTurnoPassed(turno.fechaTurno, turno.horaHasta)
+                      }
+                    >
+                      No asistido
                     </button>
                   </div>
                 )}
