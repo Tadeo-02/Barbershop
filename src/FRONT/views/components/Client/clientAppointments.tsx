@@ -15,35 +15,37 @@ interface Appointment {
   precioTurno?: number;
   metodoPago?: string;
   estado: string;
-}
-interface Barber {
-  codUsuario: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  codSucursal: string;
-}
-
-interface Branch {
-  codSucursal: string;
-  nombre: string;
-  calle: string;
-  altura: string;
-}
-
-interface Cut {
-  codCorte: string;
-  nombreCorte: string;
-  valorBase: number;
+  usuarios_turnos_codBarberoTousuarios?: {
+    codUsuario: string;
+    nombre: string;
+    apellido: string;
+    telefono: string;
+    email: string;
+    codSucursal: string | null;
+    sucursales?: {
+      codSucursal: string;
+      nombre: string;
+      calle: string;
+      altura: number;
+    } | null;
+  };
+  usuarios_turnos_codClienteTousuarios?: {
+    codUsuario: string;
+    nombre: string;
+    apellido: string;
+    telefono: string;
+    email: string;
+  };
+  tipos_corte?: {
+    codCorte: string;
+    nombreCorte: string;
+    valorBase: number;
+  } | null;
 }
 
 const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<Appointment[]>([]);
-  const [barberos, setBarberos] = useState<Barber[]>([]);
-  const [cortes, setCortes] = useState<Cut[]>([]);
-  const [sucursales, setSucursales] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
@@ -101,7 +103,6 @@ const ClientAppointments: React.FC = () => {
 
     // Si no está autenticado, no hacer fetch
     if (!isAuthenticated || !user || !user.codUsuario) {
-      setLoading(false);
       return;
     }
 
@@ -128,78 +129,12 @@ const ClientAppointments: React.FC = () => {
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
-        setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching appointments:", error);
         setTurnos([]);
-        setLoading(false);
       });
   }, [authChecked, isAuthenticated, user, navigate]);
-
-  // Efecto separado para cargar datos relacionados cuando cambien los turnos
-  useEffect(() => {
-    if (turnos.length === 0) return;
-
-    // Limpiar datos anteriores
-    setBarberos([]);
-    setSucursales([]);
-    setCortes([]);
-
-    turnos.forEach((turno) => {
-      // Fetch barber
-      fetch(`/usuarios/${turno.codBarbero}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setBarberos((prev) => {
-            // Evitar duplicados
-            if (prev.some((b) => b.codUsuario === data.codUsuario)) {
-              return prev;
-            }
-            return [...prev, data];
-          });
-
-          // Fetch branch después de obtener el barbero
-          if (data.codSucursal) {
-            fetch(`/sucursales/${data.codSucursal}`)
-              .then((res) => res.json())
-              .then((branchData) => {
-                setSucursales((prev) => {
-                  if (
-                    prev.some((s) => s.codSucursal === branchData.codSucursal)
-                  ) {
-                    return prev;
-                  }
-                  return [...prev, branchData];
-                });
-              })
-              .catch((error) => {
-                console.error("Error fetching branch:", error);
-              });
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching barber:", error);
-        });
-
-      // Fetch corte si existe
-      if (turno.codCorte) {
-        fetch(`/tipoCortes/${turno.codCorte}`)
-          .then((res) => res.json())
-          .then((data) => {
-            setCortes((prev) => {
-              if (prev.some((c) => c.codCorte === data.codCorte)) {
-                return prev;
-              }
-              return [...prev, data];
-            });
-          })
-          .catch((error) => {
-            console.error("Error fetching cut type:", error);
-          });
-      }
-    });
-  }, [turnos]);
 
   const handleDelete = async (codTurno: string) => {
     //alert personalizado para confirmacion:
@@ -290,11 +225,9 @@ const ClientAppointments: React.FC = () => {
           </li>
         ) : (
           turnos.map((t) => {
-            const barber = barberos.find((b) => b.codUsuario === t.codBarbero);
-            const branch = sucursales.find(
-              (s) => s.codSucursal === barber?.codSucursal
-            );
-            const cut = cortes.find((c) => c.codCorte === t.codCorte);
+            const barber = t.usuarios_turnos_codBarberoTousuarios;
+            const branch = barber?.sucursales;
+            const cut = t.tipos_corte;
 
             return (
               <li key={t.codTurno} className={barberStyles.appointmentItem}>
