@@ -44,7 +44,8 @@
     - [ ] Sección Productos
     - [X] Cambiar NPM por PNPM
     - [X] Cambiar logica del estado de turnos
-    - [ ] Lógica de cambio de categoría (AD)
+    - [X] Lógica de subida de categoría (AD)
+    - [ ] Lógica de bajada de categoría (AD)
     - [ ] Reutilizar funcion update turnos para todos los tipos de modificacions. Borrar funciones redundantes
     - [ ] Manejo horarios ocupados del barbero
     - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
