@@ -173,6 +173,42 @@ export const findByUserId = async (codUsuario: string) => {
           { codBarbero: sanitizedCodUsuario },
         ],
       },
+      include: {
+        usuarios_turnos_codBarberoTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            email: true,
+            codSucursal: true,
+            sucursales: {
+              select: {
+                codSucursal: true,
+                nombre: true,
+                calle: true,
+                altura: true,
+              },
+            },
+          },
+        },
+        usuarios_turnos_codClienteTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            email: true,
+          },
+        },
+        tipos_corte: {
+          select: {
+            codCorte: true,
+            nombreCorte: true,
+            valorBase: true,
+          },
+        },
+      },
       orderBy: [{ fechaTurno: "desc" }, { horaDesde: "desc" }],
     });
 
