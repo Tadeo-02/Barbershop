@@ -56,6 +56,7 @@ const BranchAppointments: React.FC = () => {
   // Client-side search state (search by barber or client name)
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>(searchQuery);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   // Debounce search input to avoid recalculating on every keystroke
   useEffect(() => {
@@ -169,19 +170,33 @@ const BranchAppointments: React.FC = () => {
       });
   }, []);
 
-  // Client-side filtered results based on debounced search (barber or client name)
+  // Client-side filtered results based on debounced search (barber or client name) and date
   const filteredTurnos = turnos.filter((turno) => {
-    if (!debouncedSearch || debouncedSearch.trim() === "") return true;
-    const q = debouncedSearch.toLowerCase();
+    // Filtro por búsqueda de texto
+    if (debouncedSearch && debouncedSearch.trim() !== "") {
+      const q = debouncedSearch.toLowerCase();
 
-    const barberoName = turno.usuarios_turnos_codBarberoTousuarios
-      ? `${turno.usuarios_turnos_codBarberoTousuarios.nombre} ${turno.usuarios_turnos_codBarberoTousuarios.apellido}`.toLowerCase()
-      : "";
-    const clienteName = turno.usuarios_turnos_codClienteTousuarios
-      ? `${turno.usuarios_turnos_codClienteTousuarios.nombre} ${turno.usuarios_turnos_codClienteTousuarios.apellido}`.toLowerCase()
-      : "";
+      const barberoName = turno.usuarios_turnos_codBarberoTousuarios
+        ? `${turno.usuarios_turnos_codBarberoTousuarios.nombre} ${turno.usuarios_turnos_codBarberoTousuarios.apellido}`.toLowerCase()
+        : "";
+      const clienteName = turno.usuarios_turnos_codClienteTousuarios
+        ? `${turno.usuarios_turnos_codClienteTousuarios.nombre} ${turno.usuarios_turnos_codClienteTousuarios.apellido}`.toLowerCase()
+        : "";
 
-    return barberoName.includes(q) || clienteName.includes(q);
+      if (!barberoName.includes(q) && !clienteName.includes(q)) {
+        return false;
+      }
+    }
+
+    // Filtro por fecha
+    if (selectedDate) {
+      const turnoDate = turno.fechaTurno.split("T")[0];
+      if (turnoDate !== selectedDate) {
+        return false;
+      }
+    }
+
+    return true;
   });
 
   const handleFormChange = (
@@ -342,6 +357,15 @@ const BranchAppointments: React.FC = () => {
         onChange={(e) => setSearchQuery(e.target.value)}
         className={styles.searchInput}
       />
+
+      <input
+        type="date"
+        name="dateFilter"
+        value={selectedDate}
+        onChange={(e) => setSelectedDate(e.target.value)}
+        className={styles.searchInput}
+      />
+
       <br />
       {loading || loadingData ? (
         <div className={styles.loadingState}>Cargando turnos...</div>
