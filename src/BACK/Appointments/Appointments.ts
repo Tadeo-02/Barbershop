@@ -369,13 +369,6 @@ export const findByBranchId = async (codSucursal: string) => {
             email: true,
           },
         },
-        tipos_corte: {
-          select: {
-            codCorte: true,
-            nombreCorte: true,
-            valorBase: true,
-          },
-        },
       },
       orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
     });
