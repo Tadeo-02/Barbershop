@@ -61,9 +61,7 @@ const UserSchema = z
         },
         { message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X" }
       ),
-      codSucursal: z
-      .string()
-      .optional(),
+    codSucursal: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -116,28 +114,30 @@ export const store = async (
     }
     // transaccion para crear usuario y categoria_vigente
     const usuario = await prisma.$transaction(async (tx) => {
-    // Crear usuario (mapeando contraseña -> contrase_a, sin CUIL)
-    const nuevoUsuario = await tx.usuarios.create({
-      data: {
-        dni: validatedData.dni,
-        cuil: cuilValue, // Los usuarios normales no tienen CUIL !
-        nombre: validatedData.nombre,
-        apellido: validatedData.apellido,
-        telefono: validatedData.telefono,
-        email: validatedData.email,
-        contrase_a: hashedPassword,
-        codSucursal: codSucursal || null,
-      },
-    });
-// Solo crear categoría vigente para clientes (sin CUIL)
+      // Crear usuario (mapeando contraseña -> contrase_a, sin CUIL)
+      const nuevoUsuario = await tx.usuarios.create({
+        data: {
+          dni: validatedData.dni,
+          cuil: cuilValue, // Los usuarios normales no tienen CUIL !
+          nombre: validatedData.nombre,
+          apellido: validatedData.apellido,
+          telefono: validatedData.telefono,
+          email: validatedData.email,
+          contrase_a: hashedPassword,
+          codSucursal: codSucursal || null,
+        },
+      });
+      // Solo crear categoría vigente para clientes (sin CUIL)
       if (!cuilValue) {
         // Buscar categoría inicial
         const categoriaInicial = await tx.categoria.findFirst({
-          where: { nombreCategoria: 'Inicial' }
+          where: { nombreCategoria: "Inicial" },
         });
 
         if (!categoriaInicial) {
-          throw new DatabaseError('Categoría inicial no encontrada en el sistema');
+          throw new DatabaseError(
+            "Categoría inicial no encontrada en el sistema"
+          );
         }
 
         // Crear categoría vigente inicial para el cliente
@@ -145,11 +145,11 @@ export const store = async (
           data: {
             codCategoria: categoriaInicial.codCategoria,
             codCliente: nuevoUsuario.codUsuario,
-            ultimaFechaInicio: new Date()
-          }
+            ultimaFechaInicio: new Date(),
+          },
         });
 
-        console.log('Client created with initial category assigned');
+        console.log("Client created with initial category assigned");
       }
 
       return nuevoUsuario;
@@ -163,7 +163,6 @@ export const store = async (
       "Error creating user:",
       error instanceof Error ? error.message : "Unknown error"
     );
- 
 
     // Manejo de errores de validación
     if (error instanceof z.ZodError) {
@@ -334,41 +333,53 @@ export const findByBranchId = async (codSucursal: string) => {
   }
 };
 
-export const findBySchedule = async (codSucursal: string, fechaTurno: string, horaDesde: string) => {
+export const findBySchedule = async (
+  codSucursal: string,
+  fechaTurno: string,
+  horaDesde: string
+) => {
   try {
-    // Sanitizar y validar
     const sanitizedCodSucursal = sanitizeInput(codSucursal);
     const sanitizedFechaTurno = sanitizeInput(fechaTurno);
     const sanitizedHoraDesde = sanitizeInput(horaDesde);
 
-    // Convertir horaDesde string a Date para comparación
-    const horaDesdeDate = new Date(`1970-01-01T${sanitizedHoraDesde}:00.000Z`);
+    const fechaTurnoDate = new Date(sanitizedFechaTurno);
 
-    // Buscar barberos que NO tienen turnos en la fecha y hora específica
-    const barberos = await prisma.usuarios.findMany({
+    const todosBarberos = await prisma.usuarios.findMany({
       where: {
         codSucursal: sanitizedCodSucursal,
-        NOT: {
-          turnos_turnos_codBarberoTousuarios: {
-            some: {
-              fechaTurno: new Date(sanitizedFechaTurno),
-              horaDesde: horaDesdeDate,
-            },
+      },
+      include: {
+        turnos_turnos_codBarberoTousuarios: {
+          where: {
+            estado: "Programado",
+            fechaTurno: fechaTurnoDate,
           },
         },
       },
     });
 
+    const barberos = todosBarberos.filter((barbero) => {
+      const tieneTurnoEnHora = barbero.turnos_turnos_codBarberoTousuarios.some(
+        (turno) => {
+          const turnoHora = turno.horaDesde.toISOString().substring(11, 16);
+          return turnoHora === sanitizedHoraDesde;
+        }
+      );
+
+      return !tieneTurnoEnHora;
+    });
+
     return barberos;
   } catch (error) {
-      if (error instanceof DatabaseError) {
-        throw error;
-      }
-      console.error(
-        "Error finding available barbers:",
-        error instanceof Error ? error.message : "Unknown error"
-      );
-      throw new DatabaseError("Error al buscar barberos disponibles");
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+    console.error(
+      "Error finding available barbers:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al buscar barberos disponibles");
   }
 };
 
@@ -403,9 +414,10 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
         ? sanitizeInput(params.contraseña)
         : undefined,
       cuil: params.cuil ? sanitizeInput(params.cuil) : undefined,
-      codSucursal: params.codSucursal ? sanitizeInput(params.codSucursal) : undefined,
+      codSucursal: params.codSucursal
+        ? sanitizeInput(params.codSucursal)
+        : undefined,
     };
-
 
     const validatedData = UpdateUserSchema.parse({
       dni: sanitizedData.dni,
