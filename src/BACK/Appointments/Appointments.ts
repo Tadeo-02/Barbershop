@@ -163,7 +163,7 @@ export const findByUserId = async (codUsuario: string) => {
           { codBarbero: sanitizedCodUsuario },
         ],
       },
-      orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
+      orderBy: [{ fechaTurno: "desc" }, { horaDesde: "desc" }],
     });
 
     console.log(
