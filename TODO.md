@@ -18,7 +18,7 @@
 ## General:
     - [X] Definir estructura mobile first en estilos
     - [ ] Sección Productos
-    - [ ] Fix de Toasts de error cuando hay succes (ej: create barberos desde admin)
+    - [ ] Fix de Toasts de error cuando hay success (ej: create barberos desde admin)
     - [X] Fix boton de login en Landing Page
 # BACK:
 ## - Usuarios:
@@ -47,3 +47,4 @@
     - [ ] Lógica de cambio de categoría (AD)
     - [ ] Reutilizar funcion update turnos para todos los tipos de modificacions. Borrar funciones redundantes
     - [ ] Manejo horarios ocupados del barbero
+    - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
