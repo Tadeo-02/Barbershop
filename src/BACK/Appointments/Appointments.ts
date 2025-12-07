@@ -854,6 +854,62 @@ export const markAsNoShow = async (codTurno: string) => {
     });
 
     console.log("Turno marcado como No asistido exitosamente");
+
+    // Determinar el rango de fechas según el semestre actual
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // getMonth() devuelve 0-11
+
+    let startDate: Date;
+    let endDate: Date;
+
+    if (currentMonth >= 1 && currentMonth <= 6) {
+      // Primer semestre (enero a junio)
+      startDate = new Date(currentYear, 0, 1); // 1 de enero
+      endDate = new Date(currentYear, 5, 30, 23, 59, 59); // 30 de junio
+    } else {
+      // Segundo semestre (julio a diciembre)
+      startDate = new Date(currentYear, 6, 1); // 1 de julio
+      endDate = new Date(currentYear, 11, 31, 23, 59, 59); // 31 de diciembre
+    }
+
+    // Contar turnos "No asistido" del cliente en el semestre actual
+    const noShowCount = await prisma.turno.count({
+      where: {
+        codCliente: updatedTurno.codCliente,
+        estado: "No asistido",
+        fechaTurno: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+
+    console.log(
+      `Cliente ${updatedTurno.codCliente} tiene ${noShowCount} turnos "No asistido" en el semestre actual`
+    );
+
+    // Si el cliente tiene 3 o más turnos "No asistido" en el semestre, asignar categoría "Vetado"
+    if (noShowCount >= 3) {
+      const categoriaVetado = await prisma.categoria.findFirst({
+        where: { nombreCategoria: "Vetado" },
+      });
+
+      if (categoriaVetado) {
+        await prisma.categoria_vigente.create({
+          data: {
+            codCliente: updatedTurno.codCliente,
+            codCategoria: categoriaVetado.codCategoria,
+            ultimaFechaInicio: new Date(),
+          },
+        });
+
+        console.log(
+          `Categoría "Vetado" asignada exitosamente al cliente ${updatedTurno.codCliente}`
+        );
+      }
+    }
+
     return updatedTurno;
   } catch (error) {
     console.error(
