@@ -778,6 +778,118 @@ export const cancelAppointment = async (
       data: { fechaCancelacion: fechaDate },
     });
 
+    // Verificar si quien cancela es un cliente (no tiene codSucursal ni cuil)
+    const cliente = await prisma.usuarios.findUnique({
+      where: { codUsuario: existingTurno.codCliente },
+      select: { codSucursal: true, cuil: true },
+    });
+
+    const esCliente = cliente && !cliente.codSucursal && !cliente.cuil;
+
+    // Solo aplicar lógica de descenso si es cliente y canceló el mismo día
+    if (
+      esCliente &&
+      existingTurno.fechaCancelacion == existingTurno.fechaTurno
+    ) {
+      // Determinar el rango de fechas según el semestre actual
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1; // getMonth() devuelve 0-11
+
+      let startDate: Date;
+      let endDate: Date;
+
+      if (currentMonth >= 1 && currentMonth <= 6) {
+        // Primer semestre (enero a junio)
+        startDate = new Date(currentYear, 0, 1); // 1 de enero
+        endDate = new Date(currentYear, 5, 30, 23, 59, 59); // 30 de junio
+      } else {
+        // Segundo semestre (julio a diciembre)
+        startDate = new Date(currentYear, 6, 1); // 1 de julio
+        endDate = new Date(currentYear, 11, 31, 23, 59, 59); // 31 de diciembre
+      }
+
+      // Contar turnos cancelados el mismo día del turno en el semestre actual
+      const turnosCanceladosMismoDia = await prisma.turno.findMany({
+        where: {
+          codCliente: existingTurno.codCliente,
+          estado: "Cancelado",
+          fechaTurno: {
+            gte: startDate,
+            lte: endDate,
+          },
+          fechaCancelacion: {
+            not: null,
+          },
+        },
+        select: {
+          fechaTurno: true,
+          fechaCancelacion: true,
+        },
+      });
+
+      const canceledSameDayCount = turnosCanceladosMismoDia.filter((turno) => {
+        if (!turno.fechaCancelacion) return false;
+        return (
+          turno.fechaTurno.toISOString().split("T")[0] ===
+          turno.fechaCancelacion.toISOString().split("T")[0]
+        );
+      }).length;
+
+      console.log(
+        `Cliente ${existingTurno.codCliente} tiene ${canceledSameDayCount} turnos cancelados el mismo día en el semestre actual`
+      );
+
+      // Si tiene 3 o más cancelaciones el mismo día, descender de categoría
+      if (canceledSameDayCount >= 3) {
+        // Obtener la categoría vigente actual del cliente
+        const categoriaVigenteActual = await prisma.categoria_vigente.findFirst(
+          {
+            where: { codCliente: existingTurno.codCliente },
+            include: { categorias: true },
+            orderBy: { ultimaFechaInicio: "desc" },
+          }
+        );
+
+        if (categoriaVigenteActual) {
+          const categoriaActual =
+            categoriaVigenteActual.categorias.nombreCategoria;
+          let nuevaCategoriaNombre: string | null = null;
+
+          // Determinar la nueva categoría según la jerarquía
+          if (categoriaActual === "Premium") {
+            nuevaCategoriaNombre = "Medium";
+          } else if (categoriaActual === "Medium") {
+            nuevaCategoriaNombre = "Inicial";
+          } else if (categoriaActual === "Inicial") {
+            nuevaCategoriaNombre = "Vetado";
+          }
+
+          if (nuevaCategoriaNombre) {
+            // Buscar la nueva categoría
+            const nuevaCategoria = await prisma.categoria.findFirst({
+              where: { nombreCategoria: nuevaCategoriaNombre },
+            });
+
+            if (nuevaCategoria) {
+              // Crear el registro de la nueva categoría vigente
+              await prisma.categoria_vigente.create({
+                data: {
+                  codCliente: existingTurno.codCliente,
+                  codCategoria: nuevaCategoria.codCategoria,
+                  ultimaFechaInicio: new Date(),
+                },
+              });
+
+              console.log(
+                `Cliente ${existingTurno.codCliente} descendió de ${categoriaActual} a ${nuevaCategoriaNombre}`
+              );
+            }
+          }
+        }
+      }
+    }
+
     console.log("Turno cancelado exitosamente");
     return existingTurno;
   } catch (error) {
