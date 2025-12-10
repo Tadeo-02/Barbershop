@@ -624,6 +624,24 @@ export const validateLogin = async (email: string, contraseña: string) => {
         usuario.cuil === "1" ? "admin" : usuario.cuil ? "barber" : "client",
     });
 
+    // Verificar si el usuario es cliente y tiene categoría "Vetado"
+    const esCliente = !usuario.cuil || usuario.cuil === null;
+
+    if (esCliente) {
+      const categoriaVigente = await prisma.categoria_vigente.findFirst({
+        where: { codCliente: usuario.codUsuario },
+        include: { categorias: true },
+        orderBy: { ultimaFechaInicio: "desc" },
+      });
+
+      if (categoriaVigente?.categorias.nombreCategoria === "Vetado") {
+        console.log("Login denied: User is vetoed");
+        throw new DatabaseError(
+          "Usuario vetado. No puede acceder al sistema. Contacte al administrador."
+        );
+      }
+    }
+
     // Retornar usuario sin contraseña por seguridad
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { contrase_a, ...userWithoutPassword } = usuario;
