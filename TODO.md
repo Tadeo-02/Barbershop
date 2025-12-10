@@ -31,7 +31,7 @@
     - [ ] Verificar logica de envio de fecha de cancelacion de turno
 ## Barberos:
     - [X] Modificar Turnos
-    - [ ] Validar que el turno que completa sea de ese mismo día
+    - [X] Validar que el turno que completa sea de ese mismo día
 ## Admin:
     - [X] CRUD Sucursal
     - [X] CRUD Barberos
