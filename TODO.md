@@ -46,6 +46,6 @@
     - [X] Cambiar logica del estado de turnos
     - [X] Lógica de subida de categoría (AD)
     - [X] Lógica de bajada de categoría (AD)
-    - [ ] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
+    - [X] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
     - [ ] Manejo horarios ocupados del barbero
-    - [X] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
+    - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
