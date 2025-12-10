@@ -137,7 +137,6 @@ export const cancelAppointment = async (
 ): Promise<void> => {
   try {
     const { codTurno } = req.params;
-    const { fechaCancelacion } = req.body;
 
     if (!codTurno) {
       res.status(400).json({
@@ -147,15 +146,7 @@ export const cancelAppointment = async (
       return;
     }
 
-    if (!fechaCancelacion) {
-      res.status(400).json({
-        success: false,
-        message: "fechaCancelacion es requerida",
-      });
-      return;
-    }
-
-    const result = await model.cancelAppointment(codTurno, fechaCancelacion);
+    const result = await model.cancelAppointment(codTurno);
 
     res.status(200).json({
       success: true,
