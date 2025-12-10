@@ -47,6 +47,5 @@
     - [X] Lógica de subida de categoría (AD)
     - [X] Lógica de bajada de categoría (AD)
     - [ ] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
-    - [ ] Reutilizar funcion update turnos para todos los tipos de modificacions. Borrar funciones redundantes
     - [ ] Manejo horarios ocupados del barbero
-    - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
+    - [X] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
