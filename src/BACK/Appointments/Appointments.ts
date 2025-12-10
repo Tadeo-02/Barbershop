@@ -783,16 +783,13 @@ export const checkoutAppointment = async (
   }
 };
 
-export const cancelAppointment = async (
-  codTurno: string,
-  fechaCancelacion: string
-) => {
+export const cancelAppointment = async (codTurno: string) => {
   try {
     // sanitizar y validar
     const sanitizedCodTurno = sanitizeInput(codTurno);
-    const sanitizedFechaCancelacion = sanitizeInput(fechaCancelacion);
 
-    const fechaDate = new Date(sanitizedFechaCancelacion);
+    // Calcular fecha de cancelación en el servidor
+    const fechaDate = new Date();
 
     console.log("🔍 Buscando turno para cancelar:", sanitizedCodTurno);
 

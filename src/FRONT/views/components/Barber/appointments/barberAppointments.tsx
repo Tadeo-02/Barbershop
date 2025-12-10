@@ -185,15 +185,11 @@ const BarberAppointments: React.FC = () => {
     const toastId = toast.loading("Cancelando turno...");
 
     try {
-      // Obtener la fecha actual en formato YYYY-MM-DD
-      const fechaCancelacion = new Date().toISOString().split("T")[0];
-
       const response = await fetch(`/turnos/${codTurno}/cancel`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fechaCancelacion }),
       });
 
       if (response.ok) {
@@ -229,7 +225,7 @@ const BarberAppointments: React.FC = () => {
     setSelectedUpdateTime("");
     setIsUpdateModalOpen(true);
   };
-  
+
   const handleTimeSlotSelect = (fecha: string, hora: string) => {
     setSelectedUpdateDate(fecha);
     setSelectedUpdateTime(hora);
