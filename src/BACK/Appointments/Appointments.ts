@@ -53,6 +53,55 @@ const INITIAL_TO_MEDIUM_COUNT = parseInt(
   10
 );
 
+// Helper function para generar horarios disponibles
+const generateAvailableTimeSlots = (
+  turnos: Array<{ codBarbero: string; horaDesde: Date }>,
+  barberoId?: string,
+  barberos?: Array<{ codUsuario: string }>
+): Array<{ hora: string }> => {
+  const horasDisponibles = [];
+
+  for (let hora = 8; hora <= 19.5; hora += 0.5) {
+    // Convertir la hora del bucle a formato de tiempo
+    const horaString = `${Math.floor(hora).toString().padStart(2, "0")}:${(
+      (hora % 1) *
+      60
+    )
+      .toString()
+      .padStart(2, "0")}`;
+
+    if (barberoId) {
+      // Caso: findByBarberId - verificar disponibilidad para un barbero específico
+      const turnoExistente = turnos.find((t) => {
+        const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
+        return t.codBarbero === barberoId && turnoHoraCorrecta === horaString;
+      });
+
+      if (!turnoExistente) {
+        horasDisponibles.push({ hora: horaString });
+      }
+    } else if (barberos) {
+      // Caso: findByAvailableDate - verificar si algún barbero está disponible
+      for (const barbero of barberos) {
+        const turnoExistente = turnos.find((t) => {
+          const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
+          return (
+            t.codBarbero === barbero.codUsuario &&
+            turnoHoraCorrecta === horaString
+          );
+        });
+
+        if (!turnoExistente) {
+          horasDisponibles.push({ hora: horaString });
+          break; // Salir del bucle de barberos una vez que se encuentra disponibilidad
+        }
+      }
+    }
+  }
+
+  return horasDisponibles;
+};
+
 // funciones backend
 export const store = async (
   codCliente: string,
@@ -264,38 +313,12 @@ export const findByAvailableDate = async (
       where: { codSucursal: sanitizedCodSucursal },
     });
 
-    const horasDisponibles = [];
-    for (let hora = 8; hora <= 19.5; hora += 0.5) {
-      // Convertir la hora del bucle a formato de tiempo
-      const horaString = `${Math.floor(hora).toString().padStart(2, "0")}:${(
-        (hora % 1) *
-        60
-      )
-        .toString()
-        .padStart(2, "0")}`;
-
-      for (const barbero of barberos) {
-        // Verificar si existe un turno para este barbero en esta hora específica
-        const turnoExistente = turnos.find((t) => {
-          // Usar toISOString() para obtener la hora correcta sin conversiones de zona horaria
-          const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
-
-          return (
-            t.codBarbero === barbero.codUsuario &&
-            turnoHoraCorrecta === horaString
-          );
-        });
-
-        if (!turnoExistente) {
-          horasDisponibles.push({
-            // barbero: barbero.codUsuario,
-            // fecha: fechaTurno,
-            hora: horaString,
-          });
-          break; // Salir del bucle de barberos una vez que se encuentra disponibilidad
-        }
-      }
-    }
+    // Usar la función helper
+    const horasDisponibles = generateAvailableTimeSlots(
+      turnos,
+      undefined,
+      barberos
+    );
 
     return horasDisponibles;
   } catch (error) {
@@ -331,32 +354,11 @@ export const findByBarberId = async (
       `Found ${turnos.length} existing appointments for barber ${sanitizedCodBarbero} on ${sanitizedFechaTurno}`
     );
 
-    const horasDisponibles = [];
-    for (let hora = 8; hora <= 19.5; hora += 0.5) {
-      // Convertir la hora del bucle a formato de tiempo
-      const horaString = `${Math.floor(hora).toString().padStart(2, "0")}:${(
-        (hora % 1) *
-        60
-      )
-        .toString()
-        .padStart(2, "0")}`;
-
-      // Verificar si existe un turno para este barbero en esta hora específica
-      const turnoExistente = turnos.find((t) => {
-        const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
-
-        return (
-          t.codBarbero === sanitizedCodBarbero &&
-          turnoHoraCorrecta === horaString
-        );
-      });
-
-      if (!turnoExistente) {
-        horasDisponibles.push({
-          hora: horaString,
-        });
-      }
-    }
+    // Usar la función helper
+    const horasDisponibles = generateAvailableTimeSlots(
+      turnos,
+      sanitizedCodBarbero
+    );
 
     console.log(`Found ${horasDisponibles.length} available slots for barber`);
     return horasDisponibles;
