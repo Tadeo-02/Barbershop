@@ -622,42 +622,8 @@ export const checkoutAppointment = async (
     const sanitizedCodCorte = sanitizeInput(codCorte);
     console.log("🔍 Buscando turno para checkout:", sanitizedCodTurno);
 
-    // Buscar el turno y verificar que esté en estado "Programado"
-    const turnoExistente = await prisma.turno.findFirst({
-      where: {
-        codTurno: sanitizedCodTurno,
-        estado: "Programado",
-      },
-    });
-
-    if (!turnoExistente) {
-      console.log("Turno no encontrado o no está en estado Programado");
-      throw new DatabaseError(
-        "Turno no encontrado o no está en estado Programado"
-      );
-    }
-
-    // Validar que la fecha/hora del turno ya haya pasado
-    const now = new Date();
-    const fechaTurno = new Date(turnoExistente.fechaTurno);
-
-    // Combinar fecha del turno con hora desde para obtener el momento exacto de inicio
-    const horaDesde = turnoExistente.horaDesde;
-    const [hours, minutes] = horaDesde
-      .toISOString()
-      .substring(11, 16)
-      .split(":");
-    fechaTurno.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-
-    if (fechaTurno > now) {
-      console.log("El turno aún no ha comenzado");
-      throw new DatabaseError(
-        "No se puede cobrar un turno que aún no ha comenzado"
-      );
-    }
-
-    // Actualizar el turno
-    const turnoUpdated = await prisma.turno.update({
+    // Primero verificar que el turno existe
+    const turnoExistente = await prisma.turno.update({
       where: { codTurno: sanitizedCodTurno },
       data: {
         codCorte: sanitizedCodCorte,
@@ -667,7 +633,7 @@ export const checkoutAppointment = async (
     });
 
     await prisma.$transaction(async (tx) => {
-      const codCliente = turnoUpdated.codCliente;
+      const codCliente = turnoExistente.codCliente;
 
       const latestCv = await tx.categoria_vigente.findFirst({
         where: { codCliente },
@@ -747,7 +713,7 @@ export const checkoutAppointment = async (
 
     console.log("Turno cobrado exitosamente", {
       codTurno: sanitizedCodTurno,
-      codCliente: turnoUpdated.codCliente,
+      codCliente: turnoExistente.codCliente,
     });
 
     return turnoExistente;
@@ -798,10 +764,7 @@ export const cancelAppointment = async (
 
     // Primero verificar que el turno existe
     const turnoExistente = await prisma.turno.findUnique({
-      where: {
-        codTurno: sanitizedCodTurno,
-        estado: "Programado",
-      },
+      where: { codTurno: sanitizedCodTurno },
     });
 
     if (!turnoExistente) {
