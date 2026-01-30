@@ -21,12 +21,11 @@
     "express": "^5.1.0",
     "method-override": "^3.0.0",
     "mysql2": "^3.14.2",
-    "node": "^24.6.0",
-    "node-modules": "^1.0.1",
     "prisma": "^6.15.0",
     "react": "^19.1.0",
     "react-datepicker": "^8.7.0",
     "react-dom": "^19.1.0",
+    "react-hook-form": "^7.71.1",
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.3",
@@ -55,7 +54,7 @@
     "tsc-watch": "^7.1.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
-    "vite": "^4.5.14"
+    "vite": "^7.3.1"
   },
   "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a"
 }

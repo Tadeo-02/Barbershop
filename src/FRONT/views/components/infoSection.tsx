@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./infoSection.module.css";
 import toast from "react-hot-toast";
-
+import useForm from "react-hook-form"
 interface Sucursal {
     codSucursal: string;
     nombre: string;
