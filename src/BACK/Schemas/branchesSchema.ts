@@ -15,3 +15,7 @@ export const BranchSchema = z.object({
     .max(10000, "Altura no puede ser mayor a 10000"),
 });
 
+// Schema for API responses that includes the auto-generated ID
+export const BranchWithIdSchema = BranchSchema.extend({
+  codSucursal: z.string(),
+});
