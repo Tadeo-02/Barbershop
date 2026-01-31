@@ -29,6 +29,7 @@
     - [X] Encriptar Contraseña
     - [ ] API Facturación
     - [X] Verificar logica de envio de fecha de cancelacion de turno
+    - [ ] Evitar que se puedan mandar múltiples peticiones para un mismo formulario (Ejemplo: al logearse, si presionas Enter varias veces, el sistema recibe varias veces la misma petición de logeo)
 ## Barberos:
     - [X] Modificar Turnos
     - [X] Validar que el turno que completa sea de ese mismo día
