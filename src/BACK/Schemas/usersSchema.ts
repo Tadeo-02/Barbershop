@@ -14,7 +14,7 @@ const validateCUIL = (cuil: string, dni: string): boolean => {
   return dniFromCuil === dni;
 };
 
-const UserSchema = z
+export const UserSchema = z
   .object({
     dni: z
       .string()
@@ -74,4 +74,4 @@ const UserSchema = z
     },
   );
 
-export UserSchema;
+ ;
