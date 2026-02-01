@@ -1,7 +1,7 @@
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
 import { hashPassword, comparePassword } from "../users/bcrypt";
-import { UserSchema } from "../Schemas/usersSchema";
+import { UserSchema, UserBaseSchemaExport } from "../Schemas/usersSchema";
 
 // Función para crear usuario normal (sin CUIL)
 export const store = async (
@@ -12,7 +12,7 @@ export const store = async (
   email: string,
   contraseña: string,
   cuil?: string,
-  codSucursal?: string
+  codSucursal?: string,
 ) => {
   try {
     // Sanitizar inputs
@@ -62,7 +62,7 @@ export const store = async (
 
         if (!categoriaInicial) {
           throw new DatabaseError(
-            "Categoría inicial no encontrada en el sistema"
+            "Categoría inicial no encontrada en el sistema",
           );
         }
 
@@ -87,7 +87,7 @@ export const store = async (
   } catch (error) {
     console.error(
       "Error creating user:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // Manejo de errores de validación
@@ -139,7 +139,7 @@ export const findAll = async (userType?: "client" | "barber") => {
   } catch (error) {
     console.error(
       `Error fetching ${userType}:`,
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al obtener lista de usuarios");
   }
@@ -178,7 +178,7 @@ export const findById = async (codUsuario: string) => {
 
     console.error(
       "Error finding user:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar usuario");
   }
@@ -229,7 +229,7 @@ export const findByIdWithCategory = async (codUsuario: string) => {
 
     console.error(
       "Error finding user with category:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar usuario con categoría");
   }
@@ -253,7 +253,7 @@ export const findByBranchId = async (codSucursal: string) => {
 
     console.error(
       "Error finding users by branch ID:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar usuarios por sucursal");
   }
@@ -262,7 +262,7 @@ export const findByBranchId = async (codSucursal: string) => {
 export const findBySchedule = async (
   codSucursal: string,
   fechaTurno: string,
-  horaDesde: string
+  horaDesde: string,
 ) => {
   try {
     const sanitizedCodSucursal = sanitizeInput(codSucursal);
@@ -290,7 +290,7 @@ export const findBySchedule = async (
         (turno) => {
           const turnoHora = turno.horaDesde.toISOString().substring(11, 16);
           return turnoHora === sanitizedHoraDesde;
-        }
+        },
       );
 
       return !tieneTurnoEnHora;
@@ -303,15 +303,17 @@ export const findBySchedule = async (
     }
     console.error(
       "Error finding available barbers:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar barberos disponibles");
   }
 };
 
-const UpdateUserSchema = UserSchema.omit({ contraseña: true }).extend({
-  contraseña: UserSchema.shape.contraseña.optional(),
-});
+const UpdateUserSchema = UserBaseSchemaExport.omit({ contraseña: true }).extend(
+  {
+    contraseña: UserBaseSchemaExport.shape.contraseña.optional(),
+  },
+);
 interface UpdateUserParams {
   dni: string;
   nombre: string;
@@ -358,7 +360,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
 
     console.log(
       "🔍 Debug - Looking for user with codUsuario:",
-      sanitizedData.codUsuario
+      sanitizedData.codUsuario,
     );
 
     // Verificar que el usuario existe
@@ -368,7 +370,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
 
     console.log(
       "🔍 Debug - Query result:",
-      existingUsuario ? "FOUND" : "NOT FOUND"
+      existingUsuario ? "FOUND" : "NOT FOUND",
     );
 
     if (existingUsuario) {
@@ -417,7 +419,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
   } catch (error) {
     console.error(
       "Error updating user:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // Manejo de errores de validación
@@ -432,7 +434,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
 
       if (prismaError.code === "P2002") {
         throw new DatabaseError(
-          "El nuevo DNI, CUIL o email ya existe en el sistema"
+          "El nuevo DNI, CUIL o email ya existe en el sistema",
         );
       }
 
@@ -473,7 +475,7 @@ export const destroy = async (codUsuario: string) => {
   } catch (error) {
     console.error(
       "Error deleting user:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // Manejo de errores de DB
@@ -486,7 +488,7 @@ export const destroy = async (codUsuario: string) => {
 
       if (prismaError.code === "P2003") {
         throw new DatabaseError(
-          "No se puede eliminar: el usuario tiene turnos asociados"
+          "No se puede eliminar: el usuario tiene turnos asociados",
         );
       }
     }
@@ -534,7 +536,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
     // Verificar contraseña usando bcrypt
     const isPasswordValid = await comparePassword(
       validatedData.contraseña,
-      usuario.contrase_a
+      usuario.contrase_a,
     );
 
     if (!isPasswordValid) {
@@ -563,7 +565,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
       if (categoriaVigente?.categorias.nombreCategoria === "Vetado") {
         console.log("Login denied: User is vetoed");
         throw new DatabaseError(
-          "Usuario vetado. No puede acceder al sistema. Contacte al administrador."
+          "Usuario vetado. No puede acceder al sistema. Contacte al administrador.",
         );
       }
     }
@@ -575,7 +577,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
   } catch (error) {
     console.error(
       "Error validating login:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // Manejo de errores de validación

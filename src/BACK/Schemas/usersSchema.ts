@@ -14,64 +14,65 @@ const validateCUIL = (cuil: string, dni: string): boolean => {
   return dniFromCuil === dni;
 };
 
-export const UserSchema = z
-  .object({
-    dni: z
-      .string()
-      .min(1, "DNI es requerido")
-      .regex(/^\d{8}$/, "DNI inválido. Debe tener 8 dígitos"),
+// Base schema without refinements (to allow .omit() in derived schemas)
+const UserBaseSchema = z.object({
+  dni: z
+    .string()
+    .min(1, "DNI es requerido")
+    .regex(/^\d{8}$/, "DNI inválido. Debe tener 8 dígitos"),
 
-    nombre: z
-      .string()
-      .min(2, "Nombre debe tener al menos 2 caracteres")
-      .max(50, "Nombre no puede tener más de 50 caracteres")
-      .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
+  nombre: z
+    .string()
+    .min(2, "Nombre debe tener al menos 2 caracteres")
+    .max(50, "Nombre no puede tener más de 50 caracteres")
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
 
-    apellido: z
-      .string()
-      .min(2, "Apellido debe tener al menos 2 caracteres")
-      .max(50, "Apellido no puede tener más de 50 caracteres")
-      .regex(
-        /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
-        "Apellido solo puede contener letras",
-      ),
+  apellido: z
+    .string()
+    .min(2, "Apellido debe tener al menos 2 caracteres")
+    .max(50, "Apellido no puede tener más de 50 caracteres")
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Apellido solo puede contener letras"),
 
-    telefono: z
-      .string()
-      .regex(
-        /^(\+?54\s?)?(\(?\d{2,4}\)?\s?)?\d{4}-?\d{4}$/,
-        "Teléfono inválido. Formato esperado: +54 11 1234-5678",
-      ),
-    email: z.string().email("Email inválido"),
+  telefono: z
+    .string()
+    .regex(
+      /^(\+?54\s?)?(\(?\d{2,4}\)?\s?)?\d{4}-?\d{4}$/,
+      "Teléfono inválido. Formato esperado: +54 11 1234-5678",
+    ),
+  email: z.string().email("Email inválido"),
 
-    contraseña: z
-      .string()
-      .min(6, "Contraseña debe tener al menos 6 caracteres"),
+  contraseña: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
 
-    cuil: z
-      .string()
-      .optional()
-      .refine(
-        (cuil) => {
-          if (!cuil) return true;
-          return /^\d{2}-\d{8}-\d{1}$/.test(cuil);
-        },
-        { message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X" },
-      ),
-    codSucursal: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      // Si hay CUIL, validar que el DNI coincida
-      if (data.cuil) {
-        return validateCUIL(data.cuil, data.dni);
-      }
-      return true;
-    },
-    {
-      message: "El DNI en el CUIL no coincide con el DNI proporcionado",
-      path: ["cuil"], // El error se asociará al campo cuil
-    },
-  );
+  cuil: z.string().optional(),
+  codSucursal: z.string().optional(),
+});
 
- ;
+// Full schema with refinements for validation
+export const UserSchema = UserBaseSchema.refine(
+  (data) => {
+    // Validate CUIL format if provided
+    if (data.cuil && !/^\d{2}-\d{8}-\d{1}$/.test(data.cuil)) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X",
+    path: ["cuil"],
+  },
+).refine(
+  (data) => {
+    // Si hay CUIL, validar que el DNI coincida
+    if (data.cuil) {
+      return validateCUIL(data.cuil, data.dni);
+    }
+    return true;
+  },
+  {
+    message: "El DNI en el CUIL no coincide con el DNI proporcionado",
+    path: ["cuil"],
+  },
+);
+
+// Export base schema for use in derived schemas (like update schemas)
+export const UserBaseSchemaExport = UserBaseSchema;
