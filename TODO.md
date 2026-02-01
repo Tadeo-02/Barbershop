@@ -20,6 +20,7 @@
     - [ ] Sección Productos
     - [ ] Fix de Toasts de error cuando hay success (ej: create barberos desde admin)
     - [X] Fix boton de login en Landing Page
+    - [ ] Validar datos en front -> Implementar actualizacion aplicada en login/createUser para mejoras frontend al resto de formularios y para muestreo de datos ver cambios aplicados en la infoSection (analizar si esto ultimo es necesario, es mas que nada para robustez)
 # BACK:
 ## - Usuarios:
     - [X] Pedir turnos
@@ -29,6 +30,7 @@
     - [X] Encriptar Contraseña
     - [ ] API Facturación
     - [X] Verificar logica de envio de fecha de cancelacion de turno
+    - [ ] Evitar que se puedan mandar múltiples peticiones para un mismo formulario (Ejemplo: al logearse, si presionas Enter varias veces, el sistema recibe varias veces la misma petición de logeo)
 ## Barberos:
     - [X] Modificar Turnos
     - [X] Validar que el turno que completa sea de ese mismo día
@@ -39,7 +41,7 @@
     - [ ] Dar de baja barbero en vez de eliminar
 ## General:
     - [ ] Revisar validaciones zod en general
-    - [ ] Validar datos en front y back
+    - [ ] Añadir/Mejorar validaciones Backend
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
     - [ ] Sección Productos
     - [X] Cambiar NPM por PNPM
