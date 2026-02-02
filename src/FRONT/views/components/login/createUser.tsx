@@ -128,6 +128,7 @@ const CreateUser: React.FC = () => {
                 {/* DNI */}
                 <label>DNI:</label>
                 <input
+                  required
                   type="text"
                   placeholder="40300123"
                   maxLength={8}
@@ -142,6 +143,7 @@ const CreateUser: React.FC = () => {
                 {/* NOMBRE */}
                 <label>Nombre:</label>
                 <input
+                  required
                   type="text"
                   placeholder="Juan"
                   maxLength={50}
@@ -156,6 +158,7 @@ const CreateUser: React.FC = () => {
                 {/* APELLIDO */}
                 <label>Apellido:</label>
                 <input
+                  required
                   type="text"
                   placeholder="Pérez"
                   maxLength={50}
@@ -170,6 +173,7 @@ const CreateUser: React.FC = () => {
                 {/* TELÉFONO */}
                 <label>Teléfono:</label>
                 <input
+                  required
                   type="text"
                   placeholder="+54 11 1234-5678"
                   maxLength={20}
@@ -184,6 +188,7 @@ const CreateUser: React.FC = () => {
                 {/* EMAIL */}
                 <label>Correo electrónico:</label>
                 <input
+                  required
                   className={styles.formInput}
                   type="email"
                   placeholder="juan@ejemplo.com"
@@ -199,6 +204,7 @@ const CreateUser: React.FC = () => {
                 {/* CONTRASEÑA */}
                 <label>Contraseña:</label>
                 <input
+                  required
                   type="password"
                   placeholder="********"
                   minLength={6}
@@ -214,6 +220,7 @@ const CreateUser: React.FC = () => {
                 {/* CONFIRMAR CONTRASEÑA */}
                 <label>Confirmar contraseña:</label>
                 <input
+                  required
                   type="password"
                   placeholder="********"
                   minLength={6}
