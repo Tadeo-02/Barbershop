@@ -75,7 +75,7 @@ model usuarios {
   nombre                             String              @db.VarChar(50)
   apellido                           String              @db.VarChar(50)
   telefono                           String              @db.VarChar(20)
-  email                              String              @db.VarChar(50)
+  email                              String              @unique(map: "email") @db.VarChar(50)
   contrase_a                         String              @map("contraseña") @db.VarChar(60)
   categoria_vigente                  categoria_vigente[]
   turnos_turnos_codBarberoTousuarios Turno[]             @relation("turnos_codBarberoTousuarios")

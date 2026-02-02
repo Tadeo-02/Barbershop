@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import styles from "./login.module.css";
 import toast from "react-hot-toast";
-import { UserSchema } from "../../../../BACK/Schemas/usersSchema";
+import { UserBaseSchemaExport } from "../../../../BACK/Schemas/usersSchema";
 
 //! Mejoras FrontEnd
 /*
@@ -19,11 +19,12 @@ hace que el backend procese menos 'basura' y mantiene un estado coherente
 6) Schema zod; aporta prevención de errores y a mantener la integridad de datos desde el front
 */
 
-
-
 //! Utilizamos el Schema de la librería Zod para validar campos
 // Extend schema for form with password confirmation
-const CreateUserSchema = UserSchema.omit({ cuil: true, codSucursal: true })
+const CreateUserSchema = UserBaseSchemaExport.omit({
+  cuil: true,
+  codSucursal: true,
+})
   .extend({
     confirmarContraseña: z
       .string()
