@@ -1,79 +1,75 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./appointments.module.css";
+import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const AppointmentSchema = z.object({
+  appointmentDate: z.string().min(1, "Fecha requerida"),
+});
+
+type AppointmentForm = z.infer<typeof AppointmentSchema>;
 
 const CreateAppointment: React.FC = () => {
   const navigate = useNavigate();
-  const [appointmentDate, setAppointmentDate] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<AppointmentForm>({ resolver: zodResolver(AppointmentSchema), mode: "onBlur" });
+
+  const onSubmit = async (values: AppointmentForm) => {
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = new AbortController();
+
+    const toastId = toast.loading("Creando turno...");
     try {
-  console.log("Enviando POST a /appointments con appointmentDate:", appointmentDate);
-  const response = await fetch("/appointments", {
+      const res = await fetch("/appointments", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-  body: JSON.stringify({ appointmentDate }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+        signal: abortRef.current.signal,
       });
-      console.log("Después de fetch, status:", response.status);
 
-      const text = await response.text();
-      console.log("Respuesta cruda del backend:", text);
-
-      let data;
-      if (text) {
-        try {
-          data = JSON.parse(text);
-          console.log("Después de JSON.parse, data:", data);
-        } catch (parseError) {
-          console.error("Error al parsear JSON:", parseError);
-          throw parseError;
-        }
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || "Turno creado", { id: toastId });
+        reset();
+        navigate("/indexAppointments");
       } else {
-        console.error("Respuesta vacía del backend");
-        alert("El servidor no devolvió respuesta.");
+        toast.error(data.message || "Error al crear turno", { id: toastId });
+      }
+    } catch (err: any) {
+      if (err && err.name === "AbortError") {
+        toast.dismiss(toastId);
         return;
       }
-
-      if (response.ok) {
-        alert(data.message);
-  setAppointmentDate("");
-  navigate("/indexAppointments");
-      } else {
-        alert(data.message);
-      }
-    } catch (error) {
-      console.error("Error en handleSubmit:", error);
-      alert("Error de conexión");
+      console.error("Error en handleSubmit:", err);
+      toast.error("Error de conexión", { id: toastId });
     }
   };
 
   return (
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Crear Turno</h1>
-      <form onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="appointmentDate">
-            Fecha del Turno:
-          </label>
-          <input
-            className={styles.formInput}
-            type="date"
-            name="appointmentDate"
-            id="appointmentDate"
-            value={appointmentDate}
-            onChange={(e) => setAppointmentDate(e.target.value)}
-            required
-          />
-        </div>
-        <button
-          className={`${styles.button} ${styles.buttonSuccess}`}
-          type="submit"
-        >
-          Guardar Turno
-        </button>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <fieldset disabled={isSubmitting} style={{ border: "none", padding: 0, margin: 0 }}>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="appointmentDate">
+              Fecha del Turno:
+            </label>
+            <input className={styles.formInput} type="date" id="appointmentDate" {...register("appointmentDate")} required />
+            {errors.appointmentDate && <p style={{ color: "red" }}>{errors.appointmentDate.message}</p>}
+          </div>
+          <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creando..." : "Guardar Turno"}
+          </button>
+        </fieldset>
       </form>
     </div>
   );

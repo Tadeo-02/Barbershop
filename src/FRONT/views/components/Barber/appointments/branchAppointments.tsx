@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../login/AuthContext";
 import styles from "./branchAppointments.module.css";
 import toast from "react-hot-toast";
@@ -49,6 +49,9 @@ const BranchAppointments: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingData, setLoadingData] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fetchControllerRef = useRef<AbortController | null>(null);
+  const submitControllerRef = useRef<AbortController | null>(null);
   const [formData, setFormData] = useState<{ [key: string]: AppointmentForm }>(
     {}
   );
@@ -99,8 +102,8 @@ const BranchAppointments: React.FC = () => {
     const timer = setTimeout(() => {
       setAuthChecked(true);
 
-      if (!isAuthenticated || !user || !user.codUsuario) {
-        toast.error("Debes iniciar sesión para ver los turnos");
+      if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
+        toast.error("Debes iniciar sesión como barbero para ver los turnos");
         navigate("/login");
       }
     }, 100);
@@ -108,42 +111,61 @@ const BranchAppointments: React.FC = () => {
     return () => clearTimeout(timer);
   }, [isAuthenticated, user, navigate]);
 
-  useEffect(() => {
-    if (!authChecked || !isAuthenticated || !user) return;
+  const loadTurnos = async () => {
+    if (!user) return;
+    fetchControllerRef.current?.abort();
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
 
-    const endpoint = `/turnos/branch/${user?.codSucursal}`;
-    fetch(endpoint)
-      .then(async (res) => {
-        console.log("Response status:", res.status);
-        console.log("Response headers:", res.headers.get("content-type"));
+    try {
+      const endpoint = `/turnos/branch/${user.codSucursal}`;
+      const res = await fetch(endpoint, { signal: controller.signal });
 
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        console.log("Turnos data:", data);
+      console.log("Response status:", res.status);
+      console.log("Response headers:", res.headers.get("content-type"));
 
-        let turnosArray: Appointment[] = [];
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
 
+      const data = await res.json().catch(() => null);
+
+      console.log("Turnos data:", data);
+
+      let turnosArray: Appointment[] = [];
+
+      if (data) {
         if (data.success && Array.isArray(data.data)) {
           turnosArray = data.data;
         } else if (Array.isArray(data)) {
           turnosArray = data;
         }
+      }
 
-        console.log("Turnos array procesado:", turnosArray);
-        setTurnos(turnosArray);
-      })
+      console.log("Turnos array procesado:", turnosArray);
+      setTurnos(turnosArray);
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        console.log("Fetch aborted for branch turnos");
+        return;
+      }
+      console.error("Error fetching appointments:", error);
+      setTurnos([]);
+      // On error, stop both loading flags so UI shows the error/empty state
+      setLoadingData(false);
+      setLoading(false);
+    } finally {
+      fetchControllerRef.current = null;
+    }
+  };
 
-      .catch((error) => {
-        console.error("Error fetching appointments:", error);
-        setTurnos([]);
-        // On error, stop both loading flags so UI shows the error/empty state
-        setLoadingData(false);
-        setLoading(false);
-      });
+  useEffect(() => {
+    if (!authChecked || !isAuthenticated || !user) return;
+    void loadTurnos();
+
+    return () => {
+      fetchControllerRef.current?.abort();
+    };
   }, [authChecked, isAuthenticated, user, navigate]);
 
   useEffect(() => {
@@ -160,30 +182,35 @@ const BranchAppointments: React.FC = () => {
 
   // Cargar todos los tipos de corte disponibles
   useEffect(() => {
-    fetch("/tipoCortes")
-      .then((res) => {
+    const controller = new AbortController();
+    const loadCortes = async () => {
+      try {
+        const res = await fetch("/tipoCortes", { signal: controller.signal });
         console.log("Response status cortes:", res.status);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+        const data = await res.json().catch(() => null);
         console.log("Cortes data:", data);
         if (Array.isArray(data)) {
           console.log("Setting allCortes:", data);
           setAllCortes(data);
-        } else if (data.success && Array.isArray(data.data)) {
+        } else if (data && data.success && Array.isArray(data.data)) {
           console.log("Setting allCortes from data.data:", data.data);
           setAllCortes(data.data);
         } else {
           console.warn("Formato de respuesta inesperado:", data);
         }
-      })
-      .catch((error) => {
+      } catch (error: any) {
+        if (error.name === "AbortError") return;
         console.error("Error fetching cuts:", error);
         toast.error("Error al cargar tipos de corte");
-      });
+      }
+    };
+
+    void loadCortes();
+
+    return () => controller.abort();
   }, []);
 
   // Client-side filtered results based on debounced search (barber or client name) and date
@@ -347,7 +374,13 @@ const BranchAppointments: React.FC = () => {
   };
 
   const confirmedMarkAsNoShow = async (codTurno: string) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const toastId = toast.loading("Marcando como No asistido...");
+
+    submitControllerRef.current?.abort();
+    const controller = new AbortController();
+    submitControllerRef.current = controller;
 
     try {
       const response = await fetch(`/turnos/${codTurno}/no-show`, {
@@ -355,30 +388,19 @@ const BranchAppointments: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
       });
 
       if (response.ok) {
-        await response.json();
+        await response.json().catch(() => null);
         toast.success("Turno marcado como No asistido", { id: toastId });
 
         // Recargar turnos
-        if (user) {
-          const res = await fetch(`/turnos/branch/${user.codSucursal}`);
-          const data = await res.json();
-
-          let turnosArray: Appointment[] = [];
-          if (data.success && Array.isArray(data.data)) {
-            turnosArray = data.data;
-          } else if (Array.isArray(data)) {
-            turnosArray = data;
-          }
-
-          setTurnos(turnosArray);
-        }
+        await loadTurnos();
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: "Error" }));
         console.error("Error response:", errorData);
         toast.error(
           errorData.message || "Error al marcar turno como No asistido",
@@ -387,11 +409,19 @@ const BranchAppointments: React.FC = () => {
           }
         );
       }
-    } catch (error) {
-      console.error("Fetch error:", error);
-      toast.error("Error de red al marcar turno como No asistido", {
-        id: toastId,
-      });
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        toast.dismiss(toastId);
+        console.log("No-show request aborted");
+      } else {
+        console.error("Fetch error:", error);
+        toast.error("Error de red al marcar turno como No asistido", {
+          id: toastId,
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+      submitControllerRef.current = null;
     }
   };
 
@@ -401,7 +431,13 @@ const BranchAppointments: React.FC = () => {
     precioTurno: number,
     metodoPago: string
   ) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const toastId = toast.loading("Finalizando turno...");
+
+    submitControllerRef.current?.abort();
+    const controller = new AbortController();
+    submitControllerRef.current = controller;
 
     try {
       const response = await fetch(`/turnos/${codTurno}/checkout`, {
@@ -410,44 +446,41 @@ const BranchAppointments: React.FC = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ codCorte, precioTurno, metodoPago }),
+        signal: controller.signal,
       });
 
       if (response.ok) {
-        await response.json();
+        await response.json().catch(() => null);
         toast.success("Turno cobrado con éxito", { id: toastId });
 
         // Recargar turnos
-        if (user) {
-          const res = await fetch(`/turnos/branch/${user.codSucursal}`);
-          const data = await res.json();
-
-          let turnosArray: Appointment[] = [];
-          if (data.success && Array.isArray(data.data)) {
-            turnosArray = data.data;
-          } else if (Array.isArray(data)) {
-            turnosArray = data;
-          }
-
-          setTurnos(turnosArray);
-          // Limpiar form data del turno completado
-          setFormData((prev) => {
-            const newData = { ...prev };
-            delete newData[codTurno];
-            return newData;
-          });
-        }
+        await loadTurnos();
+        // Limpiar form data del turno completado
+        setFormData((prev) => {
+          const newData = { ...prev };
+          delete newData[codTurno];
+          return newData;
+        });
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: "Error" }));
         console.error("Error response:", errorData);
         toast.error(errorData.message || "Error al finalizar el turno", {
           id: toastId,
         });
       }
-    } catch (error) {
-      console.error("Fetch error:", error);
-      toast.error("Error de red al finalizar el turno", { id: toastId });
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        toast.dismiss(toastId);
+        console.log("Checkout request aborted");
+      } else {
+        console.error("Fetch error:", error);
+        toast.error("Error de red al finalizar el turno", { id: toastId });
+      }
+    } finally {
+      setIsSubmitting(false);
+      submitControllerRef.current = null;
     }
   };
 

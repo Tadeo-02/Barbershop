@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../login/AuthContext";
 import barberStyles from "./barberAppointments.module.css";
 import toast from "react-hot-toast";
@@ -48,6 +48,9 @@ const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<Appointment[]>([]);
   const [authChecked, setAuthChecked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fetchControllerRef = useRef<AbortController | null>(null);
+  const submitControllerRef = useRef<AbortController | null>(null);
 
   // Estados para el modal de modificación
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -95,8 +98,8 @@ const BarberAppointments: React.FC = () => {
     const timer = setTimeout(() => {
       setAuthChecked(true);
 
-      if (!isAuthenticated || !user || !user.codUsuario) {
-        toast.error("Debes iniciar sesión para ver tus turnos");
+      if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
+        toast.error("Debes iniciar sesión como barbero para ver tus turnos");
         navigate("/login");
       }
     }, 100);
@@ -109,39 +112,57 @@ const BarberAppointments: React.FC = () => {
     // No cargar hasta que se haya verificado la autenticación
     if (!authChecked) return;
 
-    // Si no está autenticado, no hacer fetch
-    if (!isAuthenticated || !user || !user.codUsuario) {
+    // Si no está autenticado o no tiene codSucursal (no es barbero), no hacer fetch
+    if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
       return;
     }
 
-    fetch(`/turnos/user/${user.codUsuario}`)
-      .then(async (res) => {
+    const loadTurnos = async () => {
+      fetchControllerRef.current?.abort();
+      const controller = new AbortController();
+      fetchControllerRef.current = controller;
+
+      try {
+        const res = await fetch(`/turnos/user/${user.codUsuario}`, {
+          signal: controller.signal,
+        });
+
         console.log("Response status:", res.status);
         console.log("Response headers:", res.headers.get("content-type"));
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json().catch(() => null);
+
         console.log("Turnos data:", data);
-        // El backend devuelve { success: true, data: [...] }
+        // El backend puede devolver { success: true, data: [...] } o directamente un array
         let turnosArray: Appointment[] = [];
 
-        if (data.success && Array.isArray(data.data)) {
-          turnosArray = data.data;
-        } else if (Array.isArray(data)) {
-          turnosArray = data;
+        if (data) {
+          if (data.success && Array.isArray(data.data)) {
+            turnosArray = data.data;
+          } else if (Array.isArray(data)) {
+            turnosArray = data;
+          }
         }
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
-      })
-      .catch((error) => {
+      } catch (error: any) {
+        if (error.name === "AbortError") {
+          console.log("Fetch aborted for turnos");
+          return;
+        }
         console.error("Error fetching appointments:", error);
         setTurnos([]);
-      });
+      } finally {
+        fetchControllerRef.current = null;
+      }
+    };
+
+    void loadTurnos();
   }, [authChecked, isAuthenticated, user, navigate]);
 
   const handleDelete = async (codTurno: string) => {
@@ -182,7 +203,14 @@ const BarberAppointments: React.FC = () => {
   };
 
   const confirmedDelete = async (codTurno: string) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const toastId = toast.loading("Cancelando turno...");
+
+    // Abort any previous submit
+    submitControllerRef.current?.abort();
+    const controller = new AbortController();
+    submitControllerRef.current = controller;
 
     try {
       const response = await fetch(`/turnos/${codTurno}/cancel`, {
@@ -190,10 +218,11 @@ const BarberAppointments: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
       });
 
       if (response.ok) {
-        await response.json();
+        await response.json().catch(() => null);
         toast.success("Turno cancelado correctamente", { id: toastId });
 
         // Actualizar el estado local del turno en lugar de eliminarlo
@@ -207,15 +236,24 @@ const BarberAppointments: React.FC = () => {
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: "Error" }));
         console.error("Error response:", errorData);
         toast.error(errorData.message || "Error al cancelar el turno", {
           id: toastId,
         });
       }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        // request was intentionally aborted
+        toast.dismiss(toastId);
+        console.log("Cancel request aborted");
+      } else {
+        console.error("Error en la solicitud:", error);
+        toast.error("Error de conexión con el servidor", { id: toastId });
+      }
+    } finally {
+      setIsSubmitting(false);
+      submitControllerRef.current = null;
     }
   };
 
@@ -237,31 +275,43 @@ const BarberAppointments: React.FC = () => {
       return;
     }
 
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const toastId = toast.loading("Modificando turno...");
 
-    try {
-      // Calcular horaHasta (30 minutos después)
-      const [hours, minutes] = selectedUpdateTime.split(":").map(Number);
-      const totalMinutes = hours * 60 + minutes + 30;
-      const newHours = Math.floor(totalMinutes / 60);
-      const newMinutes = totalMinutes % 60;
-      const horaHasta = `${newHours.toString().padStart(2, "0")}:${newMinutes
-        .toString()
-        .padStart(2, "0")}`;
+    // Calcular horaHasta (30 minutos después)
+    const [hours, minutes] = selectedUpdateTime.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes + 30;
+    const newHours = Math.floor(totalMinutes / 60);
+    const newMinutes = totalMinutes % 60;
+    const horaHasta = `${newHours.toString().padStart(2, "0")}:${newMinutes
+      .toString()
+      .padStart(2, "0")}`;
 
-      const response = await fetch(`/turnos/${turnoToUpdate.codTurno}/update`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fechaTurno: selectedUpdateDate,
-          horaDesde: selectedUpdateTime,
-          horaHasta: horaHasta,
-        }),
-      });
+    // Abort any previous submit
+    submitControllerRef.current?.abort();
+    const controller = new AbortController();
+    submitControllerRef.current = controller;
+
+    try {
+      const response = await fetch(
+        `/turnos/${turnoToUpdate.codTurno}/update`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fechaTurno: selectedUpdateDate,
+            horaDesde: selectedUpdateTime,
+            horaHasta: horaHasta,
+          }),
+          signal: controller.signal,
+        }
+      );
 
       if (response.ok) {
+        await response.json().catch(() => null);
         toast.success("Turno modificado exitosamente", { id: toastId });
 
         // Actualizar el estado local
@@ -282,14 +332,22 @@ const BarberAppointments: React.FC = () => {
         setIsUpdateModalOpen(false);
         setTurnoToUpdate(null);
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: "Error" }));
         toast.error(errorData.message || "Error al modificar el turno", {
           id: toastId,
         });
       }
-    } catch (error) {
-      console.error("Error modificando turno:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        toast.dismiss(toastId);
+        console.log("Update request aborted");
+      } else {
+        console.error("Error modificando turno:", error);
+        toast.error("Error de conexión con el servidor", { id: toastId });
+      }
+    } finally {
+      setIsSubmitting(false);
+      submitControllerRef.current = null;
     }
   };
 
