@@ -1,176 +1,107 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
 
 interface Sucursal {
   codSucursal: string;
   nombre: string;
 }
 
+const CreateBarberSchema = UserBaseSchemaExport.extend({
+  confirmarContraseña: z
+    .string()
+    .min(6, "Confirmar contraseña debe tener al menos 6 caracteres"),
+  codSucursal: z.string().min(1, "Debe seleccionar una sucursal"),
+}).refine((data) => data.contraseña === data.confirmarContraseña, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmarContraseña"],
+});
+
+type CreateBarberForm = z.infer<typeof CreateBarberSchema>;
+
 const CreateBarbers: React.FC = () => {
   const navigate = useNavigate();
 
-  // ESTADOS
-  const [dni, setDni] = useState("");
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [email, setEmail] = useState("");
-  const [cuil, setCuil] = useState("");
-  const [contraseña, setContraseña] = useState("");
-  const [confirmarContraseña, setConfirmarContraseña] = useState("");
-  // Cambiar a string único en lugar de array
-  const [sucursalSeleccionada, setSucursalSeleccionada] = useState<string>("");
-  const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
-    Sucursal[]
-  >([]);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<CreateBarberForm>({
+    resolver: zodResolver(CreateBarberSchema),
+    mode: "onBlur",
+  });
+
+
+  const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
   // Cargar sucursales al montar el componente
   useEffect(() => {
+    const ctrl = new AbortController();
     const fetchSucursales = async () => {
       try {
-        const response = await fetch("/sucursales");
+        const response = await fetch("/sucursales", { signal: ctrl.signal });
         if (response.ok) {
           const data = await response.json();
-          setSucursalesDisponibles(data);
+          setSucursales(data);
         } else {
           toast.error("Error al cargar las sucursales");
         }
-      } catch (error) {
+      } catch (error: any) {
+        if (error.name === "AbortError") return;
         console.error("Error fetching sucursales:", error);
         toast.error("Error de conexión al cargar sucursales");
       }
     };
 
     fetchSucursales();
+    return () => ctrl.abort();
   }, []);
 
-  //funcion para darle formato cuil al input
-  const formatCuil = (value: string) => {
-    const numbersOnly = value.replace(/\D/g, "");
-    const limited = numbersOnly.slice(0, 11);
-    // Aplicar formato XX-XXXXXXXX-X
-    if (limited.length <= 2) {
-      return limited;
-    } else if (limited.length <= 10) {
-      return `${limited.slice(0, 2)}-${limited.slice(2)}`;
-    } else {
-      return `${limited.slice(0, 2)}-${limited.slice(2, 10)}-${limited.slice(
-        10
-      )}`;
-    }
-  };
-
-  // Función para validar CUIL con DNI
-  const validateCUILWithDNI = (
-    cuilValue: string,
-    dniValue: string
-  ): boolean => {
-    if (!cuilValue || !dniValue) return true;
-
-    const cuilRegex = /^\d{2}-\d{8}-\d{1}$/;
-    if (!cuilRegex.test(cuilValue)) return false;
-
-    const dniFromCuil = cuilValue.substring(3, 11);
-    return dniFromCuil === dniValue;
-  };
-
-  const handleCuilChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatCuil(e.target.value);
-    setCuil(formattedValue);
-  };
-
-  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "");
-    if (value.length <= 8) {
-      setDni(value);
-    }
-  };
-
-  // Cambiar el handler para radio buttons en lugar de checkboxes
-  const handleSucursalChange = (codSucursal: string) => {
-    setSucursalSeleccionada(codSucursal);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (contraseña !== confirmarContraseña) {
-      toast.error("Las contraseñas no coinciden");
-      return;
-    }
-
-    if (cuil && !validateCUILWithDNI(cuil, dni)) {
-      toast.error("El DNI en el CUIL no coincide con el DNI proporcionado");
-      return;
-    }
-
-    // Cambiar la validación
-    if (!sucursalSeleccionada) {
-      toast.error("Debe seleccionar una sucursal");
-      return;
-    }
+  const onSubmit = async (data: CreateBarberForm) => {
+    // Cancelar request anterior si existe
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    abortControllerRef.current = new AbortController();
 
     const toastId = toast.loading("Creando Usuario...");
+
+    // Separar confirmarContraseña antes de enviar
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { confirmarContraseña: _, ...datosParaBackend } = data;
 
     try {
       const response = await fetch("/usuarios", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          dni,
-          nombre,
-          apellido,
-          telefono,
-          email,
-          contraseña,
-          cuil,
-          codSucursal: sucursalSeleccionada, // Enviar como string único
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datosParaBackend),
+        signal: abortControllerRef.current.signal,
       });
 
-      const text = await response.text();
-
-      let data;
-      if (text) {
-        try {
-          data = JSON.parse(text);
-        } catch (parseError) {
-          toast.error("Error al parsear JSON", { id: toastId });
-          throw parseError;
-        }
-      } else {
-        toast.error("Respuesta vacía del backend", { id: toastId });
-        return;
-      }
+      const responseData = await response.json();
 
       if (response.ok) {
-        toast.success(data.message || "Usuario creado exitosamente", {
-          id: toastId,
-          duration: 4000,
-        });
-
-        // Limpiar campos del formulario
-        setDni("");
-        setNombre("");
-        setApellido("");
-        setTelefono("");
-        setEmail("");
-        setCuil("");
-        setContraseña("");
-        setConfirmarContraseña("");
-        setSucursalSeleccionada(""); // Limpiar sucursal
-
-        // Navegar de vuelta a la página de barberos
+        toast.success(responseData.message || "Barbero creado exitosamente", { id: toastId, duration: 4000 });
+        reset();
+        // Redirección con delay
+        setTimeout(() => {
         navigate("/Admin/BarbersPage");
+        }, 2000);
       } else {
-        toast.error(data.message || "Error al crear usuario", { id: toastId });
+        toast.error(responseData.message || "Error al crear barbero", { id: toastId });
       }
-    } catch (error) {
-      console.error("Error en handleSubmit:", error);
+    } catch (error: any) {
+      if (error && error.name === "AbortError") {
+        toast.dismiss(toastId);
+        return;
+      }
+      console.error("Error en onSubmit:", error);
       toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
@@ -179,180 +110,155 @@ const CreateBarbers: React.FC = () => {
     <div className={styles.formContainer}>
       <h2 className={styles.pageTitle}>Crear Barbero</h2>
 
-      <form onSubmit={handleSubmit}>
-        {/* DNI */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>DNI:</label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="dni"
-            placeholder="40300123"
-            maxLength={8}
-            required
-            value={dni}
-            onChange={handleDniChange}
-          />
-        </div>
-
-        {/* NOMBRE */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Nombre:</label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="nombre"
-            placeholder="Juan"
-            maxLength={50}
-            required
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-          />
-        </div>
-
-        {/* APELLIDO */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Apellido:</label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="apellido"
-            placeholder="Pérez"
-            maxLength={50}
-            required
-            value={apellido}
-            onChange={(e) => setApellido(e.target.value)}
-          />
-        </div>
-
-        {/* TELÉFONO */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Teléfono:</label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="telefono"
-            placeholder="+54 11 1234-5678"
-            maxLength={20}
-            required
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-          />
-        </div>
-
-        {/* EMAIL */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Correo electrónico:</label>
-          <input
-            className={styles.formInput}
-            type="email"
-            name="email"
-            placeholder="juan@ejemplo.com"
-            maxLength={50}
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-
-        {/* CUIL */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>CUIL:</label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="cuil"
-            id="cuil"
-            placeholder="20-40300123-4"
-            value={cuil}
-            onChange={handleCuilChange}
-            required
-          />
-          {cuil && !validateCUILWithDNI(cuil, dni) && dni && (
-            <div className={styles.errorMessage}>
-              El DNI en el CUIL debe coincidir con el DNI proporcionado
-            </div>
-          )}
-        </div>
-
-        {/* CONTRASEÑA */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Contraseña:</label>
-          <input
-            className={styles.formInput}
-            type="password"
-            name="contraseña"
-            placeholder="********"
-            minLength={6}
-            maxLength={50}
-            required
-            value={contraseña}
-            onChange={(e) => setContraseña(e.target.value)}
-          />
-        </div>
-
-        {/* CONFIRMAR CONTRASEÑA */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Confirmar contraseña:</label>
-          <input
-            className={styles.formInput}
-            type="password"
-            name="confirmarContraseña"
-            placeholder="********"
-            minLength={6}
-            maxLength={50}
-            required
-            value={confirmarContraseña}
-            onChange={(e) => setConfirmarContraseña(e.target.value)}
-          />
-        </div>
-
-        {/* ASIGNAR SUCURSAL - Cambiar a radio buttons */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Sucursal:</label>
-          <div className={styles.radioGroup}>
-            {sucursalesDisponibles.map((sucursal) => (
-              <div key={sucursal.codSucursal} className={styles.radioItem}>
-                <input
-                  type="radio"
-                  id={`sucursal-${sucursal.codSucursal}`}
-                  name="sucursal"
-                  value={sucursal.codSucursal}
-                  checked={sucursalSeleccionada === sucursal.codSucursal}
-                  onChange={() => handleSucursalChange(sucursal.codSucursal)}
-                  className={styles.radio}
-                />
-                <label
-                  htmlFor={`sucursal-${sucursal.codSucursal}`}
-                  className={styles.radioLabel}
-                >
-                  {sucursal.nombre}
-                </label>
-              </div>
-            ))}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <fieldset disabled={isSubmitting}>
+          {/* DNI */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>DNI:</label>
+            <input
+              className={styles.formInput}
+              type="text"
+              placeholder="40300123"
+              maxLength={8}
+              required
+              {...register("dni")}
+            />
+            {errors.dni && <div className={styles.errorMessage}>{errors.dni.message as string}</div>}
           </div>
-          {!sucursalSeleccionada && (
-            <div className={styles.errorMessage}>
-              Debe seleccionar una sucursal
-            </div>
-          )}
-        </div>
 
-        <div className={styles.actionButtons}>
-          <button
-            type="submit"
-            className={`${styles.button} ${styles.buttonPrimary}`}
-          >
-            Crear Barbero
-          </button>
-          <button
-            type="button"
-            className={`${styles.button} ${styles.buttonSuccess}`}
-            onClick={() => navigate("/Admin/BarbersPage")}
-          >
-            Volver
-          </button>
-        </div>
+          {/* NOMBRE */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Nombre:</label>
+            <input
+              className={styles.formInput}
+              type="text"
+              placeholder="Juan"
+              maxLength={50}
+              required
+              {...register("nombre")}
+            />
+            {errors.nombre && <div className={styles.errorMessage}>{errors.nombre.message as string}</div>}
+          </div>
+
+          {/* APELLIDO */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Apellido:</label>
+            <input
+              className={styles.formInput}
+              type="text"
+              placeholder="Pérez"
+              maxLength={50}
+              required
+              {...register("apellido")}
+            />
+            {errors.apellido && <div className={styles.errorMessage}>{errors.apellido.message as string}</div>}
+          </div>
+
+          {/* TELÉFONO */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Teléfono:</label>
+            <input
+              className={styles.formInput}
+              type="text"
+              placeholder="+54 11 1234-5678"
+              maxLength={20}
+              required
+              {...register("telefono")}
+            />
+            {errors.telefono && <div className={styles.errorMessage}>{errors.telefono.message as string}</div>}
+          </div>
+
+          {/* EMAIL */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Correo electrónico:</label>
+            <input
+              className={styles.formInput}
+              type="email"
+              placeholder="juan@ejemplo.com"
+              maxLength={50}
+              required
+              {...register("email")}
+            />
+            {errors.email && <div className={styles.errorMessage}>{errors.email.message as string}</div>}
+          </div>
+
+          {/* CUIL */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>CUIL:</label>
+            <input
+              className={styles.formInput}
+              type="text"
+              id="cuil"
+              placeholder="20-40300123-4"
+              {...register("cuil")}
+            />
+            {errors.cuil && <div className={styles.errorMessage}>{errors.cuil.message as string}</div>}
+          </div>
+
+          {/* CONTRASEÑA */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Contraseña:</label>
+            <input
+              className={styles.formInput}
+              type="password"
+              placeholder="********"
+              minLength={6}
+              maxLength={50}
+              required
+              {...register("contraseña")}
+            />
+            {errors["contraseña"] && <div className={styles.errorMessage}>{errors["contraseña"]?.message as string}</div>}
+          </div>
+
+          {/* CONFIRMAR CONTRASEÑA */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Confirmar contraseña:</label>
+            <input
+              className={styles.formInput}
+              type="password"
+              placeholder="********"
+              minLength={6}
+              maxLength={50}
+              required
+              {...register("confirmarContraseña")}
+            />
+            {errors.confirmarContraseña && <div className={styles.errorMessage}>{errors.confirmarContraseña.message as string}</div>}
+          </div>
+
+          {/* ASIGNAR SUCURSAL - Cambiar a radio buttons */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Sucursal:</label>
+            <div className={styles.radioGroup}>
+              {sucursales.map((sucursal) => (
+                <div key={sucursal.codSucursal} className={styles.radioItem}>
+                  <input
+                    type="radio"
+                    id={`sucursal-${sucursal.codSucursal}`}
+                    value={sucursal.codSucursal}
+                    {...register("codSucursal")}
+                    className={styles.radio}
+                  />
+                  <label
+                    htmlFor={`sucursal-${sucursal.codSucursal}`}
+                    className={styles.radioLabel}
+                  >
+                    {sucursal.nombre}
+                  </label>
+                </div>
+              ))}
+            </div>
+            {errors.codSucursal && <div className={styles.errorMessage}>{errors.codSucursal.message as string}</div>}
+          </div>
+
+          <div className={styles.actionButtons}>
+            <button type="submit" disabled={isSubmitting} className={`${styles.button} ${styles.buttonPrimary}`}>
+              {isSubmitting ? "Creando..." : "Crear Barbero"}
+            </button>
+            <button type="button" disabled={isSubmitting} className={`${styles.button} ${styles.buttonSuccess}`} onClick={() => navigate("/Admin/BarbersPage")}>
+              Volver
+            </button>
+          </div>
+        </fieldset>
       </form>
     </div>
   );
