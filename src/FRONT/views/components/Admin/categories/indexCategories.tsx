@@ -121,6 +121,7 @@ const IndexCategories = () => {
   };
 
   const confirmedDelete = async (codCategoria: string) => {
+    // Mostrar toast de carga y guardar el id para poder actualizarlo
     const toastId = toast.loading("Eliminando categoría...");
 
     try {
@@ -129,21 +130,24 @@ const IndexCategories = () => {
       });
 
       if (response.ok) {
-        toast.success("Categoría eliminada correctamente", { id: toastId });
-        // ✅ Actualizar la lista removiendo el eliminado
-        setCategorias(
-          categorias.filter(
-            (categoria) => categoria.codCategoria !== codCategoria
-          )
+        // Reemplazar el toast de carga por uno de éxito que se cierre automáticamente
+        toast.success("Categoría eliminada correctamente", {
+          id: toastId,
+          duration: 3500,
+        });
+
+        // ✅ Actualizar la lista removiendo el eliminado (usar functional update para evitar closures stale)
+        setCategorias((prev) =>
+          prev.filter((categoria) => categoria.codCategoria !== codCategoria)
         );
       } else if (response.status === 404) {
-        toast.error("Categoría no encontrada", { id: toastId });
+        toast.error("Categoría no encontrada", { id: toastId, duration: 4000 });
       } else {
-        toast.error("Error al borrar la categoría", { id: toastId });
+        toast.error("Error al borrar la categoría", { id: toastId, duration: 4000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 4000 });
     }
   };
 

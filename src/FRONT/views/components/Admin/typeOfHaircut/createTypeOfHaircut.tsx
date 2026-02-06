@@ -1,14 +1,17 @@
 import React, { useRef } from "react";
 import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 
 const CreateTypeSchema = z.object({
   nombreCorte: z.string().min(1, "Nombre requerido"),
-  valorBase: z.coerce.number().min(0.01, "Debe ser mayor a 0"),
+  valorBase: z.coerce
+  .number()
+  .refine((v) => !Number.isNaN(v), { message: "Ingrese un número." })
+  .min(0.01, "Debe ser mayor a 0"),
 });
 
 type CreateTypeForm = z.infer<typeof CreateTypeSchema>;
@@ -22,7 +25,35 @@ const CreateTypeOfHaircut: React.FC = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<CreateTypeForm>({ resolver: zodResolver(CreateTypeSchema), mode: "onBlur" });
+  } = useForm<CreateTypeForm>({
+    resolver: (async (values, context, options) => {
+        // traducir mensajes de error de Zod para campos numéricos a algo más amigable en español
+        const zodRes = (await (zodResolver(CreateTypeSchema) as any)(values, context, options)) as any;
+        if (zodRes && zodRes.errors) {
+          const normalizeMessage = (msg: any) => {
+            if (!msg) return msg;
+            const s = String(msg).toLowerCase();
+            if (s.includes("invalid input") || s.includes("received nan") || s.includes("expected number")) {
+              return "Ingrese un número válido";
+            }
+            return msg;
+          };
+          const keys = Object.keys(zodRes.errors);
+          for (const k of keys) {
+            const e = zodRes.errors[k];
+            if (e && e.message) {
+              e.message = normalizeMessage(e.message);
+            }
+          }
+        }
+        return zodRes;
+      }) as Resolver<CreateTypeForm>,
+      mode: "onBlur",
+        // Set default values so numeric fields start at 0
+    defaultValues: {
+      valorBase: 0,
+    },
+ });
 
   const onSubmit = async (values: CreateTypeForm) => {
     if (abortRef.current) abortRef.current.abort();
@@ -72,7 +103,7 @@ const CreateTypeOfHaircut: React.FC = () => {
               maxLength={50}
               required
             />
-            {errors.nombreCorte && <p style={{ color: "red" }}>{errors.nombreCorte.message}</p>}
+            {errors.nombreCorte && (<div className={styles.errorMessage}>{errors.nombreCorte.message}</div>)}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="valorBase">
@@ -87,7 +118,7 @@ const CreateTypeOfHaircut: React.FC = () => {
               {...register("valorBase", { valueAsNumber: true })}
               required
             />
-            {errors.valorBase && <p style={{ color: "red" }}>{errors.valorBase.message}</p>}
+            {errors.valorBase && (<div className={styles.errorMessage}>{errors.valorBase.message}</div>)}
           </div>
           <button className={`${styles.button} ${styles.buttonPrimary}`} type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Creando..." : "Guardar Tipo de Corte"}
