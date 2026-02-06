@@ -169,18 +169,18 @@ const IndexBarbers = () => {
       });
 
       if (response.ok) {
-        toast.success("Barbero eliminado correctamente", { id: toastId });
+        toast.success("Barbero eliminado correctamente", { id: toastId, duration: 3000 });
         setBarberos(
           barberos.filter((barbero) => barbero.codUsuario !== codUsuario)
         );
       } else if (response.status === 404) {
-        toast.error("Barbero no encontrado", { id: toastId });
+        toast.error("Barbero no encontrado", { id: toastId, duration: 3000 });
       } else {
-        toast.error("Error al borrar el barbero", { id: toastId });
+        toast.error("Error al borrar el barbero", { id: toastId, duration: 3000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 3000 });
     }
   };
 

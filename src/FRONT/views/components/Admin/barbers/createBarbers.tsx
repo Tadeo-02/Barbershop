@@ -70,7 +70,7 @@ const CreateBarbers: React.FC = () => {
     if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
 
-    const toastId = toast.loading("Creando Usuario...");
+    const toastId = toast.loading("Creando Barbero...");
 
     // Separar confirmarContraseña antes de enviar
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
