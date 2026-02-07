@@ -49,7 +49,7 @@ const CreateTypeOfHaircut: React.FC = () => {
         return zodRes;
       }) as Resolver<CreateTypeForm>,
       mode: "onBlur",
-        // Set default values so numeric fields start at 0
+        // valores por defectos para que arranquen en 0
     defaultValues: {
       valorBase: 0,
     },
@@ -68,13 +68,13 @@ const CreateTypeOfHaircut: React.FC = () => {
         signal: abortRef.current.signal,
       });
 
-      const data = await res.json();
+      await res.json();
       if (res.ok) {
-        toast.success(data.message || "Tipo de corte creado exitosamente", { id: toastId });
+        toast.success( "Tipo de corte creado exitosamente", { id: toastId });
         reset();
         setTimeout(() => navigate("/Admin/HaircutTypesPage"), 600);
       } else {
-        toast.error(data.message || "Error al crear tipo de corte", { id: toastId });
+        toast.error("Error al crear tipo de corte", { id: toastId });
       }
     } catch (err: any) {
       if (err && err.name === "AbortError") {

@@ -22,6 +22,7 @@ h2 {
   letter-spacing: -0.025em;
 }
 
+
 /* container de IndexTipoCortes */
 .indexTipoCortes {
   max-width: 100%;
@@ -259,6 +260,16 @@ h2 {
   font-weight: 500;
 }
 
+/* Error message styling */
+.errorMessage {
+  background-color: #fed7d7;
+  color: #742a2a;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border-left: 4px solid #e53e3e;
+}
+
 /* Responsive para móvil */
 @media (max-width: 768px) {
   .indexTipoCortes li {
@@ -275,4 +286,13 @@ h2 {
   .actionButtons .button {
     flex: 1;
   }
+  /* Error message styling */
+.errorMessage {
+  background-color: #fed7d7;
+  color: #742a2a;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border-left: 4px solid #e53e3e;
+}
 }

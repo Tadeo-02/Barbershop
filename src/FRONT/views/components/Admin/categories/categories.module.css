@@ -188,24 +188,24 @@ body {
   box-shadow: 0 8px 20px rgba(56, 161, 105, 0.5);
 }
 
-/* Specific adjustment for buttons within list items in IndexCategorias */
+
 .indexCategories li .button {
   margin-top: 0;
   width: auto;
 }
 
-/* Action buttons container */
+/* contenedor de los botones con acciones */
 .actionButtons {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end; /* push buttons to the right like branches */
+  justify-content: flex-end;
 }
 
-/* Category info styling */
+
 .categoryInfo {
-  flex: 1; /* allow info area to grow like .sucursalInfo */
+  flex: 1; /* permitir que el área de información crezca como .sucursalInfo */
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -230,7 +230,7 @@ body {
   margin-top: 4px;
 }
 
-/* Loading and empty states */
+/* Loading y empty states */
 .loadingState {
   text-align: center;
   padding: 30px;
@@ -321,7 +321,7 @@ body {
   }
 }
 
-/* Responsive para móvil: same behavior as branches */
+/* Responsive para móvil*/
 @media (max-width: 768px) {
   .indexCategories li {
     flex-direction: column;

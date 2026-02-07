@@ -13,8 +13,8 @@ interface TipoCorte {
 }
 
 const TypeSchema = z.object({
-  nombreCorte: z.string().min(1, "Nombre requerido"),
-  valorBase: z.coerce.number().min(0.01, "Debe ser mayor a 0"),
+  nombreCorte: z.string().min(1),
+  valorBase: z.number().min(0.01),
 });
 
 type TypeForm = z.infer<typeof TypeSchema>;
@@ -77,13 +77,12 @@ const UpdateTypeOfHaircut: React.FC = () => {
         body: JSON.stringify(values),
         signal: abortRef.current.signal,
       });
-
-      const data = await res.json();
+  await res.json();
       if (res.ok) {
-        toast.success(data.message || "Tipo de corte actualizado", { id: toastId });
+        toast.success("Tipo de corte actualizado", { id: toastId, duration: 2000 });
         navigate("/Admin/HaircutTypesPage");
       } else {
-        toast.error(data.message || "Error al actualizar tipo de corte", { id: toastId });
+        toast.error("Error al actualizar tipo de corte", { id: toastId, duration: 2000 });
       }
     } catch (err: any) {
       if (err && err.name === "AbortError") {
@@ -91,7 +90,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
         return;
       }
       console.error("Error modificando Tipo de Corte:", err);
-      toast.error("Error de conexión", { id: toastId });
+      toast.error("Error de conexión", { id: toastId, duration: 2000 });
     }
   };
 
@@ -109,7 +108,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
               Nombre del corte:
             </label>
             <input className={styles.formInput} type="text" id="nombreCorte" {...register("nombreCorte")} maxLength={50} required />
-            {errors.nombreCorte && <div className={styles.errorMessage}>{errors.nombreCorte.message as string}</div>}
+            {errors.nombreCorte && (<div className={styles.errorMessage}>{errors.nombreCorte.message as string}</div>)}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="valorBase">
@@ -121,10 +120,10 @@ const UpdateTypeOfHaircut: React.FC = () => {
               id="valorBase"
               min={0}
               step={0.01}
-              {...register("valorBase", { valueAsNumber: true })}
+              {...register("valorBase")}
               required
             />
-            {errors.valorBase && <div className={styles.errorMessage}>{errors.valorBase.message as string}</div>}
+            {errors.valorBase && (<div className={styles.errorMessage}>{errors.valorBase.message as string}</div>)}
           </div>
           <div className={styles.buttonGroup}>
             <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit" disabled={isSubmitting}>
