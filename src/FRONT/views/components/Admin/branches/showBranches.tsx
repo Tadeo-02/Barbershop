@@ -47,8 +47,8 @@ const ShowBranches = () => {
         <div className={styles.sucursalTitle}>
           {sucursal.nombre}
         </div>
-        <div className={styles.sucursalCode}>Calle: {sucursal.calle}</div>
-        <div className={styles.sucursalEmail}>Altura: {sucursal.altura}</div>
+        <div className={styles.sucursalCalle}>Calle: {sucursal.calle}</div>
+        <div className={styles.sucursalAltura}>Altura: {sucursal.altura}</div>
       </div>
     </div>
   );

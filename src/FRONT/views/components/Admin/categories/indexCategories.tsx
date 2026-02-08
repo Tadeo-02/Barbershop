@@ -152,6 +152,13 @@ const IndexCategories = () => {
   };
 
   return (
+      <>
+      <Link
+        to="createCategories"
+        className={`${styles.button} ${styles.buttonPrimary}`}
+      >
+        CREAR CATEGORÍA
+      </Link>
     <div className={styles.indexCategories}>
       <h2>Gestión de Categorías</h2>
       {categorias.length === 0 ? (
@@ -183,7 +190,7 @@ const IndexCategories = () => {
                     to={`/Admin/CategoriesPage/${categoria.codCategoria}`}
                     className={`${styles.button} ${styles.buttonPrimary}`}
                   >
-                    Ver Detalles
+                    Ver Info
                   </Link>
                   <Link
                     to={`/Admin/CategoriesPage/updateCategories/${categoria.codCategoria}`}
@@ -204,6 +211,7 @@ const IndexCategories = () => {
         </ul>
       )}
     </div>
+    </>
   );
 };
 

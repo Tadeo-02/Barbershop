@@ -100,7 +100,6 @@ const CreateBranches: React.FC = () => {
             <input
               className={styles.formInput}
               type="text"
-              name="nombre"
               id="nombre"
               {...register("nombre")}
               required
@@ -118,7 +117,6 @@ const CreateBranches: React.FC = () => {
           <input
             className={styles.formInput}
             type="text"
-            name="calle"
             id="calle"
             {...register("calle")}
             required
@@ -136,7 +134,6 @@ const CreateBranches: React.FC = () => {
           <input
             className={styles.formInput}
             type="number"
-            name="altura"
             id="altura"
             min={1}
             step={1}

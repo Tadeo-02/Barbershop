@@ -130,20 +130,27 @@ const IndexBranches = () => {
       });
 
       if (response.ok) {
-        toast.success("Sucursal eliminada correctamente", { id: toastId });
+        toast.success("Sucursal eliminada correctamente", { id: toastId, duration: 2000});
         setSucursales(sucursales.filter((sucursal) => sucursal.codSucursal !== codSucursal));
       } else if (response.status === 404) {
-        toast.error("Sucursal no encontrada", { id: toastId });
+        toast.error("Sucursal no encontrada", { id: toastId, duration: 2000 });
       } else {
-        toast.error("Error al borrar la sucursal", { id: toastId });
+        toast.error("Error al borrar la sucursal", { id: toastId, duration: 2000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
     }
   };
 
   return (
+    <>
+    <Link
+      to="createBranches"
+      className={`${styles.button} ${styles.buttonPrimary}`}
+    >
+      CREAR SUCURSAL
+    </Link>
     <div className={styles.indexSucursales}>
       <h2>Gestión de Sucursales</h2>
       {sucursales.length === 0 ? (
@@ -164,7 +171,7 @@ const IndexBranches = () => {
                   to={`/Admin/BranchesPage/${sucursal.codSucursal}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  Ver
+                  Ver Info
                 </Link>
                 <Link
                   to={`/Admin/BranchesPage/updateBranches/${sucursal.codSucursal}`}
@@ -184,6 +191,7 @@ const IndexBranches = () => {
         </ul>
       )}
     </div>
+    </>
   );
 };
 
