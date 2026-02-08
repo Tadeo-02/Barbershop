@@ -18,9 +18,10 @@
 ## General:
     - [X] Definir estructura mobile first en estilos
     - [ ] Sección Productos
-    - [ ] Fix de Toasts de error cuando hay success (ej: create barberos desde admin)
+    - [X] Fix de Toasts de error cuando hay success (ej: create barberos desde admin)
     - [X] Fix boton de login en Landing Page
-    - [ ] Validar datos en front -> Implementar actualizacion aplicada en login/createUser para mejoras frontend al resto de formularios y para muestreo de datos ver cambios aplicados en la infoSection (analizar si esto ultimo es necesario, es mas que nada para robustez)
+    - [X] Validar datos en front -> Implementar actualizacion aplicada en login/createUser para mejoras frontend al resto de formularios
+    - [ ] Para muestreo de datos ver cambios aplicados en la infoSection (analizar si es necesario, es mas que nada para robustez)
 # BACK:
 ## - Usuarios:
     - [X] Pedir turnos
