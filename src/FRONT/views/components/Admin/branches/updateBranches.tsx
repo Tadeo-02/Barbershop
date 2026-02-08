@@ -87,13 +87,13 @@ const UpdateBranches: React.FC = () => {
         signal: abortControllerRef.current.signal,
       });
 
-      const responseData = await response.json();
+      await response.json();
 
       if (response.ok) {
-        toast.success(responseData.message || "Sucursal actualizado exitosamente", { id: toastId });
+        toast.success("Sucursal actualizada exitosamente", { id: toastId });
         navigate("/Admin/BranchesPage");
       } else {
-        toast.error(responseData.message || "Error al actualizar sucursal", { id: toastId });
+        toast.error("Error al actualizar sucursal", { id: toastId });
       }
     } catch (error: any) {
       if (error && error.name === "AbortError") {

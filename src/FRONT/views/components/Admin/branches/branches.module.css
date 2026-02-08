@@ -243,13 +243,13 @@ h2 {
   margin-bottom: 4px;
 }
 
-.sucursalCode {
+.sucursalCalle {
   font-size: 0.9rem;
   color: #718096;
   font-weight: 500;
 }
 
-.sucursalPrice {
+.sucursalAltura {
   font-size: 1rem;
   color: #38a169;
   font-weight: 600;

@@ -144,7 +144,8 @@ const RentabilityByBranch = () => {
             <h2 className={styles.pageTitle}>Rentabilidad por Sucursal</h2>
 
             <div className={localStyles.controlsRow}>
-                <label className={localStyles.labelBold}>Mes:</label>
+                <div> 
+                <label className={localStyles.labelBold}>Mes: </label>
                 <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
                     {months.map((m, idx) => (
                         <option key={m} value={idx}>
@@ -152,8 +153,11 @@ const RentabilityByBranch = () => {
                         </option>
                     ))}
                 </select>
-                <label className={localStyles.labelBold}>Año:</label>
+                </div>
+                <div>
+                <label className={localStyles.labelBold}>Año: </label>
                 <input className={localStyles.smallInput} type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} />
+                </div>
             </div>
             <div className={localStyles.tableWrapper}>
                 <table className={localStyles.rentTable}>

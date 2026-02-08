@@ -234,9 +234,9 @@ const IndexClients = () => {
 
     return (
         <div className={styles.container}>
-            <div className={styles.card}>
+            <div className={styles.card}> 
+            <h2 className={styles.title}>Listado de Clientes</h2>
                 <div className={styles.headerRow}>
-                    <h2 className={styles.title}>Listado de Clientes</h2>
                     <br />
                     <div className={styles.filterRow}>
                         <label className={styles.filterLabel} htmlFor="categoriaSelect">Filtrar por categoría:</label>
@@ -266,7 +266,7 @@ const IndexClients = () => {
                                         <div className={styles.smallMuted}>DNI: {cliente.dni}</div>
                                         <div>{cliente.nombre} {cliente.apellido}</div>
                                         <div className={styles.smallMuted}>
-                                            Turnos: {appointmentCounts[cliente.codUsuario]?.total ?? 0} &nbsp;(Cancelados: {appointmentCounts[cliente.codUsuario]?.canceled ?? 0})
+                                            Turnos: {appointmentCounts[cliente.codUsuario]?.total ?? 0} &nbsp;(Cancel.: {appointmentCounts[cliente.codUsuario]?.canceled ?? 0})
                                         </div>
                                     </div>
                                     <div className={styles.actions}>

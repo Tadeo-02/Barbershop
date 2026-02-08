@@ -185,6 +185,13 @@ const IndexBarbers = () => {
   };
 
   return (
+    <>
+    <Link
+        to="createBarbers"
+        className={`${styles.button} ${styles.buttonPrimary}`}
+      >
+        CREAR BARBERO
+      </Link>
     <div className={styles.indexBarberos}>
       <h2>Gestión de Barberos</h2>
       {barberos.length === 0 ? (
@@ -214,7 +221,7 @@ const IndexBarbers = () => {
                   to={`/Admin/BarbersPage/${barbero.codUsuario}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  Ver Detalles
+                  Ver Info
                 </Link>
                 <Link
                   to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}
@@ -234,6 +241,7 @@ const IndexBarbers = () => {
         </ul>
       )}
     </div>
+  </>
   );
 };
 
