@@ -1,20 +1,13 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
 import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
+import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 
-const CreateTypeSchema = z.object({
-  nombreCorte: z.string().min(1, "Nombre requerido"),
-  valorBase: z.coerce
-  .number()
-  .refine((v) => !Number.isNaN(v), { message: "Ingrese un número." })
-  .min(0.01, "Debe ser mayor a 0"),
-});
-
-type CreateTypeForm = z.infer<typeof CreateTypeSchema>;
+type CreateTypeForm = z.infer<typeof HaircutSchema>;
 
 const CreateTypeOfHaircut: React.FC = () => {
   const navigate = useNavigate();
@@ -26,34 +19,14 @@ const CreateTypeOfHaircut: React.FC = () => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateTypeForm>({
-    resolver: (async (values, context, options) => {
-        // traducir mensajes de error de Zod para campos numéricos a algo más amigable en español
-        const zodRes = (await (zodResolver(CreateTypeSchema) as any)(values, context, options)) as any;
-        if (zodRes && zodRes.errors) {
-          const normalizeMessage = (msg: any) => {
-            if (!msg) return msg;
-            const s = String(msg).toLowerCase();
-            if (s.includes("invalid input") || s.includes("received nan") || s.includes("expected number")) {
-              return "Ingrese un número válido";
-            }
-            return msg;
-          };
-          const keys = Object.keys(zodRes.errors);
-          for (const k of keys) {
-            const e = zodRes.errors[k];
-            if (e && e.message) {
-              e.message = normalizeMessage(e.message);
-            }
-          }
-        }
-        return zodRes;
-      }) as Resolver<CreateTypeForm>,
-      mode: "onBlur",
-        // valores por defectos para que arranquen en 0
+    // use the global Zod error map (applied in main.tsx) and the normal resolver
+    resolver: zodResolver(HaircutSchema) as Resolver<CreateTypeForm>,
+    mode: "onBlur",
+    // valores por defecto
     defaultValues: {
       valorBase: 0,
     },
- });
+  });
 
   const onSubmit = async (values: CreateTypeForm) => {
     if (abortRef.current) abortRef.current.abort();
@@ -68,13 +41,22 @@ const CreateTypeOfHaircut: React.FC = () => {
         signal: abortRef.current.signal,
       });
 
-      await res.json();
+      // parse JSON safely (some responses may not include a JSON body)
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        // ignore parse errors; data stays null
+      }
+
       if (res.ok) {
-        toast.success( "Tipo de corte creado exitosamente", { id: toastId });
+        toast.success("Tipo de corte creado exitosamente", { id: toastId });
         reset();
         setTimeout(() => navigate("/Admin/HaircutTypesPage"), 600);
       } else {
-        toast.error("Error al crear tipo de corte", { id: toastId });
+        // if server returned JSON with message, show it; otherwise show generic
+        const msg = data && data.message ? String(data.message) : "Error al crear tipo de corte";
+        toast.error(msg, { id: toastId });
       }
     } catch (err: any) {
       if (err && err.name === "AbortError") {
@@ -84,7 +66,21 @@ const CreateTypeOfHaircut: React.FC = () => {
       console.error("Error en handleSubmit:", err);
       toast.error("Error de conexión con el servidor", { id: toastId });
     }
+    finally {
+      // clear the controller reference so future requests start fresh
+      abortRef.current = null;
+    }
   };
+
+  // cleanup on unmount: abort any inflight request
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) {
+        abortRef.current.abort();
+        abortRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <div className={styles.formContainer}>
@@ -92,18 +88,18 @@ const CreateTypeOfHaircut: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset disabled={isSubmitting} style={{ border: "none", padding: 0, margin: 0 }}>
           <div className={styles.formGroup}>
-            <label htmlFor="nombreCorte" className={styles.formLabel}>
+            <label htmlFor="nombre" className={styles.formLabel}>
               Nombre del corte:
             </label>
             <input
               className={styles.formInput}
               type="text"
-              id="nombreCorte"
-              {...register("nombreCorte")}
+              id="nombre"
+              {...register("nombre")}
               maxLength={50}
               required
             />
-            {errors.nombreCorte && (<div className={styles.errorMessage}>{errors.nombreCorte.message}</div>)}
+            {errors.nombre && (<div className={styles.errorMessage}>{errors.nombre.message}</div>)}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="valorBase">
