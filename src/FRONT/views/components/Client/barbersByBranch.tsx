@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import styles from "./barbersByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema";
 import { useAuth } from "../login/AuthContext.tsx";
 
 interface Barbero {
@@ -12,12 +14,7 @@ interface Barbero {
   telefono: string;
 }
 
-interface Sucursal {
-  codSucursal: string;
-  nombre: string;
-  calle?: string;
-  altura?: number | null;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const BarbersByBranch = () => {
   const params = useParams();

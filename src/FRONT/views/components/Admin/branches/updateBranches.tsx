@@ -5,14 +5,9 @@ import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BranchSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { BranchSchema, BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 
-interface Sucursal {
-  codSucursal: string;
-  nombre: string;
-  calle: string;
-  altura: number;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const UpdateBranchSchema = BranchSchema.extend({});
 type UpdateBranchForm = z.infer<typeof UpdateBranchSchema>;
@@ -87,13 +82,20 @@ const UpdateBranches: React.FC = () => {
         signal: abortControllerRef.current.signal,
       });
 
-      await response.json();
+      // safe parse JSON (some responses may not include a JSON body)
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        // ignore parse errors; data remains null
+      }
 
       if (response.ok) {
-        toast.success("Sucursal actualizada exitosamente", { id: toastId });
+        toast.success(data?.message || "Sucursal actualizada exitosamente", { id: toastId });
         navigate("/Admin/BranchesPage");
       } else {
-        toast.error("Error al actualizar sucursal", { id: toastId });
+        const msg = data && data.message ? String(data.message) : "Error al actualizar sucursal";
+        toast.error(msg, { id: toastId });
       }
     } catch (error: any) {
       if (error && error.name === "AbortError") {
@@ -102,8 +104,21 @@ const UpdateBranches: React.FC = () => {
       }
       console.error("🔍 Debug - Submit error:", error);
       toast.error("Error de conexión", { id: toastId });
+    } finally {
+      // clear the controller reference so future requests start fresh
+      abortControllerRef.current = null;
     }
   };
+
+  // cleanup on unmount: abort any inflight submit
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   if (!sucursal) {
     return <div className={styles.loadingState}>Cargando sucursal...</div>;

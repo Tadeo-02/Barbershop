@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 
 interface Barbero {
   codUsuario: string;
@@ -12,11 +14,7 @@ interface Barbero {
   email: string;
   codSucursal: string;
 }
-
-interface Sucursal {
-  codSucursal: string;
-  nombre: string;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const IndexBarbers = () => {
   const [barberos, setBarberos] = useState<Barbero[]>([]);

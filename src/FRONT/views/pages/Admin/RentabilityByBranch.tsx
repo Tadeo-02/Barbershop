@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./HomePageAdmin.module.css";
 import localStyles from "./RentabilityByBranch.module.css";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema";
+import { UserSchema } from "../../../../BACK/Schemas/usersSchema";
 
 interface Turno {
     codTurno?: string;
@@ -10,15 +13,9 @@ interface Turno {
     fechaTurno: string;
 }
 
-interface Barbero {
-    codUsuario: string;
-    codSucursal?: string | null;
-}
+type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 
-interface Sucursal {
-    codSucursal: string;
-    nombre: string;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const months = [
     "Enero",

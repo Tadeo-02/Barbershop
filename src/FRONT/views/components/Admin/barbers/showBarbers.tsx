@@ -2,24 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { UserSchema } from "../../../../../BACK/Schemas/usersSchema";
 
-interface Barbero {
-  codUsuario: string;
-  cuil: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  email: string;
-  codSucursal: string;
-  dni: string;
-}
+type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 
-interface Sucursal {
-  codSucursal: string;
-  nombre: string;
-  calle: string;
-  altura: string;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const ShowBarbers = () => {
   const { codUsuario } = useParams();
