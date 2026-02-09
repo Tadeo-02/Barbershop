@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -82,7 +82,21 @@ const CreateBranches: React.FC = () => {
       console.error("Error en handleSubmit:", error);
       toast.error("No se pudo conectar con el servidor", { id: toastId });
     }
+      finally {
+        // clear the controller reference so future requests start fresh
+        abortControllerRef.current = null;
+      }
   };
+
+  // cleanup on unmount: abort any inflight request
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <div className={styles.formContainer}>

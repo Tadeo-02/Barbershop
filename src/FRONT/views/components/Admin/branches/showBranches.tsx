@@ -2,13 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 
-interface Sucursal {
-  codSucursal: string;
-  nombre: string;
-  calle: string;
-  altura: number;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const ShowBranches = () => {
   const { codSucursal } = useParams();

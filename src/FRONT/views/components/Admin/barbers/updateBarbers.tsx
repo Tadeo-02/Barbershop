@@ -4,25 +4,13 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
+import { UserBaseSchemaExport, UserSchema } from "../../../../../BACK/Schemas/usersSchema";
 
-interface Barbero {
-  codUsuario: string;
-  dni: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  email: string;
-  contrase_a?: string;
-  cuil?: string;
-  codSucursal?: string;
-}
+type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 
-interface Sucursal {
-  codSucursal: string;
-  nombre: string;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const UpdateBarberSchema = UserBaseSchemaExport.extend({
   contraseña: z.string().optional(),
