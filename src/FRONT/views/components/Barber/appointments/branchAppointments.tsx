@@ -3,6 +3,9 @@ import { useAuth } from "../../login/AuthContext";
 import styles from "./branchAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 interface AppointmentForm {
   codCorte: string;
@@ -213,6 +216,188 @@ const BranchAppointments: React.FC = () => {
     return () => controller.abort();
   }, []);
 
+  // --- CheckoutForm component: encapsula formulario de cobro con react-hook-form + zod ---
+  const CheckoutForm: React.FC<{
+    codTurno: string;
+    initial: { codCorte: string; precioTurno: number; metodoPago: string };
+    allCortes: Cut[];
+    onCompleted: () => Promise<void>;
+  }> = ({ codTurno, initial, allCortes, onCompleted }) => {
+    const CheckoutSchema = z.object({
+      codCorte: z.string().min(1, "Seleccione un corte"),
+      precioTurno: z.number().positive("El precio debe ser mayor a 0"),
+      metodoPago: z.string().min(1, "Seleccione método de pago"),
+    });
+
+    type CheckoutValues = z.infer<typeof CheckoutSchema>;
+
+    const {
+      register,
+      handleSubmit,
+      setValue,
+      formState,
+      getValues,
+    } = useForm<CheckoutValues>({
+      resolver: zodResolver(CheckoutSchema),
+      defaultValues: {
+        codCorte: initial.codCorte || "",
+        precioTurno: initial.precioTurno || 0,
+        metodoPago: initial.metodoPago || "",
+      },
+    });
+
+    const submitControllerRef = useRef<AbortController | null>(null);
+
+    const doSubmit = async (values: CheckoutValues) => {
+      if (formState.isSubmitting) return;
+
+      const toastId = toast.loading("Finalizando turno...");
+
+      // Abort previous
+      submitControllerRef.current?.abort();
+      const controller = new AbortController();
+      submitControllerRef.current = controller;
+
+      try {
+        const response = await fetch(`/turnos/${codTurno}/checkout`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          await response.json().catch(() => null);
+          toast.success("Turno cobrado con éxito", { id: toastId });
+          await onCompleted();
+        } else if (response.status === 404) {
+          toast.error("Turno no encontrado", { id: toastId });
+        } else {
+          const errorData = await response.json().catch(() => ({ message: "Error" }));
+          toast.error(errorData.message || "Error al finalizar el turno", { id: toastId });
+        }
+      } catch (error: any) {
+        if (error?.name === "AbortError") {
+          toast.dismiss(toastId);
+          console.log("Checkout request aborted");
+        } else {
+          console.error("Fetch error:", error);
+          toast.error("Error de red al finalizar el turno", { id: toastId });
+        }
+      } finally {
+        submitControllerRef.current = null;
+      }
+    };
+
+    const confirmAndSubmit = () => {
+      const values = getValues();
+
+      // show confirmation toast similar to original UX
+      toast(
+        (t) => (
+          <div className={styles.modalContainer}>
+            <p className={styles.modalTitle}>Completar servicio</p>
+            <p className={styles.modalDescription}>
+              ¿Confirmar que el servicio ha sido completado y proceder con el
+              cobro?
+            </p>
+            <div className={styles.modalButtons}>
+              <button onClick={() => toast.dismiss(t.id)} className={styles.modalButtonCancel}>
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  void handleSubmit(doSubmit)();
+                }}
+                className={styles.modalButtonConfirm}
+              >
+                Confirmar cobro
+              </button>
+            </div>
+          </div>
+        ),
+        {
+          duration: Infinity,
+          style: {
+            minWidth: "400px",
+            maxWidth: "500px",
+            padding: "24px",
+            borderRadius: "12px",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
+            background: "#ffffff",
+          },
+        }
+      );
+    };
+
+    // Keep precio in sync when codCorte changes
+    useEffect(() => {
+      const subscription = () => {
+        const cod = (document.getElementById(`codCorte-${codTurno}`) as HTMLSelectElement)?.value;
+        const selected = allCortes.find((c) => c.codCorte === cod);
+        if (selected) setValue("precioTurno", selected.valorBase);
+      };
+      // lightweight: attach change listener
+      const el = document.getElementById(`codCorte-${codTurno}`);
+      el?.addEventListener("change", subscription);
+      return () => el?.removeEventListener("change", subscription);
+    }, [allCortes, codTurno, setValue]);
+
+    return (
+      <form onSubmit={(e) => e.preventDefault()}>
+        <fieldset disabled={formState.isSubmitting}>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Tipo de Corte:</label>
+            <select
+              id={`codCorte-${codTurno}`}
+              className={styles.formSelect}
+              {...register("codCorte")}
+            >
+              <option value="">Seleccione un corte</option>
+              {allCortes.map((cut) => (
+                <option key={cut.codCorte} value={cut.codCorte}>
+                  {cut.nombreCorte} - ${cut.valorBase}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Precio:</label>
+            <input
+              type="number"
+              className={styles.formInput}
+              step="0.01"
+              min="0"
+              {...register("precioTurno", { valueAsNumber: true })}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Método de Pago:</label>
+            <select className={styles.formSelect} {...register("metodoPago")}>
+              <option value="">Seleccione método</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Tarjeta">Tarjeta</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="QR">QR</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={confirmAndSubmit}
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            disabled={formState.isSubmitting}
+          >
+            {formState.isSubmitting ? "Procesando..." : "Completar y cobrar"}
+          </button>
+        </fieldset>
+      </form>
+    );
+  };
+
   // Client-side filtered results based on debounced search (barber or client name) and date
   const filteredTurnos = turnos.filter((turno) => {
     // Filtro por búsqueda de texto
@@ -242,95 +427,7 @@ const BranchAppointments: React.FC = () => {
     return true;
   });
 
-  const handleFormChange = (
-    codTurno: string,
-    field: keyof AppointmentForm,
-    value: string | number
-  ) => {
-    setFormData((prev) => {
-      const current = prev[codTurno] || {
-        codCorte: "",
-        precioTurno: 0,
-        metodoPago: "",
-      };
-
-      // Si cambia el tipo de corte, actualizar el precio automáticamente
-      if (field === "codCorte") {
-        const selectedCut = allCortes.find((c) => c.codCorte === value);
-        return {
-          ...prev,
-          [codTurno]: {
-            ...current,
-            codCorte: value as string,
-            precioTurno: selectedCut?.valorBase || 0,
-          },
-        };
-      }
-
-      return {
-        ...prev,
-        [codTurno]: {
-          ...current,
-          [field]: value,
-        },
-      };
-    });
-  };
-
-  const handleCheckOut = (codTurno: string) => {
-    const data = formData[codTurno];
-
-    if (!data || !data.codCorte || !data.metodoPago || !data.precioTurno) {
-      toast.error("Por favor complete todos los campos antes de continuar");
-      return;
-    }
-
-    //alert personalizado para confirmacion:
-    toast(
-      (t) => (
-        <div className={styles.modalContainer}>
-          <p className={styles.modalTitle}>Completar servicio</p>
-          <p className={styles.modalDescription}>
-            ¿Confirmar que el servicio ha sido completado y proceder con el
-            cobro?
-          </p>
-          <div className={styles.modalButtons}>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className={styles.modalButtonCancel}
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                confirmedCheckOut(
-                  codTurno,
-                  data.codCorte,
-                  data.precioTurno,
-                  data.metodoPago
-                );
-              }}
-              className={styles.modalButtonConfirm}
-            >
-              Confirmar cobro
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        style: {
-          minWidth: "400px",
-          maxWidth: "500px",
-          padding: "24px",
-          borderRadius: "12px",
-          boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-          background: "#ffffff",
-        },
-      }
-    );
-  };
+  
 
   const handleMarkAsNoShow = (codTurno: string) => {
     toast(
@@ -424,65 +521,7 @@ const BranchAppointments: React.FC = () => {
       submitControllerRef.current = null;
     }
   };
-
-  const confirmedCheckOut = async (
-    codTurno: string,
-    codCorte: string,
-    precioTurno: number,
-    metodoPago: string
-  ) => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    const toastId = toast.loading("Finalizando turno...");
-
-    submitControllerRef.current?.abort();
-    const controller = new AbortController();
-    submitControllerRef.current = controller;
-
-    try {
-      const response = await fetch(`/turnos/${codTurno}/checkout`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ codCorte, precioTurno, metodoPago }),
-        signal: controller.signal,
-      });
-
-      if (response.ok) {
-        await response.json().catch(() => null);
-        toast.success("Turno cobrado con éxito", { id: toastId });
-
-        // Recargar turnos
-        await loadTurnos();
-        // Limpiar form data del turno completado
-        setFormData((prev) => {
-          const newData = { ...prev };
-          delete newData[codTurno];
-          return newData;
-        });
-      } else if (response.status === 404) {
-        toast.error("Turno no encontrado", { id: toastId });
-      } else {
-        const errorData = await response.json().catch(() => ({ message: "Error" }));
-        console.error("Error response:", errorData);
-        toast.error(errorData.message || "Error al finalizar el turno", {
-          id: toastId,
-        });
-      }
-    } catch (error: any) {
-      if (error.name === "AbortError") {
-        toast.dismiss(toastId);
-        console.log("Checkout request aborted");
-      } else {
-        console.error("Fetch error:", error);
-        toast.error("Error de red al finalizar el turno", { id: toastId });
-      }
-    } finally {
-      setIsSubmitting(false);
-      submitControllerRef.current = null;
-    }
-  };
+  
 
   return (
     <div className={styles.appointmentsContainer}>
@@ -571,82 +610,20 @@ const BranchAppointments: React.FC = () => {
 
                 {turno.estado === "Programado" && (
                   <div className={styles.actionButtons}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Tipo de Corte:</label>
-                      <select
-                        className={styles.formSelect}
-                        value={currentForm.codCorte}
-                        onChange={(e) =>
-                          handleFormChange(
-                            turno.codTurno,
-                            "codCorte",
-                            e.target.value
-                          )
-                        }
-                      >
-                        <option value="">Seleccione un corte</option>
-                        {allCortes.map((cut) => (
-                          <option key={cut.codCorte} value={cut.codCorte}>
-                            {cut.nombreCorte} - ${cut.valorBase}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <CheckoutForm
+                      codTurno={turno.codTurno}
+                      initial={currentForm}
+                      allCortes={allCortes}
+                      onCompleted={async () => {
+                        await loadTurnos();
+                        setFormData((prev) => {
+                          const newData = { ...prev };
+                          delete newData[turno.codTurno];
+                          return newData;
+                        });
+                      }}
+                    />
 
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Precio:</label>
-                      <input
-                        type="number"
-                        className={styles.formInput}
-                        value={currentForm.precioTurno || ""}
-                        onChange={(e) =>
-                          handleFormChange(
-                            turno.codTurno,
-                            "precioTurno",
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                        placeholder="0.00"
-                        step="0.01"
-                        min="0"
-                        disabled={!currentForm.codCorte}
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>
-                        Método de Pago:
-                      </label>
-                      <select
-                        className={styles.formSelect}
-                        value={currentForm.metodoPago}
-                        onChange={(e) =>
-                          handleFormChange(
-                            turno.codTurno,
-                            "metodoPago",
-                            e.target.value
-                          )
-                        }
-                      >
-                        <option value="">Seleccione método</option>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Tarjeta">Tarjeta</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="QR">QR</option>
-                      </select>
-                    </div>
-
-                    <button
-                      onClick={() => handleCheckOut(turno.codTurno)}
-                      className={`${styles.button} ${styles.buttonSuccess}`}
-                      disabled={
-                        !currentForm.codCorte ||
-                        !currentForm.metodoPago ||
-                        !currentForm.precioTurno
-                      }
-                    >
-                      Completar y cobrar
-                    </button>
                     <button
                       onClick={() => handleMarkAsNoShow(turno.codTurno)}
                       className={`${styles.button} ${styles.buttonWarning}`}

@@ -4,6 +4,9 @@ import barberStyles from "./barberAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import TimeSlotPicker from "../../shared/TimeSlotPicker";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 interface Appointment {
   codTurno: string;
@@ -51,6 +54,31 @@ const BarberAppointments: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fetchControllerRef = useRef<AbortController | null>(null);
   const submitControllerRef = useRef<AbortController | null>(null);
+
+  // Zod schema for update payload (basic, mirrors backend expectations)
+  const UpdateAppointmentSchema = z.object({
+    fechaTurno: z
+      .string()
+      .min(1, "Fecha de turno es requerida")
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida. Formato YYYY-MM-DD"),
+    horaDesde: z
+      .string()
+      .min(1, "Hora desde es requerida")
+      .regex(/^\d{2}:\d{2}$/, "Hora inválida. Formato HH:MM"),
+  });
+
+  type UpdateFormValues = z.infer<typeof UpdateAppointmentSchema>;
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState,
+  } = useForm<UpdateFormValues>({
+    resolver: zodResolver(UpdateAppointmentSchema),
+    defaultValues: { fechaTurno: "", horaDesde: "" },
+  });
 
   // Estados para el modal de modificación
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -267,20 +295,22 @@ const BarberAppointments: React.FC = () => {
   const handleTimeSlotSelect = (fecha: string, hora: string) => {
     setSelectedUpdateDate(fecha);
     setSelectedUpdateTime(hora);
+    // keep form values in sync so handleSubmit has validated data
+    setValue("fechaTurno", fecha, { shouldValidate: true });
+    setValue("horaDesde", hora, { shouldValidate: true });
   };
 
-  const confirmedUpdate = async () => {
-    if (!turnoToUpdate || !selectedUpdateDate || !selectedUpdateTime) {
-      toast.error("Por favor selecciona fecha y horario");
+  // onSubmit will be used by react-hook-form; formState.isSubmitting is the primary lock
+  const onSubmit = async (data: UpdateFormValues) => {
+    if (!turnoToUpdate) {
+      toast.error("No hay turno seleccionado para modificar");
       return;
     }
 
-    if (isSubmitting) return;
-    setIsSubmitting(true);
     const toastId = toast.loading("Modificando turno...");
 
     // Calcular horaHasta (30 minutos después)
-    const [hours, minutes] = selectedUpdateTime.split(":").map(Number);
+    const [hours, minutes] = data.horaDesde.split(":").map(Number);
     const totalMinutes = hours * 60 + minutes + 30;
     const newHours = Math.floor(totalMinutes / 60);
     const newMinutes = totalMinutes % 60;
@@ -302,8 +332,8 @@ const BarberAppointments: React.FC = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            fechaTurno: selectedUpdateDate,
-            horaDesde: selectedUpdateTime,
+            fechaTurno: data.fechaTurno,
+            horaDesde: data.horaDesde,
             horaHasta: horaHasta,
           }),
           signal: controller.signal,
@@ -320,8 +350,8 @@ const BarberAppointments: React.FC = () => {
             t.codTurno === turnoToUpdate.codTurno
               ? {
                   ...t,
-                  fechaTurno: selectedUpdateDate,
-                  horaDesde: selectedUpdateTime,
+                  fechaTurno: data.fechaTurno,
+                  horaDesde: data.horaDesde,
                   horaHasta: horaHasta,
                 }
               : t
@@ -331,6 +361,7 @@ const BarberAppointments: React.FC = () => {
         // Cerrar modal
         setIsUpdateModalOpen(false);
         setTurnoToUpdate(null);
+        reset();
       } else {
         const errorData = await response.json().catch(() => ({ message: "Error" }));
         toast.error(errorData.message || "Error al modificar el turno", {
@@ -338,15 +369,15 @@ const BarberAppointments: React.FC = () => {
         });
       }
     } catch (error: any) {
-      if (error.name === "AbortError") {
+      if (error?.name === "AbortError") {
         toast.dismiss(toastId);
         console.log("Update request aborted");
-      } else {
-        console.error("Error modificando turno:", error);
-        toast.error("Error de conexión con el servidor", { id: toastId });
+        return; // early return for aborted requests
       }
+
+      console.error("Error modificando turno:", error);
+      toast.error("Error de conexión con el servidor", { id: toastId });
     } finally {
-      setIsSubmitting(false);
       submitControllerRef.current = null;
     }
   };
@@ -471,14 +502,31 @@ const BarberAppointments: React.FC = () => {
                 Hora: {formatTime(turnoToUpdate.horaDesde)} -{" "}
                 {formatTime(turnoToUpdate.horaHasta)}
               </p>
-              <TimeSlotPicker
-                codBarbero={user.codUsuario}
-                onTimeSlotSelect={handleTimeSlotSelect}
-                showConfirmButton={true}
-                confirmButtonText="Confirmar Modificación"
-                onConfirm={confirmedUpdate}
-                minDate={new Date()}
-              />
+              {/* Use a form + react-hook-form to get formState.isSubmitting and zod validation */}
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <fieldset disabled={formState.isSubmitting}>
+                  {/* hidden inputs to hold selected fecha/hora so zod/react-hook-form validate them */}
+                  <input type="hidden" {...register("fechaTurno")} />
+                  <input type="hidden" {...register("horaDesde")} />
+
+                  <TimeSlotPicker
+                    codBarbero={user.codUsuario}
+                    onTimeSlotSelect={handleTimeSlotSelect}
+                    showConfirmButton={false}
+                    minDate={new Date()}
+                  />
+
+                  <div style={{ marginTop: 12 }}>
+                    <button
+                      type="submit"
+                      className={barberStyles.updateButton}
+                      disabled={!selectedUpdateTime || formState.isSubmitting}
+                    >
+                      {formState.isSubmitting ? "Modificando..." : "Confirmar Modificación"}
+                    </button>
+                  </div>
+                </fieldset>
+              </form>
             </div>
           </div>
         </div>
