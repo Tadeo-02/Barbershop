@@ -2,21 +2,15 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast"
-import { CategorySchema as BackendCategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
+import { CategorySchema  } from "../../../../../BACK/Schemas/categoriesSchema";
 import type { z } from "zod";
 
 // Inferir tipo desde el schema existente en BACK y mapear a los nombres que usa el frontend
-type BackendCategory = z.infer<typeof BackendCategorySchema>;
-type Category = {
-  codCategoria: string;
-  nombreCategoria: BackendCategory["nombre"];
-  descCategoria: BackendCategory["descripcion"];
-  descuentoCorte: BackendCategory["descuentoCorte"];
-  descuentoProducto: BackendCategory["descuentoProducto"];
-};
+type Categoria = z.infer<typeof CategorySchema>;
+
 
 const IndexCategories = () => {
-  const [categorias, setCategorias] = useState<Category[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true); // loading
 
   useEffect(() => {
@@ -29,7 +23,7 @@ const IndexCategories = () => {
       })
       .catch((error) => {
         console.error("Error al obtener categorias:", error);
-        toast.error("Error al cargar las categorías"); 
+        toast.error("Error al cargar las categorías", { duration: 2000 }); 
       })
       .finally(() => {
         setLoading(false); // cortar loading
@@ -137,7 +131,7 @@ const IndexCategories = () => {
         // Reemplazar el toast de carga por uno de éxito que se cierre automáticamente
         toast.success("Categoría eliminada correctamente", {
           id: toastId,
-          duration: 3500,
+          duration: 2000,
         });
 
         // ✅ Actualizar la lista removiendo el eliminado (usar functional update para evitar closures stale)
@@ -145,13 +139,13 @@ const IndexCategories = () => {
           prev.filter((categoria) => categoria.codCategoria !== codCategoria)
         );
       } else if (response.status === 404) {
-        toast.error("Categoría no encontrada", { id: toastId, duration: 4000 });
+        toast.error("Categoría no encontrada", { id: toastId, duration: 2000 });
       } else {
-        toast.error("Error al borrar la categoría", { id: toastId, duration: 4000 });
+        toast.error("Error al borrar la categoría", { id: toastId, duration: 2000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 4000 });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
     }
   };
 

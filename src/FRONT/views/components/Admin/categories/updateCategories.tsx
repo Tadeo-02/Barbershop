@@ -3,12 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const CategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),
-  descCategoria: z.string().min(1, "Descripción requerida"),
+  descCategoria: z.string().min(10, "Descripción requerida"),
   descuentoCorte: z.coerce
     .number()
     .min(0, "Mínimo 0")
@@ -31,7 +32,7 @@ const UpdateCategories: React.FC = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CategoryForm>({ resolver: zodResolver(CategorySchema), mode: "onBlur" });
+  } = useForm<CategoryForm>({ resolver: zodResolver(CategorySchema) as unknown as Resolver<CategoryForm>, mode: "onBlur" });
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -85,12 +86,12 @@ const UpdateCategories: React.FC = () => {
         signal: abortRef.current.signal,
       });
 
-      const data = await res.json();
+      await res.json();
       if (res.ok) {
-        toast.success(data.message || "Categoría actualizada exitosamente", { id: toastId });
+        toast.success( "Categoría actualizada exitosamente", { id: toastId });
         navigate("/Admin/CategoriesPage");
       } else {
-        toast.error(data.message || "Error al actualizar categoría", { id: toastId });
+        toast.error( "Error al actualizar categoría", { id: toastId });
       }
     } catch (err: any) {
       if (err && err.name === "AbortError") {

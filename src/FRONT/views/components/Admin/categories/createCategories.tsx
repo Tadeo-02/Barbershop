@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const CreateCategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),
-  descCategoria: z.string().min(1, "Descripción requerida"),
+  descCategoria: z.string().min(10, "Descripción requerida. Mínimo 10 caracteres."),
   descuentoCorte: z.coerce
     .number()
     .refine((v) => !Number.isNaN(v), { message: "Ingrese un número." })
@@ -57,7 +57,7 @@ const CreateCategories: React.FC = () => {
       return zodRes;
     }) as Resolver<CreateCategoryForm>,
     mode: "onBlur",
-    // Set default values so numeric fields start at 0
+
     defaultValues: {
       descuentoCorte: 0,
       descuentoProducto: 0,
