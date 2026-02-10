@@ -28,7 +28,7 @@ const CreateUserSchema = UserBaseSchemaExport.omit({
   .extend({
     confirmarContraseña: z
       .string()
-      .min(6, "Confirmar contraseña debe tener al menos 6 caracteres"),
+      .min(10, "Confirmar contraseña debe tener al menos 10 caracteres"),
   })
   .refine((data) => data.contraseña === data.confirmarContraseña, {
     message: "Las contraseñas no coinciden",
@@ -208,8 +208,10 @@ const CreateUser: React.FC = () => {
                   required
                   type="password"
                   placeholder="********"
-                  minLength={6}
-                  maxLength={50}
+                  minLength={10}
+                  maxLength={128}
+                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).+"
+                  title="Mínimo 10 caracteres; debe incluir mayúsculas, minúsculas, números y símbolos"
                   {...register("contraseña")}
                 />
                 {errors.contraseña && (
@@ -224,8 +226,8 @@ const CreateUser: React.FC = () => {
                   required
                   type="password"
                   placeholder="********"
-                  minLength={6}
-                  maxLength={50}
+                  minLength={10}
+                  maxLength={128}
                   {...register("confirmarContraseña")}
                 />
                 {errors.confirmarContraseña && (
