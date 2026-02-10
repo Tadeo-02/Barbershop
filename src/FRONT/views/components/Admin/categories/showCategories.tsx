@@ -2,14 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast"; 
+import { CategorySchema  } from "../../../../../BACK/Schemas/categoriesSchema";
+import type { z } from "zod";
 
-interface Categoria {
-  codCategoria: string;
-  nombreCategoria: string;
-  descCategoria: string;
-  descuentoCorte: number;
-  descuentoProducto: number;
-}
+// Inferir tipo desde el schema existente en BACK y mapear a los nombres que usa el frontend
+type Categoria = z.infer<typeof CategorySchema>;
 
 const ShowCategories = () => {
   const { codCategoria } = useParams();
