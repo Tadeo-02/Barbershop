@@ -41,7 +41,11 @@ const UserBaseSchema = z.object({
     ),
   email: z.string().email("Email inválido"),
 
-  contraseña: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
+  contraseña: z
+    .string()
+    .min(10, "Contraseña debe tener al menos 10 caracteres")
+    .max(128, "Contraseña no puede tener más de 128 caracteres")
+    .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)/, "La contraseña debe incluir minúsculas, mayúsculas, números y símbolos"),
 
   cuil: z.string().optional(),
   codSucursal: z.string().optional(),
@@ -74,5 +78,25 @@ export const UserSchema = UserBaseSchema.refine(
   },
 );
 
-// Export base schema for use in derived schemas (like update schemas)
+
+
 export const UserBaseSchemaExport = UserBaseSchema;
+
+// Schema específico para barberos (derivado del base). Exportarlo para que
+// el frontend pueda reutilizar la misma validación y tipos.
+export const BarberSchema = UserBaseSchema.extend({
+  codUsuario: z.string(),
+  codSucursal: z.string().optional(),
+});
+
+export type Barber = z.infer<typeof BarberSchema>;
+
+// Schema used for backend -> frontend responses (no password required)
+export const BarberResponseSchema = UserBaseSchema.omit({ contraseña: true }).extend({
+  // Make telefono optional in responses (DB may store different formats)
+  telefono: z.string().optional(),
+  codUsuario: z.string(),
+  codSucursal: z.string().optional(),
+});
+
+export type BarberResponse = z.infer<typeof BarberResponseSchema>;

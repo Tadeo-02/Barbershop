@@ -4,16 +4,10 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
 
-interface Barbero {
-  codUsuario: string;
-  cuil: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  email: string;
-  codSucursal: string;
-}
+// Usamos el schema exportado desde el backend como single source of truth
+type Barbero = z.infer<typeof BarberResponseSchema>;
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const IndexBarbers = () => {
@@ -32,24 +26,41 @@ const IndexBarbers = () => {
 
         if (barberosResponse.ok) {
           const barberosData = await barberosResponse.json();
-          setBarberos(barberosData);
-          console.log("Barberos recibidos:", barberosData);
+          // Validar y parsear con el schema derivado
+          const parsed = BarberResponseSchema.array().safeParse(barberosData);
+          if (parsed.success) {
+            // parsed data comes from backend and doesn't include contraseña (password)
+            setBarberos(parsed.data);
+            console.log("Barberos recibidos:", parsed.data);
+          } else {
+            console.error("Barberos invalidos:", parsed.error);
+            toast.error("Datos de barberos inválidos");
+            setBarberos([]);
+          }
         } else {
           toast.error("Error al cargar los barberos");
         }
 
         if (sucursalesResponse.ok) {
           const sucursalesData = await sucursalesResponse.json();
-          // Convertir array a objeto para búsqueda rápida
-          const sucursalesMap = sucursalesData.reduce(
-            (acc: { [key: string]: Sucursal }, sucursal: Sucursal) => {
-              acc[sucursal.codSucursal] = sucursal;
-              return acc;
-            },
-            {}
-          );
-          setSucursales(sucursalesMap);
-          console.log("Sucursales recibidas:", sucursalesData);
+          // Validar sucursales con el schema importado
+          const parsedSuc = BranchWithIdSchema.array().safeParse(sucursalesData);
+          if (parsedSuc.success) {
+            // Convertir array a objeto para búsqueda rápida
+            const sucursalesMap = parsedSuc.data.reduce(
+              (acc: { [key: string]: Sucursal }, sucursal: Sucursal) => {
+                if (sucursal.codSucursal) acc[sucursal.codSucursal] = sucursal;
+                return acc;
+              },
+              {}
+            );
+            setSucursales(sucursalesMap);
+            console.log("Sucursales recibidas:", parsedSuc.data);
+          } else {
+            console.error("Sucursales invalidas:", parsedSuc.error);
+            toast.error("Datos de sucursales inválidos");
+            setSucursales({});
+          }
         } else {
           toast.error("Error al cargar las sucursales");
         }
@@ -65,7 +76,8 @@ const IndexBarbers = () => {
   }, []);
 
   // Función para obtener el nombre de la sucursal
-  const getSucursalNombre = (codSucursal: string): string => {
+  const getSucursalNombre = (codSucursal?: string): string => {
+    if (!codSucursal) return "Sucursal no encontrada";
     return sucursales[codSucursal]?.nombre || "Sucursal no encontrada";
   };
 
@@ -198,8 +210,8 @@ const IndexBarbers = () => {
         </div>
       ) : (
         <ul>
-          {barberos.map((barbero, idx) => (
-            <li key={idx}>
+          {barberos.map((barbero) => (
+            <li key={barbero.codUsuario}>
               <div className={styles.barberoInfo}>
                 <div className={styles.barberoTitle}>
                   {barbero.apellido}, {barbero.nombre}
