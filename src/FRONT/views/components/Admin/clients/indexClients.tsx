@@ -2,6 +2,17 @@ import React, { useEffect, useState } from "react";
 import styles from "./indexClients.module.css";
 import toast from "react-hot-toast";
 
+//mantenemos una interfaz local de Cliente que refleja lo que esperamos del backend, y otra ClienteProfile
+//  que extiende a Cliente con los detalles adicionales del perfil. 
+// Esto nos ayuda a tipar mejor el estado y las funciones de fetch.
+
+//mantenemos interface en vez de usar schema de zod directamente para evitar acoplar demasiado
+//  el frontend al backend, y porque la estructura que necesitamos en el frontend no siempre coincide 1:1 con 
+// lo que devuelve el backend (ejemplo: el perfil viene envuelto en { success: true, data: profile } a veces, 
+// o necesitamos transformar fechas, etc).
+
+// Como solo mostramos los datos, no es necesario usar schema.
+
 interface Cliente {
     codUsuario: string;
     dni: string;
