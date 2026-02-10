@@ -243,17 +243,12 @@ h2 {
   margin-bottom: 4px;
 }
 
-.sucursalCalle {
+.sucursalCalle, .sucursalAltura {
   font-size: 0.9rem;
-  color: #718096;
+  color: #404855;
   font-weight: 500;
 }
 
-.sucursalAltura {
-  font-size: 1rem;
-  color: #38a169;
-  font-weight: 600;
-}
 
 /* Botones de acción */
 .actionButtons {
@@ -278,6 +273,67 @@ h2 {
   color: #718096;
   font-size: 1.1rem;
   font-weight: 500;
+}
+
+/* Barberos: sección y lista de tarjetas */
+.barberosSection {
+  margin-top: 24px;
+}
+
+.barberosSection h2 {
+  font-size: 1.25rem;
+  margin: 0 0 12px 0;
+  color: #1a202c;
+  text-align: left;
+}
+
+.barberList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.barberItem {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid #e6edf3;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.barberItem:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+}
+
+.barberItem strong {
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.barberItem div {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+/* Desktop grid: dos columnas */
+@media (min-width: 700px) {
+  .barberList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .barberList {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 /* Responsive para móvil */

@@ -91,7 +91,7 @@ const UpdateBranches: React.FC = () => {
       }
 
       if (response.ok) {
-        toast.success(data?.message || "Sucursal actualizada exitosamente", { id: toastId });
+        toast.success("Sucursal actualizada exitosamente", { id: toastId });
         navigate("/Admin/BranchesPage");
       } else {
         const msg = data && data.message ? String(data.message) : "Error al actualizar sucursal";
