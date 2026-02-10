@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import styles from "./branches.module.css";
@@ -28,7 +29,7 @@ const CreateBranches: React.FC = () => {
     mode: "onBlur",
   });
 
-  const onSubmit = async (data: CreateBranchFormData) => {
+  const onSubmit: SubmitHandler<CreateBranchFormData> = async (data) => {
     // Cancelar request anterior si existe
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -46,17 +47,23 @@ const CreateBranches: React.FC = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-        signal: abortControllerRef.current.signal,
+        signal: abortControllerRef.current!.signal,
       });
 
-      // 3. Parseo directo a JSON (más limpio que text + parse)
-      const responseData = await response.json();
+      // Intentar parsear JSON; si falla, crear mensaje fallback
+      let responseData: any = { message: response.statusText };
+      try {
+        responseData = await response.json();
+      } catch (parseErr) {
+        // leave responseData as fallback
+        // console.warn("No JSON en la respuesta:", parseErr);
+      }
 
-  if (response.ok) {
+      if (response.ok) {
         // ÉXITO
         toast.success(responseData.message || "Sucursal creada exitosamente", {
           id: toastId,
-          duration: 4000,
+          duration: 2000,
         });
 
         reset(); // Limpiar formulario
@@ -66,26 +73,25 @@ const CreateBranches: React.FC = () => {
           navigate("/Admin/BranchesPage");
         }, 1200);
       } else {
-        // ERROR DEL BACKEND 
+        // ERROR DEL BACKEND
         toast.error(responseData.message || "Error al crear sucursal", {
           id: toastId,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       // Ignorar errores de abort (son intencionales)
-      if (error instanceof Error && error.name === "AbortError") {
+      if (error && (error.name === "AbortError" || (error instanceof DOMException && error.name === "AbortError"))) {
         toast.dismiss(toastId);
-        console.log("Request cancelado");
+        // console.log("Request cancelado");
         return;
       }
-      // ERROR DE RED
+      // ERROR DE RED u otro
       console.error("Error en handleSubmit:", error);
       toast.error("No se pudo conectar con el servidor", { id: toastId });
+    } finally {
+      // clear the controller reference so future requests start fresh
+      abortControllerRef.current = null;
     }
-      finally {
-        // clear the controller reference so future requests start fresh
-        abortControllerRef.current = null;
-      }
   };
 
   // cleanup on unmount: abort any inflight request
@@ -103,9 +109,10 @@ const CreateBranches: React.FC = () => {
       <h1 className={styles.pageTitle}>Crear Sucursal</h1>
       <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
         <fieldset
-            disabled={isSubmitting}
-            style={{ border: "none", padding: 0, margin: 0 }}
-          >        
+          disabled={isSubmitting}
+          aria-busy={isSubmitting}
+          style={{ border: "none", padding: 0, margin: 0 }}
+        >
           <div className={styles.formGroup}>
           {/*PROPIEDAD PARA DESHABILITAR ENVÍOS MULIPLES MEDIANTE HTML PURO  */}
             <label htmlFor="nombre" className={styles.formLabel}>
@@ -116,6 +123,7 @@ const CreateBranches: React.FC = () => {
               type="text"
               id="nombre"
               {...register("nombre")}
+              autoFocus
               required
             />
             {errors.nombre && (
@@ -164,6 +172,7 @@ const CreateBranches: React.FC = () => {
           className={`${styles.button} ${styles.buttonSuccess}`}
           type="submit"
           disabled={isSubmitting}
+          aria-disabled={isSubmitting}
         >
           {isSubmitting ? "Creando..." : "Guardar Sucursal"}
         </button>
