@@ -40,6 +40,11 @@
     - [X] CRUD Barberos
     - [X] CRUD Categorias
     - [ ] Dar de baja barbero en vez de eliminar
+    - [ ] No permitir cambiar de sucursal al barbero cuando tiene un turno todavia vigente
+    - [ ] No permitir eliminar barbero o sucursal si hay turnos vigentes
+    - [ ] Si se elimina una categoria, que sucede con los clientes de la misma? suben o bajan de categoria
+    - [ ] Cuando se crea categoria, qué se hace con los descuentos
+    
 ## General:
     - [ ] Revisar validaciones zod en general
     - [ ] Añadir/Mejorar validaciones Backend
@@ -52,3 +57,5 @@
     - [X] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
     - [ ] Manejo horarios ocupados del barbero
     - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
+    - [ ] Reestablecer contraseña
+    - [ ] Implementar los descuentos de las categorias

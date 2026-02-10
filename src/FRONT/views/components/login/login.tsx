@@ -86,7 +86,7 @@ function Login() {
                 className="form-control"
                 type="password"
                 name="claveUsuario"
-                pattern="[a-zA-Z0-9$@.\-]{7,100}"
+                pattern="[a-zA-Z0-9$@.-]{7,100}"
                 maxLength={100}
                 placeholder="********"
                 required

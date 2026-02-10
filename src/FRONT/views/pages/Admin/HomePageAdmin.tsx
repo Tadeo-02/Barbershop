@@ -65,7 +65,7 @@ function HomePageAdmin() {
         >
           <div className={styles.cardIcon}>
             <img 
-              src="/images/iconoBarberia.png"
+              src="/images/iconoSucursalBarber.jpg"
               className={styles.cardIcon}
               alt="Icono Sucursales"
             />
