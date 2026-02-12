@@ -26,7 +26,6 @@ const BarbersByBranch = () => {
   const [barberos, setBarberos] = useState<Barbero[]>([]);
   const [sucursal, setSucursal] = useState<Sucursal | null>(null);
   const [selectedBarber, setSelectedBarber] = useState<string | null>(null);
-  const [showSchedule, setShowSchedule] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -162,10 +161,8 @@ const BarbersByBranch = () => {
     // Toggle selection: if the same barber is clicked again, deselect
     if (selectedBarber === codUsuario) {
       setSelectedBarber(null);
-      setShowSchedule(false);
     } else {
       setSelectedBarber(codUsuario);
-      setShowSchedule(true);
     }
   };
 
@@ -234,9 +231,9 @@ const BarbersByBranch = () => {
         return;
       }
 
-      // Intentamos parsear sólo para verificar que la respuesta es JSON válido
+      let data;
       try {
-        JSON.parse(text);
+        data = JSON.parse(text);
       } catch (parseError) {
         console.error("Error parsing JSON:", parseError);
         toast.error("Error al procesar respuesta del servidor", {
@@ -253,9 +250,17 @@ const BarbersByBranch = () => {
 
         navigate("/client/home");
       } else {
-        toast.error("Error al reservar turno", {
-          id: toastId,
-        });
+        // Verificar si es el error de turno duplicado
+        if (data.message && data.message.includes("ya tiene un turno en ese horario")) {
+          toast.error("Ya tienes un turno reservado en ese horario. Por favor elige otro horario.", {
+            id: toastId,
+            duration: 2000,
+          });
+        } else {
+          toast.error(data.message || "Error al reservar turno", {
+            id: toastId,
+          });
+        }
       }
     } catch (error) {
       console.error("Error en handleSubmit:", error);
