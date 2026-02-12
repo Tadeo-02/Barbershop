@@ -44,9 +44,6 @@ const ShowCategories = () => {
       <h1 className={styles.pageTitle}>Detalles de la Categoría</h1>
       <div className={styles.categoryInfo}>
         <div className={styles.categoryTitle}>{categoria.nombreCategoria}</div>
-        <div className={styles.categoryCode}>
-          Código: {categoria.codCategoria}
-        </div>
         <div className={styles.categoryDescription}>
           Descripción: {categoria.descCategoria}
         </div>

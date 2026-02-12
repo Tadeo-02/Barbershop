@@ -1,8 +1,9 @@
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importamos todo desde Base
 import { z } from "zod";
-
+import {AppointmentSchema} from "../Schemas/appointmentsSchema";
+/*
 // schema de validación con Zod (más robusto que las funciones manuales)
-const AppointmentsSchema = z.object({
+  const AppointmentsSchema = z.object({
   codTurno: z.string().uuid("ID de turno inválido").optional(),
   codCorte: z.string().min(1, "Código de corte es requerido").optional(),
   codCliente: z.string().min(1, "Código de cliente es requerido"),
@@ -41,7 +42,8 @@ const AppointmentsSchema = z.object({
     .string()
     .min(1, "Estado es requerido")
     .max(50, "Estado no puede tener más de 50 caracteres"),
-});
+  });
+*/
 
 // Umbrales configurables (pueden ser sobreescritos por env vars durante pruebas)
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
@@ -123,7 +125,7 @@ export const store = async (
     };
 
     // validación con zod - omitir codTurno y codEstado para creación
-    const validatedData = AppointmentsSchema.omit({
+    const validatedData = AppointmentSchema.omit({
       codTurno: true,
     }).parse(sanitizedData);
     console.log("Creating turno");
@@ -455,7 +457,7 @@ export const update = async (
       estado: sanitizeInput(estado),
     };
 
-    const validatedData = AppointmentsSchema.parse({
+    const validatedData = AppointmentSchema.parse({
       codTurno: sanitizedData.codTurno,
       codCorte: sanitizedData.codCorte,
       codCliente: sanitizedData.codCliente,
