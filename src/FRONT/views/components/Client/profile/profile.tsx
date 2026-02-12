@@ -200,9 +200,15 @@ const SecurityQuestionForm: React.FC<{ codUsuario: string; initialQuestion?: str
   const [respuesta, setRespuesta] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setPregunta(initialQuestion || "");
+  }, [initialQuestion]);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pregunta || !respuesta) {
+    const cleanPregunta = pregunta.trim();
+    const cleanRespuesta = respuesta.trim();
+    if (!cleanPregunta || !cleanRespuesta) {
       toast.error("Pregunta y respuesta son requeridas");
       return;
     }
@@ -218,7 +224,7 @@ const SecurityQuestionForm: React.FC<{ codUsuario: string; initialQuestion?: str
           "Content-Type": "application/json",
           "x-user-id": user.codUsuario,
         },
-        body: JSON.stringify({ preguntaSeguridad: pregunta, respuestaSeguridad: respuesta }),
+        body: JSON.stringify({ preguntaSeguridad: cleanPregunta, respuestaSeguridad: cleanRespuesta }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -236,18 +242,18 @@ const SecurityQuestionForm: React.FC<{ codUsuario: string; initialQuestion?: str
   };
 
   return (
-    <form onSubmit={submit} style={{ marginTop: 12 }}>
-      <label>Pregunta:</label>
-      <select value={pregunta} onChange={(e) => setPregunta(e.target.value)} required>
+    <form onSubmit={submit} className={styles.securityForm}>
+      <label className={styles.securityLabel}>Pregunta:</label>
+      <select className={styles.securitySelect} value={pregunta} onChange={(e) => setPregunta(e.target.value)} required>
         <option value="">-- Seleccione una pregunta --</option>
         <option value="¿Cuál es el nombre de tu primera mascota?">¿Cuál es el nombre de tu primera mascota?</option>
         <option value="¿Cuál es el nombre de la calle donde creciste?">¿Cuál es el nombre de la calle donde creciste?</option>
         <option value="¿Cuál es el nombre de tu libro favorito?">¿Cuál es el nombre de tu libro favorito?</option>
       </select>
-      <label>Respuesta:</label>
-      <input type="text" value={respuesta} onChange={(e) => setRespuesta(e.target.value)} required maxLength={100} />
-      <div style={{ marginTop: 8 }}>
-        <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? "Guardando..." : (initialQuestion ? "Actualizar" : "Guardar")}</button>
+      <label className={styles.securityLabel}>Respuesta:</label>
+      <input className={styles.securityInput} type="text" value={respuesta} onChange={(e) => setRespuesta(e.target.value)} required maxLength={100} />
+      <div className={styles.securityActions}>
+        <button type="submit" className={styles.securityButton} disabled={loading}>{loading ? "Guardando..." : (initialQuestion ? "Actualizar" : "Guardar")}</button>
       </div>
     </form>
   );

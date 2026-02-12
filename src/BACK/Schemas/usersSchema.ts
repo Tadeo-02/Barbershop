@@ -1,4 +1,9 @@
 import { z } from "zod";
+
+export const PASSWORD_MIN_LENGTH = 10;
+export const PASSWORD_MAX_LENGTH = 128;
+export const PASSWORD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)/;
+export const PASSWORD_PATTERN = `(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*\\W).{${PASSWORD_MIN_LENGTH},${PASSWORD_MAX_LENGTH}}`;
 // Función para validar CUIL
 const validateCUIL = (cuil: string, dni: string): boolean => {
   // Verificar formato XX-XXXXXXXX-X
@@ -43,9 +48,9 @@ const UserBaseSchema = z.object({
 
   contraseña: z
     .string()
-    .min(10, "Contraseña debe tener al menos 10 caracteres")
-    .max(128, "Contraseña no puede tener más de 128 caracteres")
-    .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)/, "La contraseña debe incluir minúsculas, mayúsculas, números y símbolos"),
+    .min(PASSWORD_MIN_LENGTH, `Contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`)
+    .max(PASSWORD_MAX_LENGTH, `Contraseña no puede tener más de ${PASSWORD_MAX_LENGTH} caracteres`)
+    .regex(PASSWORD_REGEX, "La contraseña debe incluir minúsculas, mayúsculas, números y símbolos"),
 
   cuil: z.string().optional(),
   codSucursal: z.string().optional(),

@@ -286,8 +286,14 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
   try {
     console.log("verifySecurityAnswer endpoint called. Body:", req.body);
     const { email, respuestaSeguridad, nuevaContraseña } = req.body;
-    if (!email || !respuestaSeguridad || !nuevaContraseña) {
-      res.status(400).json({ success: false, message: "Email, respuesta y nueva contraseña son requeridos" });
+    if (!email || !respuestaSeguridad) {
+      res.status(400).json({ success: false, message: "Email y respuesta son requeridos" });
+      return;
+    }
+
+    if (!nuevaContraseña) {
+      await model.verifySecurityAnswerOnly(email, respuestaSeguridad);
+      res.status(200).json({ success: true, message: "Respuesta verificada correctamente" });
       return;
     }
 

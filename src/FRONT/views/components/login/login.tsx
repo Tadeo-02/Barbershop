@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./login.module.css";
+import { PASSWORD_MAX_LENGTH } from "../../lib/passwordConstants.ts";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
 import {useUserRedirect} from "../Redirect.tsx";
@@ -86,8 +87,7 @@ function Login() {
                 className="form-control"
                 type="password"
                 name="claveUsuario"
-                pattern="[a-zA-Z0-9$@.-]{7,100}"
-                maxLength={100}
+                maxLength={PASSWORD_MAX_LENGTH}
                 placeholder="********"
                 required
                 value={contraseña}
