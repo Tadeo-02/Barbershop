@@ -258,5 +258,34 @@ export const markAsNoShow = async (
   }
 };
 
+export const findPendingByBarberId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codBarbero } = req.params;
+
+    if (!codBarbero) {
+      res.status(400).json({
+        success: false,
+        message: "codBarbero es requerido",
+      });
+      return;
+    }
+
+    const pendingAppointments = await model.findPendingByBarberId(codBarbero);
+
+    res.status(200).json({
+      success: true,
+      data: pendingAppointments,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al buscar turnos pendientes del barbero",
+    });
+  }
+};
+
 export const { create, store, index, show, edit, update, destroy } =
   appointmentsController;

@@ -430,6 +430,53 @@ export const findByBranchId = async (codSucursal: string) => {
   }
 };
 
+export const findPendingByBarberId = async (codBarbero: string) => {
+  try {
+    // sanitizar y validar
+    const sanitizedCodBarbero = sanitizeInput(codBarbero);
+
+    // Buscar turnos programados (vigentes) donde el barbero es el especificado
+    // y la fecha del turno es igual o posterior a hoy
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const pendingAppointments = await prisma.turno.findMany({
+      where: {
+        codBarbero: sanitizedCodBarbero,
+        estado: "Programado",
+        fechaTurno: {
+          gte: today,
+        },
+      },
+      include: {
+        usuarios_turnos_codClienteTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+          },
+        },
+      },
+      orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
+    });
+
+    console.log(
+      `Found ${pendingAppointments.length} pending appointments for barber ${sanitizedCodBarbero}`
+    );
+    return pendingAppointments;
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding pending appointments:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al buscar turnos pendientes del barbero");
+  }
+};
+
 export const update = async (
   codTurno: string,
   codCorte: string,
