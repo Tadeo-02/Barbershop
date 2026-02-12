@@ -43,7 +43,8 @@
     - [X] No permitir cambiar de sucursal al barbero cuando tiene un turno todavia vigente
     - [X] No permitir eliminar barbero o sucursal si hay turnos vigentes
     - [ ] Si se elimina una categoria, que sucede con los clientes de la misma? suben o bajan de categoria
-    - [ ] Cuando se crea categoria, qué se hace con los descuentos (se aplican cuando se cobran los turnos?) y con la lógica de subida y bajada de categoría?
+    - [X] Cuando se crea categoria, qué se hace con los descuentos (se aplican cuando se cobran los turnos?)
+    - [ ] Cuando se crea una categoria, que se hace con la lógica de subida y bajada de categoría? Deberiamos no permitir la creacion de categorias?
     
 ## General:
     - [ ] Revisar validaciones zod en general
