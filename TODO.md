@@ -57,5 +57,5 @@
     - [X] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
     - [ ] Manejo horarios ocupados del barbero
     - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
-    - [ ] Reestablecer contraseña
+    - [X] Reestablecer contraseña y unificacion de patrones. Se permite mantener las contraseñas viejas a excepcion de cp3.
     - [ ] Implementar los descuentos de las categorias

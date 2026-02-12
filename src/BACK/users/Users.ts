@@ -627,6 +627,50 @@ export const getSecurityQuestionByEmail = async (email: string) => {
   }
 };
 
+const getUserAndValidateSecurityAnswer = async (email: string, respuesta: string) => {
+  const sanitizedEmail = sanitizeInput(email);
+  const sanitizedRespuesta = sanitizeInput(respuesta);
+
+  console.log("validateSecurityAnswer called for:", sanitizedEmail);
+
+  const usuario = (await prisma.usuarios.findFirst({
+    where: { email: sanitizedEmail },
+  })) as any;
+
+  console.log("User lookup result:", !!usuario, usuario ? { codUsuario: usuario.codUsuario, email: usuario.email } : null);
+  console.log("Has stored respuestaSeguridad?", !!(usuario && usuario.respuestaSeguridad));
+
+  if (!usuario) {
+    throw new DatabaseError("Usuario no encontrado");
+  }
+
+  if (!usuario.respuestaSeguridad) {
+    throw new DatabaseError("No hay respuesta de seguridad configurada para este usuario");
+  }
+
+  // Comparar la respuesta (guardada hasheada)
+  console.log("Stored respuestaSeguridad length:", usuario.respuestaSeguridad ? usuario.respuestaSeguridad.length : 0);
+  const isAnswerValid = await comparePassword(sanitizedRespuesta, usuario.respuestaSeguridad);
+
+  if (!isAnswerValid) {
+    throw new DatabaseError("Respuesta incorrecta");
+  }
+
+  return usuario;
+};
+
+// Verificar respuesta de seguridad (sin resetear contraseña)
+export const verifySecurityAnswerOnly = async (email: string, respuesta: string) => {
+  try {
+    await getUserAndValidateSecurityAnswer(email, respuesta);
+    return true;
+  } catch (error) {
+    console.error("Error verifying security answer:", error);
+    if (error instanceof DatabaseError) throw error;
+    throw new DatabaseError("Error al verificar la respuesta");
+  }
+};
+
 // Verificar respuesta de seguridad y actualizar contraseña si es correcta
 export const verifySecurityAnswerAndReset = async (
   email: string,
@@ -634,34 +678,9 @@ export const verifySecurityAnswerAndReset = async (
   nuevaContraseña: string,
 ) => {
   try {
-    const sanitizedEmail = sanitizeInput(email);
-    const sanitizedRespuesta = sanitizeInput(respuesta);
     const sanitizedNueva = sanitizeInput(nuevaContraseña);
 
-    console.log("verifySecurityAnswerAndReset called for:", sanitizedEmail);
-
-    const usuario = (await prisma.usuarios.findFirst({
-      where: { email: sanitizedEmail },
-    })) as any;
-
-    console.log("User lookup result:", !!usuario, usuario ? { codUsuario: usuario.codUsuario, email: usuario.email } : null);
-    console.log("Has stored respuestaSeguridad?", !!(usuario && usuario.respuestaSeguridad));
-
-    if (!usuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
-
-    if (!usuario.respuestaSeguridad) {
-      throw new DatabaseError("No hay respuesta de seguridad configurada para este usuario");
-    }
-
-    // Comparar la respuesta (guardada hasheada)
-    console.log("Stored respuestaSeguridad length:", usuario.respuestaSeguridad ? usuario.respuestaSeguridad.length : 0);
-    const isAnswerValid = await comparePassword(sanitizedRespuesta, usuario.respuestaSeguridad);
-
-    if (!isAnswerValid) {
-      throw new DatabaseError("Respuesta incorrecta");
-    }
+    const usuario = await getUserAndValidateSecurityAnswer(email, respuesta);
 
     // Hashear nueva contraseña y actualizar
     const hashedNewPassword = await hashPassword(sanitizedNueva);

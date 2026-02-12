@@ -15,7 +15,7 @@ Instruccions de uso: <br>
 Datos de distintos Tipos de Usuarios:
 Client:
 cp3@gmail.com
-123456
+Cp3!123456 
 Barber:
 king@gmail.com
 123456

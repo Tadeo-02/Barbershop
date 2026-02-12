@@ -7,6 +7,12 @@ import { z } from "zod";
 import styles from "./login.module.css";
 import toast from "react-hot-toast";
 import { UserBaseSchemaExport } from "../../../../BACK/Schemas/usersSchema";
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_PATTERN,
+} from "../../lib/passwordConstants.ts";
+import { getPasswordMissing } from "../../lib/passwordRules";
 
 //! Mejoras FrontEnd
 /*
@@ -53,10 +59,14 @@ const CreateUser: React.FC = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<CreateUserFormData>({
     resolver: zodResolver(CreateUserSchema),
     mode: "onBlur",
   });
+
+  const passwordValue = watch("contraseña") || "";
+  const passwordMissing = getPasswordMissing(passwordValue);
 
   const onSubmit = async (data: CreateUserFormData) => {
     // Cancelar request anterior si existe
@@ -214,12 +224,22 @@ const CreateUser: React.FC = () => {
                   required
                   type="password"
                   placeholder="********"
-                  minLength={10}
-                  maxLength={128}
-                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).+"
-                  title="Mínimo 10 caracteres; debe incluir mayúsculas, minúsculas, números y símbolos"
+                  minLength={PASSWORD_MIN_LENGTH}
+                  maxLength={PASSWORD_MAX_LENGTH}
+                  pattern={PASSWORD_PATTERN}
+                  title={`Mínimo ${PASSWORD_MIN_LENGTH} caracteres; debe incluir mayúsculas, minúsculas, números y símbolos`}
                   {...register("contraseña")}
                 />
+                {passwordValue && passwordMissing.length > 0 && (
+                  <div className={styles.passwordHints}>
+                    <strong>Falta:</strong>
+                    <ul>
+                      {passwordMissing.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {errors.contraseña && (
                   <p style={{ color: "red", fontSize: "0.875rem" }}>
                     {errors.contraseña.message}
@@ -232,8 +252,8 @@ const CreateUser: React.FC = () => {
                   required
                   type="password"
                   placeholder="********"
-                  minLength={10}
-                  maxLength={128}
+                  minLength={PASSWORD_MIN_LENGTH}
+                  maxLength={PASSWORD_MAX_LENGTH}
                   {...register("confirmarContraseña")}
                 />
                 {errors.confirmarContraseña && (
