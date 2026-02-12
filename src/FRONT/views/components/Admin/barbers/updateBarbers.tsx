@@ -122,9 +122,11 @@ const UpdateBarber: React.FC = () => {
     if (branchChanged) {
       // Check for pending appointments before allowing branch change
       try {
-        const response = await fetch(
-          `/appointments/pending/barber/${codUsuario}`
-        );
+        const response = await fetch(`/turnos/pending/barber/${codUsuario}`);
+        if (!response.ok) {
+          throw new Error(`Failed to check pending appointments: ${response.status}`);
+        }
+
         const { data: pendingAppointments } = await response.json();
 
         if (pendingAppointments && pendingAppointments.length > 0) {

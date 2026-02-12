@@ -401,6 +401,32 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
     if (!existingUsuario) {
       throw new DatabaseError("Usuario no encontrado");
     }
+
+    if (
+      existingUsuario.cuil &&
+      existingUsuario.cuil !== "1" &&
+      validatedData.codSucursal &&
+      validatedData.codSucursal !== existingUsuario.codSucursal
+    ) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const pendingCount = await prisma.turno.count({
+        where: {
+          codBarbero: sanitizedData.codUsuario,
+          estado: "Programado",
+          fechaTurno: {
+            gte: today,
+          },
+        },
+      });
+
+      if (pendingCount > 0) {
+        throw new DatabaseError(
+          "No se puede cambiar de sucursal. Tiene turnos pendientes",
+        );
+      }
+    }
     // preparo los datos obligatorios para la actualizacion
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
