@@ -57,6 +57,6 @@
     - [X] Lógica de bajada de categoría (AD)
     - [X] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
     - [ ] Manejo horarios ocupados del barbero /no está arreglado esto?
-    - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
-    - [X] Reestablecer contraseña y unificacion de patrones. Se permite mantener las contraseñas viejas a excepcion de cp3.
+    - [X] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
+    - [X] Reestablecer contraseña y unificacion de patrones. Se permite mantener las contraseñas viejas a excepcion de cp3 (revisar readme para ver nueva contraseña).
     - [X] Implementar los descuentos de las categorias
