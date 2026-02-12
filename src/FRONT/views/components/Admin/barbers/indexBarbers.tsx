@@ -26,6 +26,7 @@ const IndexBarbers = () => {
 
         if (barberosResponse.ok) {
           const barberosData = await barberosResponse.json();
+          console.log("Raw data from API:", barberosData);
           // Validar y parsear con el schema derivado
           const parsed = BarberResponseSchema.array().safeParse(barberosData);
           if (parsed.success) {
@@ -33,7 +34,8 @@ const IndexBarbers = () => {
             setBarberos(parsed.data);
             console.log("Barberos recibidos:", parsed.data);
           } else {
-            console.error("Barberos invalidos:", parsed.error);
+            console.error("Barberos invalidos - Schema validation error:", parsed.error);
+            console.error("Error details:", JSON.stringify(parsed.error, null, 2));
             toast.error("Datos de barberos inválidos");
             setBarberos([]);
           }
@@ -76,7 +78,7 @@ const IndexBarbers = () => {
   }, []);
 
   // Función para obtener el nombre de la sucursal
-  const getSucursalNombre = (codSucursal?: string): string => {
+  const getSucursalNombre = (codSucursal?: string | null): string => {
     if (!codSucursal) return "Sucursal no encontrada";
     return sucursales[codSucursal]?.nombre || "Sucursal no encontrada";
   };
@@ -98,7 +100,7 @@ const IndexBarbers = () => {
               fontWeight: "600",
             }}
           >
-            ¿Estás seguro de que querés borrar este barbero?
+            ¿Estás seguro de que querés dar de baja este barbero?
           </p>
           <div
             style={{
@@ -132,7 +134,7 @@ const IndexBarbers = () => {
                 e.currentTarget.style.background = "#e53e3e";
               }}
             >
-              Eliminar
+              Dar de baja
             </button>
             <button
               onClick={() => toast.dismiss(t.id)}
@@ -171,7 +173,7 @@ const IndexBarbers = () => {
   };
 
   const confirmedDelete = async (codUsuario: string) => {
-    const toastId = toast.loading("Eliminando barbero...");
+    const toastId = toast.loading("Dando de baja barbero...");
 
     try {
       const response = await fetch(`/usuarios/${codUsuario}`, {
@@ -179,14 +181,132 @@ const IndexBarbers = () => {
       });
 
       if (response.ok) {
-        toast.success("Barbero eliminado correctamente", { id: toastId, duration: 3000 });
+        toast.success("Barbero dado de baja correctamente", { id: toastId, duration: 3000 });
+        // Actualizar el estado del barbero a inactivo en lugar de eliminarlo de la lista
         setBarberos(
-          barberos.filter((barbero) => barbero.codUsuario !== codUsuario)
+          barberos.map((barbero) =>
+            barbero.codUsuario === codUsuario
+              ? { ...barbero, activo: false }
+              : barbero
+          )
         );
       } else if (response.status === 404) {
         toast.error("Barbero no encontrado", { id: toastId, duration: 3000 });
       } else {
-        toast.error("Error al borrar el barbero", { id: toastId, duration: 3000 });
+        toast.error("Error al dar de baja el barbero", { id: toastId, duration: 3000 });
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 3000 });
+    }
+  };
+
+  const handleReactivate = async (codUsuario: string) => {
+    toast(
+      (t) => (
+        <div style={{ textAlign: "center" }}>
+          <p
+            style={{
+              margin: "0 0 16px 0",
+              fontSize: "18px",
+              fontWeight: "600",
+            }}
+          >
+            ¿Estás seguro de que querés reactivar este barbero?
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                confirmedReactivate(codUsuario);
+              }}
+              style={{
+                background: "#10b981",
+                color: "white",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "16px",
+                fontWeight: "600",
+                minWidth: "120px",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#059669";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#10b981";
+              }}
+            >
+              Reactivar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                background: "#718096",
+                color: "white",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "16px",
+                fontWeight: "600",
+                minWidth: "120px",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#4a5568";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#718096";
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        style: {
+          minWidth: "350px",
+          padding: "24px",
+        },
+      }
+    );
+  };
+
+  const confirmedReactivate = async (codUsuario: string) => {
+    const toastId = toast.loading("Reactivando barbero...");
+
+    try {
+      const response = await fetch(`/usuarios/${codUsuario}/reactivate`, {
+        method: "PATCH",
+      });
+
+      if (response.ok) {
+        toast.success("Barbero reactivado correctamente", { id: toastId, duration: 3000 });
+        // Actualizar el estado del barbero a activo
+        setBarberos(
+          barberos.map((barbero) =>
+            barbero.codUsuario === codUsuario
+              ? { ...barbero, activo: true }
+              : barbero
+          )
+        );
+      } else if (response.status === 404) {
+        toast.error("Barbero no encontrado", { id: toastId, duration: 3000 });
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Error al reactivar el barbero", { id: toastId, duration: 3000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
@@ -215,6 +335,7 @@ const IndexBarbers = () => {
               <div className={styles.barberoInfo}>
                 <div className={styles.barberoTitle}>
                   {barbero.apellido}, {barbero.nombre}
+                  {!barbero.activo && <span style={{ color: '#dc2626', marginLeft: '8px', fontSize: '0.9em' }}>(Inactivo)</span>}
                 </div>
                 <div className={styles.barberoCode}>CUIL: {barbero.cuil}</div>
                 <div className={styles.barberoSucursal}>
@@ -239,12 +360,21 @@ const IndexBarbers = () => {
                 >
                   Modificar
                 </Link>
-                <button
-                  className={`${styles.button} ${styles.buttonDanger}`}
-                  onClick={() => handleDelete(barbero.codUsuario)}
-                >
-                  Eliminar
-                </button>
+                {barbero.activo ? (
+                  <button
+                    className={`${styles.button} ${styles.buttonDanger}`}
+                    onClick={() => handleDelete(barbero.codUsuario)}
+                  >
+                    Dar de baja
+                  </button>
+                ) : (
+                  <button
+                    className={`${styles.button} ${styles.buttonSuccess}`}
+                    onClick={() => handleReactivate(barbero.codUsuario)}
+                  >
+                    Reactivar
+                  </button>
+                )}
               </div>
             </li>
           ))}
