@@ -38,4 +38,8 @@ router.get("/profiles/:codUsuario", async (req, res) => {
   }
 });
 
+// Rutas para recuperación por pregunta de seguridad
+router.get("/security-question/:email", controller.getSecurityQuestion);
+router.post("/verify-security-answer", controller.verifySecurityAnswer);
+
 export default router;

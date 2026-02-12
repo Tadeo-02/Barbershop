@@ -49,6 +49,9 @@ const UserBaseSchema = z.object({
 
   cuil: z.string().optional(),
   codSucursal: z.string().optional(),
+  // Opciones para recuperación de contraseña
+  preguntaSeguridad: z.string().optional(),
+  respuestaSeguridad: z.string().optional(),
 });
 
 // Full schema with refinements for validation
