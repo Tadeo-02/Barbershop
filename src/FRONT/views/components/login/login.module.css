@@ -92,6 +92,23 @@
   color: red;
 }
 
+.passwordHints {
+  margin: 6px auto 10px;
+  max-width: 320px;
+  font-size: 0.85rem;
+  color: #b00020;
+  text-align: left;
+}
+
+.passwordHints ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.passwordHints li {
+  margin: 2px 0;
+}
+
 .titleSignUp {
   margin-top: 300px;
 }

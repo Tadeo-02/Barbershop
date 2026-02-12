@@ -174,3 +174,80 @@
 .categoryDetails strong {
   color: #333;
 }
+
+.securityForm {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.securityLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.securitySelect,
+.securityInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d5dce3;
+  background: #fff;
+  font-size: 0.95rem;
+  color: #2c3e50;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.securitySelect:focus,
+.securityInput:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+.securityActions {
+  margin-top: 4px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.securityButton {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.securityButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.securityButton:hover:not(:disabled) {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+}
+
+@media (min-width: 768px) {
+  .securityForm {
+    gap: 10px;
+  }
+  .securityLabel {
+    font-size: 1rem;
+  }
+  .securitySelect,
+  .securityInput {
+    font-size: 1rem;
+  }
+  .securityButton {
+    padding: 12px 20px;
+    font-size: 1rem;
+  }
+}
