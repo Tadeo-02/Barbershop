@@ -2,15 +2,12 @@ import { useEffect, useState } from "react";
 import styles from "./scheduleByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema";
 import { useAuth } from "../login/AuthContext.tsx";
 import TimeSlotPicker from "../shared/TimeSlotPicker";
 
-interface Sucursal {
-  codSucursal: string;
-  nombre: string;
-  calle: string;
-  altura: number;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 interface Barbero {
   codUsuario: string;

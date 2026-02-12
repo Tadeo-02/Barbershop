@@ -1,189 +1,171 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface Categoria {
-  codCategoria: string;
-  nombreCategoria: string;
-  descCategoria: string;
-  descuentoCorte: number;
-  descuentoProducto: number;
-}
+const CategorySchema = z.object({
+  nombreCategoria: z.string().min(1, "Nombre requerido"),
+  descCategoria: z.string().min(10, "Descripción requerida"),
+  descuentoCorte: z.coerce
+    .number()
+    .min(0, "Mínimo 0")
+    .max(100, "Máximo 100"),
+  descuentoProducto: z.coerce
+    .number()
+    .min(0, "Mínimo 0")
+    .max(100, "Máximo 100"),
+});
+
+type CategoryForm = z.infer<typeof CategorySchema>;
 
 const UpdateCategories: React.FC = () => {
   const { codCategoria } = useParams<{ codCategoria: string }>();
   const navigate = useNavigate();
-  const [categoria, setCategoria] = useState<Categoria | null>(null);
-  const [nombreCategoria, setNombreCategoria] = useState("");
-  const [descCategoria, setDescCategoria] = useState("");
-  const [descuentoCorte, setDescuentoCorte] = useState("");
-  const [descuentoProducto, setDescuentoProducto] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<CategoryForm>({ resolver: zodResolver(CategorySchema) as unknown as Resolver<CategoryForm>, mode: "onBlur" });
 
   useEffect(() => {
-    // Esta flag se usa para que no se vean 2 toast mientras cargan los datos
-    //todo Solucion parcial
-    let isMounted = true; // Flag para controlar si el componente está montado
+    const ctrl = new AbortController();
+    const toastId = toast.loading("Cargando datos de la categoría...");
 
     const fetchCategoria = async () => {
-      const toastId = toast.loading("Cargando datos de la categoría...");
-
       try {
-        const response = await fetch(`/categorias/${codCategoria}`);
-
-        if (!isMounted) return; // Si el componente se desmontó, no continuar
+        const response = await fetch(`/categorias/${codCategoria}`, { signal: ctrl.signal });
 
         if (response.ok) {
           const data = await response.json();
-          setCategoria(data);
-          setNombreCategoria(data.nombreCategoria);
-          setDescCategoria(data.descCategoria);
-          setDescuentoCorte(data.descuentoCorte.toString());
-          setDescuentoProducto(data.descuentoProducto.toString());
+          // set form values
+          reset({
+            nombreCategoria: data.nombreCategoria || "",
+            descCategoria: data.descCategoria || "",
+            descuentoCorte: data.descuentoCorte ?? undefined,
+            descuentoProducto: data.descuentoProducto ?? undefined,
+          });
           toast.dismiss(toastId);
         } else if (response.status === 404) {
           toast.error("Categoría no encontrada", { id: toastId });
-          navigate("/categorias/indexCategorias");
+          navigate("/Admin/CategoriesPage");
         } else {
-          toast.error("Error al cargar los datos de la categoría", {
-            id: toastId,
-          });
+          toast.error("Error al cargar los datos de la categoría", { id: toastId });
         }
-      } catch (error) {
-        if (!isMounted) return;
-        console.error("Error fetching categoria:", error);
+      } catch (err: any) {
+        if (err && err.name === "AbortError") {
+          toast.dismiss(toastId);
+          return;
+        }
+        console.error("Error fetching categoria:", err);
         toast.error("Error de conexión", { id: toastId });
       }
     };
 
     fetchCategoria();
+    return () => ctrl.abort();
+  }, [codCategoria, navigate, reset]);
 
-    // Cleanup function para evitar duplicación
-    return () => {
-      isMounted = false;
-    };
-  }, [codCategoria, navigate]);
+  const onSubmit = async (values: CategoryForm) => {
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = new AbortController();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     const toastId = toast.loading("Actualizando categoría...");
-
     try {
-      const response = await fetch(`/categorias/${categoria?.codCategoria}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nombreCategoria,
-          descCategoria,
-          descuentoCorte: Number(descuentoCorte),
-          descuentoProducto: Number(descuentoProducto),
-        }),
+      // Use POST with ?_method=PUT for compatibility with method-override backends
+      const res = await fetch(`/categorias/${codCategoria}?_method=PUT`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+        signal: abortRef.current.signal,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(data.message || "Categoría actualizada exitosamente", {
-          id: toastId,
-        });
+      await res.json();
+      if (res.ok) {
+        toast.success( "Categoría actualizada exitosamente", { id: toastId });
         navigate("/Admin/CategoriesPage");
       } else {
-        toast.error(data.message || "Error al actualizar categoría", {
-          id: toastId,
-        });
+        toast.error( "Error al actualizar categoría", { id: toastId });
       }
-    } catch (error) {
-      console.error("Error updating categoria:", error);
+    } catch (err: any) {
+      if (err && err.name === "AbortError") {
+        toast.dismiss(toastId);
+        return;
+      }
+      console.error("Error updating categoria:", err);
       toast.error("Error de conexión", { id: toastId });
     }
   };
 
-  if (!categoria) {
-    return <div className={styles.loadingState}>Cargando categoría...</div>;
-  }
-
   return (
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Editar Categoría</h1>
-      <form onSubmit={handleSubmit}>
-        {/* NOMBRE CATEGORIA */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="nombreCategoria">
-            Nombre de la Categoría:
-          </label>
-          <input
-            className={styles.formInput}
-            type="text"
-            name="nombreCategoria"
-            id="nombreCategoria"
-            value={nombreCategoria}
-            onChange={(e) => setNombreCategoria(e.target.value)}
-            required
-          />
-        </div>
-        {/* DESCRIPCION CATEGORIA */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="descCategoria">
-            Descripción:
-          </label>
-          <textarea
-            className={styles.formTextarea}
-            name="descCategoria"
-            id="descCategoria"
-            value={descCategoria}
-            onChange={(e) => setDescCategoria(e.target.value)}
-            rows={4}
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <fieldset disabled={isSubmitting}>
+          {/* NOMBRE CATEGORIA */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="nombreCategoria">
+              Nombre de la Categoría:
+            </label>
+            <input className={styles.formInput} type="text" id="nombreCategoria" {...register("nombreCategoria")} required />
+            {errors.nombreCategoria && <div className={styles.errorMessage}>{errors.nombreCategoria.message as string}</div>}
+          </div>
+          {/* DESCRIPCION CATEGORIA */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="descCategoria">
+              Descripción:
+            </label>
+            <textarea className={styles.formTextarea} id="descCategoria" rows={4} {...register("descCategoria")} required />
+            {errors.descCategoria && <div className={styles.errorMessage}>{errors.descCategoria.message as string}</div>}
+          </div>
 
-        {/* DESCUENTO CORTES */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="descuentoCorte">
-            Descuento en Cortes (%):
-          </label>
-          <input
-            className={styles.formInput}
-            type="number"
-            name="descuentoCorte"
-            id="descuentoCorte"
-            value={descuentoCorte}
-            onChange={(e) => setDescuentoCorte(e.target.value)}
-            min="0"
-            max="100"
-            step="0.01"
-            required
-          />
-        </div>
-        {/* DESCUENTO PRODUCTO */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="descuentoProducto">
-            Descuento en Productos (%):
-          </label>
-          <input
-            className={styles.formInput}
-            type="number"
-            name="descuentoProducto"
-            id="descuentoProducto"
-            value={descuentoProducto}
-            onChange={(e) => setDescuentoProducto(e.target.value)}
-            min="0"
-            max="100"
-            step="0.01"
-            required
-          />
-        </div>
+          {/* DESCUENTO CORTES */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="descuentoCorte">
+              Descuento en Cortes (%):
+            </label>
+            <input
+              className={styles.formInput}
+              type="number"
+              id="descuentoCorte"
+              min={0}
+              max={100}
+              step={0.01}
+              {...register("descuentoCorte", { valueAsNumber: true })}
+              required
+            />
+            {errors.descuentoCorte && <div className={styles.errorMessage}>{errors.descuentoCorte.message as string}</div>}
+          </div>
+          {/* DESCUENTO PRODUCTO */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="descuentoProducto">
+              Descuento en Productos (%):
+            </label>
+            <input
+              className={styles.formInput}
+              type="number"
+              id="descuentoProducto"
+              min={0}
+              max={100}
+              step={0.01}
+              {...register("descuentoProducto", { valueAsNumber: true })}
+              required
+            />
+            {errors.descuentoProducto && <div className={styles.errorMessage}>{errors.descuentoProducto.message as string}</div>}
+          </div>
 
-        <div className={styles.buttonGroup}>
-          <button
-            className={`${styles.button} ${styles.buttonSuccess}`}
-            type="submit"
-          >
-            Guardar Cambios
-          </button>
-        </div>
+          <div className={styles.buttonGroup}>
+            <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+            </button>
+          </div>
+        </fieldset>
       </form>
     </div>
   );

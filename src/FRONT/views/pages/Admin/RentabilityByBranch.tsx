@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./HomePageAdmin.module.css";
 import localStyles from "./RentabilityByBranch.module.css";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema";
+import { UserSchema } from "../../../../BACK/Schemas/usersSchema";
 
 interface Turno {
     codTurno?: string;
@@ -10,15 +13,9 @@ interface Turno {
     fechaTurno: string;
 }
 
-interface Barbero {
-    codUsuario: string;
-    codSucursal?: string | null;
-}
+type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 
-interface Sucursal {
-    codSucursal: string;
-    nombre: string;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const months = [
     "Enero",
@@ -144,7 +141,8 @@ const RentabilityByBranch = () => {
             <h2 className={styles.pageTitle}>Rentabilidad por Sucursal</h2>
 
             <div className={localStyles.controlsRow}>
-                <label className={localStyles.labelBold}>Mes:</label>
+                <div> 
+                <label className={localStyles.labelBold}>Mes: </label>
                 <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
                     {months.map((m, idx) => (
                         <option key={m} value={idx}>
@@ -152,8 +150,11 @@ const RentabilityByBranch = () => {
                         </option>
                     ))}
                 </select>
-                <label className={localStyles.labelBold}>Año:</label>
+                </div>
+                <div>
+                <label className={localStyles.labelBold}>Año: </label>
                 <input className={localStyles.smallInput} type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} />
+                </div>
             </div>
             <div className={localStyles.tableWrapper}>
                 <table className={localStyles.rentTable}>

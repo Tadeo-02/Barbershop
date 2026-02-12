@@ -2,24 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { UserSchema } from "../../../../../BACK/Schemas/usersSchema";
 
-interface Barbero {
-  codUsuario: string;
-  cuil: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  email: string;
-  codSucursal: string;
-  dni: string;
-}
+type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 
-interface Sucursal {
-  codSucursal: string;
-  nombre: string;
-  direccion?: string;
-  telefono?: string;
-}
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const ShowBarbers = () => {
   const { codUsuario } = useParams();
@@ -93,60 +82,51 @@ const ShowBarbers = () => {
         <div className={styles.section}>
           <h3 className={styles.sectionTitle}>Información Personal</h3>
           <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>Nombre Completo:</span>
+            <span className={styles.barberoDetails}>Nombre Completo: </span>
             <span className={styles.detailValue}>
               {barbero.apellido}, {barbero.nombre}
             </span>
           </div>
           <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>DNI:</span>
+            <span className={styles.barberoDetails}>DNI: </span>
             <span className={styles.detailValue}>{barbero.dni}</span>
           </div>
           <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>CUIL:</span>
+            <span className={styles.barberoDetails}>CUIL: </span>
             <span className={styles.detailValue}>{barbero.cuil}</span>
           </div>
           <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>Teléfono:</span>
+            <span className={styles.barberoDetails}>Teléfono: </span>
             <span className={styles.detailValue}>{barbero.telefono}</span>
           </div>
           <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>Email:</span>
+            <span className={styles.barberoDetails}>Email: </span>
             <span className={styles.detailValue}>{barbero.email}</span>
           </div>
         </div>
 
         {/* Información de la sucursal */}
+        <br />
         <div className={styles.section}>
           <h3 className={styles.sectionTitle}>Sucursal Asignada</h3>
           {sucursal ? (
             <>
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Nombre:</span>
+                <span className={styles.barberoDetails}>Nombre: </span>
                 <span className={styles.detailValue}>{sucursal.nombre}</span>
               </div>
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Código:</span>
+                <span className={styles.barberoDetails}>Código: </span>
                 <span className={styles.detailValue}>
                   {sucursal.codSucursal}
                 </span>
               </div>
-              {sucursal.direccion && (
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Dirección:</span>
-                  <span className={styles.detailValue}>
-                    {sucursal.direccion}
-                  </span>
-                </div>
-              )}
-              {sucursal.telefono && (
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Teléfono Sucursal:</span>
-                  <span className={styles.detailValue}>
-                    {sucursal.telefono}
-                  </span>
-                </div>
-              )}
+              <div className={styles.detailItem}>
+                <span className={styles.barberoDetails}>Dirección: </span>
+                <span className={styles.detailValue}>
+                  {sucursal.calle} {sucursal.altura}
+                </span>
+              </div>
             </>
           ) : (
             <div className={styles.noData}>

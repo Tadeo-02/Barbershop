@@ -2,6 +2,17 @@ import React, { useEffect, useState } from "react";
 import styles from "./indexClients.module.css";
 import toast from "react-hot-toast";
 
+//mantenemos una interfaz local de Cliente que refleja lo que esperamos del backend, y otra ClienteProfile
+//  que extiende a Cliente con los detalles adicionales del perfil. 
+// Esto nos ayuda a tipar mejor el estado y las funciones de fetch.
+
+//mantenemos interface en vez de usar schema de zod directamente para evitar acoplar demasiado
+//  el frontend al backend, y porque la estructura que necesitamos en el frontend no siempre coincide 1:1 con 
+// lo que devuelve el backend (ejemplo: el perfil viene envuelto en { success: true, data: profile } a veces, 
+// o necesitamos transformar fechas, etc).
+
+// Como solo mostramos los datos, no es necesario usar schema.
+
 interface Cliente {
     codUsuario: string;
     dni: string;
@@ -234,9 +245,9 @@ const IndexClients = () => {
 
     return (
         <div className={styles.container}>
-            <div className={styles.card}>
+            <div className={styles.card}> 
+            <h2 className={styles.title}>Listado de Clientes</h2>
                 <div className={styles.headerRow}>
-                    <h2 className={styles.title}>Listado de Clientes</h2>
                     <br />
                     <div className={styles.filterRow}>
                         <label className={styles.filterLabel} htmlFor="categoriaSelect">Filtrar por categoría:</label>
@@ -266,7 +277,7 @@ const IndexClients = () => {
                                         <div className={styles.smallMuted}>DNI: {cliente.dni}</div>
                                         <div>{cliente.nombre} {cliente.apellido}</div>
                                         <div className={styles.smallMuted}>
-                                            Turnos: {appointmentCounts[cliente.codUsuario]?.total ?? 0} &nbsp;(Cancelados: {appointmentCounts[cliente.codUsuario]?.canceled ?? 0})
+                                            Turnos: {appointmentCounts[cliente.codUsuario]?.total ?? 0} &nbsp;(Cancel.: {appointmentCounts[cliente.codUsuario]?.canceled ?? 0})
                                         </div>
                                     </div>
                                     <div className={styles.actions}>

@@ -186,7 +186,7 @@ const ClientAppointments: React.FC = () => {
 
       if (response.ok) {
         await response.json();
-        toast.success("Turno cancelado correctamente", { id: toastId });
+        toast.success("Turno cancelado correctamente", { id: toastId, duration: 2000 });
 
         // Actualizar el estado local del turno en lugar de eliminarlo
         setTurnos(
@@ -197,17 +197,17 @@ const ClientAppointments: React.FC = () => {
           )
         );
       } else if (response.status === 404) {
-        toast.error("Turno no encontrado", { id: toastId });
+        toast.error("Turno no encontrado", { id: toastId, duration: 2000 });
       } else {
         const errorData = await response.json();
         console.error("Error response:", errorData);
         toast.error(errorData.message || "Error al cancelar el turno", {
-          id: toastId,
+          id: toastId, duration: 2000
         });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
     }
   };
 

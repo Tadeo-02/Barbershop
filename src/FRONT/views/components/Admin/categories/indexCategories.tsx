@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast"
+import { CategorySchema  } from "../../../../../BACK/Schemas/categoriesSchema";
+import type { z } from "zod";
 
-interface Categoria {
-  codCategoria: string; 
-  nombreCategoria: string;  
-  descCategoria: string;
-  descuentoCorte: number; 
-  descuentoProducto: number; 
-}
+// Inferir tipo desde el schema existente en BACK y mapear a los nombres que usa el frontend
+type Categoria = z.infer<typeof CategorySchema>;
+
 
 const IndexCategories = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -25,7 +23,7 @@ const IndexCategories = () => {
       })
       .catch((error) => {
         console.error("Error al obtener categorias:", error);
-        toast.error("Error al cargar las categorías"); 
+        toast.error("Error al cargar las categorías", { duration: 2000 }); 
       })
       .finally(() => {
         setLoading(false); // cortar loading
@@ -121,6 +119,7 @@ const IndexCategories = () => {
   };
 
   const confirmedDelete = async (codCategoria: string) => {
+    // Mostrar toast de carga y guardar el id para poder actualizarlo
     const toastId = toast.loading("Eliminando categoría...");
 
     try {
@@ -129,25 +128,35 @@ const IndexCategories = () => {
       });
 
       if (response.ok) {
-        toast.success("Categoría eliminada correctamente", { id: toastId });
-        // ✅ Actualizar la lista removiendo el eliminado
-        setCategorias(
-          categorias.filter(
-            (categoria) => categoria.codCategoria !== codCategoria
-          )
+        // Reemplazar el toast de carga por uno de éxito que se cierre automáticamente
+        toast.success("Categoría eliminada correctamente", {
+          id: toastId,
+          duration: 2000,
+        });
+
+        // ✅ Actualizar la lista removiendo el eliminado (usar functional update para evitar closures stale)
+        setCategorias((prev) =>
+          prev.filter((categoria) => categoria.codCategoria !== codCategoria)
         );
       } else if (response.status === 404) {
-        toast.error("Categoría no encontrada", { id: toastId });
+        toast.error("Categoría no encontrada", { id: toastId, duration: 2000 });
       } else {
-        toast.error("Error al borrar la categoría", { id: toastId });
+        toast.error("Error al borrar la categoría", { id: toastId, duration: 2000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
     }
   };
 
   return (
+      <>
+      <Link
+        to="createCategories"
+        className={`${styles.button} ${styles.buttonPrimary}`}
+      >
+        CREAR CATEGORÍA
+      </Link>
     <div className={styles.indexCategories}>
       <h2>Gestión de Categorías</h2>
       {categorias.length === 0 ? (
@@ -179,7 +188,7 @@ const IndexCategories = () => {
                     to={`/Admin/CategoriesPage/${categoria.codCategoria}`}
                     className={`${styles.button} ${styles.buttonPrimary}`}
                   >
-                    Ver Detalles
+                    Ver Info
                   </Link>
                   <Link
                     to={`/Admin/CategoriesPage/updateCategories/${categoria.codCategoria}`}
@@ -200,6 +209,7 @@ const IndexCategories = () => {
         </ul>
       )}
     </div>
+    </>
   );
 };
 
