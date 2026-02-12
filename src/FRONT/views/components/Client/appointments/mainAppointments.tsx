@@ -1,3 +1,5 @@
+//No se usa
+
 import { Link } from "react-router-dom";
 import styles from "./appointments.module.css";
 import React, { useState, useEffect } from "react";
