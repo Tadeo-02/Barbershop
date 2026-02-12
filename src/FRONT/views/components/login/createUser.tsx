@@ -29,6 +29,12 @@ const CreateUserSchema = UserBaseSchemaExport.omit({
     confirmarContraseña: z
       .string()
       .min(10, "Confirmar contraseña debe tener al menos 10 caracteres"),
+    preguntaSeguridad: z
+      .string()
+      .min(1, "Seleccione una pregunta de seguridad"),
+    respuestaSeguridad: z
+      .string()
+      .min(1, "Ingrese la respuesta a la pregunta de seguridad"),
   })
   .refine((data) => data.contraseña === data.confirmarContraseña, {
     message: "Las contraseñas no coinciden",
@@ -233,6 +239,41 @@ const CreateUser: React.FC = () => {
                 {errors.confirmarContraseña && (
                   <p style={{ color: "red", fontSize: "0.875rem" }}>
                     {errors.confirmarContraseña.message}
+                  </p>
+                )}
+
+                {/* PREGUNTA DE SEGURIDAD */}
+                <label>Pregunta de seguridad:</label>
+                <select
+                  required
+                  {...register("preguntaSeguridad")}
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    -- Seleccione una pregunta --
+                  </option>
+                  <option value="¿Cuál es el nombre de tu primera mascota?">¿Cuál es el nombre de tu primera mascota?</option>
+                  <option value="¿Cuál es el nombre de la calle donde creciste?">¿Cuál es el nombre de la calle donde creciste?</option>
+                  <option value="¿Cuál es el nombre de tu libro favorito?">¿Cuál es el nombre de tu libro favorito?</option>
+                </select>
+                {errors.preguntaSeguridad && (
+                  <p style={{ color: "red", fontSize: "0.875rem" }}>
+                    {errors.preguntaSeguridad.message}
+                  </p>
+                )}
+
+                {/* RESPUESTA DE SEGURIDAD */}
+                <label>Respuesta de seguridad:</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="Tu respuesta"
+                  maxLength={100}
+                  {...register("respuestaSeguridad")}
+                />
+                {errors.respuestaSeguridad && (
+                  <p style={{ color: "red", fontSize: "0.875rem" }}>
+                    {errors.respuestaSeguridad.message}
                   </p>
                 )}
                 {/* Aplicacion del isSubmitting */}

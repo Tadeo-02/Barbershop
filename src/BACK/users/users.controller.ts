@@ -30,6 +30,7 @@ class UsersController extends BaseController<any> {
         cuil,
         codSucursal,
       } = req.body;
+      const { preguntaSeguridad, respuestaSeguridad } = req.body;
 
       if (cuil && !codSucursal) {
         res.status(400).json({
@@ -46,7 +47,9 @@ class UsersController extends BaseController<any> {
         email,
         contraseña,
         cuil,
-        codSucursal
+        codSucursal,
+        preguntaSeguridad,
+        respuestaSeguridad
       );
 
       const userType = cuil ? "barbero" : "cliente";
@@ -224,3 +227,38 @@ export const store = usersController.store.bind(usersController);
 export const index = usersController.index.bind(usersController);
 export const update = usersController.update.bind(usersController);
 export const login = usersController.login.bind(usersController);
+
+// Obtener pregunta de seguridad por email
+export const getSecurityQuestion = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+    if (!email) {
+      res.status(400).json({ success: false, message: "Email es requerido" });
+      return;
+    }
+    const pregunta = await model.getSecurityQuestionByEmail(email);
+    res.status(200).json({ success: true, pregunta });
+  } catch (error: any) {
+    console.error("Error getting security question:", error);
+    res.status(500).json({ success: false, message: error.message || "Error interno" });
+  }
+};
+
+// Verificar respuesta y resetear contraseña
+export const verifySecurityAnswer = async (req: Request, res: Response) => {
+  try {
+    const { email, respuestaSeguridad, nuevaContraseña } = req.body;
+    if (!email || !respuestaSeguridad || !nuevaContraseña) {
+      res.status(400).json({ success: false, message: "Email, respuesta y nueva contraseña son requeridos" });
+      return;
+    }
+
+    await model.verifySecurityAnswerAndReset(email, respuestaSeguridad, nuevaContraseña);
+
+    res.status(200).json({ success: true, message: "Contraseña actualizada correctamente" });
+  } catch (error: any) {
+    console.error("Error verifying security answer:", error);
+    const status = error.message && error.message.includes("incorrecta") ? 401 : 500;
+    res.status(status).json({ success: false, message: error.message || "Error interno" });
+  }
+};
