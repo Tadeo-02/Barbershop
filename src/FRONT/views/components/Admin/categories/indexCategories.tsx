@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast"
 import { CategorySchema  } from "../../../../../BACK/Schemas/categoriesSchema";
+import {
+  CATEGORY_RANK,
+  PROTECTED_CATEGORY_NAMES,
+} from "../../../../../BACK/Admin/categories/Categories.ts";
 import type { z } from "zod";
 
 // Inferir tipo desde el schema existente en BACK y mapear a los nombres que usa el frontend
@@ -31,15 +35,18 @@ interface DeleteContext {
   clientes: DeleteClientSummary[];
 }
 
-const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
-
-
 const IndexCategories = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true); // loading
   const [deleteContext, setDeleteContext] = useState<DeleteContext | null>(null);
   const [deleteDecisions, setDeleteDecisions] = useState<Record<string, DeleteAction>>({});
   const [deleteBusy, setDeleteBusy] = useState(false);
+
+  const isProtectedCategory = (name: string) =>
+    PROTECTED_CATEGORY_NAMES.some(
+      (protectedName) =>
+        protectedName.toLowerCase() === name.trim().toLowerCase()
+    );
 
   const getCategoryIndex = (name: string) => {
     const normalized = name.trim().toLowerCase();
@@ -116,7 +123,7 @@ const IndexCategories = () => {
     } catch (error) {
       console.error("Error al obtener clientes de la categoria:", error);
       toast.error("No se pudo obtener los clientes de la categoría", {
-        duration: 2500,
+        duration: 2000,
       });
     }
   };
@@ -209,7 +216,7 @@ const IndexCategories = () => {
     const demoteTargetName = getDemoteTarget(context.categoria.nombreCategoria);
 
     if (!promoteTargetName && !demoteTargetName) {
-      toast.error("La categoría no tiene un ranking valido", { duration: 2500 });
+      toast.error("La categoría no tiene un ranking valido", { duration: 2000 });
       return;
     }
 
@@ -412,7 +419,7 @@ const IndexCategories = () => {
                     to={`/Admin/CategoriesPage/${categoria.codCategoria}`}
                     className={`${styles.button} ${styles.buttonPrimary}`}
                   >
-                    Ver Info
+                    Ver +
                   </Link>
                   <Link
                     to={`/Admin/CategoriesPage/updateCategories/${categoria.codCategoria}`}
@@ -421,8 +428,22 @@ const IndexCategories = () => {
                     Modificar
                   </Link>
                   <button
-                    className={`${styles.button} ${styles.buttonDanger}`}
-                    onClick={() => handleDelete(categoria.codCategoria)}
+                    className={`${styles.button} ${styles.buttonDanger} ${
+                      isProtectedCategory(categoria.nombreCategoria)
+                        ? styles.buttonDisabled
+                        : ""
+                    }`}
+                    aria-disabled={isProtectedCategory(categoria.nombreCategoria)}
+                    onClick={() => {
+                      if (isProtectedCategory(categoria.nombreCategoria)) {
+                        toast.error(
+                          "No se permite eliminar la categoría Inicial",
+                          { duration: 2000 }
+                        );
+                        return;
+                      }
+                      handleDelete(categoria.codCategoria);
+                    }}
                   >
                     Eliminar
                   </button>
