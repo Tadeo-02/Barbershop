@@ -39,7 +39,7 @@
     - [X] CRUD Sucursal
     - [X] CRUD Barberos
     - [X] CRUD Categorias
-    - [ ] Dar de baja barbero en vez de eliminar
+    - [X] Dar de baja barbero en vez de eliminar
     - [ ] No permitir cambiar de sucursal al barbero cuando tiene un turno todavia vigente
     - [ ] No permitir eliminar barbero o sucursal si hay turnos vigentes
     - [ ] Si se elimina una categoria, que sucede con los clientes de la misma? suben o bajan de categoria

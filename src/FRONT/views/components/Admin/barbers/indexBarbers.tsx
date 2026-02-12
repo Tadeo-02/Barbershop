@@ -89,6 +89,24 @@ const IndexBarbers = () => {
   }
 
   const handleDelete = async (codUsuario: string) => {
+    // Check for pending appointments before showing confirmation dialog
+    try {
+      const response = await fetch(`/appointments/pending/barber/${codUsuario}`);
+      const { data: pendingAppointments } = await response.json();
+
+      if (pendingAppointments && pendingAppointments.length > 0) {
+        toast.error(
+          `No se puede dar de baja al barbero. Tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
+          { duration: 4000 }
+        );
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking pending appointments:", error);
+      toast.error("Error al verificar turnos pendientes");
+      return;
+    }
+
     //alert personalizado para confirmacion:
     toast(
       (t) => (

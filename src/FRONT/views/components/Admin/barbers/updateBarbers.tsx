@@ -116,6 +116,31 @@ const UpdateBarber: React.FC = () => {
     if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
 
+    // Check if branch is being changed
+    const branchChanged = formValues.codSucursal !== barbero?.codSucursal;
+
+    if (branchChanged) {
+      // Check for pending appointments before allowing branch change
+      try {
+        const response = await fetch(
+          `/appointments/pending/barber/${codUsuario}`
+        );
+        const { data: pendingAppointments } = await response.json();
+
+        if (pendingAppointments && pendingAppointments.length > 0) {
+          toast.error(
+            `No se puede cambiar de sucursal. El barbero tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
+            { duration: 4000 }
+          );
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking pending appointments:", error);
+        toast.error("Error al verificar turnos pendientes");
+        return;
+      }
+    }
+
     const toastId = toast.loading("Actualizando barbero...");
 
     // preparar payload y eliminar confirmarContraseña
