@@ -1,17 +1,13 @@
+//No se usa
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./appointments.module.css";
-
-interface Appointment {
-    appointmentId: number;
-    appointmentDate: string;
-    appointmentPrice?: number;
-}
+import type { AppointmentResponse } from "../../../../../BACK/Schemas/appointmentsSchema";
 
 const CancelAppointment: React.FC = () => {
     const { appointmentId } = useParams<{ appointmentId: string }>();
     const navigate = useNavigate();
-    const [appointment, setAppointment] = useState<Appointment | null>(null);
+    const [appointment, setAppointment] = useState<AppointmentResponse | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -42,19 +38,14 @@ const CancelAppointment: React.FC = () => {
         );
         if (!confirmed) return;
 
-        // generar fecha de cancelación en formato YYYY-MM-DD
-        const now = new Date();
-        const fechaCancelacion = now.toISOString().split("T")[0];
-
+    // la fecha de cancelación la calcula el servidor; solo llamamos la ruta
+    // no se necesita generar fecha en cliente
         try {
-            const response = await fetch(
-                `/appointments/${appointment.appointmentId}`,
-                {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ fechaCancelacion }),
-                }
-            );
+            // Use the dedicated cancel route in the backend
+            const response = await fetch(`/appointments/${appointment.codTurno}/cancel`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+            });
 
             const text = await response.text();
             let data: any = { message: "" };
@@ -92,20 +83,14 @@ const CancelAppointment: React.FC = () => {
         <div className={styles.formContainer}>
             <h1 className={styles.pageTitle}>Cancelar Turno</h1>
             <div className={styles.appointmentInfo}>
-                <div className={styles.appointmentTitle}>
-                    Turno #{appointment.appointmentId}
-                </div>
-                <div className={styles.appointmentCode}>
-                    ID: {appointment.appointmentId}
-                </div>
+                <div className={styles.appointmentTitle}>Turno #{appointment.codTurno}</div>
+                <div className={styles.appointmentCode}>ID: {appointment.codTurno}</div>
                 <div className={styles.appointmentDetails}>
                     <span className={styles.appointmentDate}>
-                        Fecha: {new Date(appointment.appointmentDate).toLocaleDateString()}
+                        Fecha: {new Date(appointment.fechaTurno).toLocaleDateString()}
                     </span>
-                    {appointment.appointmentPrice !== undefined && (
-                        <span className={styles.appointmentTime}>
-                            Precio: ${appointment.appointmentPrice}
-                        </span>
+                    {appointment.precioTurno !== undefined && (
+                        <span className={styles.appointmentTime}>Precio: ${appointment.precioTurno}</span>
                     )}
                 </div>
             </div>

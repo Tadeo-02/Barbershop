@@ -1,3 +1,4 @@
+//No se usa
 // src/components/Calendar.tsx
 import React, { useState, useEffect } from "react";
 import styles from "./mainSchedule.module.css";
