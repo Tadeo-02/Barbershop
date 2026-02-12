@@ -335,6 +335,61 @@ body {
   }
 }
 
+/* Estilos para información de precio y descuentos */
+.priceInfo {
+  background-color: #f7fafc;
+  border: 2px solid #cbd5e0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.priceLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 0.95rem;
+}
+
+.priceLabel {
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.priceValue {
+  font-weight: 600;
+  color: #2d3748;
+  text-align: right;
+}
+
+.categoryBadge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+.categoryName {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.discountBadge {
+  background-color: #e74c3c;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
   body {

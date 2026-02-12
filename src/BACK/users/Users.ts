@@ -130,15 +130,17 @@ export const findAll = async (userType?: "client" | "barber") => {
     let whereCondition = {};
     switch (userType) {
       case "client":
-        whereCondition = { cuil: null }; // Solo usuarios sin CUIL (clientes)
+        whereCondition = { cuil: null, activo: true }; // Solo usuarios sin CUIL (clientes)
         break;
       case "barber":
+        // Mostrar todos los barberos (activos e inactivos) para que el admin pueda verlos
         whereCondition = {
           AND: [{ cuil: { not: null } }, { cuil: { not: "1" } }],
+          // NO filtramos por activo para mostrar también los barberos dados de baja
         };
         break;
       default:
-        whereCondition = {}; // Todos los usuarios
+        whereCondition = { activo: true }; // Todos los usuarios activos
     }
 
     // Solo usuarios sin CUIL (usuarios normales, no barberos)
@@ -199,8 +201,6 @@ export const findById = async (codUsuario: string) => {
 
 export const findByIdWithCategory = async (codUsuario: string) => {
   try {
-    console.log("🔍 Debug - findByIdWithCategory called with:", codUsuario);
-
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
     const usuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedCodUsuario },
@@ -215,7 +215,6 @@ export const findByIdWithCategory = async (codUsuario: string) => {
       },
     });
 
-    console.log("🔍 Debug - User with category found:", usuario ? "YES" : "NO");
     if (!usuario) {
       throw new DatabaseError("Usuario no encontrado");
     }
@@ -235,7 +234,6 @@ export const findByIdWithCategory = async (codUsuario: string) => {
       categoria_vigente: undefined, // Remover para limpiar la respuesta
     };
   } catch (error) {
-    console.error("🔍 Debug - findByIdWithCategory error:", error);
     if (error instanceof DatabaseError) {
       throw error;
     }
@@ -254,7 +252,7 @@ export const findByBranchId = async (codSucursal: string) => {
     const sanitizedCodSucursal = sanitizeInput(codSucursal);
 
     const usuarios = await prisma.usuarios.findMany({
-      where: { codSucursal: sanitizedCodSucursal },
+      where: { codSucursal: sanitizedCodSucursal, activo: true },
       orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
     });
 
@@ -287,6 +285,7 @@ export const findBySchedule = async (
     const todosBarberos = await prisma.usuarios.findMany({
       where: {
         codSucursal: sanitizedCodSucursal,
+        activo: true,
       },
       include: {
         turnos_turnos_codBarberoTousuarios: {
@@ -398,6 +397,32 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
     if (!existingUsuario) {
       throw new DatabaseError("Usuario no encontrado");
     }
+
+    if (
+      existingUsuario.cuil &&
+      existingUsuario.cuil !== "1" &&
+      validatedData.codSucursal &&
+      validatedData.codSucursal !== existingUsuario.codSucursal
+    ) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const pendingCount = await prisma.turno.count({
+        where: {
+          codBarbero: sanitizedData.codUsuario,
+          estado: "Programado",
+          fechaTurno: {
+            gte: today,
+          },
+        },
+      });
+
+      if (pendingCount > 0) {
+        throw new DatabaseError(
+          "No se puede cambiar de sucursal. Tiene turnos pendientes",
+        );
+      }
+    }
     // preparo los datos obligatorios para la actualizacion
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
@@ -478,13 +503,35 @@ export const destroy = async (codUsuario: string) => {
       throw new DatabaseError("Usuario no encontrado");
     }
 
-    // Eliminar usuario
-    const deletedUsuario = await prisma.usuarios.delete({
+    if (existingUsuario.cuil && existingUsuario.cuil !== "1") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const pendingCount = await prisma.turno.count({
+        where: {
+          codBarbero: sanitizedCodUsuario,
+          estado: "Programado",
+          fechaTurno: {
+            gte: today,
+          },
+        },
+      });
+
+      if (pendingCount > 0) {
+        throw new DatabaseError(
+          "No se puede dar de baja al barbero. Tiene turnos pendientes",
+        );
+      }
+    }
+
+    // Baja lógica del usuario
+    const updatedUsuario = await prisma.usuarios.update({
       where: { codUsuario: sanitizedCodUsuario },
+      data: { activo: false },
     });
 
-    console.log("Usuario deleted successfully");
-    return deletedUsuario;
+    console.log("Usuario deactivated successfully");
+    return updatedUsuario;
   } catch (error) {
     console.error(
       "Error deleting user:",
@@ -510,7 +557,66 @@ export const destroy = async (codUsuario: string) => {
       throw error;
     }
 
-    throw new DatabaseError("Error al eliminar usuario");
+    throw new DatabaseError("Error al dar de baja usuario");
+  }
+};
+
+export const deactivate = async (codUsuario: string) => {
+  return destroy(codUsuario);
+};
+
+export const reactivate = async (codUsuario: string) => {
+  try {
+    // Sanitizar y validar
+    const sanitizedCodUsuario = sanitizeInput(codUsuario);
+
+    // Verificar que el usuario existe
+    const existingUsuario = await prisma.usuarios.findUnique({
+      where: { codUsuario: sanitizedCodUsuario },
+    });
+
+    if (!existingUsuario) {
+      throw new DatabaseError("Usuario no encontrado");
+    }
+
+    // Verificar que es un barbero (tiene CUIL y no es admin)
+    if (!existingUsuario.cuil || existingUsuario.cuil === "1") {
+      throw new DatabaseError("Solo se pueden reactivar barberos");
+    }
+
+    // Verificar que el usuario está inactivo
+    if (existingUsuario.activo) {
+      throw new DatabaseError("El usuario ya está activo");
+    }
+
+    // Reactivar el barbero
+    const reactivatedUsuario = await prisma.usuarios.update({
+      where: { codUsuario: sanitizedCodUsuario },
+      data: { activo: true },
+    });
+
+    console.log("Usuario reactivated successfully");
+    return reactivatedUsuario;
+  } catch (error) {
+    console.error(
+      "Error reactivating user:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+
+    // Manejo de errores de DB
+    if (error && typeof error === "object" && "code" in error) {
+      const prismaError = error as { code: string };
+
+      if (prismaError.code === "P2025") {
+        throw new DatabaseError("Usuario no encontrado");
+      }
+    }
+
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError("Error al reactivar usuario");
   }
 };
 
@@ -538,6 +644,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
     const usuario = await prisma.usuarios.findFirst({
       where: {
         email: validatedData.email,
+        activo: true,
       },
     });
 
@@ -612,7 +719,7 @@ export const getSecurityQuestionByEmail = async (email: string) => {
   try {
     const sanitizedEmail = sanitizeInput(email);
     const usuario = (await prisma.usuarios.findFirst({
-      where: { email: sanitizedEmail },
+      where: { email: sanitizedEmail, activo: true },
       select: { preguntaSeguridad: true },
     })) as any;
 
@@ -634,7 +741,7 @@ const getUserAndValidateSecurityAnswer = async (email: string, respuesta: string
   console.log("validateSecurityAnswer called for:", sanitizedEmail);
 
   const usuario = (await prisma.usuarios.findFirst({
-    where: { email: sanitizedEmail },
+    where: { email: sanitizedEmail, activo: true },
   })) as any;
 
   console.log("User lookup result:", !!usuario, usuario ? { codUsuario: usuario.codUsuario, email: usuario.email } : null);

@@ -57,6 +57,7 @@ model sucursales {
   nombre      String     @db.VarChar(30)
   calle       String     @db.VarChar(50)
   altura      Int
+  activo      Int        @default(1) @db.TinyInt
   usuarios    usuarios[]
 }
 
@@ -79,6 +80,7 @@ model usuarios {
   contrase_a                         String              @map("contraseña") @db.VarChar(60)
   preguntaSeguridad                  String?             @db.VarChar(255)
   respuestaSeguridad                 String?             @db.VarChar(255)
+  activo                             Boolean             @default(true)
   categoria_vigente                  categoria_vigente[]
   turnos_turnos_codBarberoTousuarios Turno[]             @relation("turnos_codBarberoTousuarios")
   turnos_turnos_codClienteTousuarios Turno[]             @relation("turnos_codClienteTousuarios")

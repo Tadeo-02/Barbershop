@@ -3,19 +3,22 @@ import createRouter from "../base/base.router";
 import { findByIdWithCategory } from "./Users";
 import { Router } from "express";
 
-const router: Router = createRouter(controller, {
-  create: "/create",
-  idParam: "codUsuario",
-  updatePath: "/update",
-});
+const router: Router = Router();
 
-// Rutas específicas para users
+// Rutas específicas PRIMERO (antes de createRouter) para evitar conflictos
 router.post("/login", controller.login);
 router.get("/branch/:codSucursal", controller.findByBranchId);
 router.get(
   "/schedule/:codSucursal/:fechaTurno/:horaDesde",
   controller.findBySchedule
 );
+
+// Rutas con parámetros específicos (deben ir antes de las rutas genéricas con :codUsuario)
+router.patch("/:codUsuario/deactivate", controller.deactivate);
+router.patch("/:codUsuario/reactivate", controller.reactivate);
+router.patch("/:codUsuario/security-question", controller.updateSecurityQuestion);
+router.get("/security-question/:email", controller.getSecurityQuestion);
+router.post("/verify-security-answer", controller.verifySecurityAnswer);
 
 // Agregar esta nueva ruta
 router.get("/profiles/:codUsuario", async (req, res) => {
@@ -38,10 +41,14 @@ router.get("/profiles/:codUsuario", async (req, res) => {
   }
 });
 
-// Rutas para recuperación por pregunta de seguridad
-router.get("/security-question/:email", controller.getSecurityQuestion);
-router.post("/verify-security-answer", controller.verifySecurityAnswer);
-// Endpoint for authenticated users to set/update their security question and answer
-router.patch("/:codUsuario/security-question", controller.updateSecurityQuestion);
+// Ahora aplicamos las rutas base (GET, POST, PUT, DELETE genéricas)
+const baseRouter = createRouter(controller, {
+  create: "/create",
+  idParam: "codUsuario",
+  updatePath: "/update",
+});
+
+// Merge base routes into our router
+router.use(baseRouter);
 
 export default router;

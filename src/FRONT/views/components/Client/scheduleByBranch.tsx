@@ -243,18 +243,19 @@ const ScheduleByBranch = () => {
       const text = await response.text();
       console.log("Respuesta cruda del backend:", text);
 
-      if (text) {
-        try {
-          JSON.parse(text);
-        } catch (parseError) {
-          console.error("Error parsing JSON:", parseError);
-          toast.error("Error al procesar respuesta del servidor", {
-            id: toastId,
-          });
-          return;
-        }
-      } else {
+      if (!text) {
         toast.error("Respuesta vacía del servidor", { id: toastId });
+        return;
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+        toast.error("Error al procesar respuesta del servidor", {
+          id: toastId,
+        });
         return;
       }
 
@@ -265,9 +266,17 @@ const ScheduleByBranch = () => {
 
         navigate("/client/home");
       } else {
-        toast.error("Error al reservar turno", {
-          id: toastId,
-        });
+        // Verificar si es el error de turno duplicado
+        if (data.message && data.message.includes("ya tiene un turno en ese horario")) {
+          toast.error("Ya tienes un turno reservado en ese horario. Por favor elige otro horario.", {
+            id: toastId,
+            duration: 2000,
+          });
+        } else {
+          toast.error(data.message || "Error al reservar turno", {
+            id: toastId,
+          });
+        }
       }
     } catch (error) {
       console.error("Error en handleSubmit:", error);

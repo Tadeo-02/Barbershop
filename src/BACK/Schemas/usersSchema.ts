@@ -100,11 +100,19 @@ export const BarberSchema = UserBaseSchema.extend({
 export type Barber = z.infer<typeof BarberSchema>;
 
 // Schema used for backend -> frontend responses (no password required)
-export const BarberResponseSchema = UserBaseSchema.omit({ contraseña: true }).extend({
-  // Make telefono optional in responses (DB may store different formats)
-  telefono: z.string().optional(),
+// MySQL stores booleans as 0/1, so we accept both formats
+export const BarberResponseSchema = z.object({
   codUsuario: z.string(),
-  codSucursal: z.string().optional(),
-});
+  dni: z.string(),
+  nombre: z.string(),
+  apellido: z.string(),
+  telefono: z.string(),
+  email: z.string(),
+  cuil: z.string().nullable(),
+  codSucursal: z.string().nullable().optional(),
+  preguntaSeguridad: z.string().optional().nullable(),
+  respuestaSeguridad: z.string().optional().nullable(),
+  activo: z.union([z.boolean(), z.number()]).transform(val => Boolean(val)),
+}).passthrough(); // Allow extra fields from database
 
 export type BarberResponse = z.infer<typeof BarberResponseSchema>;

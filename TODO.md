@@ -39,11 +39,12 @@
     - [X] CRUD Sucursal
     - [X] CRUD Barberos
     - [X] CRUD Categorias
-    - [ ] Dar de baja barbero en vez de eliminar
-    - [ ] No permitir cambiar de sucursal al barbero cuando tiene un turno todavia vigente
-    - [ ] No permitir eliminar barbero o sucursal si hay turnos vigentes
-    - [ ] Si se elimina una categoria, que sucede con los clientes de la misma? suben o bajan de categoria
-    - [ ] Cuando se crea categoria, qué se hace con los descuentos (se aplican cuando se cobran los turnos?) y con la lógica de subida y bajada de categoría?
+    - [X] Dar de baja barbero en vez de eliminar
+    - [X] No permitir cambiar de sucursal al barbero cuando tiene un turno todavia vigente
+    - [X] No permitir eliminar barbero o sucursal si hay turnos vigentes
+    - [X] Si se elimina una categoria, que sucede con los clientes de la misma? suben o bajan de categoria --> decision del admin, la unica que no se puede eliminar es la inicial
+    - [X] Cuando se crea categoria, qué se hace con los descuentos (se aplican cuando se cobran los turnos?)
+    - [ ] Cuando se crea una categoria, que se hace con la lógica de subida y bajada de categoría? Deberiamos no permitir la creacion directamente?
     
 ## General:
     - [ ] Revisar validaciones zod en general
@@ -55,7 +56,7 @@
     - [X] Lógica de subida de categoría (AD)
     - [X] Lógica de bajada de categoría (AD)
     - [X] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
-    - [ ] Manejo horarios ocupados del barbero
-    - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
-    - [X] Reestablecer contraseña y unificacion de patrones. Se permite mantener las contraseñas viejas a excepcion de cp3.
-    - [ ] Implementar los descuentos de las categorias
+    - [ ] Manejo horarios ocupados del barbero /no está arreglado esto?
+    - [X] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
+    - [X] Reestablecer contraseña y unificacion de patrones. Se permite mantener las contraseñas viejas a excepcion de cp3 (revisar readme para ver nueva contraseña).
+    - [X] Implementar los descuentos de las categorias

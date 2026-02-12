@@ -131,6 +131,35 @@ export const findByBranchId = async (
   }
 };
 
+export const findPendingByBranchId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codSucursal } = req.params;
+
+    if (!codSucursal) {
+      res.status(400).json({
+        success: false,
+        message: "codSucursal es requerido",
+      });
+      return;
+    }
+
+    const turnos = await model.findPendingByBranchId(codSucursal);
+
+    res.status(200).json({
+      success: true,
+      data: turnos,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al buscar turnos pendientes de la sucursal",
+    });
+  }
+};
+
 export const cancelAppointment = async (
   req: Request,
   res: Response
@@ -254,6 +283,35 @@ export const markAsNoShow = async (
     res.status(500).json({
       success: false,
       message: error.message || "Error al marcar turno como No asistido",
+    });
+  }
+};
+
+export const findPendingByBarberId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { codBarbero } = req.params;
+
+    if (!codBarbero) {
+      res.status(400).json({
+        success: false,
+        message: "codBarbero es requerido",
+      });
+      return;
+    }
+
+    const pendingAppointments = await model.findPendingByBarberId(codBarbero);
+
+    res.status(200).json({
+      success: true,
+      data: pendingAppointments,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al buscar turnos pendientes del barbero",
     });
   }
 };
