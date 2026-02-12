@@ -126,9 +126,9 @@ const UpdateBarber: React.FC = () => {
     if (!datosParaBackend.contraseña) delete datosParaBackend.contraseña;
 
     try {
-      // Use POST with ?_method=PUT to support backends requiring method override
-      const response = await fetch(`/usuarios/${barbero?.codUsuario}?_method=PUT`, {
-        method: "POST",
+      // Use PUT method with the correct update endpoint
+      const response = await fetch(`/usuarios/${barbero?.codUsuario}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosParaBackend),
         signal: abortControllerRef.current.signal,

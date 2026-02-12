@@ -114,6 +114,32 @@ class UsersController extends BaseController<any> {
     }
   };
 
+  destroy = async (req: Request, res: Response): Promise<void> => {
+    const { codUsuario } = req.params;
+    try {
+      const result = await model.destroy(codUsuario);
+      res.status(200).json({
+        message: "Usuario dado de baja correctamente",
+        user: result,
+      });
+    } catch (error) {
+      this.handleError(error, res);
+    }
+  };
+
+  reactivate = async (req: Request, res: Response): Promise<void> => {
+    const { codUsuario } = req.params;
+    try {
+      const result = await model.reactivate(codUsuario);
+      res.status(200).json({
+        message: "Barbero reactivado correctamente",
+        user: result,
+      });
+    } catch (error) {
+      this.handleError(error, res);
+    }
+  };
+
   async login(req: Request, res: Response): Promise<void> {
     try {
       console.log("Login request received");
@@ -228,6 +254,7 @@ export const store = usersController.store.bind(usersController);
 export const index = usersController.index.bind(usersController);
 export const update = usersController.update.bind(usersController);
 export const login = usersController.login.bind(usersController);
+export const reactivate = usersController.reactivate.bind(usersController);
 
 // Obtener pregunta de seguridad por email
 export const getSecurityQuestion = async (req: Request, res: Response) => {
