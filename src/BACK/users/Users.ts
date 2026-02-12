@@ -201,8 +201,6 @@ export const findById = async (codUsuario: string) => {
 
 export const findByIdWithCategory = async (codUsuario: string) => {
   try {
-    console.log("🔍 Debug - findByIdWithCategory called with:", codUsuario);
-
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
     const usuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedCodUsuario },
@@ -217,7 +215,6 @@ export const findByIdWithCategory = async (codUsuario: string) => {
       },
     });
 
-    console.log("🔍 Debug - User with category found:", usuario ? "YES" : "NO");
     if (!usuario) {
       throw new DatabaseError("Usuario no encontrado");
     }
@@ -237,7 +234,6 @@ export const findByIdWithCategory = async (codUsuario: string) => {
       categoria_vigente: undefined, // Remover para limpiar la respuesta
     };
   } catch (error) {
-    console.error("🔍 Debug - findByIdWithCategory error:", error);
     if (error instanceof DatabaseError) {
       throw error;
     }

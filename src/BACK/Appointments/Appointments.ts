@@ -749,12 +749,29 @@ export const checkoutAppointment = async (
       );
     }
 
-    // Actualizar el turno
+    // Obtener la categoría vigente del cliente ANTES de actualizar para aplicar descuentos
+    const latestCvBeforeUpdate = await prisma.categoria_vigente.findFirst({
+      where: { codCliente: turnoExistente.codCliente },
+      orderBy: { ultimaFechaInicio: "desc" },
+      include: { categorias: true },
+    });
+
+    // Calcular precio con descuento si existe categoría vigente
+    let precioFinal = precioTurno;
+    if (latestCvBeforeUpdate && latestCvBeforeUpdate.categorias) {
+      const descuentoCorte = latestCvBeforeUpdate.categorias.descuentoCorte;
+      precioFinal = precioTurno * (1 - descuentoCorte / 100);
+      console.log(
+        `🎟️ Aplicando descuento de ${descuentoCorte}% - Precio original: ${precioTurno}, Precio final: ${precioFinal}`
+      );
+    }
+
+    // Actualizar el turno con el precio con descuento aplicado
     const turnoUpdated = await prisma.turno.update({
       where: { codTurno: sanitizedCodTurno },
       data: {
         codCorte: sanitizedCodCorte,
-        precioTurno: precioTurno,
+        precioTurno: precioFinal,
         estado: "Cobrado",
       },
     });

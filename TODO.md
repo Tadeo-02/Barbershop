@@ -40,8 +40,8 @@
     - [X] CRUD Barberos
     - [X] CRUD Categorias
     - [X] Dar de baja barbero en vez de eliminar
-    - [ ] No permitir cambiar de sucursal al barbero cuando tiene un turno todavia vigente
-    - [ ] No permitir eliminar barbero o sucursal si hay turnos vigentes
+    - [X] No permitir cambiar de sucursal al barbero cuando tiene un turno todavia vigente
+    - [X] No permitir eliminar barbero o sucursal si hay turnos vigentes
     - [ ] Si se elimina una categoria, que sucede con los clientes de la misma? suben o bajan de categoria
     - [ ] Cuando se crea categoria, qué se hace con los descuentos (se aplican cuando se cobran los turnos?) y con la lógica de subida y bajada de categoría?
     
@@ -58,4 +58,4 @@
     - [ ] Manejo horarios ocupados del barbero
     - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
     - [X] Reestablecer contraseña y unificacion de patrones. Se permite mantener las contraseñas viejas a excepcion de cp3.
-    - [ ] Implementar los descuentos de las categorias
+    - [X] Implementar los descuentos de las categorias
