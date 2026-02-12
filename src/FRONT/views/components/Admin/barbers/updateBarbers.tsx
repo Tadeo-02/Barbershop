@@ -93,10 +93,10 @@ const UpdateBarber: React.FC = () => {
 
           toast.dismiss(toastId);
         } else if (response.status === 404) {
-          toast.error("Barbero no encontrado", { id: toastId });
+          toast.error("Barbero no encontrado", { id: toastId, duration: 2000  });
           navigate("/BarbersPage");
         } else {
-          toast.error("Error al cargar los datos del barbero", { id: toastId });
+          toast.error("Error al cargar los datos del barbero", { id: toastId, duration: 2000 });
         }
       } catch (error: any) {
         if (error.name === "AbortError") {
@@ -104,7 +104,7 @@ const UpdateBarber: React.FC = () => {
           return;
         }
         console.error("🔍 Debug - Fetch error:", error);
-        toast.error("Error de conexión", { id: toastId });
+        toast.error("Error de conexión", { id: toastId, duration: 2000  });
       }
     };
 
@@ -116,6 +116,33 @@ const UpdateBarber: React.FC = () => {
     if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
 
+    // Check if branch is being changed
+    const branchChanged = formValues.codSucursal !== barbero?.codSucursal;
+
+    if (branchChanged) {
+      // Check for pending appointments before allowing branch change
+      try {
+        const response = await fetch(`/turnos/pending/barber/${codUsuario}`);
+        if (!response.ok) {
+          throw new Error(`Failed to check pending appointments: ${response.status}`);
+        }
+
+        const { data: pendingAppointments } = await response.json();
+
+        if (pendingAppointments && pendingAppointments.length > 0) {
+          toast.error(
+            `No se puede cambiar de sucursal. El barbero tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
+            { duration: 2000 }
+          );
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking pending appointments:", error);
+        toast.error("Error al verificar turnos pendientes");
+        return;
+      }
+    }
+
     const toastId = toast.loading("Actualizando barbero...");
 
     // preparar payload y eliminar confirmarContraseña
@@ -126,9 +153,9 @@ const UpdateBarber: React.FC = () => {
     if (!datosParaBackend.contraseña) delete datosParaBackend.contraseña;
 
     try {
-      // Use POST with ?_method=PUT to support backends requiring method override
-      const response = await fetch(`/usuarios/${barbero?.codUsuario}?_method=PUT`, {
-        method: "POST",
+      // Use PUT method with the correct update endpoint
+      const response = await fetch(`/usuarios/${barbero?.codUsuario}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosParaBackend),
         signal: abortControllerRef.current.signal,
@@ -138,10 +165,10 @@ const UpdateBarber: React.FC = () => {
       console.log("🔍 Debug - Response data:", responseData);
 
       if (response.ok) {
-        toast.success(responseData.message || "Barbero actualizado exitosamente", { id: toastId });
+        toast.success(responseData.message || "Barbero actualizado exitosamente", { id: toastId, duration: 2000  });
         navigate("/Admin/BarbersPage");
       } else {
-        toast.error(responseData.message || "Error al actualizar barbero", { id: toastId });
+        toast.error(responseData.message || "Error al actualizar barbero", { id: toastId, duration: 2000 });
       }
     } catch (error: any) {
       if (error && error.name === "AbortError") {
@@ -149,7 +176,7 @@ const UpdateBarber: React.FC = () => {
         return;
       }
       console.error("🔍 Debug - Submit error:", error);
-      toast.error("Error de conexión", { id: toastId });
+      toast.error("Error de conexión", { id: toastId, duration: 2000 });
     }
   };
 

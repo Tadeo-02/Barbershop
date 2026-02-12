@@ -175,6 +175,19 @@ body {
   /* Sombra más grande al hover */
 }
 
+.buttonDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.buttonDisabled:hover {
+  background-color: #c53030;
+  transform: none;
+  box-shadow: none;
+}
+
 .buttonSuccess {
   background-color: #38a169;
   /* Verde para botones de éxito */
@@ -247,6 +260,119 @@ body {
 .emptyState p {
   font-size: 1rem;
   margin-bottom: 15px;
+}
+
+/* Modal de reasignacion de clientes */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+
+.modalCard {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+  width: min(980px, 100%);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalHeader {
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modalHeader h3 {
+  margin: 0 0 6px 0;
+  font-size: 1.4rem;
+  color: #1a202c;
+}
+
+.modalHeader p {
+  margin: 0;
+  color: #4a5568;
+}
+
+.modalBody {
+  padding: 16px 24px 20px;
+  overflow: auto;
+}
+
+.modalHint {
+  font-size: 0.95rem;
+  color: #4a5568;
+  margin-bottom: 12px;
+}
+
+.modalTable {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modalRowHeader {
+  display: grid;
+  grid-template-columns: 1.6fr 0.6fr 0.6fr 1fr;
+  gap: 12px;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9rem;
+}
+
+.modalRow {
+  display: grid;
+  grid-template-columns: 1.6fr 0.6fr 0.6fr 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  background: #f7fafc;
+  border-radius: 12px;
+}
+
+.modalName {
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.modalMuted {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.modalSelect {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5f5;
+  background: #ffffff;
+  font-size: 0.9rem;
+}
+
+.modalFooter {
+  padding: 16px 24px 22px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 1px solid #e2e8f0;
+}
+
+@media (max-width: 720px) {
+  .modalRowHeader,
+  .modalRow {
+    grid-template-columns: 1fr;
+  }
+
+  .modalFooter {
+    flex-direction: column;
+  }
 }
 
 /* Back button */

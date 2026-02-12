@@ -213,10 +213,61 @@ const BranchAppointments: React.FC = () => {
   // --- CheckoutForm component: encapsula formulario de cobro con react-hook-form + zod ---
   const CheckoutForm: React.FC<{
     codTurno: string;
+    codCliente: string;
     initial: { codCorte: string; precioTurno: number; metodoPago: string };
     allCortes: Cut[];
     onCompleted: () => Promise<void>;
-  }> = ({ codTurno, initial, allCortes, onCompleted }) => {
+  }> = ({ codTurno, codCliente, initial, allCortes, onCompleted }) => {
+    const [descuentoInfo, setDescuentoInfo] = useState<{
+      descuento: number;
+      nombreCategoria: string;
+    } | null>(null);
+    const [loadingCategoria, setLoadingCategoria] = useState(true);
+    const loadedClientRef = useRef<string | null>(null);
+
+    // Cargar categoría del cliente (solo una vez por cliente)
+    useEffect(() => {
+      // Si ya cargamos para este cliente, no volver a cargar
+      if (loadedClientRef.current === codCliente) {
+        setLoadingCategoria(false);
+        return;
+      }
+
+      const loadClientCategory = async () => {
+        try {
+          const res = await fetch(`/usuarios/profiles/${codCliente}`);
+          if (res.ok) {
+            const responseData = await res.json();
+            const userData = responseData.data || responseData;
+            console.log("🔍 Datos del usuario con categoría:", userData);
+            if (userData.categoriaActual) {
+              setDescuentoInfo({
+                descuento: userData.categoriaActual.descuentoCorte || 0,
+                nombreCategoria: userData.categoriaActual.nombreCategoria || "Sin categoría",
+              });
+              console.log(
+                `✅ Categoría cargada: ${userData.categoriaActual.nombreCategoria} - Descuento: ${userData.categoriaActual.descuentoCorte}%`
+              );
+            } else {
+              console.warn("❌ Sin categoría actual para el cliente");
+              setDescuentoInfo({
+                descuento: 0,
+                nombreCategoria: "Sin categoría",
+              });
+            }
+          } else {
+            console.error("Error en respuesta:", res.status);
+          }
+        } catch (error) {
+          console.error("Error cargando categoría:", error);
+        } finally {
+          loadedClientRef.current = codCliente;
+          setLoadingCategoria(false);
+        }
+      };
+      void loadClientCategory();
+    }, [codCliente]);
+
     const CheckoutSchema = z.object({
       codCorte: z.string().min(1, "Seleccione un corte"),
       precioTurno: z.number().positive("El precio debe ser mayor a 0"),
@@ -253,10 +304,17 @@ const BranchAppointments: React.FC = () => {
       submitControllerRef.current = controller;
 
       try {
+        // Enviar el precio base - el backend aplicará el descuento
+        const payload = {
+          codCorte: values.codCorte,
+          precioTurno: watchedPrecio, // Precio base
+          metodoPago: values.metodoPago,
+        };
+
         const response = await fetch(`/turnos/${codTurno}/checkout`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
+          body: JSON.stringify(payload),
           signal: controller.signal,
         });
 
@@ -325,14 +383,27 @@ const BranchAppointments: React.FC = () => {
 
     // Keep precio in sync when codCorte changes using react-hook-form watch
     const watchedCodCorte = watch("codCorte");
+    const watchedPrecio = watch("precioTurno");
+
     useEffect(() => {
       const selected = allCortes.find((c) => c.codCorte === watchedCodCorte);
       if (selected) setValue("precioTurno", selected.valorBase);
     }, [watchedCodCorte, allCortes, setValue]);
 
+    // Calcular precio final con descuento
+    const precioFinal =
+      descuentoInfo && descuentoInfo.descuento > 0
+        ? watchedPrecio * (1 - descuentoInfo.descuento / 100)
+        : watchedPrecio;
+
+    const descuentoAplicado =
+      descuentoInfo && descuentoInfo.descuento > 0
+        ? watchedPrecio - precioFinal
+        : 0;
+
     return (
       <form onSubmit={(e) => e.preventDefault()}>
-        <fieldset disabled={formState.isSubmitting}>
+        <fieldset disabled={formState.isSubmitting || loadingCategoria}>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor={`codCorte-${codTurno}`}>
               Tipo de Corte:
@@ -354,9 +425,53 @@ const BranchAppointments: React.FC = () => {
             )}
           </div>
 
+          {/* Sección de Precio con Descuento */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Información de Pago:</label>
+            <div className={styles.priceInfo}>
+              <div className={styles.priceLine}>
+                <span className={styles.priceLabel}>Precio Base:</span>
+                <span className={styles.priceValue}>${watchedPrecio.toFixed(2)}</span>
+              </div>
+
+              {descuentoInfo && descuentoInfo.descuento > 0 && (
+                <>
+                  <div className={styles.categoryBadge}>
+                    <span className={styles.categoryName}>
+                      Categoría: {descuentoInfo.nombreCategoria}
+                    </span>
+                    <span className={styles.discountBadge}>
+                      -{descuentoInfo.descuento}%
+                    </span>
+                  </div>
+                  <div className={styles.priceLine} style={{ color: "#e74c3c" }}>
+                    <span className={styles.priceLabel}>Descuento:</span>
+                    <span className={styles.priceValue}>
+                      -${descuentoAplicado.toFixed(2)}
+                    </span>
+                  </div>
+                  <div
+                    className={styles.priceLine}
+                    style={{ borderTop: "2px solid #bdc3c7", paddingTop: "8px" }}
+                  >
+                    <span className={styles.priceLabel} style={{ fontWeight: "bold" }}>
+                      TOTAL A COBRAR:
+                    </span>
+                    <span
+                      className={styles.priceValue}
+                      style={{ fontWeight: "bold", color: "#27ae60" }}
+                    >
+                      ${precioFinal.toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor={`precioTurno-${codTurno}`}>
-              Precio:
+              Precio a Cobrar:
             </label>
             <input
               id={`precioTurno-${codTurno}`}
@@ -364,11 +479,10 @@ const BranchAppointments: React.FC = () => {
               className={styles.formInput}
               step="0.01"
               min="0"
-              {...register("precioTurno", { valueAsNumber: true })}
+              value={precioFinal.toFixed(2)}
+              readOnly
+              style={{ backgroundColor: "#ecf0f1", cursor: "not-allowed" }}
             />
-            {formState.errors.precioTurno && (
-              <div className={styles.fieldError}>{String(formState.errors.precioTurno.message)}</div>
-            )}
           </div>
 
           <div className={styles.formGroup}>
@@ -614,6 +728,7 @@ const BranchAppointments: React.FC = () => {
                   <div className={styles.actionButtons}>
                     <CheckoutForm
                       codTurno={turno.codTurno}
+                      codCliente={turno.codCliente}
                       initial={currentForm}
                       allCortes={allCortes}
                       onCompleted={async () => {

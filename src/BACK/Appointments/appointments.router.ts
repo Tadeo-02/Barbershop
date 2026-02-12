@@ -20,5 +20,7 @@ router.get("/branch/:codSucursal", controller.findByBranchId);
 router.put("/:codTurno/checkout", controller.checkoutAppointment);
 router.put("/:codTurno/update", controller.updateAppointment);
 router.put("/:codTurno/no-show", controller.markAsNoShow);
+router.get("/pending/barber/:codBarbero", controller.findPendingByBarberId);
+router.get("/pending/branch/:codSucursal", controller.findPendingByBranchId);
 
 export default router;
