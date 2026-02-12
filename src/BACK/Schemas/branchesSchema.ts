@@ -18,4 +18,5 @@ export const BranchSchema = z.object({
 // Schema for API responses that includes the auto-generated ID
 export const BranchWithIdSchema = BranchSchema.extend({
   codSucursal: z.string(),
+  activo: z.boolean(),
 });

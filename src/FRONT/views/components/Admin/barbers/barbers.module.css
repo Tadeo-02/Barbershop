@@ -201,11 +201,43 @@ h2 {
   gap: 8px;
 }
 
+.inactiveRow {
+  border-style: dashed;
+}
+
 .barberoTitle {
   font-size: 1.2rem; 
   font-weight: 700;
   color: #2d3748;
   margin-bottom: 4px;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.statusActive {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.statusInactive {
+  background-color: #fed7d7;
+  color: #742a2a;
 }
 
 .barberoDetails {

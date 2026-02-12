@@ -113,7 +113,7 @@ const IndexBarbers = () => {
       if (pendingAppointments && pendingAppointments.length > 0) {
         toast.error(
           `No se puede dar de baja al barbero. Tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
-          { duration: 4000 }
+          { duration: 2000 }
         );
         return;
       }
@@ -365,11 +365,22 @@ const IndexBarbers = () => {
       ) : (
         <ul>
           {barberos.map((barbero) => (
-            <li key={barbero.codUsuario}>
+            <li
+              key={barbero.codUsuario}
+              className={!barbero.activo ? styles.inactiveRow : undefined}
+            >
               <div className={styles.barberoInfo}>
                 <div className={styles.barberoTitle}>
                   {barbero.apellido}, {barbero.nombre}
-                  {!barbero.activo && <span style={{ color: '#dc2626', marginLeft: '8px', fontSize: '0.9em' }}>(Inactivo)</span>}
+                </div>
+                <div className={styles.statusRow}>
+                  <span
+                    className={`${styles.statusBadge} ${
+                      barbero.activo ? styles.statusActive : styles.statusInactive
+                    }`}
+                  >
+                    {barbero.activo ? "Activo" : "Inactivo"}
+                  </span>
                 </div>
                 <div className={styles.barberoCode}>CUIL: {barbero.cuil}</div>
                 <div className={styles.barberoSucursal}>
@@ -386,7 +397,7 @@ const IndexBarbers = () => {
                   to={`/Admin/BarbersPage/${barbero.codUsuario}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  Ver Info
+                  Ver +
                 </Link>
                 <Link
                   to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}
@@ -399,7 +410,7 @@ const IndexBarbers = () => {
                     className={`${styles.button} ${styles.buttonDanger}`}
                     onClick={() => handleDelete(barbero.codUsuario)}
                   >
-                    Dar de baja
+                    Desactiv.
                   </button>
                 ) : (
                   <button

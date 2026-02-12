@@ -93,10 +93,10 @@ const UpdateBarber: React.FC = () => {
 
           toast.dismiss(toastId);
         } else if (response.status === 404) {
-          toast.error("Barbero no encontrado", { id: toastId });
+          toast.error("Barbero no encontrado", { id: toastId, duration: 2000  });
           navigate("/BarbersPage");
         } else {
-          toast.error("Error al cargar los datos del barbero", { id: toastId });
+          toast.error("Error al cargar los datos del barbero", { id: toastId, duration: 2000 });
         }
       } catch (error: any) {
         if (error.name === "AbortError") {
@@ -104,7 +104,7 @@ const UpdateBarber: React.FC = () => {
           return;
         }
         console.error("🔍 Debug - Fetch error:", error);
-        toast.error("Error de conexión", { id: toastId });
+        toast.error("Error de conexión", { id: toastId, duration: 2000  });
       }
     };
 
@@ -132,7 +132,7 @@ const UpdateBarber: React.FC = () => {
         if (pendingAppointments && pendingAppointments.length > 0) {
           toast.error(
             `No se puede cambiar de sucursal. El barbero tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
-            { duration: 4000 }
+            { duration: 2000 }
           );
           return;
         }
@@ -165,10 +165,10 @@ const UpdateBarber: React.FC = () => {
       console.log("🔍 Debug - Response data:", responseData);
 
       if (response.ok) {
-        toast.success(responseData.message || "Barbero actualizado exitosamente", { id: toastId });
+        toast.success(responseData.message || "Barbero actualizado exitosamente", { id: toastId, duration: 2000  });
         navigate("/Admin/BarbersPage");
       } else {
-        toast.error(responseData.message || "Error al actualizar barbero", { id: toastId });
+        toast.error(responseData.message || "Error al actualizar barbero", { id: toastId, duration: 2000 });
       }
     } catch (error: any) {
       if (error && error.name === "AbortError") {
@@ -176,7 +176,7 @@ const UpdateBarber: React.FC = () => {
         return;
       }
       console.error("🔍 Debug - Submit error:", error);
-      toast.error("Error de conexión", { id: toastId });
+      toast.error("Error de conexión", { id: toastId, duration: 2000 });
     }
   };
 

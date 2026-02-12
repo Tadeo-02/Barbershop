@@ -60,6 +60,7 @@ export const store = async (nombre: string, calle: string, altura: number) => {
 export const findAll = async () => {
   try {
     const branches = await prisma.sucursales.findMany({
+      where: { activo: 1 },
       orderBy: { codSucursal: "asc" },
     });
     console.log(`Retrieved ${branches.length} branches`);
@@ -67,6 +68,22 @@ export const findAll = async () => {
   } catch (error) {
     console.error(
       "Error fetching branches:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    throw new DatabaseError("Error interno del servidor");
+  }
+};
+
+export const findAllIncludingInactive = async () => {
+  try {
+    const branches = await prisma.sucursales.findMany({
+      orderBy: { codSucursal: "asc" },
+    });
+    console.log(`Retrieved ${branches.length} branches (all)`);
+    return branches;
+  } catch (error) {
+    console.error(
+      "Error fetching branches (all):",
       error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error interno del servidor");
@@ -166,10 +183,40 @@ export const destroy = async (codSucursal: string) => {
     if (!existingBranch) {
       throw new DatabaseError("No existe una sucursal con ese código");
     }
-    const deletedBranch = await prisma.sucursales.delete({
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const barberos = await prisma.usuarios.findMany({
       where: { codSucursal: sanitizedCodSucursal },
+      select: { codUsuario: true },
     });
-    console.log("Branch deleted successfully");
+
+    const barberoIds = barberos.map((barbero) => barbero.codUsuario);
+
+    const pendingCount = await prisma.turno.count({
+      where: {
+        estado: "Programado",
+        fechaTurno: {
+          gte: today,
+        },
+        codBarbero: {
+          in: barberoIds,
+        },
+      },
+    });
+
+    if (pendingCount > 0) {
+      throw new DatabaseError(
+        `No se puede desactivar: hay ${pendingCount} turno(s) pendiente(s)`
+      );
+    }
+
+    const deletedBranch = await prisma.sucursales.update({
+      where: { codSucursal: sanitizedCodSucursal },
+      data: { activo: 0 },
+    });
+    console.log("Branch deactivated successfully");
     return deletedBranch;
   } catch (error) {
     console.error(
@@ -197,5 +244,46 @@ export const destroy = async (codSucursal: string) => {
     }
 
     throw new DatabaseError("Error al eliminar sucursal");
+  }
+};
+
+export const deactivate = async (codSucursal: string) => {
+  return destroy(codSucursal);
+};
+
+export const reactivate = async (codSucursal: string) => {
+  try {
+    const sanitizedCodSucursal = sanitizeInput(codSucursal);
+    const existingBranch = await prisma.sucursales.findUnique({
+      where: { codSucursal: sanitizedCodSucursal },
+    });
+    if (!existingBranch) {
+      throw new DatabaseError("No existe una sucursal con ese codigo");
+    }
+    const reactivatedBranch = await prisma.sucursales.update({
+      where: { codSucursal: sanitizedCodSucursal },
+      data: { activo: 1 },
+    });
+    console.log("Branch reactivated successfully");
+    return reactivatedBranch;
+  } catch (error) {
+    console.error(
+      "Error reactivating branch:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+
+    if (error && typeof error === "object" && "code" in error) {
+      const prismaError = error as { code: string };
+
+      if (prismaError.code === "P2025") {
+        throw new DatabaseError("Sucursal no encontrada");
+      }
+    }
+
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError("Error al reactivar sucursal");
   }
 };
