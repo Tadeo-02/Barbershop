@@ -1,6 +1,10 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 
+const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
+type CategoryDirection = "promote" | "demote";
+type DeleteCategoryAction = "promote_all" | "demote_all" | "per_client";
+
 const CategoriaSchema = z.object({
   nombreCategoria: z
     .string()
@@ -241,6 +245,275 @@ export const destroy = async (codCategoria: string) => {
         );
       }
     }
+
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError("Error al eliminar categoría");
+  }
+};
+
+const getCategoryIndex = (nombreCategoria: string) => {
+  const normalized = nombreCategoria.trim().toLowerCase();
+  return CATEGORY_RANK.findIndex(
+    (name) => name.toLowerCase() === normalized
+  );
+};
+
+const getAdjacentCategoryName = (
+  nombreCategoria: string,
+  direction: CategoryDirection
+) => {
+  const currentIndex = getCategoryIndex(nombreCategoria);
+  if (currentIndex === -1) {
+    return null;
+  }
+
+  const targetIndex = direction === "promote"
+    ? currentIndex + 1
+    : currentIndex - 1;
+
+  return CATEGORY_RANK[targetIndex] || null;
+};
+
+const getCurrentClientsByCategory = async (codCategoria: string) => {
+  const currentEntries = await prisma.categoria_vigente.findMany({
+    orderBy: { ultimaFechaInicio: "desc" },
+    distinct: ["codCliente"],
+    include: {
+      usuarios: {
+        select: {
+          codUsuario: true,
+          dni: true,
+          nombre: true,
+          apellido: true,
+          email: true,
+          telefono: true,
+        },
+      },
+      categorias: {
+        select: {
+          codCategoria: true,
+          nombreCategoria: true,
+        },
+      },
+    },
+  });
+
+  return currentEntries.filter(
+    (entry) => entry.codCategoria === codCategoria
+  );
+};
+
+export const listClientsForCategory = async (codCategoria: string) => {
+  try {
+    const sanitizedCodCategoria = sanitizeInput(codCategoria);
+    const categoria = await prisma.categoria.findUnique({
+      where: { codCategoria: sanitizedCodCategoria },
+      select: { codCategoria: true, nombreCategoria: true },
+    });
+
+    if (!categoria) {
+      throw new DatabaseError("Categoría no encontrada");
+    }
+
+    const currentClients = await getCurrentClientsByCategory(
+      sanitizedCodCategoria
+    );
+    const clientIds = currentClients.map((entry) => entry.codCliente);
+
+    const totalsMap = new Map<string, number>();
+    const canceledMap = new Map<string, number>();
+
+    if (clientIds.length > 0) {
+      const totals = await prisma.turno.groupBy({
+        by: ["codCliente"],
+        _count: { _all: true },
+        where: { codCliente: { in: clientIds } },
+      });
+
+      const canceled = await prisma.turno.groupBy({
+        by: ["codCliente"],
+        _count: { _all: true },
+        where: {
+          codCliente: { in: clientIds },
+          estado: "Cancelado",
+        },
+      });
+
+      totals.forEach((row) =>
+        totalsMap.set(row.codCliente, row._count._all)
+      );
+      canceled.forEach((row) =>
+        canceledMap.set(row.codCliente, row._count._all)
+      );
+    }
+
+    const clientes = currentClients.map((entry) => ({
+      codCliente: entry.codCliente,
+      dni: entry.usuarios?.dni || "",
+      nombre: entry.usuarios?.nombre || "",
+      apellido: entry.usuarios?.apellido || "",
+      email: entry.usuarios?.email || null,
+      telefono: entry.usuarios?.telefono || null,
+      stats: {
+        total: totalsMap.get(entry.codCliente) || 0,
+        cancelados: canceledMap.get(entry.codCliente) || 0,
+      },
+    }));
+
+    return { categoria, clientes };
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error listing clients for category:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al obtener clientes de la categoría");
+  }
+};
+
+export const destroyWithClientReassignment = async (
+  codCategoria: string,
+  action?: DeleteCategoryAction,
+  perClient?: Array<{ codCliente: string; decision: CategoryDirection }>
+) => {
+  try {
+    const sanitizedCodCategoria = sanitizeInput(codCategoria);
+    const categoria = await prisma.categoria.findUnique({
+      where: { codCategoria: sanitizedCodCategoria },
+    });
+
+    if (!categoria) {
+      throw new DatabaseError("Categoría no encontrada");
+    }
+
+    const currentClients = await getCurrentClientsByCategory(
+      sanitizedCodCategoria
+    );
+
+    if (currentClients.length > 0 && !action) {
+      throw new DatabaseError(
+        "Se requiere una acción para reasignar los clientes"
+      );
+    }
+
+    const now = new Date();
+    const reassignmentData: Array<{
+      codCategoria: string;
+      codCliente: string;
+      ultimaFechaInicio: Date;
+    }> = [];
+
+    if (currentClients.length > 0 && action) {
+      const decisionsMap = new Map<string, CategoryDirection>();
+
+      if (action === "promote_all" || action === "demote_all") {
+        const decision: CategoryDirection =
+          action === "promote_all" ? "promote" : "demote";
+        currentClients.forEach((entry) => {
+          decisionsMap.set(entry.codCliente, decision);
+        });
+      } else if (action === "per_client") {
+        if (!perClient || perClient.length === 0) {
+          throw new DatabaseError(
+            "Se requieren decisiones por cliente para continuar"
+          );
+        }
+
+        perClient.forEach((decision) => {
+          decisionsMap.set(decision.codCliente, decision.decision);
+        });
+      }
+
+      const missingDecisions = currentClients.filter(
+        (entry) => !decisionsMap.has(entry.codCliente)
+      );
+
+      if (missingDecisions.length > 0) {
+        throw new DatabaseError(
+          "Faltan decisiones para algunos clientes"
+        );
+      }
+
+      const targetNames = new Set<string>();
+      const clientTargets = new Map<string, string>();
+
+      currentClients.forEach((entry) => {
+        const decision = decisionsMap.get(entry.codCliente);
+        if (!decision) return;
+
+        const targetName = getAdjacentCategoryName(
+          categoria.nombreCategoria,
+          decision
+        );
+
+        if (!targetName) {
+          throw new DatabaseError(
+            `No se puede ${
+              decision === "promote" ? "subir" : "bajar"
+            } la categoría ${categoria.nombreCategoria}`
+          );
+        }
+
+        targetNames.add(targetName);
+        clientTargets.set(entry.codCliente, targetName);
+      });
+
+      const targetCategories = await prisma.categoria.findMany({
+        where: { nombreCategoria: { in: Array.from(targetNames) } },
+        select: { codCategoria: true, nombreCategoria: true },
+      });
+
+      const targetMap = new Map(
+        targetCategories.map((cat) => [cat.nombreCategoria, cat.codCategoria])
+      );
+
+      for (const [codCliente, targetName] of clientTargets.entries()) {
+        const targetId = targetMap.get(targetName);
+        if (!targetId) {
+          throw new DatabaseError(
+            `No se encontro la categoria destino ${targetName}`
+          );
+        }
+
+        reassignmentData.push({
+          codCategoria: targetId,
+          codCliente,
+          ultimaFechaInicio: now,
+        });
+      }
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      if (reassignmentData.length > 0) {
+        await tx.categoria_vigente.createMany({ data: reassignmentData });
+      }
+
+      await tx.categoria_vigente.deleteMany({
+        where: { codCategoria: sanitizedCodCategoria },
+      });
+
+      const deletedCategoria = await tx.categoria.delete({
+        where: { codCategoria: sanitizedCodCategoria },
+      });
+
+      return deletedCategoria;
+    });
+
+    return {
+      categoria: result,
+      reassignedCount: reassignmentData.length,
+    };
+  } catch (error) {
+    console.error(
+      "Error deleting categoria with reassignment:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
 
     if (error instanceof DatabaseError) {
       throw error;
