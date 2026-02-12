@@ -57,6 +57,7 @@ model sucursales {
   nombre      String     @db.VarChar(30)
   calle       String     @db.VarChar(50)
   altura      Int
+  activo      Int        @default(1) @db.TinyInt
   usuarios    usuarios[]
 }
 

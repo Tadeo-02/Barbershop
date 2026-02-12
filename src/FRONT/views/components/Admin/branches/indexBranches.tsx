@@ -16,7 +16,7 @@ const IndexBranches = () => {
     // const toastId = toast.loading("Cargando sucursales...");
 
     // Llama al backend para obtener las sucursales
-    fetch("/sucursales")
+    fetch("/sucursales/all")
       .then((res) => res.json())
       .then((data) => {
         setSucursales(data); // data debe ser un array de sucursales
@@ -35,7 +35,39 @@ const IndexBranches = () => {
     return <div className={styles.loadingState}>Cargando sucursales...</div>;
   }
 
+  const updateBranchStatus = (codSucursal: string, activo: boolean) => {
+    setSucursales((prevSucursales) =>
+      prevSucursales.map((sucursal) =>
+        sucursal.codSucursal === codSucursal
+          ? { ...sucursal, activo }
+          : sucursal
+      )
+    );
+  };
+
   const handleDelete = async (codSucursal: string) => {
+    try {
+      const response = await fetch(`/turnos/pending/branch/${codSucursal}`);
+      if (!response.ok) {
+        throw new Error(`Failed to check pending appointments: ${response.status}`);
+      }
+
+      const payload = await response.json();
+      const pendingAppointments = payload?.data ?? [];
+
+      if (pendingAppointments.length > 0) {
+        toast.error(
+          `No se puede dar de baja la sucursal. Tiene ${pendingAppointments.length} turno(s) pendiente(s).`,
+          { duration: 4000 }
+        );
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking pending appointments:", error);
+      toast.error("Error al verificar turnos pendientes", { duration: 4000 });
+      return;
+    }
+
     //alert personalizado para confirmacion:
     toast(
       (t) => (
@@ -47,7 +79,7 @@ const IndexBranches = () => {
               fontWeight: "600",
             }}
           >
-            ¿Estás seguro de que querés borrar esta sucursal?
+            ¿Estás seguro de que querés dar de baja esta sucursal?
           </p>
           <div
             style={{
@@ -81,7 +113,7 @@ const IndexBranches = () => {
                 e.currentTarget.style.background = "#e53e3e";
               }}
             >
-              Eliminar
+              Dar de baja
             </button>
             <button
               onClick={() => toast.dismiss(t.id)}
@@ -120,20 +152,43 @@ const IndexBranches = () => {
   };
 
   const confirmedDelete = async (codSucursal: string) => {
-    const toastId = toast.loading("Eliminando sucursal...");
+    const toastId = toast.loading("Dando de baja sucursal...");
 
     try {
-      const response = await fetch(`/sucursales/${codSucursal}`, {
-        method: "DELETE",
+      const response = await fetch(`/sucursales/${codSucursal}/deactivate`, {
+        method: "PATCH",
       });
 
       if (response.ok) {
-        toast.success("Sucursal eliminada correctamente", { id: toastId, duration: 2000});
-        setSucursales(sucursales.filter((sucursal) => sucursal.codSucursal !== codSucursal));
+        toast.success("Sucursal dada de baja correctamente", { id: toastId, duration: 2000});
+        updateBranchStatus(codSucursal, false);
       } else if (response.status === 404) {
         toast.error("Sucursal no encontrada", { id: toastId, duration: 2000 });
       } else {
-        toast.error("Error al borrar la sucursal", { id: toastId, duration: 2000 });
+        const errorData = await response.json().catch(() => null);
+        toast.error(errorData?.message || "Error al dar de baja la sucursal", { id: toastId, duration: 2000 });
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
+    }
+  };
+
+  const handleReactivate = async (codSucursal: string) => {
+    const toastId = toast.loading("Reactivando sucursal...");
+
+    try {
+      const response = await fetch(`/sucursales/${codSucursal}/reactivate`, {
+        method: "PATCH",
+      });
+
+      if (response.ok) {
+        toast.success("Sucursal reactivada correctamente", { id: toastId, duration: 2000 });
+        updateBranchStatus(codSucursal, true);
+      } else if (response.status === 404) {
+        toast.error("Sucursal no encontrada", { id: toastId, duration: 2000 });
+      } else {
+        toast.error("Error al reactivar la sucursal", { id: toastId, duration: 2000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
@@ -158,10 +213,22 @@ const IndexBranches = () => {
       ) : (
         <ul>
           {sucursales.map((sucursal, idx) => (
-            <li key={idx}>
+            <li
+              key={idx}
+              className={!sucursal.activo ? styles.inactiveRow : undefined}
+            >
               <div className={styles.sucursalInfo}>
                 <div className={styles.sucursalTitle}>
                   {sucursal.calle}, {sucursal.altura}
+                </div>
+                <div className={styles.statusRow}>
+                  <span
+                    className={`${styles.statusBadge} ${
+                      sucursal.activo ? styles.statusActive : styles.statusInactive
+                    }`}
+                  >
+                    {sucursal.activo ? "Activa" : "Inactiva"}
+                  </span>
                 </div>
               </div>
               <div className={styles.actionButtons}>
@@ -169,7 +236,7 @@ const IndexBranches = () => {
                   to={`/Admin/BranchesPage/${sucursal.codSucursal}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  Ver Info
+                  Ver +
                 </Link>
                 <Link
                   to={`/Admin/BranchesPage/updateBranches/${sucursal.codSucursal}`}
@@ -177,12 +244,21 @@ const IndexBranches = () => {
                 >
                   Modificar
                 </Link>
-                <button
-                  className={`${styles.button} ${styles.buttonDanger}`}
-                  onClick={() => handleDelete(sucursal.codSucursal)}
-                >
-                  Eliminar
-                </button>
+                {sucursal.activo ? (
+                  <button
+                    className={`${styles.button} ${styles.buttonDanger}`}
+                    onClick={() => handleDelete(sucursal.codSucursal)}
+                  >
+                    Desactiv.
+                  </button>
+                ) : (
+                  <button
+                    className={`${styles.button} ${styles.buttonSuccess}`}
+                    onClick={() => handleReactivate(sucursal.codSucursal)}
+                  >
+                    Reactivar
+                  </button>
+                )}
               </div>
             </li>
           ))}

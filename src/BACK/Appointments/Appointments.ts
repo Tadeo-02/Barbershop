@@ -477,6 +477,50 @@ export const findPendingByBarberId = async (codBarbero: string) => {
   }
 };
 
+export const findPendingByBranchId = async (codSucursal: string) => {
+  try {
+    const sanitizedCodSucursal = sanitizeInput(codSucursal);
+
+    const barberos = await prisma.usuarios.findMany({
+      where: { codSucursal: sanitizedCodSucursal },
+      select: { codUsuario: true },
+    });
+
+    const barberoIds = barberos.map((barbero) => barbero.codUsuario);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const pendingAppointments = await prisma.turno.findMany({
+      where: {
+        codBarbero: {
+          in: barberoIds,
+        },
+        estado: "Programado",
+        fechaTurno: {
+          gte: today,
+        },
+      },
+      orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
+    });
+
+    console.log(
+      `Found ${pendingAppointments.length} pending appointments for branch ${sanitizedCodSucursal}`
+    );
+    return pendingAppointments;
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding pending appointments by branch:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    throw new DatabaseError("Error al buscar turnos pendientes de la sucursal");
+  }
+};
+
 export const update = async (
   codTurno: string,
   codCorte: string,
