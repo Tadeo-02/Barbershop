@@ -1,9 +1,12 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 
-const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
 type CategoryDirection = "promote" | "demote";
 type DeleteCategoryAction = "promote_all" | "demote_all" | "per_client";
+
+export const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
+export const PROTECTED_CATEGORY_NAMES = ["Inicial"] as const;
+
 
 const CategoriaSchema = z.object({
   nombreCategoria: z
@@ -218,6 +221,16 @@ export const destroy = async (codCategoria: string) => {
       throw new DatabaseError("Categoría no encontrada");
     }
 
+    if (
+      PROTECTED_CATEGORY_NAMES.some(
+        (name) =>
+          name.toLowerCase() ===
+          existingCategoria.nombreCategoria.trim().toLowerCase()
+      )
+    ) {
+      throw new DatabaseError("No se puede eliminar la categoría Inicial");
+    }
+
     // eliminar categoría
     const deletedCategoria = await prisma.categoria.delete({
       where: { codCategoria: sanitizedCodCategoria },
@@ -390,6 +403,15 @@ export const destroyWithClientReassignment = async (
 
     if (!categoria) {
       throw new DatabaseError("Categoría no encontrada");
+    }
+
+    if (
+      PROTECTED_CATEGORY_NAMES.some(
+        (name) =>
+          name.toLowerCase() === categoria.nombreCategoria.trim().toLowerCase()
+      )
+    ) {
+      throw new DatabaseError("No se puede eliminar la categoría Inicial");
     }
 
     const currentClients = await getCurrentClientsByCategory(

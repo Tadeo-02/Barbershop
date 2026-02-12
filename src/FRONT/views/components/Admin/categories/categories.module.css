@@ -175,6 +175,19 @@ body {
   /* Sombra más grande al hover */
 }
 
+.buttonDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.buttonDisabled:hover {
+  background-color: #c53030;
+  transform: none;
+  box-shadow: none;
+}
+
 .buttonSuccess {
   background-color: #38a169;
   /* Verde para botones de éxito */
