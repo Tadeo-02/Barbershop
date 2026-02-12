@@ -131,13 +131,44 @@ export const store = async (
     console.log("Creating turno");
 
     // convertir strings a Date objects para Prisma
-    const fechaDate = new Date(sanitizedData.fechaTurno);
+    const fechaDate = new Date(`${sanitizedData.fechaTurno}T00:00:00.000Z`);
     const horaDesdeDate = new Date(
       `1970-01-01T${sanitizedData.horaDesde}:00.000Z`
     );
     const horaHastaDate = new Date(
       `1970-01-01T${sanitizedData.horaHasta}:00.000Z`
     );
+
+    const startOfDay = new Date(fechaDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(fechaDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const existingTurnos = await prisma.turno.findMany({
+      where: {
+        codCliente: validatedData.codCliente,
+        fechaCancelacion: null,
+        fechaTurno: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      select: {
+        horaDesde: true,
+      },
+    });
+
+    const hasSameTime = existingTurnos.some((turno) => {
+      const hours = turno.horaDesde.getUTCHours().toString().padStart(2, "0");
+      const minutes = turno.horaDesde.getUTCMinutes().toString().padStart(2, "0");
+      return `${hours}:${minutes}` === sanitizedData.horaDesde;
+    });
+
+    if (hasSameTime) {
+      throw new DatabaseError(
+        "Ya tienes un turno reservado en ese horario para ese día"
+      );
+    }
 
     // crear turno
     const turno = await prisma.turno.create({
@@ -162,6 +193,10 @@ export const store = async (
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
+    }
+
+    if (error instanceof DatabaseError) {
+      throw error;
     }
 
     throw new DatabaseError("Error interno del servidor");
