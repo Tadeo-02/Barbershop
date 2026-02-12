@@ -20,6 +20,7 @@ class UsersController extends BaseController<any> {
 
   store = async (req: Request, res: Response): Promise<void> => {
     try {
+      console.log("store endpoint called. Body:", req.body);
       const {
         dni,
         nombre,
@@ -232,11 +233,13 @@ export const login = usersController.login.bind(usersController);
 export const getSecurityQuestion = async (req: Request, res: Response) => {
   try {
     const { email } = req.params;
+    console.log("getSecurityQuestion called. Param email:", email);
     if (!email) {
       res.status(400).json({ success: false, message: "Email es requerido" });
       return;
     }
     const pregunta = await model.getSecurityQuestionByEmail(email);
+    console.log("getSecurityQuestion result for", email, "-> pregunta:", pregunta);
     res.status(200).json({ success: true, pregunta });
   } catch (error: any) {
     console.error("Error getting security question:", error);
@@ -244,9 +247,44 @@ export const getSecurityQuestion = async (req: Request, res: Response) => {
   }
 };
 
+// Update security question and answer for a user (requires simple header auth: x-user-id === codUsuario)
+export const updateSecurityQuestion = async (req: Request, res: Response) => {
+  try {
+    const { codUsuario } = req.params;
+    const headerUser = req.header("x-user-id");
+    console.log("updateSecurityQuestion called for:", codUsuario, "headerUser:", headerUser);
+
+    if (!codUsuario) {
+      res.status(400).json({ success: false, message: "codUsuario es requerido" });
+      return;
+    }
+
+    // Simple protection: require header x-user-id to match param codUsuario
+    if (!headerUser || headerUser !== codUsuario) {
+      res.status(401).json({ success: false, message: "No autorizado" });
+      return;
+    }
+
+    const { preguntaSeguridad, respuestaSeguridad } = req.body;
+    if (!preguntaSeguridad || !respuestaSeguridad) {
+      res.status(400).json({ success: false, message: "Pregunta y respuesta son requeridas" });
+      return;
+    }
+
+    // Delegate to model
+    const updated = await model.updateSecurityQuestion(codUsuario, preguntaSeguridad, respuestaSeguridad);
+
+    res.status(200).json({ success: true, message: "Pregunta de seguridad actualizada", data: { codUsuario: updated.codUsuario } });
+  } catch (error: any) {
+    console.error("Error updating security question:", error);
+    res.status(500).json({ success: false, message: error.message || "Error interno" });
+  }
+};
+
 // Verificar respuesta y resetear contraseña
 export const verifySecurityAnswer = async (req: Request, res: Response) => {
   try {
+    console.log("verifySecurityAnswer endpoint called. Body:", req.body);
     const { email, respuestaSeguridad, nuevaContraseña } = req.body;
     if (!email || !respuestaSeguridad || !nuevaContraseña) {
       res.status(400).json({ success: false, message: "Email, respuesta y nueva contraseña son requeridos" });
@@ -258,7 +296,19 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, message: "Contraseña actualizada correctamente" });
   } catch (error: any) {
     console.error("Error verifying security answer:", error);
-    const status = error.message && error.message.includes("incorrecta") ? 401 : 500;
-    res.status(status).json({ success: false, message: error.message || "Error interno" });
+    if (error && error.stack) console.error(error.stack);
+    const errMsg = error && error.message ? error.message : "Error interno";
+    let status = 500;
+
+    const lowerMsg = errMsg.toLowerCase();
+    if (lowerMsg.includes("incorrecta")) {
+      status = 401; // incorrect answer -> unauthorized
+    } else if (lowerMsg.includes("usuario no encontrado") || lowerMsg.includes("no user found")) {
+      status = 404; // user not found
+    } else if (lowerMsg.includes("no hay respuesta") || lowerMsg.includes("no hay respuesta de seguridad")) {
+      status = 400; // bad request: no security answer configured
+    }
+
+    res.status(status).json({ success: false, message: errMsg });
   }
 };

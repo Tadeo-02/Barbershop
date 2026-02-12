@@ -41,5 +41,7 @@ router.get("/profiles/:codUsuario", async (req, res) => {
 // Rutas para recuperación por pregunta de seguridad
 router.get("/security-question/:email", controller.getSecurityQuestion);
 router.post("/verify-security-answer", controller.verifySecurityAnswer);
+// Endpoint for authenticated users to set/update their security question and answer
+router.patch("/:codUsuario/security-question", controller.updateSecurityQuestion);
 
 export default router;

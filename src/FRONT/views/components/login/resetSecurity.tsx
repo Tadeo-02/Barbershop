@@ -11,6 +11,8 @@ const ResetSecurity: React.FC = () => {
     const [nuevaContraseña, setNuevaContraseña] = useState("");
     const [confirmarContraseña, setConfirmarContraseña] = useState("");
     const navigate = useNavigate();
+    const [showNoAnswerModal, setShowNoAnswerModal] = useState(false);
+    const [serverErrorMessage, setServerErrorMessage] = useState<string | null>(null);
 
     const askQuestion = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -50,7 +52,14 @@ const ResetSecurity: React.FC = () => {
                 toast.success(data.message || "Contraseña actualizada");
                 setTimeout(() => navigate("/login"), 1500);
             } else {
-                toast.error(data.message || "Error al verificar");
+                // If the user exists but has no stored security answer, backend now returns 400 with that message
+                const msg = data && data.message ? data.message : null;
+                if (res.status === 400 && msg && typeof msg === "string" && msg.toLowerCase().includes("respuesta")) {
+                    setServerErrorMessage(msg);
+                    setShowNoAnswerModal(true);
+                } else {
+                    toast.error(msg || "Error al verificar");
+                }
             }
         } catch (err) {
             console.error(err);
@@ -118,6 +127,20 @@ const ResetSecurity: React.FC = () => {
                                     <button type="button" onClick={() => setStep("email")}>Volver</button>
                                 </p>
                             </form>
+                        )}
+                        {/* Modal shown when user has no security answer configured */}
+                        {showNoAnswerModal && (
+                            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+                                <div style={{ background: "#fff", padding: 24, borderRadius: 8, maxWidth: 500, width: "90%" }}>
+                                    <h2>Problema con la pregunta de seguridad</h2>
+                                    <p>{serverErrorMessage || "No hay respuesta de seguridad configurada para este usuario."}</p>
+                                    <p>Contacta al administrador o intenta restablecer la cuenta desde el soporte.</p>
+                                    <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                                        <button className="btn btn-secondary" onClick={() => setShowNoAnswerModal(false)}>Cerrar</button>
+                                        <button className="btn btn-primary" onClick={() => navigate("/login")}>Ir a login</button>
+                                    </div>
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>
