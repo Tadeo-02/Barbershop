@@ -3,6 +3,7 @@ import "./App.css";
 // Componentes Generales
 import Login from "./components/login/login.tsx";
 import CreateUser from "./components/login/createUser.tsx";
+import ResetSecurity from "./components/login/resetSecurity.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -193,6 +194,7 @@ function App() {
               {/* Rutas de Login y Signup */}
               <Route path="/login" element={<Login />} />
               <Route path="/signUp" element={<CreateUser />} />
+              <Route path="/changePassword" element={<ResetSecurity />} />
               <Route path="/" element={<AutoRedirect />} />
               {/* con el '*' indico que tiene rutas anidadas*/}
             </Routes>

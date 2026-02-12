@@ -1,7 +1,7 @@
 import { useAuth } from "../../login/AuthContext";
 import { useEffect, useState } from "react";
 import styles from "./profile.module.css";
-// import toast from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
 //! ADAPTAR A MOBILE
@@ -27,7 +27,7 @@ interface UserProfile {
 }
 
 const MyProfile = () => {
-  const { user, userType } = useAuth();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -176,6 +176,15 @@ const MyProfile = () => {
               </div>
             )}
           </div>
+          <div className={styles.profileSection}>
+            <h3>Pregunta de seguridad</h3>
+            {displayUser && (
+              <SecurityQuestionForm
+                codUsuario={displayUser.codUsuario}
+                initialQuestion={displayUser.hasOwnProperty("preguntaSeguridad") ? (displayUser as any).preguntaSeguridad : null}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -183,3 +192,69 @@ const MyProfile = () => {
 };
 
 export default MyProfile;
+
+// Small subcomponent to set/update security question and answer
+const SecurityQuestionForm: React.FC<{ codUsuario: string; initialQuestion?: string | null }> = ({ codUsuario, initialQuestion = null }) => {
+  const { user } = useAuth();
+  const [pregunta, setPregunta] = useState<string>(initialQuestion || "");
+  const [respuesta, setRespuesta] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setPregunta(initialQuestion || "");
+  }, [initialQuestion]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPregunta = pregunta.trim();
+    const cleanRespuesta = respuesta.trim();
+    if (!cleanPregunta || !cleanRespuesta) {
+      toast.error("Pregunta y respuesta son requeridas");
+      return;
+    }
+    if (!user) {
+      toast.error("Usuario no autenticado");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`/usuarios/${codUsuario}/security-question`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": user.codUsuario,
+        },
+        body: JSON.stringify({ preguntaSeguridad: cleanPregunta, respuestaSeguridad: cleanRespuesta }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || "Pregunta actualizada");
+        setRespuesta("");
+      } else {
+        toast.error(data.message || "Error al actualizar");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error de conexión");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className={styles.securityForm}>
+      <label className={styles.securityLabel}>Pregunta:</label>
+      <select className={styles.securitySelect} value={pregunta} onChange={(e) => setPregunta(e.target.value)} required>
+        <option value="">-- Seleccione una pregunta --</option>
+        <option value="¿Cuál es el nombre de tu primera mascota?">¿Cuál es el nombre de tu primera mascota?</option>
+        <option value="¿Cuál es el nombre de la calle donde creciste?">¿Cuál es el nombre de la calle donde creciste?</option>
+        <option value="¿Cuál es el nombre de tu libro favorito?">¿Cuál es el nombre de tu libro favorito?</option>
+      </select>
+      <label className={styles.securityLabel}>Respuesta:</label>
+      <input className={styles.securityInput} type="text" value={respuesta} onChange={(e) => setRespuesta(e.target.value)} required maxLength={100} />
+      <div className={styles.securityActions}>
+        <button type="submit" className={styles.securityButton} disabled={loading}>{loading ? "Guardando..." : (initialQuestion ? "Actualizar" : "Guardar")}</button>
+      </div>
+    </form>
+  );
+};
