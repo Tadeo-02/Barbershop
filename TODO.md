@@ -18,9 +18,10 @@
 ## General:
     - [X] Definir estructura mobile first en estilos
     - [ ] Sección Productos
-    - [ ] Fix de Toasts de error cuando hay success (ej: create barberos desde admin)
+    - [X] Fix de Toasts de error cuando hay success (ej: create barberos desde admin)
     - [X] Fix boton de login en Landing Page
-    - [ ] Validar datos en front -> Implementar actualizacion aplicada en login/createUser para mejoras frontend al resto de formularios y para muestreo de datos ver cambios aplicados en la infoSection (analizar si esto ultimo es necesario, es mas que nada para robustez)
+    - [X] Validar datos en front -> Implementar actualizacion aplicada en login/createUser para mejoras frontend al resto de formularios
+    - [ ] Para muestreo de datos ver cambios aplicados en la infoSection (analizar si es necesario, es mas que nada para robustez)
 # BACK:
 ## - Usuarios:
     - [X] Pedir turnos
@@ -39,6 +40,11 @@
     - [X] CRUD Barberos
     - [X] CRUD Categorias
     - [ ] Dar de baja barbero en vez de eliminar
+    - [ ] No permitir cambiar de sucursal al barbero cuando tiene un turno todavia vigente
+    - [ ] No permitir eliminar barbero o sucursal si hay turnos vigentes
+    - [ ] Si se elimina una categoria, que sucede con los clientes de la misma? suben o bajan de categoria
+    - [ ] Cuando se crea categoria, qué se hace con los descuentos (se aplican cuando se cobran los turnos?) y con la lógica de subida y bajada de categoría?
+    
 ## General:
     - [ ] Revisar validaciones zod en general
     - [ ] Añadir/Mejorar validaciones Backend
@@ -51,3 +57,5 @@
     - [X] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
     - [ ] Manejo horarios ocupados del barbero
     - [ ] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
+    - [ ] Reestablecer contraseña
+    - [ ] Implementar los descuentos de las categorias

@@ -2,21 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
 
-interface Barbero {
-  codUsuario: string;
-  cuil: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  email: string;
-  codSucursal: string;
-}
-
-interface Sucursal {
-  codSucursal: string;
-  nombre: string;
-}
+// Usamos el schema exportado desde el backend como single source of truth
+type Barbero = z.infer<typeof BarberResponseSchema>;
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const IndexBarbers = () => {
   const [barberos, setBarberos] = useState<Barbero[]>([]);
@@ -34,24 +26,41 @@ const IndexBarbers = () => {
 
         if (barberosResponse.ok) {
           const barberosData = await barberosResponse.json();
-          setBarberos(barberosData);
-          console.log("Barberos recibidos:", barberosData);
+          // Validar y parsear con el schema derivado
+          const parsed = BarberResponseSchema.array().safeParse(barberosData);
+          if (parsed.success) {
+            // parsed data comes from backend and doesn't include contraseña (password)
+            setBarberos(parsed.data);
+            console.log("Barberos recibidos:", parsed.data);
+          } else {
+            console.error("Barberos invalidos:", parsed.error);
+            toast.error("Datos de barberos inválidos");
+            setBarberos([]);
+          }
         } else {
           toast.error("Error al cargar los barberos");
         }
 
         if (sucursalesResponse.ok) {
           const sucursalesData = await sucursalesResponse.json();
-          // Convertir array a objeto para búsqueda rápida
-          const sucursalesMap = sucursalesData.reduce(
-            (acc: { [key: string]: Sucursal }, sucursal: Sucursal) => {
-              acc[sucursal.codSucursal] = sucursal;
-              return acc;
-            },
-            {}
-          );
-          setSucursales(sucursalesMap);
-          console.log("Sucursales recibidas:", sucursalesData);
+          // Validar sucursales con el schema importado
+          const parsedSuc = BranchWithIdSchema.array().safeParse(sucursalesData);
+          if (parsedSuc.success) {
+            // Convertir array a objeto para búsqueda rápida
+            const sucursalesMap = parsedSuc.data.reduce(
+              (acc: { [key: string]: Sucursal }, sucursal: Sucursal) => {
+                if (sucursal.codSucursal) acc[sucursal.codSucursal] = sucursal;
+                return acc;
+              },
+              {}
+            );
+            setSucursales(sucursalesMap);
+            console.log("Sucursales recibidas:", parsedSuc.data);
+          } else {
+            console.error("Sucursales invalidas:", parsedSuc.error);
+            toast.error("Datos de sucursales inválidos");
+            setSucursales({});
+          }
         } else {
           toast.error("Error al cargar las sucursales");
         }
@@ -67,7 +76,8 @@ const IndexBarbers = () => {
   }, []);
 
   // Función para obtener el nombre de la sucursal
-  const getSucursalNombre = (codSucursal: string): string => {
+  const getSucursalNombre = (codSucursal?: string): string => {
+    if (!codSucursal) return "Sucursal no encontrada";
     return sucursales[codSucursal]?.nombre || "Sucursal no encontrada";
   };
 
@@ -169,22 +179,29 @@ const IndexBarbers = () => {
       });
 
       if (response.ok) {
-        toast.success("Barbero eliminado correctamente", { id: toastId });
+        toast.success("Barbero eliminado correctamente", { id: toastId, duration: 3000 });
         setBarberos(
           barberos.filter((barbero) => barbero.codUsuario !== codUsuario)
         );
       } else if (response.status === 404) {
-        toast.error("Barbero no encontrado", { id: toastId });
+        toast.error("Barbero no encontrado", { id: toastId, duration: 3000 });
       } else {
-        toast.error("Error al borrar el barbero", { id: toastId });
+        toast.error("Error al borrar el barbero", { id: toastId, duration: 3000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 3000 });
     }
   };
 
   return (
+    <>
+    <Link
+        to="createBarbers"
+        className={`${styles.button} ${styles.buttonPrimary}`}
+      >
+        CREAR BARBERO
+      </Link>
     <div className={styles.indexBarberos}>
       <h2>Gestión de Barberos</h2>
       {barberos.length === 0 ? (
@@ -193,8 +210,8 @@ const IndexBarbers = () => {
         </div>
       ) : (
         <ul>
-          {barberos.map((barbero, idx) => (
-            <li key={idx}>
+          {barberos.map((barbero) => (
+            <li key={barbero.codUsuario}>
               <div className={styles.barberoInfo}>
                 <div className={styles.barberoTitle}>
                   {barbero.apellido}, {barbero.nombre}
@@ -214,7 +231,7 @@ const IndexBarbers = () => {
                   to={`/Admin/BarbersPage/${barbero.codUsuario}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  Ver Detalles
+                  Ver Info
                 </Link>
                 <Link
                   to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}
@@ -234,6 +251,7 @@ const IndexBarbers = () => {
         </ul>
       )}
     </div>
+  </>
   );
 };
 

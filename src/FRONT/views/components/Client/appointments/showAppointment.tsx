@@ -1,16 +1,13 @@
+//No se usa
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import styles from "./appointments.module.css";
-
-interface Appointment {
-  appointmentId: number;
-  appointmentDate: string;
-  appointmentPrice: number;
-}
+import type { AppointmentResponse } from "../../../../../BACK/Schemas/appointmentsSchema";
 
 const ShowAppointment = () => {
   const { appointmentId } = useParams();
-  const [appointment, setAppointment] = useState<Appointment | null>(null);
+  const [appointment, setAppointment] = useState<AppointmentResponse | null>(null);
 
   useEffect(() => {
     fetch(`/appointments/${appointmentId}`)
@@ -19,22 +16,26 @@ const ShowAppointment = () => {
       .catch((err) => console.error("Error al obtener el appointment:", err));
   }, [appointmentId]);
 
-  if (!appointment)
-    return <div className={styles.loadingState}>Cargando Turno...</div>;
+  if (!appointment) return <div className={styles.loadingState}>Cargando Turno...</div>;
 
   return (
-        <div className={styles.appointmentInfo}>
+    <div className={styles.appointmentInfo}>
       <h1 className={styles.pageTitle}>Detalles del Turno</h1>
-          <div className={styles.appointmentTitle}>Turno #{appointment.appointmentId}</div>
-          <div className={styles.appointmentCode}>ID: {appointment.appointmentId}</div>
-          <div className={styles.appointmentDetails}>
-            <span className={styles.appointmentDate}>
-              Fecha: {new Date(appointment.appointmentDate).toLocaleDateString()}
-            </span>
-            <span className={styles.appointmentTime}>
-              Precio: ${appointment.appointmentPrice}
-            </span>
-          </div>
+      <div className={styles.appointmentTitle}>Turno #{appointment.codTurno}</div>
+      <div className={styles.appointmentCode}>ID: {appointment.codTurno}</div>
+      <div className={styles.appointmentDetails}>
+        <span className={styles.appointmentDate}>
+          Fecha: {new Date(appointment.fechaTurno).toLocaleDateString()}
+        </span>
+        {appointment.horaDesde && (
+          <span className={styles.appointmentTime}>
+            Hora desde: {new Date(appointment.horaDesde).toISOString().substring(11, 16)}
+          </span>
+        )}
+        {appointment.precioTurno !== undefined && (
+          <span className={styles.appointmentTime}>Precio: ${appointment.precioTurno}</span>
+        )}
+      </div>
     </div>
   );
   };

@@ -1,5 +1,5 @@
 // AuthContext.tsx (nuevo archivo)
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 interface User {
   codUsuario: string;
@@ -25,37 +25,54 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
+  
+
+  // Inicializar estado desde localStorage de forma sincrónica para evitar
+  // redirecciones prematuras al refrescar la página.
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const saved = localStorage.getItem("user");
+      return saved ? (JSON.parse(saved) as User) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [userType, setUserType] = useState<
     "client" | "barber" | "admin" | null
-  >(null);
+  >(() => {
+    try {
+      const t = localStorage.getItem("userType");
+      return t ? (t as "client" | "barber" | "admin") : null;
+    } catch {
+      return null;
+    }
+  });
 
   const login = (userData: User) => {
     const type =
       userData.cuil === "1" ? "admin" : userData.cuil ? "barber" : "client";
     setUser(userData);
     setUserType(type);
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("userType", type);
+    try {
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("userType", type);
+    } catch (e) {
+      // Silencioso: localStorage puede fallar en modos strictos o de privacidad
+      console.warn("No se pudo guardar en localStorage", e);
+    }
   };
 
   const logout = () => {
     setUser(null);
     setUserType(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("userType");
-  };
-
-  // Recuperar datos del localStorage al iniciar
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    const savedUserType = localStorage.getItem("userType");
-
-    if (savedUser && savedUserType) {
-      setUser(JSON.parse(savedUser));
-      setUserType(savedUserType as "client" | "barber" | "admin");
+    try {
+      localStorage.removeItem("user");
+      localStorage.removeItem("userType");
+    } catch (e) {
+      console.warn("No se pudo remover localStorage", e);
     }
-  }, []);
+  };
 
   return (
     <AuthContext.Provider

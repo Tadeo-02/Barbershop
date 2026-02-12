@@ -127,22 +127,29 @@ const IndexTypeOfHaircut = () => {
       });
 
       if (response.ok) {
-        toast.success("Tipo de corte eliminado correctamente", { id: toastId });
+        toast.success("Tipo de corte eliminado correctamente", { id: toastId, duration: 2000 });
         setTipoCortes(
           tipoCortes.filter((corte) => corte.codCorte !== codCorte)
         );
       } else if (response.status === 404) {
-        toast.error("Tipo de corte no encontrado", { id: toastId });
+        toast.error("Tipo de corte no encontrado", { id: toastId, duration: 2000 });
       } else {
-        toast.error("Error al borrar el tipo de corte", { id: toastId });
+        toast.error("Error al borrar el tipo de corte", { id: toastId, duration: 2000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
     }
   };
 
   return (
+      <>
+      <Link
+        to="createTypeOfHaircut"
+        className={`${styles.button} ${styles.buttonPrimary}`}
+      >
+        CREAR TIPO DE CORTE
+      </Link>
     <div className={styles.indexTipoCortes}>
       <h2>Gestión de Tipos de Corte</h2>
       {tipoCortes.length === 0 ? (
@@ -180,6 +187,7 @@ const IndexTypeOfHaircut = () => {
         </ul>
       )}
     </div>
+    </>
   );
 };
 
