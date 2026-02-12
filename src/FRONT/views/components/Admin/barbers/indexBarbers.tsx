@@ -15,6 +15,17 @@ const IndexBarbers = () => {
   const [loading, setLoading] = useState(true);
   const [sucursales, setSucursales] = useState<{ [key: string]: Sucursal }>({});
 
+  const parseJsonResponse = async (response: Response) => {
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      const text = await response.text();
+      throw new Error(
+        `Unexpected response (${response.status} ${response.statusText}): ${text.slice(0, 200)}`
+      );
+    }
+    return response.json();
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -91,8 +102,13 @@ const IndexBarbers = () => {
   const handleDelete = async (codUsuario: string) => {
     // Check for pending appointments before showing confirmation dialog
     try {
-      const response = await fetch(`/appointments/pending/barber/${codUsuario}`);
-      const { data: pendingAppointments } = await response.json();
+      const response = await fetch(`/turnos/pending/barber/${codUsuario}`);
+      if (!response.ok) {
+        throw new Error(`Failed to check pending appointments: ${response.status}`);
+      }
+
+      const payload = await parseJsonResponse(response);
+      const pendingAppointments = payload?.data ?? [];
 
       if (pendingAppointments && pendingAppointments.length > 0) {
         toast.error(
@@ -194,12 +210,12 @@ const IndexBarbers = () => {
     const toastId = toast.loading("Dando de baja barbero...");
 
     try {
-      const response = await fetch(`/usuarios/${codUsuario}`, {
-        method: "DELETE",
+      const response = await fetch(`/usuarios/${codUsuario}/deactivate`, {
+        method: "PATCH",
       });
 
       if (response.ok) {
-        toast.success("Barbero dado de baja correctamente", { id: toastId, duration: 3000 });
+        toast.success("Barbero dado de baja correctamente", { id: toastId, duration: 2000 });
         // Actualizar el estado del barbero a inactivo en lugar de eliminarlo de la lista
         setBarberos(
           barberos.map((barbero) =>
@@ -209,13 +225,13 @@ const IndexBarbers = () => {
           )
         );
       } else if (response.status === 404) {
-        toast.error("Barbero no encontrado", { id: toastId, duration: 3000 });
+        toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
       } else {
-        toast.error("Error al dar de baja el barbero", { id: toastId, duration: 3000 });
+        toast.error("Error al dar de baja el barbero", { id: toastId, duration: 2000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 3000 });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
     }
   };
 
@@ -311,7 +327,7 @@ const IndexBarbers = () => {
       });
 
       if (response.ok) {
-        toast.success("Barbero reactivado correctamente", { id: toastId, duration: 3000 });
+        toast.success("Barbero reactivado correctamente", { id: toastId, duration: 2000 });
         // Actualizar el estado del barbero a activo
         setBarberos(
           barberos.map((barbero) =>
@@ -321,14 +337,14 @@ const IndexBarbers = () => {
           )
         );
       } else if (response.status === 404) {
-        toast.error("Barbero no encontrado", { id: toastId, duration: 3000 });
+        toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || "Error al reactivar el barbero", { id: toastId, duration: 3000 });
+        toast.error(errorData.message || "Error al reactivar el barbero", { id: toastId, duration: 2000 });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 3000 });
+      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
     }
   };
 

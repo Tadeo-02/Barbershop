@@ -14,6 +14,7 @@ router.get(
 );
 
 // Rutas con parámetros específicos (deben ir antes de las rutas genéricas con :codUsuario)
+router.patch("/:codUsuario/deactivate", controller.deactivate);
 router.patch("/:codUsuario/reactivate", controller.reactivate);
 router.patch("/:codUsuario/security-question", controller.updateSecurityQuestion);
 router.get("/security-question/:email", controller.getSecurityQuestion);

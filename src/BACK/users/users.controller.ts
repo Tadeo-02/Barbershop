@@ -127,6 +127,19 @@ class UsersController extends BaseController<any> {
     }
   };
 
+  deactivate = async (req: Request, res: Response): Promise<void> => {
+    const { codUsuario } = req.params;
+    try {
+      const result = await model.deactivate(codUsuario);
+      res.status(200).json({
+        message: "Usuario dado de baja correctamente",
+        user: result,
+      });
+    } catch (error) {
+      this.handleError(error, res);
+    }
+  };
+
   reactivate = async (req: Request, res: Response): Promise<void> => {
     const { codUsuario } = req.params;
     try {
@@ -254,6 +267,7 @@ export const store = usersController.store.bind(usersController);
 export const index = usersController.index.bind(usersController);
 export const update = usersController.update.bind(usersController);
 export const login = usersController.login.bind(usersController);
+export const deactivate = usersController.deactivate.bind(usersController);
 export const reactivate = usersController.reactivate.bind(usersController);
 
 // Obtener pregunta de seguridad por email

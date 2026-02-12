@@ -481,6 +481,27 @@ export const destroy = async (codUsuario: string) => {
       throw new DatabaseError("Usuario no encontrado");
     }
 
+    if (existingUsuario.cuil && existingUsuario.cuil !== "1") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const pendingCount = await prisma.turno.count({
+        where: {
+          codBarbero: sanitizedCodUsuario,
+          estado: "Programado",
+          fechaTurno: {
+            gte: today,
+          },
+        },
+      });
+
+      if (pendingCount > 0) {
+        throw new DatabaseError(
+          "No se puede dar de baja al barbero. Tiene turnos pendientes",
+        );
+      }
+    }
+
     // Baja lógica del usuario
     const updatedUsuario = await prisma.usuarios.update({
       where: { codUsuario: sanitizedCodUsuario },
@@ -516,6 +537,10 @@ export const destroy = async (codUsuario: string) => {
 
     throw new DatabaseError("Error al dar de baja usuario");
   }
+};
+
+export const deactivate = async (codUsuario: string) => {
+  return destroy(codUsuario);
 };
 
 export const reactivate = async (codUsuario: string) => {
