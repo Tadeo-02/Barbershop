@@ -26,8 +26,12 @@ export const store = async (
       email: sanitizeInput(email),
       contraseña: sanitizeInput(contraseña),
       cuil: cuil ? sanitizeInput(cuil) : undefined, // sanitizo si existe
-      preguntaSeguridad: preguntaSeguridad ? sanitizeInput(preguntaSeguridad) : undefined,
-      respuestaSeguridad: respuestaSeguridad ? sanitizeInput(respuestaSeguridad) : undefined,
+      preguntaSeguridad: preguntaSeguridad
+        ? sanitizeInput(preguntaSeguridad)
+        : undefined,
+      respuestaSeguridad: respuestaSeguridad
+        ? sanitizeInput(respuestaSeguridad)
+        : undefined,
     };
 
     // Validación con zod
@@ -45,7 +49,9 @@ export const store = async (
     // encriptar respuesta de seguridad si se proporciona
     let hashedRespuestaSeguridad: string | null = null;
     if (validatedData.respuestaSeguridad) {
-      hashedRespuestaSeguridad = await hashPassword(validatedData.respuestaSeguridad);
+      hashedRespuestaSeguridad = await hashPassword(
+        validatedData.respuestaSeguridad,
+      );
     }
     let cuilValue = null;
     if (validatedData.cuil) {
@@ -64,7 +70,8 @@ export const store = async (
         email: validatedData.email,
         contrase_a: hashedPassword,
         codSucursal: codSucursal || null,
-        preguntaSeguridad: validatedData.preguntaSeguridad || preguntaSeguridad || null,
+        preguntaSeguridad:
+          validatedData.preguntaSeguridad || preguntaSeguridad || null,
         respuestaSeguridad: hashedRespuestaSeguridad || null,
       } as any,
     });
@@ -109,12 +116,40 @@ export const store = async (
       throw new DatabaseError(firstError.message);
     }
 
-    // Manejo de errores de DB
+    // Manejo de errores de DB (Prisma)
     if (error && typeof error === "object" && "code" in error) {
-      const prismaError = error as { code: string; message: string };
+      const prismaError = error as {
+        code: string;
+        message: string;
+        meta?: { target?: string[] };
+      };
 
+      // P2002: Unique constraint violation
       if (prismaError.code === "P2002") {
-        throw new DatabaseError("El DNI, email o CUIL ya existe en el sistema");
+        // Extract which field caused the duplicate error
+        const target = prismaError.meta?.target;
+
+        if (target && Array.isArray(target)) {
+          if (target.includes("email")) {
+            throw new DatabaseError(
+              "El email ya está registrado en el sistema",
+            );
+          } else if (target.includes("dni")) {
+            throw new DatabaseError("El DNI ya está registrado en el sistema");
+          } else if (target.includes("cuil")) {
+            throw new DatabaseError("El CUIL ya está registrado en el sistema");
+          }
+        }
+
+        // Generic message if we can't determine the field
+        throw new DatabaseError(
+          "Los datos ingresados ya existen en el sistema",
+        );
+      }
+
+      // P2003: Foreign key constraint violation
+      if (prismaError.code === "P2003") {
+        throw new DatabaseError("La sucursal especificada no existe");
       }
     }
 
@@ -734,7 +769,10 @@ export const getSecurityQuestionByEmail = async (email: string) => {
   }
 };
 
-const getUserAndValidateSecurityAnswer = async (email: string, respuesta: string) => {
+const getUserAndValidateSecurityAnswer = async (
+  email: string,
+  respuesta: string,
+) => {
   const sanitizedEmail = sanitizeInput(email);
   const sanitizedRespuesta = sanitizeInput(respuesta);
 
@@ -744,20 +782,35 @@ const getUserAndValidateSecurityAnswer = async (email: string, respuesta: string
     where: { email: sanitizedEmail, activo: true },
   })) as any;
 
-  console.log("User lookup result:", !!usuario, usuario ? { codUsuario: usuario.codUsuario, email: usuario.email } : null);
-  console.log("Has stored respuestaSeguridad?", !!(usuario && usuario.respuestaSeguridad));
+  console.log(
+    "User lookup result:",
+    !!usuario,
+    usuario ? { codUsuario: usuario.codUsuario, email: usuario.email } : null,
+  );
+  console.log(
+    "Has stored respuestaSeguridad?",
+    !!(usuario && usuario.respuestaSeguridad),
+  );
 
   if (!usuario) {
     throw new DatabaseError("Usuario no encontrado");
   }
 
   if (!usuario.respuestaSeguridad) {
-    throw new DatabaseError("No hay respuesta de seguridad configurada para este usuario");
+    throw new DatabaseError(
+      "No hay respuesta de seguridad configurada para este usuario",
+    );
   }
 
   // Comparar la respuesta (guardada hasheada)
-  console.log("Stored respuestaSeguridad length:", usuario.respuestaSeguridad ? usuario.respuestaSeguridad.length : 0);
-  const isAnswerValid = await comparePassword(sanitizedRespuesta, usuario.respuestaSeguridad);
+  console.log(
+    "Stored respuestaSeguridad length:",
+    usuario.respuestaSeguridad ? usuario.respuestaSeguridad.length : 0,
+  );
+  const isAnswerValid = await comparePassword(
+    sanitizedRespuesta,
+    usuario.respuestaSeguridad,
+  );
 
   if (!isAnswerValid) {
     throw new DatabaseError("Respuesta incorrecta");
@@ -767,7 +820,10 @@ const getUserAndValidateSecurityAnswer = async (email: string, respuesta: string
 };
 
 // Verificar respuesta de seguridad (sin resetear contraseña)
-export const verifySecurityAnswerOnly = async (email: string, respuesta: string) => {
+export const verifySecurityAnswerOnly = async (
+  email: string,
+  respuesta: string,
+) => {
   try {
     await getUserAndValidateSecurityAnswer(email, respuesta);
     return true;
@@ -800,9 +856,14 @@ export const verifySecurityAnswerAndReset = async (
 
     return updated;
   } catch (error) {
-    console.error("Error verifying security answer or resetting password:", error);
+    console.error(
+      "Error verifying security answer or resetting password:",
+      error,
+    );
     if (error instanceof DatabaseError) throw error;
-    throw new DatabaseError("Error al verificar la respuesta o actualizar la contraseña");
+    throw new DatabaseError(
+      "Error al verificar la respuesta o actualizar la contraseña",
+    );
   }
 };
 

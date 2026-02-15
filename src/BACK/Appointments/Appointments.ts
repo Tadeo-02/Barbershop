@@ -1,6 +1,6 @@
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importamos todo desde Base
 import { z } from "zod";
-import {AppointmentSchema} from "../Schemas/appointmentsSchema";
+import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 /*
 // schema de validación con Zod (más robusto que las funciones manuales)
   const AppointmentsSchema = z.object({
@@ -48,18 +48,18 @@ import {AppointmentSchema} from "../Schemas/appointmentsSchema";
 // Umbrales configurables (pueden ser sobreescritos por env vars durante pruebas)
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
   process.env.INITIAL_TO_MEDIUM_DAYS || "30",
-  10
+  10,
 );
 const INITIAL_TO_MEDIUM_COUNT = parseInt(
   process.env.INITIAL_TO_MEDIUM_COUNT || "5",
-  10
+  10,
 );
 
 // Helper function para generar horarios disponibles
 const generateAvailableTimeSlots = (
   turnos: Array<{ codBarbero: string; horaDesde: Date }>,
   barberoId?: string,
-  barberos?: Array<{ codUsuario: string }>
+  barberos?: Array<{ codUsuario: string }>,
 ): Array<{ hora: string }> => {
   const horasDisponibles = [];
 
@@ -111,7 +111,7 @@ export const store = async (
   fechaTurno: string,
   horaDesde: string,
   horaHasta: string,
-  estado: string
+  estado: string,
 ) => {
   try {
     // sanitizar inputs
@@ -133,10 +133,10 @@ export const store = async (
     // convertir strings a Date objects para Prisma
     const fechaDate = new Date(`${sanitizedData.fechaTurno}T00:00:00.000Z`);
     const horaDesdeDate = new Date(
-      `1970-01-01T${sanitizedData.horaDesde}:00.000Z`
+      `1970-01-01T${sanitizedData.horaDesde}:00.000Z`,
     );
     const horaHastaDate = new Date(
-      `1970-01-01T${sanitizedData.horaHasta}:00.000Z`
+      `1970-01-01T${sanitizedData.horaHasta}:00.000Z`,
     );
 
     const startOfDay = new Date(fechaDate);
@@ -160,13 +160,16 @@ export const store = async (
 
     const hasSameTime = existingTurnos.some((turno) => {
       const hours = turno.horaDesde.getUTCHours().toString().padStart(2, "0");
-      const minutes = turno.horaDesde.getUTCMinutes().toString().padStart(2, "0");
+      const minutes = turno.horaDesde
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, "0");
       return `${hours}:${minutes}` === sanitizedData.horaDesde;
     });
 
     if (hasSameTime) {
       throw new DatabaseError(
-        "Ya tienes un turno reservado en ese horario para ese día"
+        "Ya tienes un turno reservado en ese horario para ese día",
       );
     }
 
@@ -187,7 +190,7 @@ export const store = async (
   } catch (error) {
     console.error(
       "Error creating turno:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     //manejo de errores de validacion
     if (error instanceof z.ZodError) {
@@ -197,6 +200,29 @@ export const store = async (
 
     if (error instanceof DatabaseError) {
       throw error;
+    }
+
+    // Manejo de errores de DB (Prisma)
+    if (error && typeof error === "object" && "code" in error) {
+      const prismaError = error as {
+        code: string;
+        message: string;
+        meta?: { target?: string[] };
+      };
+
+      // P2002: Unique constraint violation
+      if (prismaError.code === "P2002") {
+        throw new DatabaseError(
+          "Ya existe un turno con los mismos datos. Por favor, verifique la información.",
+        );
+      }
+
+      // P2003: Foreign key constraint violation
+      if (prismaError.code === "P2003") {
+        throw new DatabaseError(
+          "El usuario, barbero o sucursal especificado no existe",
+        );
+      }
     }
 
     throw new DatabaseError("Error interno del servidor");
@@ -217,7 +243,7 @@ export const findAll = async () => {
   } catch (error) {
     console.error(
       "Error fetching turnos:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al obtener lista de turnos");
   }
@@ -240,7 +266,7 @@ export const findById = async (codTurno: string) => {
 
     console.error(
       "Error finding turno:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar turno");
   }
@@ -299,7 +325,7 @@ export const findByUserId = async (codUsuario: string) => {
     });
 
     console.log(
-      `Found ${turnos.length} turnos for user ${sanitizedCodUsuario}`
+      `Found ${turnos.length} turnos for user ${sanitizedCodUsuario}`,
     );
 
     return turnos;
@@ -310,7 +336,7 @@ export const findByUserId = async (codUsuario: string) => {
 
     console.error(
       "Error finding turno:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar turno");
   }
@@ -318,7 +344,7 @@ export const findByUserId = async (codUsuario: string) => {
 
 export const findByAvailableDate = async (
   fechaTurno: string,
-  codSucursal: string
+  codSucursal: string,
 ) => {
   try {
     //sanitizar y validar
@@ -354,7 +380,7 @@ export const findByAvailableDate = async (
     const horasDisponibles = generateAvailableTimeSlots(
       turnos,
       undefined,
-      barberos
+      barberos,
     );
 
     return horasDisponibles;
@@ -365,7 +391,7 @@ export const findByAvailableDate = async (
 
     console.error(
       "Error finding appointments:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar turnos");
   }
@@ -373,7 +399,7 @@ export const findByAvailableDate = async (
 
 export const findByBarberId = async (
   codBarbero: string,
-  fechaTurno: string
+  fechaTurno: string,
 ) => {
   try {
     //sanitizar y validar
@@ -388,13 +414,13 @@ export const findByBarberId = async (
     });
 
     console.log(
-      `Found ${turnos.length} existing appointments for barber ${sanitizedCodBarbero} on ${sanitizedFechaTurno}`
+      `Found ${turnos.length} existing appointments for barber ${sanitizedCodBarbero} on ${sanitizedFechaTurno}`,
     );
 
     // Usar la función helper
     const horasDisponibles = generateAvailableTimeSlots(
       turnos,
-      sanitizedCodBarbero
+      sanitizedCodBarbero,
     );
 
     console.log(`Found ${horasDisponibles.length} available slots for barber`);
@@ -406,7 +432,7 @@ export const findByBarberId = async (
 
     console.error(
       "Error finding turnos:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar turnos");
   }
@@ -449,7 +475,7 @@ export const findByBranchId = async (codSucursal: string) => {
     });
 
     console.log(
-      `Found ${turnos.length} scheduled appointments for branch ${sanitizedCodSucursal}`
+      `Found ${turnos.length} scheduled appointments for branch ${sanitizedCodSucursal}`,
     );
     return turnos;
   } catch (error) {
@@ -459,7 +485,7 @@ export const findByBranchId = async (codSucursal: string) => {
 
     console.error(
       "Error finding sucursal:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar sucursal");
   }
@@ -496,7 +522,7 @@ export const findPendingByBarberId = async (codBarbero: string) => {
     });
 
     console.log(
-      `Found ${pendingAppointments.length} pending appointments for barber ${sanitizedCodBarbero}`
+      `Found ${pendingAppointments.length} pending appointments for barber ${sanitizedCodBarbero}`,
     );
     return pendingAppointments;
   } catch (error) {
@@ -506,7 +532,7 @@ export const findPendingByBarberId = async (codBarbero: string) => {
 
     console.error(
       "Error finding pending appointments:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar turnos pendientes del barbero");
   }
@@ -540,7 +566,7 @@ export const findPendingByBranchId = async (codSucursal: string) => {
     });
 
     console.log(
-      `Found ${pendingAppointments.length} pending appointments for branch ${sanitizedCodSucursal}`
+      `Found ${pendingAppointments.length} pending appointments for branch ${sanitizedCodSucursal}`,
     );
     return pendingAppointments;
   } catch (error) {
@@ -550,7 +576,7 @@ export const findPendingByBranchId = async (codSucursal: string) => {
 
     console.error(
       "Error finding pending appointments by branch:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar turnos pendientes de la sucursal");
   }
@@ -566,7 +592,7 @@ export const update = async (
   fechaTurno: string,
   horaDesde: string,
   horaHasta: string,
-  estado: string
+  estado: string,
 ) => {
   try {
     // sanitizar datos
@@ -608,10 +634,10 @@ export const update = async (
     // convertir strings a tipos correctos para Prisma
     const fechaDate = new Date(sanitizedData.fechaTurno); // Usar sanitized data
     const horaDesdeDate = new Date(
-      `1970-01-01T${sanitizedData.horaDesde}:00.000Z`
+      `1970-01-01T${sanitizedData.horaDesde}:00.000Z`,
     );
     const horaHastaDate = new Date(
-      `1970-01-01T${sanitizedData.horaHasta}:00.000Z`
+      `1970-01-01T${sanitizedData.horaHasta}:00.000Z`,
     );
 
     const fechaCancelacionDate = validatedData.fechaCancelacion
@@ -642,7 +668,7 @@ export const update = async (
   } catch (error) {
     console.error(
       "Error updating turno:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // manejo de errores de validacion
@@ -677,7 +703,7 @@ export const updateAppointment = async (
   codTurno: string,
   fechaTurno: string,
   horaDesde: string,
-  horaHasta: string
+  horaHasta: string,
 ) => {
   try {
     // sanitizar y validar
@@ -720,7 +746,7 @@ export const updateAppointment = async (
   } catch (error) {
     console.error(
       "Error actualizando turno:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     console.error("Error completo:", error);
 
@@ -742,7 +768,7 @@ export const updateAppointment = async (
 export const checkoutAppointment = async (
   codTurno: string,
   codCorte: string,
-  precioTurno: number
+  precioTurno: number,
 ) => {
   try {
     // sanitizar y validar
@@ -761,7 +787,7 @@ export const checkoutAppointment = async (
     if (!turnoExistente) {
       console.log("Turno no encontrado o no está en estado Programado");
       throw new DatabaseError(
-        "Turno no encontrado o no está en estado Programado"
+        "Turno no encontrado o no está en estado Programado",
       );
     }
 
@@ -780,7 +806,7 @@ export const checkoutAppointment = async (
     if (fechaTurno > now) {
       console.log("El turno aún no ha comenzado");
       throw new DatabaseError(
-        "No se puede cobrar un turno que aún no ha comenzado"
+        "No se puede cobrar un turno que aún no ha comenzado",
       );
     }
 
@@ -797,7 +823,7 @@ export const checkoutAppointment = async (
       const descuentoCorte = latestCvBeforeUpdate.categorias.descuentoCorte;
       precioFinal = precioTurno * (1 - descuentoCorte / 100);
       console.log(
-        `🎟️ Aplicando descuento de ${descuentoCorte}% - Precio original: ${precioTurno}, Precio final: ${precioFinal}`
+        `🎟️ Aplicando descuento de ${descuentoCorte}% - Precio original: ${precioTurno}, Precio final: ${precioFinal}`,
       );
     }
 
@@ -821,7 +847,7 @@ export const checkoutAppointment = async (
 
       if (!latestCv) {
         console.warn(
-          `No categoria_vigente encontrada para cliente ${codCliente}`
+          `No categoria_vigente encontrada para cliente ${codCliente}`,
         );
         return;
       }
@@ -861,7 +887,7 @@ export const checkoutAppointment = async (
             console.log(`Cliente ${codCliente} promovido a Medium`);
           } else {
             console.warn(
-              "Categoría 'Medium' no encontrada en la tabla categorias"
+              "Categoría 'Medium' no encontrada en la tabla categorias",
             );
           }
         }
@@ -883,7 +909,7 @@ export const checkoutAppointment = async (
             console.log(`Cliente ${codCliente} promovido a Premium`);
           } else {
             console.warn(
-              "Categoría 'Premium' no encontrada en la tabla categorias"
+              "Categoría 'Premium' no encontrada en la tabla categorias",
             );
           }
         }
@@ -899,7 +925,7 @@ export const checkoutAppointment = async (
   } catch (error) {
     console.error(
       "Error cobrando turno:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     console.error("Error completo:", error);
 
@@ -1018,7 +1044,7 @@ export const cancelAppointment = async (codTurno: string) => {
       }).length;
 
       console.log(
-        `Cliente ${existingTurno.codCliente} tiene ${canceledSameDayCount} turnos cancelados el mismo día en el semestre actual`
+        `Cliente ${existingTurno.codCliente} tiene ${canceledSameDayCount} turnos cancelados el mismo día en el semestre actual`,
       );
 
       // Si tiene 3 o más cancelaciones el mismo día, descender de categoría
@@ -1029,7 +1055,7 @@ export const cancelAppointment = async (codTurno: string) => {
             where: { codCliente: existingTurno.codCliente },
             include: { categorias: true },
             orderBy: { ultimaFechaInicio: "desc" },
-          }
+          },
         );
 
         if (categoriaVigenteActual) {
@@ -1063,7 +1089,7 @@ export const cancelAppointment = async (codTurno: string) => {
               });
 
               console.log(
-                `Cliente ${existingTurno.codCliente} descendió de ${categoriaActual} a ${nuevaCategoriaNombre}`
+                `Cliente ${existingTurno.codCliente} descendió de ${categoriaActual} a ${nuevaCategoriaNombre}`,
               );
             }
           }
@@ -1076,7 +1102,7 @@ export const cancelAppointment = async (codTurno: string) => {
   } catch (error) {
     console.error(
       "Error cancelando turno:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     console.error("Error completo:", error);
 
@@ -1134,7 +1160,7 @@ export const markAsNoShow = async (codTurno: string) => {
     if (fechaTurno > now) {
       console.log("El turno aún no ha finalizado");
       throw new DatabaseError(
-        "No se puede marcar como no asistido un turno que aún no ha finalizado"
+        "No se puede marcar como no asistido un turno que aún no ha finalizado",
       );
     }
 
@@ -1179,7 +1205,7 @@ export const markAsNoShow = async (codTurno: string) => {
     });
 
     console.log(
-      `Cliente ${updatedTurno.codCliente} tiene ${noShowCount} turnos "No asistido" en el semestre actual`
+      `Cliente ${updatedTurno.codCliente} tiene ${noShowCount} turnos "No asistido" en el semestre actual`,
     );
 
     // Si el cliente tiene 3 o más turnos "No asistido" en el semestre, asignar categoría "Vetado"
@@ -1198,7 +1224,7 @@ export const markAsNoShow = async (codTurno: string) => {
         });
 
         console.log(
-          `Categoría "Vetado" asignada exitosamente al cliente ${updatedTurno.codCliente}`
+          `Categoría "Vetado" asignada exitosamente al cliente ${updatedTurno.codCliente}`,
         );
       }
     }
@@ -1207,7 +1233,7 @@ export const markAsNoShow = async (codTurno: string) => {
   } catch (error) {
     console.error(
       "Error marcando turno como No asistido:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     console.error("Error completo:", error);
 
@@ -1260,7 +1286,7 @@ export const destroy = async (codTurno: string) => {
   } catch (error) {
     console.error(
       "Error deleting turno:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // manejo de errores de DB
