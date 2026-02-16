@@ -11,8 +11,8 @@ import {
 const router: Router = Router();
 
 // Rutas específicas PRIMERO (antes de createRouter) para evitar conflictos
-// Apply strict auth limiter to login (with deduplication to prevent multiple clicks)
-router.post("/login", authLimiter, standardDeduplication, controller.login);
+// Apply strict auth limiter and strict deduplication to login (same security as registration)
+router.post("/login", authLimiter, strictDeduplication, controller.login);
 router.get("/branch/:codSucursal", controller.findByBranchId);
 router.get(
   "/schedule/:codSucursal/:fechaTurno/:horaDesde",
