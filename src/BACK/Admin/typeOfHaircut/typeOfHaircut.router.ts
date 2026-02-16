@@ -1,7 +1,10 @@
 import * as controller from "./typeOfHaircut.controller";
 import createRouter from "../../base/base.router";
 import { Router } from "express";
-import { modificationLimiter } from "../../middleware/rateLimiter";
+import {
+  userModificationLimiter,
+  userLimiter,
+} from "../../middleware/rateLimiter";
 import {
   strictDeduplication,
   standardDeduplication,
@@ -12,9 +15,10 @@ const router: Router = createRouter(controller, {
   idParam: "codCorte",
   updatePath: "/update",
   middleware: {
-    create: [modificationLimiter, strictDeduplication],
-    update: [modificationLimiter, standardDeduplication],
-    delete: [modificationLimiter, standardDeduplication],
+    read: [userLimiter],
+    create: [userModificationLimiter, strictDeduplication],
+    update: [userModificationLimiter, standardDeduplication],
+    delete: [userModificationLimiter, standardDeduplication],
   },
 });
 

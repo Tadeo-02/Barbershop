@@ -2,7 +2,13 @@ import * as controller from "./users.controller";
 import createRouter from "../base/base.router";
 import { findByIdWithCategory } from "./Users";
 import { Router } from "express";
-import { authLimiter, sensitiveLimiter } from "../middleware/rateLimiter";
+import {
+  authLimiter,
+  sensitiveLimiter,
+  userModificationLimiter,
+  userSensitiveLimiter,
+  userLimiter,
+} from "../middleware/rateLimiter";
 import {
   strictDeduplication,
   standardDeduplication,
@@ -10,32 +16,14 @@ import {
 
 const router: Router = Router();
 
-// Rutas específicas PRIMERO (antes de createRouter) para evitar conflictos
-// Apply strict auth limiter and strict deduplication to login (same security as registration)
-router.post("/login", authLimiter, strictDeduplication, controller.login);
-router.get("/branch/:codSucursal", controller.findByBranchId);
-router.get(
-  "/schedule/:codSucursal/:fechaTurno/:horaDesde",
-  controller.findBySchedule,
-);
+// ========================================
+// NON-AUTHENTICATED ROUTES (IP-based limiting)
+// ========================================
 
-// Rutas con parámetros específicos (deben ir antes de las rutas genéricas con :codUsuario)
-router.patch(
-  "/:codUsuario/deactivate",
-  standardDeduplication,
-  controller.deactivate,
-);
-router.patch(
-  "/:codUsuario/reactivate",
-  standardDeduplication,
-  controller.reactivate,
-);
-router.patch(
-  "/:codUsuario/security-question",
-  strictDeduplication,
-  controller.updateSecurityQuestion,
-);
-// Apply sensitive limiter to security question operations
+// Login endpoint - IP-based limiting for non-authenticated users
+router.post("/login", authLimiter, strictDeduplication, controller.login);
+
+// Password reset endpoints - IP-based limiting (users not authenticated yet)
 router.get(
   "/security-question/:email",
   sensitiveLimiter,
@@ -48,8 +36,23 @@ router.post(
   controller.verifySecurityAnswer,
 );
 
-// Agregar esta nueva ruta
-router.get("/profiles/:codUsuario", async (req, res) => {
+// User registration - IP-based limiting for non-authenticated users
+router.post("/", authLimiter, strictDeduplication, controller.store);
+
+// ========================================
+// AUTHENTICATED ROUTES (User ID-based limiting)
+// ========================================
+
+// Read operations - standard user limiting
+router.get("/branch/:codSucursal", userLimiter, controller.findByBranchId);
+router.get(
+  "/schedule/:codSucursal/:fechaTurno/:horaDesde",
+  userLimiter,
+  controller.findBySchedule,
+);
+
+// User profile - standard user limiting
+router.get("/profiles/:codUsuario", userLimiter, async (req, res) => {
   try {
     const { codUsuario } = req.params;
 
@@ -69,9 +72,27 @@ router.get("/profiles/:codUsuario", async (req, res) => {
   }
 });
 
-// Apply auth limiter and strict deduplication to user creation (registration)
-// Strict deduplication prevents duplicate registrations when user clicks multiple times
-router.post("/", authLimiter, strictDeduplication, controller.store);
+// Account modification operations - user modification limiting
+router.patch(
+  "/:codUsuario/deactivate",
+  userModificationLimiter,
+  standardDeduplication,
+  controller.deactivate,
+);
+router.patch(
+  "/:codUsuario/reactivate",
+  userModificationLimiter,
+  standardDeduplication,
+  controller.reactivate,
+);
+
+// Security question update - sensitive operation for authenticated users
+router.patch(
+  "/:codUsuario/security-question",
+  userSensitiveLimiter,
+  strictDeduplication,
+  controller.updateSecurityQuestion,
+);
 
 // Ahora aplicamos las rutas base (GET, POST, PUT, DELETE genéricas)
 const baseRouter = createRouter(controller, {

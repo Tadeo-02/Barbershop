@@ -26,7 +26,9 @@ const createRouter = (
   const router = express.Router();
 
   // Helper to apply middleware array or empty array
-  const applyMiddleware = (type: keyof RouterConfig["middleware"]) => {
+  const applyMiddleware = (
+    type: keyof NonNullable<RouterConfig["middleware"]>,
+  ) => {
     return config.middleware?.[type] || [];
   };
 

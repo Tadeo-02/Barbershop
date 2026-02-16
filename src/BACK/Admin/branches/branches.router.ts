@@ -1,7 +1,10 @@
 import * as controller from "./branches.controller";
 import createRouter from "../../base/base.router";
 import { Router } from "express";
-import { modificationLimiter } from "../../middleware/rateLimiter";
+import {
+  userModificationLimiter,
+  userLimiter,
+} from "../../middleware/rateLimiter";
 import {
   strictDeduplication,
   standardDeduplication,
@@ -9,18 +12,20 @@ import {
 
 const router: Router = Router();
 
-router.get("/all", controller.indexAll);
+// Read operations - standard user limiting
+router.get("/all", userLimiter, controller.indexAll);
 
 // Apply security to state changes (deactivate/reactivate)
+// Uses user-based rate limiting for authenticated admin operations
 router.patch(
   "/:codSucursal/deactivate",
-  modificationLimiter,
+  userModificationLimiter,
   standardDeduplication,
   controller.deactivate,
 );
 router.patch(
   "/:codSucursal/reactivate",
-  modificationLimiter,
+  userModificationLimiter,
   standardDeduplication,
   controller.reactivate,
 );
@@ -30,9 +35,10 @@ const baseRouter = createRouter(controller, {
   idParam: "codSucursal",
   updatePath: "/update",
   middleware: {
-    create: [modificationLimiter, strictDeduplication],
-    update: [modificationLimiter, standardDeduplication],
-    delete: [modificationLimiter, standardDeduplication],
+    read: [userLimiter],
+    create: [userModificationLimiter, strictDeduplication],
+    update: [userModificationLimiter, standardDeduplication],
+    delete: [userModificationLimiter, standardDeduplication],
   },
 });
 
