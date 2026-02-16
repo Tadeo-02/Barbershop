@@ -1,17 +1,45 @@
 import * as controller from "./branches.controller";
 import createRouter from "../../base/base.router";
 import { Router } from "express";
+import {
+  userModificationLimiter,
+  userLimiter,
+} from "../../middleware/rateLimiter";
+import {
+  strictDeduplication,
+  standardDeduplication,
+} from "../../middleware/deduplication";
 
 const router: Router = Router();
 
-router.get("/all", controller.indexAll);
-router.patch("/:codSucursal/deactivate", controller.deactivate);
-router.patch("/:codSucursal/reactivate", controller.reactivate);
+// Read operations - standard user limiting
+router.get("/all", userLimiter, controller.indexAll);
+
+// Apply security to state changes (deactivate/reactivate)
+// Uses user-based rate limiting for authenticated admin operations
+router.patch(
+  "/:codSucursal/deactivate",
+  userModificationLimiter,
+  standardDeduplication,
+  controller.deactivate,
+);
+router.patch(
+  "/:codSucursal/reactivate",
+  userModificationLimiter,
+  standardDeduplication,
+  controller.reactivate,
+);
 
 const baseRouter = createRouter(controller, {
   create: "/create",
   idParam: "codSucursal",
   updatePath: "/update",
+  middleware: {
+    read: [userLimiter],
+    create: [userModificationLimiter, strictDeduplication],
+    update: [userModificationLimiter, standardDeduplication],
+    delete: [userModificationLimiter, standardDeduplication],
+  },
 });
 
 router.use(baseRouter);
