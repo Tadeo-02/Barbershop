@@ -1,0 +1,705 @@
+{
+  "info": {
+    "_postman_id": "security-tests-barbershop-2026",
+    "name": "Barbershop Security Tests",
+    "description": "Comprehensive tests for rate limiting and deduplication middleware.\n\n## How to use:\n1. Make sure your backend server is running (default: http://localhost:3001)\n2. Run tests in order to see different security measures in action\n3. Wait for time windows to expire between test sets (see test descriptions)\n\n## Security Measures Tested:\n- Rate Limiting (authLimiter, sensitiveLimiter)\n- Request Deduplication (strict & standard)\n- Combined security behavior",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Rate Limiter Tests",
+      "item": [
+        {
+          "name": "Login Attempt 1 (Should Work)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 401 or 400 (processed, not rate limited)\", function () {",
+                  "    pm.expect([400, 401]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"Not rate limited yet\", function () {",
+                  "    pm.expect(pm.response.code).to.not.equal(429);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"contraseña\": \"wrongPassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "First login attempt - should be processed normally (even if credentials are wrong)"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Attempt 2 (Should Work)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 401 or 400 (processed)\", function () {",
+                  "    pm.expect([400, 401]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"contraseña\": \"wrongPassword456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Attempt 3 (Should Work)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 401 or 400 (processed)\", function () {",
+                  "    pm.expect([400, 401]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"contraseña\": \"wrongPassword789\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Attempt 4 (Should Work)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 401 or 400 (processed)\", function () {",
+                  "    pm.expect([400, 401]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"contraseña\": \"wrongPassword000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Attempt 5 (Should Work)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 401 or 400 (processed)\", function () {",
+                  "    pm.expect([400, 401]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"contraseña\": \"wrongPassword111\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Attempt 6 (Should Be RATE LIMITED)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 429 (Rate Limited)\", function () {",
+                  "    pm.response.to.have.status(429);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains rate limit message\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.exist;",
+                  "    pm.expect(jsonData.message).to.include('intentos');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"contraseña\": \"wrongPassword222\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "This 6th attempt should be RATE LIMITED (429) because authLimiter allows only 5 failed attempts per 15 minutes"
+          },
+          "response": []
+        }
+      ],
+      "description": "Tests the authLimiter middleware (5 attempts per 15 minutes).\n\n**How to run:**\n1. Run all 6 requests in sequence\n2. First 5 should return 400/401 (processed)\n3. 6th should return 429 (rate limited)\n\n**To reset:** Wait 15 minutes or restart the server"
+    },
+    {
+      "name": "2. Deduplication Tests",
+      "item": [
+        {
+          "name": "Register User (First Attempt)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200/201 or 400 (processed)\", function () {",
+                  "    pm.expect([200, 201, 400]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test(\"Not blocked by deduplication\", function () {",
+                  "    pm.expect(pm.response.code).to.not.equal(429);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate unique email for this test run",
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set(\"test_email\", `test-${timestamp}@security.com`);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dni\": \"12345678\",\n    \"nombre\": \"Test\",\n    \"apellido\": \"Deduplication\",\n    \"telefono\": \"1234567890\",\n    \"email\": \"{{test_email}}\",\n    \"contraseña\": \"TestPass123!\",\n    \"preguntaSeguridad\": \"¿Color favorito?\",\n    \"respuestaSeguridad\": \"Azul\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "First registration attempt - should be processed"
+          },
+          "response": []
+        },
+        {
+          "name": "Register User (Duplicate - Should Block)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 429 (Duplicate Blocked)\", function () {",
+                  "    pm.response.to.have.status(429);",
+                  "});",
+                  "",
+                  "pm.test(\"Contains deduplication message\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('duplicada');",
+                  "});",
+                  "",
+                  "pm.test(\"Contains retry information\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.retryAfter).to.exist;",
+                  "    pm.expect(jsonData.retryAfter).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dni\": \"12345678\",\n    \"nombre\": \"Test\",\n    \"apellido\": \"Deduplication\",\n    \"telefono\": \"1234567890\",\n    \"email\": \"{{test_email}}\",\n    \"contraseña\": \"TestPass123!\",\n    \"preguntaSeguridad\": \"¿Color favorito?\",\n    \"respuestaSeguridad\": \"Azul\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "IMMEDIATE duplicate request - should be BLOCKED by strictDeduplication (5 second window)\n\n**Run this immediately after the first request!**"
+          },
+          "response": []
+        },
+        {
+          "name": "Login (First Attempt)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Not blocked by deduplication\", function () {",
+                  "    pm.expect(pm.response.code).to.not.equal(429);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set(\"login_email\", `login-${timestamp}@security.com`);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{login_email}}\",\n    \"contraseña\": \"TestPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login (Duplicate - Should Block)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 429 (Duplicate Blocked)\", function () {",
+                  "    pm.response.to.have.status(429);",
+                  "});",
+                  "",
+                  "pm.test(\"Contains deduplication message\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('duplicada');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{login_email}}\",\n    \"contraseña\": \"TestPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Login has strictDeduplication (5 second window). Run immediately after first attempt."
+          },
+          "response": []
+        }
+      ],
+      "description": "Tests deduplication middleware:\n- **strictDeduplication**: 5 second window (registration, login)\n- **standardDeduplication**: 3 second window (updates)\n\n**How to test:**\n1. Run first request\n2. IMMEDIATELY run the duplicate request (within 5 seconds)\n3. Duplicate should be blocked with 429\n4. Wait 5+ seconds and try again - should work"
+    },
+    {
+      "name": "3. Sensitive Operations Tests",
+      "item": [
+        {
+          "name": "Security Question Attempt 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Request processed (not rate limited yet)\", function () {",
+                  "    pm.expect(pm.response.code).to.not.equal(429);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"sensitive@example.com\",\n    \"respuesta\": \"wrong-answer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/verify-security-answer",
+              "host": ["{{base_url}}"],
+              "path": ["verify-security-answer"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Security Question Attempt 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Request processed (not rate limited yet)\", function () {",
+                  "    pm.expect(pm.response.code).to.not.equal(429);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"sensitive@example.com\",\n    \"respuesta\": \"wrong-answer-2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/verify-security-answer",
+              "host": ["{{base_url}}"],
+              "path": ["verify-security-answer"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Security Question Attempt 3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Request processed (not rate limited yet)\", function () {",
+                  "    pm.expect(pm.response.code).to.not.equal(429);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"sensitive@example.com\",\n    \"respuesta\": \"wrong-answer-3\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/verify-security-answer",
+              "host": ["{{base_url}}"],
+              "path": ["verify-security-answer"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Security Question Attempt 4 (Should Be Limited)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 429 (Rate Limited)\", function () {",
+                  "    pm.response.to.have.status(429);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains sensitive operation message\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('hora');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"sensitive@example.com\",\n    \"respuesta\": \"wrong-answer-4\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/verify-security-answer",
+              "host": ["{{base_url}}"],
+              "path": ["verify-security-answer"]
+            },
+            "description": "4th attempt should be RATE LIMITED by sensitiveLimiter (3 per hour)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Tests sensitiveLimiter middleware (3 attempts per 60 minutes).\n\nUsed for:\n- Password recovery\n- Security question verification\n- Other sensitive operations\n\n**To reset:** Wait 60 minutes or restart server"
+    },
+    {
+      "name": "4. Combined Security Test",
+      "item": [
+        {
+          "name": "Rapid Fire Test - Request 1",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set(\"rapid_email\", `rapid-${timestamp}@security.com`);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{rapid_email}}\",\n    \"contraseña\": \"TestPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Send this and the next 2 requests as fast as possible to test combined security"
+          },
+          "response": []
+        },
+        {
+          "name": "Rapid Fire Test - Request 2 (Likely Blocked)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{rapid_email}}\",\n    \"contraseña\": \"TestPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Should be blocked by deduplication"
+          },
+          "response": []
+        },
+        {
+          "name": "Rapid Fire Test - Request 3 (Likely Blocked)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{rapid_email}}\",\n    \"contraseña\": \"TestPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Should be blocked by deduplication"
+          },
+          "response": []
+        }
+      ],
+      "description": "Tests that rate limiting and deduplication work together.\n\n**How to test:**\nSend all 3 requests as fast as possible (use Postman Runner). The deduplication should block duplicates before they count toward rate limit."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "test_email",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "login_email",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rapid_email",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

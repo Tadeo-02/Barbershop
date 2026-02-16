@@ -134,14 +134,11 @@ export const store = async (
             throw new DatabaseError(
               "El email ya está registrado en el sistema",
             );
-          } else if (target.includes("dni")) {
-            throw new DatabaseError("El DNI ya está registrado en el sistema");
-          } else if (target.includes("cuil")) {
-            throw new DatabaseError("El CUIL ya está registrado en el sistema");
           }
+          // DNI y CUIL pueden estar duplicados, solo validamos email
         }
 
-        // Generic message if we can't determine the field
+        // Si el error no es de email, lo ignoramos (permite DNI/CUIL duplicados)
         throw new DatabaseError(
           "Los datos ingresados ya existen en el sistema",
         );
@@ -506,9 +503,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       const prismaError = error as { code: string };
 
       if (prismaError.code === "P2002") {
-        throw new DatabaseError(
-          "El nuevo DNI, CUIL o email ya existe en el sistema",
-        );
+        throw new DatabaseError("El nuevo email ya existe en el sistema");
       }
 
       if (prismaError.code === "P2025") {
