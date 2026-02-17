@@ -24,8 +24,8 @@ import { login } from "./src/BACK/users/users.controller";
 
 import typeOfHaircutRouter from "./src/BACK/Admin/typeOfHaircut/typeOfHaircut.router";
 
-console.log("🔍 Categories router:", categoriesRouter);
-console.log("🔍 TypeOfHaircut router:", typeOfHaircutRouter);
+// console.log("🔍 Categories router:", categoriesRouter);
+// console.log("🔍 TypeOfHaircut router:", typeOfHaircutRouter);
 
 const app = express();
 
