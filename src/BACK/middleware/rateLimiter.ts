@@ -3,22 +3,16 @@ import { Request } from "express";
 
 /**
  * Key generator for authenticated users
- * Uses user ID from x-user-id header, falls back to IP
+ * Uses user ID from x-user-id header, falls back to a constant
  */
 const userIdKeyGenerator = (req: Request): string => {
   const userId = req.header("x-user-id");
   if (userId) {
     return `user:${userId}`;
   }
-  // Fallback to IP if no user ID (shouldn't happen on authenticated routes)
-  return `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
-};
-
-/**
- * Key generator for IP-based limiting (non-authenticated)
- */
-const ipKeyGenerator = (req: Request): string => {
-  return `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
+  // Fallback to unknown if no user ID (shouldn't happen on authenticated routes)
+  // We don't use IP here because this is for authenticated user limiting
+  return "user:unknown";
 };
 
 /**
@@ -35,7 +29,6 @@ export const generalLimiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  keyGenerator: ipKeyGenerator,
   // Skip successful requests
   skipSuccessfulRequests: false,
   // Skip failed requests
@@ -58,7 +51,6 @@ export const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: ipKeyGenerator,
   // Don't count successful requests against the limit
   skipSuccessfulRequests: true,
 });
@@ -79,7 +71,6 @@ export const modificationLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: ipKeyGenerator,
 });
 
 /**
@@ -115,7 +106,6 @@ export const sensitiveLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: ipKeyGenerator,
 });
 
 /**
