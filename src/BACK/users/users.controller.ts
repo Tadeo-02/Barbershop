@@ -2,6 +2,14 @@
 import * as model from "./Users";
 import { BaseController } from "../base/base.controller";
 import { Request, Response } from "express";
+import { generateTokenPair, verifyRefreshToken } from "../utils/jwt";
+import {
+  storeRefreshToken,
+  blacklistToken,
+  blacklistAllUserTokens,
+  isTokenBlacklisted,
+  verifyRefreshTokenInDB,
+} from "../utils/blacklist";
 
 class UsersController extends BaseController<any> {
   protected model = model;
@@ -50,7 +58,7 @@ class UsersController extends BaseController<any> {
         cuil,
         codSucursal,
         preguntaSeguridad,
-        respuestaSeguridad
+        respuestaSeguridad,
       );
 
       const userType = cuil ? "barbero" : "cliente";
@@ -170,16 +178,42 @@ class UsersController extends BaseController<any> {
       if (!userEmail || !userPassword) {
         console.log("Missing credentials");
         res.status(400).json({
+          success: false,
           message: "Email y contraseña son requeridos",
         });
         return;
       }
 
+      // Validate credentials
       const usuario = await model.validateLogin(userEmail, userPassword);
 
+      // Determine user type
+      const userType =
+        usuario.cuil === "1" ? "admin" : usuario.cuil ? "barber" : "client";
+
+      // Generate JWT tokens
+      const { accessToken, refreshToken } = generateTokenPair(
+        usuario.codUsuario,
+        userType,
+      );
+
+      // Store refresh token in database
+      const refreshTokenExpiry = new Date();
+      refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 7); // 7 days from now
+      await storeRefreshToken(
+        usuario.codUsuario,
+        refreshToken,
+        refreshTokenExpiry,
+      );
+
+      console.log(`✅ User ${usuario.codUsuario} logged in successfully`);
+
       res.status(200).json({
+        success: true,
         message: "Login exitoso",
         user: usuario,
+        accessToken,
+        refreshToken,
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -190,6 +224,7 @@ class UsersController extends BaseController<any> {
       const statusCode = errorMessage.includes("incorrectos") ? 401 : 500;
 
       res.status(statusCode).json({
+        success: false,
         message: errorMessage,
       });
     }
@@ -200,7 +235,7 @@ const usersController = new UsersController();
 
 export const findByBranchId = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codSucursal } = req.params;
@@ -230,7 +265,7 @@ export const findByBranchId = async (
 
 export const findBySchedule = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codSucursal, fechaTurno, horaDesde } = req.params;
@@ -246,7 +281,7 @@ export const findBySchedule = async (
     const barberosDisponibles = await model.findBySchedule(
       codSucursal,
       fechaTurno,
-      horaDesde
+      horaDesde,
     );
 
     res.status(200).json({
@@ -270,6 +305,153 @@ export const login = usersController.login.bind(usersController);
 export const deactivate = usersController.deactivate.bind(usersController);
 export const reactivate = usersController.reactivate.bind(usersController);
 
+/**
+ * Refresh Access Token
+ * Accepts refresh token and returns new access token
+ */
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      res.status(400).json({
+        success: false,
+        message: "Refresh token es requerido",
+      });
+      return;
+    }
+
+    // Check if token is blacklisted
+    const isBlacklisted = await isTokenBlacklisted(refreshToken);
+    if (isBlacklisted) {
+      res.status(403).json({
+        success: false,
+        message: "Token revocado. Por favor, inicie sesión nuevamente.",
+      });
+      return;
+    }
+
+    // Verify token signature and expiration
+    const decoded = verifyRefreshToken(refreshToken);
+
+    // Verify token exists in database and is valid
+    await verifyRefreshTokenInDB(refreshToken);
+
+    // Get user to determine user type
+    const usuario = await model.findById(decoded.userId);
+    if (!usuario) {
+      res.status(404).json({
+        success: false,
+        message: "Usuario no encontrado",
+      });
+      return;
+    }
+
+    const userType =
+      usuario.cuil === "1" ? "admin" : usuario.cuil ? "barber" : "client";
+
+    // Generate new access token
+    const { accessToken } = generateTokenPair(decoded.userId, userType);
+
+    console.log(`✅ Refreshed access token for user ${decoded.userId}`);
+
+    res.status(200).json({
+      success: true,
+      accessToken,
+    });
+  } catch (error: any) {
+    console.error("Refresh token error:", error);
+
+    if (error.message === "Refresh token expired") {
+      res.status(401).json({
+        success: false,
+        message: "Refresh token expirado. Por favor, inicie sesión nuevamente.",
+      });
+      return;
+    }
+
+    if (error.message === "Token has been revoked") {
+      res.status(403).json({
+        success: false,
+        message: "Token revocado. Por favor, inicie sesión nuevamente.",
+      });
+      return;
+    }
+
+    res.status(403).json({
+      success: false,
+      message: error.message || "Token inválido",
+    });
+  }
+};
+
+/**
+ * Logout - Blacklist refresh token
+ */
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      res.status(400).json({
+        success: false,
+        message: "Refresh token es requerido",
+      });
+      return;
+    }
+
+    // Blacklist the refresh token
+    await blacklistToken(refreshToken, "logout");
+
+    console.log(`✅ User logged out successfully`);
+
+    res.status(200).json({
+      success: true,
+      message: "Sesión cerrada exitosamente",
+    });
+  } catch (error: any) {
+    console.error("Logout error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al cerrar sesión",
+    });
+  }
+};
+
+/**
+ * Logout from all devices - Blacklist all user's refresh tokens
+ */
+export const logoutAll = async (req: Request, res: Response) => {
+  try {
+    // User ID should come from authenticated request
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        message: "No autenticado",
+      });
+      return;
+    }
+
+    // Blacklist all tokens for this user
+    await blacklistAllUserTokens(userId, "logout");
+
+    console.log(`✅ User ${userId} logged out from all devices`);
+
+    res.status(200).json({
+      success: true,
+      message: "Sesión cerrada en todos los dispositivos",
+    });
+  } catch (error: any) {
+    console.error("Logout all error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al cerrar todas las sesiones",
+    });
+  }
+};
+
 // Obtener pregunta de seguridad por email
 export const getSecurityQuestion = async (req: Request, res: Response) => {
   try {
@@ -280,11 +462,18 @@ export const getSecurityQuestion = async (req: Request, res: Response) => {
       return;
     }
     const pregunta = await model.getSecurityQuestionByEmail(email);
-    console.log("getSecurityQuestion result for", email, "-> pregunta:", pregunta);
+    console.log(
+      "getSecurityQuestion result for",
+      email,
+      "-> pregunta:",
+      pregunta,
+    );
     res.status(200).json({ success: true, pregunta });
   } catch (error: any) {
     console.error("Error getting security question:", error);
-    res.status(500).json({ success: false, message: error.message || "Error interno" });
+    res
+      .status(500)
+      .json({ success: false, message: error.message || "Error interno" });
   }
 };
 
@@ -293,10 +482,17 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
   try {
     const { codUsuario } = req.params;
     const headerUser = req.header("x-user-id");
-    console.log("updateSecurityQuestion called for:", codUsuario, "headerUser:", headerUser);
+    console.log(
+      "updateSecurityQuestion called for:",
+      codUsuario,
+      "headerUser:",
+      headerUser,
+    );
 
     if (!codUsuario) {
-      res.status(400).json({ success: false, message: "codUsuario es requerido" });
+      res
+        .status(400)
+        .json({ success: false, message: "codUsuario es requerido" });
       return;
     }
 
@@ -308,17 +504,34 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
 
     const { preguntaSeguridad, respuestaSeguridad } = req.body;
     if (!preguntaSeguridad || !respuestaSeguridad) {
-      res.status(400).json({ success: false, message: "Pregunta y respuesta son requeridas" });
+      res
+        .status(400)
+        .json({
+          success: false,
+          message: "Pregunta y respuesta son requeridas",
+        });
       return;
     }
 
     // Delegate to model
-    const updated = await model.updateSecurityQuestion(codUsuario, preguntaSeguridad, respuestaSeguridad);
+    const updated = await model.updateSecurityQuestion(
+      codUsuario,
+      preguntaSeguridad,
+      respuestaSeguridad,
+    );
 
-    res.status(200).json({ success: true, message: "Pregunta de seguridad actualizada", data: { codUsuario: updated.codUsuario } });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Pregunta de seguridad actualizada",
+        data: { codUsuario: updated.codUsuario },
+      });
   } catch (error: any) {
     console.error("Error updating security question:", error);
-    res.status(500).json({ success: false, message: error.message || "Error interno" });
+    res
+      .status(500)
+      .json({ success: false, message: error.message || "Error interno" });
   }
 };
 
@@ -328,19 +541,29 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
     console.log("verifySecurityAnswer endpoint called. Body:", req.body);
     const { email, respuestaSeguridad, nuevaContraseña } = req.body;
     if (!email || !respuestaSeguridad) {
-      res.status(400).json({ success: false, message: "Email y respuesta son requeridos" });
+      res
+        .status(400)
+        .json({ success: false, message: "Email y respuesta son requeridos" });
       return;
     }
 
     if (!nuevaContraseña) {
       await model.verifySecurityAnswerOnly(email, respuestaSeguridad);
-      res.status(200).json({ success: true, message: "Respuesta verificada correctamente" });
+      res
+        .status(200)
+        .json({ success: true, message: "Respuesta verificada correctamente" });
       return;
     }
 
-    await model.verifySecurityAnswerAndReset(email, respuestaSeguridad, nuevaContraseña);
+    await model.verifySecurityAnswerAndReset(
+      email,
+      respuestaSeguridad,
+      nuevaContraseña,
+    );
 
-    res.status(200).json({ success: true, message: "Contraseña actualizada correctamente" });
+    res
+      .status(200)
+      .json({ success: true, message: "Contraseña actualizada correctamente" });
   } catch (error: any) {
     console.error("Error verifying security answer:", error);
     if (error && error.stack) console.error(error.stack);
@@ -350,9 +573,15 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
     const lowerMsg = errMsg.toLowerCase();
     if (lowerMsg.includes("incorrecta")) {
       status = 401; // incorrect answer -> unauthorized
-    } else if (lowerMsg.includes("usuario no encontrado") || lowerMsg.includes("no user found")) {
+    } else if (
+      lowerMsg.includes("usuario no encontrado") ||
+      lowerMsg.includes("no user found")
+    ) {
       status = 404; // user not found
-    } else if (lowerMsg.includes("no hay respuesta") || lowerMsg.includes("no hay respuesta de seguridad")) {
+    } else if (
+      lowerMsg.includes("no hay respuesta") ||
+      lowerMsg.includes("no hay respuesta de seguridad")
+    ) {
       status = 400; // bad request: no security answer configured
     }
 

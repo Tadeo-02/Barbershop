@@ -1,10 +1,9 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 model Categoria {
@@ -87,4 +86,22 @@ model usuarios {
   sucursales                         sucursales?         @relation(fields: [codSucursal], references: [codSucursal], onDelete: Restrict, onUpdate: Restrict, map: "fk_barbero_sucursal")
 
   @@index([codSucursal], map: "codSucursal")
+}
+
+model token_blacklist {
+  id            Int                     @id @default(autoincrement())
+  token         String                  @db.VarChar(500)
+  userId        String                  @db.VarChar(50)
+  reason        token_blacklist_reason? @default(logout)
+  blacklistedAt DateTime?               @default(now()) @db.DateTime(0)
+  expiresAt     DateTime                @db.DateTime(0)
+
+  @@index([expiresAt], map: "idx_expires")
+  @@index([token], map: "idx_token")
+}
+
+enum token_blacklist_reason {
+  logout
+  security
+  expired
 }

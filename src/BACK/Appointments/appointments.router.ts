@@ -9,13 +9,14 @@ import {
   strictDeduplication,
   standardDeduplication,
 } from "../middleware/deduplication";
-
+import { authenticateToken } from "../middleware/auth";
 const router: Router = Router();
 
 // Apply strict deduplication and rate limiting to appointment creation to prevent double-booking
 // Uses user-based rate limiting for authenticated users
 router.post(
   "/",
+  authenticateToken,
   userModificationLimiter,
   strictDeduplication,
   controller.store,
@@ -27,10 +28,10 @@ const baseRouter = createRouter(controller, {
   idParam: "codTurno",
   updatePath: "/update",
   middleware: {
-    read: [userLimiter],
-    create: [userModificationLimiter, strictDeduplication],
-    update: [userModificationLimiter, standardDeduplication],
-    delete: [userModificationLimiter, standardDeduplication],
+    read: [authenticateToken, userLimiter],
+    create: [authenticateToken, userModificationLimiter, strictDeduplication],
+    update: [authenticateToken, userModificationLimiter, standardDeduplication],
+    delete: [authenticateToken, userModificationLimiter, standardDeduplication],
   },
 });
 
@@ -41,23 +42,37 @@ router.use(baseRouter);
 // Read operations - standard user limiting
 router.get(
   "/available/:fechaTurno/:codSucursal",
+  authenticateToken,
   userLimiter,
   controller.findByAvailableDate,
 );
 router.get(
   "/barber/:codBarbero/:fechaTurno",
+  authenticateToken,
   userLimiter,
   controller.findByBarberId,
 );
-router.get("/user/:codUsuario", userLimiter, controller.findByUserId);
-router.get("/branch/:codSucursal", userLimiter, controller.findByBranchId);
+router.get(
+  "/user/:codUsuario",
+  authenticateToken,
+  userLimiter,
+  controller.findByUserId,
+);
+router.get(
+  "/branch/:codSucursal",
+  authenticateToken,
+  userLimiter,
+  controller.findByBranchId,
+);
 router.get(
   "/pending/barber/:codBarbero",
+  authenticateToken,
   userLimiter,
   controller.findPendingByBarberId,
 );
 router.get(
   "/pending/branch/:codSucursal",
+  authenticateToken,
   userLimiter,
   controller.findPendingByBranchId,
 );
@@ -65,24 +80,28 @@ router.get(
 // Modification operations - user modification limiting
 router.put(
   "/:codTurno/cancel",
+  authenticateToken,
   userModificationLimiter,
   standardDeduplication,
   controller.cancelAppointment,
 );
 router.put(
   "/:codTurno/checkout",
+  authenticateToken,
   userModificationLimiter,
   standardDeduplication,
   controller.checkoutAppointment,
 );
 router.put(
   "/:codTurno/update",
+  authenticateToken,
   userModificationLimiter,
   standardDeduplication,
   controller.updateAppointment,
 );
 router.put(
   "/:codTurno/no-show",
+  authenticateToken,
   userModificationLimiter,
   standardDeduplication,
   controller.markAsNoShow,

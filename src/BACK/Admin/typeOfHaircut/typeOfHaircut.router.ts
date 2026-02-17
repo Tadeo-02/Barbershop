@@ -9,16 +9,17 @@ import {
   strictDeduplication,
   standardDeduplication,
 } from "../../middleware/deduplication";
+import { authenticateToken } from "../../middleware/auth";
 
 const router: Router = createRouter(controller, {
   create: "/create",
   idParam: "codCorte",
   updatePath: "/update",
   middleware: {
-    read: [userLimiter],
-    create: [userModificationLimiter, strictDeduplication],
-    update: [userModificationLimiter, standardDeduplication],
-    delete: [userModificationLimiter, standardDeduplication],
+    read: [authenticateToken, userLimiter],
+    create: [authenticateToken, userModificationLimiter, strictDeduplication],
+    update: [authenticateToken, userModificationLimiter, standardDeduplication],
+    delete: [authenticateToken, userModificationLimiter, standardDeduplication],
   },
 });
 

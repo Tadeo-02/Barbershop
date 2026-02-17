@@ -9,22 +9,27 @@ import {
   strictDeduplication,
   standardDeduplication,
 } from "../../middleware/deduplication";
-
+import { authenticateToken } from "../../middleware/auth";
 const router: Router = Router();
 
 // Rutas específicas deben ir antes de las rutas genéricas
 // Read operations - standard user limiting
-router.get("/:codCategoria/clients", userLimiter, controller.listClients);
+router.get(
+  "/:codCategoria/clients",
+  authenticateToken,
+  userLimiter,
+  controller.listClients,
+);
 
 const baseRouter = createRouter(controller, {
   create: "/create",
   idParam: "codCategoria",
   updatePath: "/update",
   middleware: {
-    read: [userLimiter],
-    create: [userModificationLimiter, strictDeduplication],
-    update: [userModificationLimiter, standardDeduplication],
-    delete: [userModificationLimiter, standardDeduplication],
+    read: [authenticateToken, userLimiter],
+    create: [authenticateToken, userModificationLimiter, strictDeduplication],
+    update: [authenticateToken, userModificationLimiter, standardDeduplication],
+    delete: [authenticateToken, userModificationLimiter, standardDeduplication],
   },
 });
 
