@@ -18,10 +18,9 @@ import branchesRouter from "./src/BACK/Admin/branches/branches.router";
 import usersRouter from "./src/BACK/users/users.router";
 import appointmentsRouter from "./src/BACK/Appointments/appointments.router";
 import { login } from "./src/BACK/users/users.controller";
-//import typeOfCutRouter from "./src/BACK/typeOfCut/typeOfCut.router";
-console.log("🔍 Categories router:", categoriesRouter);
-console.log("🔍 Branches router:", branchesRouter);
-console.log("🔍 Users router:", usersRouter);
+// console.log("🔍 Categories router:", categoriesRouter);
+// console.log("🔍 Branches router:", branchesRouter);
+// console.log("🔍 Users router:", usersRouter);
 
 import typeOfHaircutRouter from "./src/BACK/Admin/typeOfHaircut/typeOfHaircut.router";
 
