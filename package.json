@@ -1,5 +1,5 @@
 {
-  "name": "barber-boilerplate-v2",
+  "name": "barber-v2",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -13,6 +13,7 @@
     "start:backend": "node dist/index.js"
   },
   "dependencies": {
+    "@afipsdk/afip.js": "^1.2.2",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.15.0",
     "axios": "^1.12.2",
