@@ -317,16 +317,57 @@ const BranchAppointments: React.FC = () => {
         if (response.ok) {
           const resData = await response.json().catch(() => null);
           const facturacion = resData?.data?.facturacion;
-          if (facturacion?.CAE) {
-            toast.success(
-              `Turno cobrado y facturado - CAE: ${facturacion.CAE}`,
-              { id: toastId, duration: 4000 },
+          const facturacionError = resData?.data?.facturacionError;
+          if (facturacion?.CAE && facturacion?.voucher_number) {
+            toast(
+              (t) => (
+                <div>
+                  <p>
+                    <strong>Turno cobrado y facturado</strong>
+                  </p>
+                  <p style={{ fontSize: "0.85em" }}>CAE: {facturacion.CAE}</p>
+                  <button
+                    onClick={() => {
+                      toast.dismiss(t.id);
+                      window.open(
+                        `/facturacion/pdf/${codTurno}/${facturacion.voucher_number}`,
+                        "_blank",
+                      );
+                    }}
+                    className={`${styles.button} ${styles.buttonSuccess}`}
+                    style={{ marginTop: 8, width: "100%" }}
+                  >
+                    Ver Factura PDF
+                  </button>
+                </div>
+              ),
+              { id: toastId, duration: 8000 },
             );
           } else {
-            toast.success("Turno cobrado con éxito (factura pendiente)", {
-              id: toastId,
-              duration: 2000,
-            });
+            toast(
+              (t) => (
+                <div>
+                  <p>
+                    <strong>Turno cobrado con éxito</strong>
+                  </p>
+                  <p style={{ fontSize: "0.85em", color: "#e67e22" }}>
+                    Factura pendiente
+                    {facturacionError ? `: ${facturacionError}` : ""}
+                  </p>
+                  <p style={{ fontSize: "0.8em", color: "#7f8c8d" }}>
+                    Podés facturar manualmente desde el botón "Facturar (ARCA)"
+                  </p>
+                  <button
+                    onClick={() => toast.dismiss(t.id)}
+                    className={`${styles.button}`}
+                    style={{ marginTop: 8, width: "100%" }}
+                  >
+                    Entendido
+                  </button>
+                </div>
+              ),
+              { id: toastId, duration: 10000 },
+            );
           }
           await onCompleted();
         } else if (response.status === 404) {
@@ -601,11 +642,35 @@ const BranchAppointments: React.FC = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        toast.success(`Factura generada - CAE: ${data.data?.CAE || "OK"}`, {
-          id: toastId,
-          duration: 4000,
-        });
+        const resData = await response.json();
+        const voucherNumber = resData.data?.voucher_number;
+        const cae = resData.data?.CAE || "OK";
+        toast(
+          (t) => (
+            <div>
+              <p>
+                <strong>Factura generada</strong>
+              </p>
+              <p style={{ fontSize: "0.85em" }}>CAE: {cae}</p>
+              {voucherNumber && (
+                <button
+                  onClick={() => {
+                    toast.dismiss(t.id);
+                    window.open(
+                      `/facturacion/pdf/${codTurno}/${voucherNumber}`,
+                      "_blank",
+                    );
+                  }}
+                  className={`${styles.button} ${styles.buttonSuccess}`}
+                  style={{ marginTop: 8, width: "100%" }}
+                >
+                  Ver Factura PDF
+                </button>
+              )}
+            </div>
+          ),
+          { id: toastId, duration: 8000 },
+        );
       } else {
         const errorData = await response
           .json()

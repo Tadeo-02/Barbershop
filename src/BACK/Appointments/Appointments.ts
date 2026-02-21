@@ -924,6 +924,7 @@ export const checkoutAppointment = async (
 
     // Intentar facturación automática vía ARCA (no bloquea si falla)
     let facturacion = null;
+    let facturacionError: string | null = null;
     try {
       facturacion = await billAppointment(sanitizedCodTurno);
       console.log("✅ Factura ARCA generada automáticamente", {
@@ -931,13 +932,14 @@ export const checkoutAppointment = async (
         voucherNumber: facturacion.voucher_number,
       });
     } catch (billingError: any) {
+      facturacionError = billingError.message || "Error desconocido de ARCA";
       console.warn(
         "⚠️ No se pudo generar factura ARCA automáticamente. Se puede facturar manualmente desde /facturacion/facturar-turno",
-        billingError.message,
+        facturacionError,
       );
     }
 
-    return { ...turnoExistente, facturacion };
+    return { ...turnoExistente, facturacion, facturacionError };
   } catch (error) {
     console.error(
       "Error cobrando turno:",

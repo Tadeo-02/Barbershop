@@ -6,6 +6,7 @@ import {
   BillAppointmentSchema,
 } from "../Schemas/billingSchema";
 import { AFIP_PUNTO_VENTA, VOUCHER_TYPES } from "./afipConfig";
+import { gatherInvoiceData, generateInvoicePdf } from "./invoicePdf";
 
 // ============================================================
 // Controller de Facturación Electrónica - ARCA
@@ -278,6 +279,59 @@ export const getSalesPoints = async (
     res.status(500).json({
       success: false,
       message: error.message || "Error al obtener puntos de venta",
+    });
+  }
+};
+
+/**
+ * GET /facturacion/pdf/:codTurno/:voucherNumber/:tipoComprobante?
+ * Generar y descargar PDF de una factura ya emitida.
+ */
+export const getInvoicePdf = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { codTurno, voucherNumber } = req.params;
+    const tipoComprobante = parseInt(
+      req.params.tipoComprobante || String(VOUCHER_TYPES.FACTURA_B),
+      10,
+    );
+    const nroComprobante = parseInt(voucherNumber, 10);
+
+    if (!codTurno || isNaN(nroComprobante)) {
+      res.status(400).json({
+        success: false,
+        message: "codTurno y voucherNumber son requeridos",
+      });
+      return;
+    }
+
+    const data = await gatherInvoiceData(
+      codTurno,
+      nroComprobante,
+      AFIP_PUNTO_VENTA,
+      tipoComprobante,
+    );
+
+    const pdfBuffer = await generateInvoicePdf(data);
+
+    const filename = `factura_${String(AFIP_PUNTO_VENTA).padStart(4, "0")}-${String(nroComprobante).padStart(8, "0")}.pdf`;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+    res.setHeader("Content-Length", pdfBuffer.length);
+    res.send(pdfBuffer);
+  } catch (error: any) {
+    const statusCode =
+      error.code === "VOUCHER_NOT_FOUND" ||
+      error.code === "APPOINTMENT_NOT_FOUND"
+        ? 404
+        : 500;
+
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Error al generar PDF de factura",
     });
   }
 };
