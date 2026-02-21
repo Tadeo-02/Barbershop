@@ -134,9 +134,9 @@ const billAppointment = async (
       throw new DatabaseError("Turno no encontrado", "APPOINTMENT_NOT_FOUND");
     }
 
-    if (turno.estado !== "completado") {
+    if (turno.estado !== "Cobrado") {
       throw new DatabaseError(
-        "Solo se pueden facturar turnos completados",
+        "Solo se pueden facturar turnos cobrados",
         "APPOINTMENT_NOT_COMPLETED",
       );
     }
