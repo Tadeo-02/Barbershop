@@ -1,6 +1,7 @@
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importamos todo desde Base
 import { z } from "zod";
 import { AppointmentSchema } from "../Schemas/appointmentsSchema";
+import { billAppointment } from "../billing/Billing";
 /*
 // schema de validación con Zod (más robusto que las funciones manuales)
   const AppointmentsSchema = z.object({
@@ -921,7 +922,22 @@ export const checkoutAppointment = async (
       codCliente: turnoUpdated.codCliente,
     });
 
-    return turnoExistente;
+    // Intentar facturación automática vía ARCA (no bloquea si falla)
+    let facturacion = null;
+    try {
+      facturacion = await billAppointment(sanitizedCodTurno);
+      console.log("✅ Factura ARCA generada automáticamente", {
+        CAE: facturacion.CAE,
+        voucherNumber: facturacion.voucher_number,
+      });
+    } catch (billingError: any) {
+      console.warn(
+        "⚠️ No se pudo generar factura ARCA automáticamente. Se puede facturar manualmente desde /facturacion/facturar-turno",
+        billingError.message,
+      );
+    }
+
+    return { ...turnoExistente, facturacion };
   } catch (error) {
     console.error(
       "Error cobrando turno:",

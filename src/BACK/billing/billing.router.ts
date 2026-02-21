@@ -37,14 +37,14 @@ router.get("/estado-servidor", userLimiter, controller.getServerStatus);
 
 // Último comprobante emitido
 router.get(
-  "/ultimo-comprobante/{:tipoComprobante}",
+  "/ultimo-comprobante{/:tipoComprobante}",
   userLimiter,
   controller.getLastVoucher,
 );
 
 // Info de un comprobante específico
 router.get(
-  "/comprobante/:numeroComprobante/{:tipoComprobante}",
+  "/comprobante/:numeroComprobante{/:tipoComprobante}",
   userLimiter,
   controller.getVoucherInfo,
 );
@@ -54,5 +54,12 @@ router.get("/tipos-comprobante", userLimiter, controller.getVoucherTypes);
 router.get("/tipos-documento", userLimiter, controller.getDocumentTypes);
 router.get("/tipos-alicuota", userLimiter, controller.getAliquotTypes);
 router.get("/puntos-venta", userLimiter, controller.getSalesPoints);
+
+// PDF de factura
+router.get(
+  "/pdf/:codTurno/:voucherNumber{/:tipoComprobante}",
+  userLimiter,
+  controller.getInvoicePdf,
+);
 
 export default router;
