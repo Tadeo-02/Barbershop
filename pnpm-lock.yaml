@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@afipsdk/afip.js':
+        specifier: ^1.2.2
+        version: 1.2.2
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.1(react@19.1.1))
@@ -146,6 +149,10 @@ importers:
         version: 7.3.1(@types/node@24.6.1)(jiti@2.6.1)
 
 packages:
+
+  '@afipsdk/afip.js@1.2.2':
+    resolution: {integrity: sha512-PayFqq4cepQ76sAASZj3+70ptztcnr/msKLMxpiGrm/nKcsdhiriE8VDz0Rlmp2q8dS0yMnJR+acUb9QUH3RtQ==}
+    engines: {node: '>=7.0'}
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -2055,6 +2062,12 @@ packages:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
 snapshots:
+
+  '@afipsdk/afip.js@1.2.2':
+    dependencies:
+      axios: 1.12.2
+    transitivePeerDependencies:
+      - debug
 
   '@babel/code-frame@7.27.1':
     dependencies:

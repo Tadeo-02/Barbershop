@@ -23,6 +23,7 @@ import { login } from "./src/BACK/users/users.controller";
 // console.log("🔍 Users router:", usersRouter);
 
 import typeOfHaircutRouter from "./src/BACK/Admin/typeOfHaircut/typeOfHaircut.router";
+import billingRouter from "./src/BACK/billing/billing.router";
 
 // console.log("🔍 Categories router:", categoriesRouter);
 // console.log("🔍 TypeOfHaircut router:", typeOfHaircutRouter);
@@ -85,6 +86,8 @@ app.use("/sucursales", branchesRouter);
 app.post("/login", authLimiter, login);
 
 app.use("/turnos", appointmentsRouter);
+
+app.use("/facturacion", billingRouter);
 
 // Root route
 app.get("/", (_req, res) => {

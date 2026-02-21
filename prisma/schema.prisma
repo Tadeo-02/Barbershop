@@ -88,3 +88,21 @@ model usuarios {
 
   @@index([codSucursal], map: "codSucursal")
 }
+
+model token_blacklist {
+  id            Int                     @id @default(autoincrement())
+  token         String                  @db.VarChar(500)
+  userId        String                  @db.VarChar(50)
+  reason        token_blacklist_reason? @default(logout)
+  blacklistedAt DateTime?               @default(now()) @db.DateTime(0)
+  expiresAt     DateTime                @db.DateTime(0)
+
+  @@index([expiresAt], map: "idx_expires")
+  @@index([token], map: "idx_token")
+}
+
+enum token_blacklist_reason {
+  logout
+  security
+  expired
+}
