@@ -101,6 +101,8 @@ const createVoucher = async (
       CAE: res.CAE,
       CAEFchVto: res.CAEFchVto,
       voucher_number: res.voucher_number,
+      tipoComprobante: input.tipoComprobante,
+      puntoDeVenta,
     };
   } catch (error: any) {
     throw new DatabaseError(
@@ -181,8 +183,17 @@ const billAppointment = async (
       ],
     });
 
-    // Guardar referencia de factura en la DB (si el modelo tiene el campo)
-    // TODO: Agregar campo de facturación al modelo Turno cuando se actualice el schema
+    // Guardar datos de facturación en el turno
+    await prisma.turno.update({
+      where: { codTurno },
+      data: {
+        cae: voucherResult.CAE,
+        caeFchVto: voucherResult.CAEFchVto,
+        voucherNumber: voucherResult.voucher_number,
+        tipoComprobante,
+        puntoDeVenta: voucherResult.puntoDeVenta || AFIP_PUNTO_VENTA,
+      },
+    });
 
     return {
       ...voucherResult,

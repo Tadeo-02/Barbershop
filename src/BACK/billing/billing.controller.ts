@@ -6,6 +6,7 @@ import {
   BillAppointmentSchema,
 } from "../Schemas/billingSchema";
 import { AFIP_PUNTO_VENTA, VOUCHER_TYPES } from "./afipConfig";
+import { prisma } from "../base/Base";
 import {
   gatherInvoiceData,
   generateInvoicePdf,
@@ -343,7 +344,8 @@ export const getInvoicePdf = async (
 
 /**
  * GET /facturacion/recibo/:codTurno
- * Generar y descargar PDF de recibo de un turno cobrado (sin datos ARCA).
+ * Generar PDF: factura ARCA completa si el turno tiene datos de facturación,
+ * o recibo simple si no fue facturado por ARCA.
  */
 export const getReceiptPdf = async (
   req: Request,
@@ -360,6 +362,65 @@ export const getReceiptPdf = async (
       return;
     }
 
+    // Check if turno has ARCA billing data
+    const turno = await prisma.turno.findUnique({
+      where: { codTurno },
+      select: {
+        cae: true,
+        voucherNumber: true,
+        tipoComprobante: true,
+        puntoDeVenta: true,
+      },
+    });
+
+    if (turno?.cae && turno.voucherNumber) {
+      // Serve full ARCA invoice PDF
+      const puntoDeVenta = turno.puntoDeVenta || AFIP_PUNTO_VENTA;
+      const tipoComprobante = turno.tipoComprobante || VOUCHER_TYPES.FACTURA_B;
+
+      const data = await gatherInvoiceData(
+        codTurno,
+        turno.voucherNumber,
+        puntoDeVenta,
+        tipoComprobante,
+      );
+      const pdfBuffer = await generateInvoicePdf(data);
+
+      const voucherNum = `${String(puntoDeVenta).padStart(4, "0")}-${String(turno.voucherNumber).padStart(8, "0")}`;
+      const filename = `factura_${voucherNum}.pdf`;
+
+      // Voucher type names
+      const voucherTypeNames: Record<number, string> = {
+        1: "Factura A",
+        2: "Nota de Débito A",
+        3: "Nota de Crédito A",
+        6: "Factura B",
+        7: "Nota de Débito B",
+        8: "Nota de Crédito B",
+        11: "Factura C",
+        12: "Nota de Débito C",
+        13: "Nota de Crédito C",
+      };
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+      res.setHeader("Content-Length", pdfBuffer.length);
+      res.setHeader(
+        "Access-Control-Expose-Headers",
+        "X-Voucher-Type, X-Voucher-Number, X-CAE",
+      );
+      res.setHeader(
+        "X-Voucher-Type",
+        voucherTypeNames[tipoComprobante] ||
+          `Comprobante tipo ${tipoComprobante}`,
+      );
+      res.setHeader("X-Voucher-Number", voucherNum);
+      res.setHeader("X-CAE", turno.cae);
+      res.send(pdfBuffer);
+      return;
+    }
+
+    // Fallback: simple receipt without ARCA data
     const data = await gatherReceiptData(codTurno);
     const pdfBuffer = await generateReceiptPdf(data);
 
@@ -368,10 +429,15 @@ export const getReceiptPdf = async (
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
     res.setHeader("Content-Length", pdfBuffer.length);
+    res.setHeader(
+      "Access-Control-Expose-Headers",
+      "X-Voucher-Type, X-Voucher-Number, X-CAE",
+    );
     res.send(pdfBuffer);
   } catch (error: any) {
     const statusCode =
-      error.code === "APPOINTMENT_NOT_FOUND"
+      error.code === "APPOINTMENT_NOT_FOUND" ||
+      error.code === "VOUCHER_NOT_FOUND"
         ? 404
         : error.code === "APPOINTMENT_NOT_CHARGED"
           ? 400
@@ -379,7 +445,7 @@ export const getReceiptPdf = async (
 
     res.status(statusCode).json({
       success: false,
-      message: error.message || "Error al generar PDF de recibo",
+      message: error.message || "Error al generar PDF",
     });
   }
 };
