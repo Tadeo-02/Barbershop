@@ -277,7 +277,7 @@ const BranchAppointments: React.FC = () => {
 
     type CheckoutValues = z.infer<typeof CheckoutSchema>;
 
-    const { register, handleSubmit, setValue, watch, formState } =
+    const { register, handleSubmit, setValue, watch, trigger, formState } =
       useForm<CheckoutValues>({
         resolver: zodResolver(CheckoutSchema),
         defaultValues: {
@@ -319,54 +319,96 @@ const BranchAppointments: React.FC = () => {
           const facturacion = resData?.data?.facturacion;
           const facturacionError = resData?.data?.facturacionError;
           if (facturacion?.CAE && facturacion?.voucher_number) {
+            toast.success("Turno cobrado y facturado", {
+              id: toastId,
+              duration: 2000,
+            });
+            // Popup asking to view the receipt
             toast(
               (t) => (
-                <div>
-                  <p>
-                    <strong>Turno cobrado y facturado</strong>
+                <div className={styles.modalContainer}>
+                  <p className={styles.modalTitle}>¿Ver Factura?</p>
+                  <p className={styles.modalDescription}>
+                    El turno fue cobrado y facturado exitosamente.
+                    <br />
+                    <span style={{ fontSize: "0.85em" }}>
+                      CAE: {facturacion.CAE}
+                    </span>
                   </p>
-                  <p style={{ fontSize: "0.85em" }}>CAE: {facturacion.CAE}</p>
-                  <button
-                    onClick={() => {
-                      toast.dismiss(t.id);
-                      window.open(
-                        `/facturacion/pdf/${codTurno}/${facturacion.voucher_number}`,
-                        "_blank",
-                      );
-                    }}
-                    className={`${styles.button} ${styles.buttonSuccess}`}
-                    style={{ marginTop: 8, width: "100%" }}
-                  >
-                    Ver Factura PDF
-                  </button>
+                  <div className={styles.modalButtons}>
+                    <button
+                      onClick={() => toast.dismiss(t.id)}
+                      className={styles.modalButtonCancel}
+                    >
+                      No
+                    </button>
+                    <button
+                      onClick={() => {
+                        toast.dismiss(t.id);
+                        navigate(`/Barber/appointments/recibo/${codTurno}`);
+                      }}
+                      className={styles.modalButtonConfirm}
+                    >
+                      Sí, ver factura
+                    </button>
+                  </div>
                 </div>
               ),
-              { id: toastId, duration: 8000 },
+              {
+                duration: Infinity,
+                style: {
+                  minWidth: "400px",
+                  maxWidth: "500px",
+                  padding: "24px",
+                  borderRadius: "12px",
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
+                  background: "#ffffff",
+                },
+              },
             );
           } else {
             toast(
               (t) => (
-                <div>
-                  <p>
-                    <strong>Turno cobrado con éxito</strong>
-                  </p>
-                  <p style={{ fontSize: "0.85em", color: "#e67e22" }}>
-                    Factura pendiente
-                    {facturacionError ? `: ${facturacionError}` : ""}
-                  </p>
-                  <p style={{ fontSize: "0.8em", color: "#7f8c8d" }}>
+                <div className={styles.modalContainer}>
+                  <p className={styles.modalTitle}>Turno cobrado con éxito</p>
+                  <p className={styles.modalDescription}>
+                    <span style={{ color: "#e67e22" }}>
+                      Factura pendiente
+                      {facturacionError ? `: ${facturacionError}` : ""}
+                    </span>
+                    <br />
                     Podés facturar manualmente desde el botón "Facturar (ARCA)"
                   </p>
-                  <button
-                    onClick={() => toast.dismiss(t.id)}
-                    className={`${styles.button}`}
-                    style={{ marginTop: 8, width: "100%" }}
-                  >
-                    Entendido
-                  </button>
+                  <div className={styles.modalButtons}>
+                    <button
+                      onClick={() => toast.dismiss(t.id)}
+                      className={styles.modalButtonCancel}
+                    >
+                      Entendido
+                    </button>
+                    <button
+                      onClick={() => {
+                        toast.dismiss(t.id);
+                        navigate(`/Barber/appointments/recibo/${codTurno}`);
+                      }}
+                      className={styles.modalButtonConfirm}
+                    >
+                      Ver Recibo
+                    </button>
+                  </div>
                 </div>
               ),
-              { id: toastId, duration: 10000 },
+              {
+                duration: Infinity,
+                style: {
+                  minWidth: "400px",
+                  maxWidth: "500px",
+                  padding: "24px",
+                  borderRadius: "12px",
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
+                  background: "#ffffff",
+                },
+              },
             );
           }
           await onCompleted();
@@ -397,7 +439,13 @@ const BranchAppointments: React.FC = () => {
       }
     };
 
-    const confirmAndSubmit = () => {
+    const confirmAndSubmit = async () => {
+      const isValid = await trigger();
+      if (!isValid) {
+        toast.error("Completá todos los campos antes de continuar");
+        return;
+      }
+
       toast(
         (t) => (
           <div className={styles.modalContainer}>
@@ -442,6 +490,7 @@ const BranchAppointments: React.FC = () => {
     // Keep precio in sync when codCorte changes using react-hook-form watch
     const watchedCodCorte = watch("codCorte");
     const watchedPrecio = watch("precioTurno");
+    const watchedMetodoPago = watch("metodoPago");
 
     useEffect(() => {
       const selected = allCortes.find((c) => c.codCorte === watchedCodCorte);
@@ -591,7 +640,9 @@ const BranchAppointments: React.FC = () => {
             type="button"
             onClick={confirmAndSubmit}
             className={`${styles.button} ${styles.buttonSuccess}`}
-            disabled={formState.isSubmitting}
+            disabled={
+              formState.isSubmitting || !watchedCodCorte || !watchedMetodoPago
+            }
           >
             {formState.isSubmitting ? "Procesando..." : "Completar y cobrar"}
           </button>
@@ -643,33 +694,51 @@ const BranchAppointments: React.FC = () => {
 
       if (response.ok) {
         const resData = await response.json();
-        const voucherNumber = resData.data?.voucher_number;
         const cae = resData.data?.CAE || "OK";
+        toast.success("Factura generada exitosamente", {
+          id: toastId,
+          duration: 2000,
+        });
+        // Popup asking to view the invoice
         toast(
           (t) => (
-            <div>
-              <p>
-                <strong>Factura generada</strong>
+            <div className={styles.modalContainer}>
+              <p className={styles.modalTitle}>¿Ver Factura?</p>
+              <p className={styles.modalDescription}>
+                La factura fue generada exitosamente.
+                <br />
+                <span style={{ fontSize: "0.85em" }}>CAE: {cae}</span>
               </p>
-              <p style={{ fontSize: "0.85em" }}>CAE: {cae}</p>
-              {voucherNumber && (
+              <div className={styles.modalButtons}>
+                <button
+                  onClick={() => toast.dismiss(t.id)}
+                  className={styles.modalButtonCancel}
+                >
+                  No
+                </button>
                 <button
                   onClick={() => {
                     toast.dismiss(t.id);
-                    window.open(
-                      `/facturacion/pdf/${codTurno}/${voucherNumber}`,
-                      "_blank",
-                    );
+                    navigate(`/Barber/appointments/recibo/${codTurno}`);
                   }}
-                  className={`${styles.button} ${styles.buttonSuccess}`}
-                  style={{ marginTop: 8, width: "100%" }}
+                  className={styles.modalButtonConfirm}
                 >
-                  Ver Factura PDF
+                  Sí, ver factura
                 </button>
-              )}
+              </div>
             </div>
           ),
-          { id: toastId, duration: 8000 },
+          {
+            duration: Infinity,
+            style: {
+              minWidth: "400px",
+              maxWidth: "500px",
+              padding: "24px",
+              borderRadius: "12px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
+              background: "#ffffff",
+            },
+          },
         );
       } else {
         const errorData = await response
@@ -897,6 +966,16 @@ const BranchAppointments: React.FC = () => {
 
                 {turno.estado === "Cobrado" && (
                   <div className={styles.actionButtons}>
+                    <button
+                      onClick={() =>
+                        navigate(
+                          `/Barber/appointments/recibo/${turno.codTurno}`,
+                        )
+                      }
+                      className={`${styles.button} ${styles.buttonInfo}`}
+                    >
+                      Ver Factura
+                    </button>
                     <button
                       onClick={() => handleBillAppointment(turno.codTurno)}
                       className={`${styles.button} ${styles.buttonSuccess}`}

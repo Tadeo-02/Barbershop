@@ -354,3 +354,243 @@ function drawLine(doc: PDFKit.PDFDocument) {
     .stroke()
     .strokeColor("#000000");
 }
+
+// ============================================================
+// Recibo simple (sin datos ARCA) — basado únicamente en la DB
+// ============================================================
+
+/** Datos para el recibo simple */
+interface ReceiptPdfData {
+  codTurno: string;
+  fechaEmision: string;
+
+  importeTotal: number;
+  importeNeto: number;
+  importeIVA: number;
+
+  servicio: string;
+  fechaTurno: string;
+
+  clienteNombre: string;
+  clienteDni: string;
+
+  barberoNombre: string;
+
+  sucursalNombre: string;
+  sucursalDireccion: string;
+}
+
+/**
+ * Recopilar datos del recibo a partir del codTurno (solo DB, sin ARCA).
+ */
+export async function gatherReceiptData(
+  codTurno: string,
+): Promise<ReceiptPdfData> {
+  const turno = await prisma.turno.findUnique({
+    where: { codTurno },
+    include: {
+      tipos_corte: true,
+      usuarios_turnos_codClienteTousuarios: {
+        include: { sucursales: true },
+      },
+      usuarios_turnos_codBarberoTousuarios: {
+        include: { sucursales: true },
+      },
+    },
+  });
+
+  if (!turno) {
+    throw new DatabaseError("Turno no encontrado", "APPOINTMENT_NOT_FOUND");
+  }
+
+  if (turno.estado !== "Cobrado") {
+    throw new DatabaseError(
+      "Solo se pueden generar recibos de turnos cobrados",
+      "APPOINTMENT_NOT_CHARGED",
+    );
+  }
+
+  const cliente = turno.usuarios_turnos_codClienteTousuarios;
+  const barbero = turno.usuarios_turnos_codBarberoTousuarios;
+  const sucursal = barbero.sucursales;
+
+  const importeTotal = turno.precioTurno || turno.tipos_corte?.valorBase || 0;
+  const importeNeto = Math.round((importeTotal / 1.21) * 100) / 100;
+  const importeIVA = Math.round((importeTotal - importeNeto) * 100) / 100;
+
+  const fechaEmision = new Date(
+    Date.now() - new Date().getTimezoneOffset() * 60000,
+  )
+    .toISOString()
+    .split("T")[0];
+
+  return {
+    codTurno,
+    fechaEmision,
+    importeTotal,
+    importeNeto,
+    importeIVA,
+    servicio: turno.tipos_corte?.nombreCorte || "Servicio de barbería",
+    fechaTurno: turno.fechaTurno.toISOString().split("T")[0],
+    clienteNombre: `${cliente.nombre} ${cliente.apellido}`,
+    clienteDni: cliente.dni,
+    barberoNombre: `${barbero.nombre} ${barbero.apellido}`,
+    sucursalNombre: sucursal?.nombre || "Barbería",
+    sucursalDireccion: sucursal ? `${sucursal.calle} ${sucursal.altura}` : "",
+  };
+}
+
+/**
+ * Genera un PDF de recibo (sin datos ARCA) y lo devuelve como Buffer.
+ */
+export function generateReceiptPdf(data: ReceiptPdfData): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: "A4",
+        margin: 50,
+        info: {
+          Title: `Recibo - ${data.codTurno}`,
+          Author: data.sucursalNombre,
+        },
+      });
+
+      const chunks: Buffer[] = [];
+      doc.on("data", (chunk: Buffer) => chunks.push(chunk));
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+      doc.on("error", reject);
+
+      const pageWidth = doc.page.width - 100;
+
+      // ── Header ──────────────────────────────────────────
+      doc
+        .fontSize(20)
+        .font("Helvetica-Bold")
+        .text(data.sucursalNombre.toUpperCase(), { align: "center" });
+
+      if (data.sucursalDireccion) {
+        doc
+          .fontSize(10)
+          .font("Helvetica")
+          .text(data.sucursalDireccion, { align: "center" });
+      }
+
+      const cuit = process.env.AFIP_CUIT || "20409378472";
+      doc.fontSize(10).text(`CUIT: ${formatCuit(cuit)}`, { align: "center" });
+      doc.moveDown(0.5);
+
+      // ── Título del recibo ───────────────────────────────
+      doc
+        .fontSize(16)
+        .font("Helvetica-Bold")
+        .text("RECIBO DE PAGO", { align: "center" });
+      doc.moveDown(0.3);
+
+      const fechaParts = data.fechaEmision.split("-");
+      const fechaFormateada = `${fechaParts[2]}/${fechaParts[1]}/${fechaParts[0]}`;
+      doc
+        .fontSize(10)
+        .font("Helvetica")
+        .text(`Fecha de emisión: ${fechaFormateada}`, { align: "center" });
+
+      doc.moveDown(1);
+
+      // ── Línea separadora ────────────────────────────────
+      drawLine(doc);
+      doc.moveDown(0.5);
+
+      // ── Datos del cliente ───────────────────────────────
+      doc.fontSize(11).font("Helvetica-Bold").text("DATOS DEL CLIENTE");
+      doc.fontSize(10).font("Helvetica");
+      doc.text(`Nombre: ${data.clienteNombre}`);
+      doc.text(`DNI: ${data.clienteDni}`);
+      doc.text("Condición frente al IVA: Consumidor Final");
+      doc.moveDown(0.5);
+
+      drawLine(doc);
+      doc.moveDown(0.5);
+
+      // ── Detalle del servicio ────────────────────────────
+      doc.fontSize(11).font("Helvetica-Bold").text("DETALLE");
+      doc.moveDown(0.3);
+
+      const colX = [50, 300, 400];
+      const tableY = doc.y;
+
+      doc.fontSize(9).font("Helvetica-Bold");
+      doc.text("Descripción", colX[0], tableY);
+      doc.text("Cant.", colX[1], tableY, { width: 80, align: "center" });
+      doc.text("Importe", colX[2], tableY, { width: 100, align: "right" });
+
+      doc.y = tableY + 15;
+      drawLine(doc);
+      doc.moveDown(0.3);
+
+      const rowY = doc.y;
+      doc.fontSize(10).font("Helvetica");
+      doc.text(data.servicio, colX[0], rowY);
+      doc.text("1", colX[1], rowY, { width: 80, align: "center" });
+      doc.text(`$ ${data.importeTotal.toFixed(2)}`, colX[2], rowY, {
+        width: 100,
+        align: "right",
+      });
+           
+
+      doc.y = rowY + 15;
+      drawLine(doc);
+      doc.text(`Barbero: ${data.barberoNombre}`, colX[0]);
+      drawLine(doc);
+      doc.text(`Fecha del turno: ${data.fechaTurno}`, colX[0]);
+
+      doc.moveDown(1);
+      drawLine(doc);
+      doc.moveDown(0.5);
+
+      // ── Totales ─────────────────────────────────────────
+      const totalsX = 350;
+      const valuesX = 450;
+
+      doc.fontSize(10).font("Helvetica");
+      let totY = doc.y;
+      doc.text("Subtotal (Neto Gravado):", totalsX, totY);
+      doc.text(`$ ${data.importeNeto.toFixed(2)}`, valuesX, totY, {
+        width: 100,
+        align: "right",
+      });
+
+      totY += 18;
+      doc.text("IVA 21%:", totalsX, totY);
+      doc.text(`$ ${data.importeIVA.toFixed(2)}`, valuesX, totY, {
+        width: 100,
+        align: "right",
+      });
+
+      totY += 22;
+      doc.font("Helvetica-Bold").fontSize(12);
+      doc.text("TOTAL:", totalsX, totY);
+      doc.text(`$ ${data.importeTotal.toFixed(2)}`, valuesX, totY, {
+        width: 100,
+        align: "right",
+      });
+
+      doc.y = totY + 30;
+      drawLine(doc);
+      doc.moveDown(2);
+
+      // ── Pie de página ───────────────────────────────────
+      doc
+        .fontSize(8)
+        .fillColor("#666666")
+        .text(
+          "Recibo generado por sistema. Este documento no constituye factura electrónica.",
+          50,
+          doc.page.height - 80,
+          { align: "center", width: pageWidth },
+        );
+
+      doc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+}

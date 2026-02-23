@@ -6,7 +6,12 @@ import {
   BillAppointmentSchema,
 } from "../Schemas/billingSchema";
 import { AFIP_PUNTO_VENTA, VOUCHER_TYPES } from "./afipConfig";
-import { gatherInvoiceData, generateInvoicePdf } from "./invoicePdf";
+import {
+  gatherInvoiceData,
+  generateInvoicePdf,
+  gatherReceiptData,
+  generateReceiptPdf,
+} from "./invoicePdf";
 
 // ============================================================
 // Controller de Facturación Electrónica - ARCA
@@ -332,6 +337,49 @@ export const getInvoicePdf = async (
     res.status(statusCode).json({
       success: false,
       message: error.message || "Error al generar PDF de factura",
+    });
+  }
+};
+
+/**
+ * GET /facturacion/recibo/:codTurno
+ * Generar y descargar PDF de recibo de un turno cobrado (sin datos ARCA).
+ */
+export const getReceiptPdf = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { codTurno } = req.params;
+
+    if (!codTurno) {
+      res.status(400).json({
+        success: false,
+        message: "codTurno es requerido",
+      });
+      return;
+    }
+
+    const data = await gatherReceiptData(codTurno);
+    const pdfBuffer = await generateReceiptPdf(data);
+
+    const filename = `recibo_${codTurno}.pdf`;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+    res.setHeader("Content-Length", pdfBuffer.length);
+    res.send(pdfBuffer);
+  } catch (error: any) {
+    const statusCode =
+      error.code === "APPOINTMENT_NOT_FOUND"
+        ? 404
+        : error.code === "APPOINTMENT_NOT_CHARGED"
+          ? 400
+          : 500;
+
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Error al generar PDF de recibo",
     });
   }
 };
