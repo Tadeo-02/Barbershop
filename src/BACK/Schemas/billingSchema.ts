@@ -67,6 +67,8 @@ export const VoucherResponseSchema = z.object({
   CAE: z.string(),
   CAEFchVto: z.string(),
   voucher_number: z.number().optional(),
+  tipoComprobante: z.number().optional(),
+  puntoDeVenta: z.number().optional(),
 });
 
 export type CreateVoucherInput = z.infer<typeof CreateVoucherSchema>;

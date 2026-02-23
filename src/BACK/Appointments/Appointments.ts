@@ -770,6 +770,7 @@ export const checkoutAppointment = async (
   codTurno: string,
   codCorte: string,
   precioTurno: number,
+  metodoPago?: string,
 ) => {
   try {
     // sanitizar y validar
@@ -834,6 +835,7 @@ export const checkoutAppointment = async (
       data: {
         codCorte: sanitizedCodCorte,
         precioTurno: precioFinal,
+        metodoPago: metodoPago || null,
         estado: "Cobrado",
       },
     });

@@ -9,6 +9,9 @@ const BarberReceiptViewer: React.FC = () => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [voucherType, setVoucherType] = useState<string | null>(null);
+  const [voucherNumber, setVoucherNumber] = useState<string | null>(null);
+  const [cae, setCae] = useState<string | null>(null);
 
   useEffect(() => {
     if (!codTurno) {
@@ -30,6 +33,11 @@ const BarberReceiptViewer: React.FC = () => {
               `Error al obtener el recibo (${response.status})`,
           );
         }
+
+        // Read billing metadata from headers
+        setVoucherType(response.headers.get("X-Voucher-Type"));
+        setVoucherNumber(response.headers.get("X-Voucher-Number"));
+        setCae(response.headers.get("X-CAE"));
 
         const blob = await response.blob();
         blobUrl = URL.createObjectURL(blob);
@@ -94,7 +102,13 @@ const BarberReceiptViewer: React.FC = () => {
         <button className={styles.backButton} onClick={handleBack}>
           ← Volver
         </button>
-        <h2 className={styles.title}>Recibo de Pago</h2>
+        <div className={styles.titleBlock}>
+          <h2 className={styles.title}>{voucherType || "Recibo de Pago"}</h2>
+          {voucherNumber && (
+            <span className={styles.voucherInfo}>N° {voucherNumber}</span>
+          )}
+          {cae && <span className={styles.voucherInfo}>CAE: {cae}</span>}
+        </div>
         <button className={styles.downloadButton} onClick={handleDownload}>
           Descargar PDF
         </button>
