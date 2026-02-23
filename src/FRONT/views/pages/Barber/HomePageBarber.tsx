@@ -30,6 +30,10 @@ const Home = () => {
     navigate("/Barber/BranchAppointments");
   };
 
+  const handleMisTurnos = () => {
+    navigate("/Barber/MyAppointments");
+  };
+
   // const handleEntregarPedidos = () => {
   //   console.log("Navigating to orders..."); // Debug log
   //   navigate("/orders/orders");
@@ -41,6 +45,9 @@ const Home = () => {
       <div className={styles.optionsContainer}>
         <button className={styles.optionButton} onClick={handleVerTurnos}>
           Atender turnos
+        </button>
+        <button className={styles.optionButton} onClick={handleMisTurnos}>
+          Mis Turnos
         </button>
         {/*<button className={styles.optionButton} onClick={handleEntregarPedidos}>
           Entregar pedidos

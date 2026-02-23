@@ -169,7 +169,7 @@ const ClientAppointments: React.FC = () => {
           minWidth: "350px",
           padding: "24px",
         },
-      }
+      },
     );
   };
 
@@ -186,15 +186,18 @@ const ClientAppointments: React.FC = () => {
 
       if (response.ok) {
         await response.json();
-        toast.success("Turno cancelado correctamente", { id: toastId, duration: 2000 });
+        toast.success("Turno cancelado correctamente", {
+          id: toastId,
+          duration: 2000,
+        });
 
         // Actualizar el estado local del turno en lugar de eliminarlo
         setTurnos(
           turnos.map((turno) =>
             turno.codTurno === codTurno
               ? { ...turno, estado: "Cancelado" }
-              : turno
-          )
+              : turno,
+          ),
         );
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId, duration: 2000 });
@@ -202,12 +205,16 @@ const ClientAppointments: React.FC = () => {
         const errorData = await response.json();
         console.error("Error response:", errorData);
         toast.error(errorData.message || "Error al cancelar el turno", {
-          id: toastId, duration: 2000
+          id: toastId,
+          duration: 2000,
         });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
+      toast.error("Error de conexión con el servidor", {
+        id: toastId,
+        duration: 2000,
+      });
     }
   };
 
@@ -293,6 +300,18 @@ const ClientAppointments: React.FC = () => {
                       onClick={() => handleDelete(t.codTurno)}
                     >
                       Cancelar Turno
+                    </button>
+                  </div>
+                )}
+                {t.estado === "Cobrado" && (
+                  <div className={barberStyles.appointmentActions}>
+                    <button
+                      className={barberStyles.invoiceButton}
+                      onClick={() =>
+                        navigate(`/client/appointments/recibo/${t.codTurno}`)
+                      }
+                    >
+                      Ver Factura
                     </button>
                   </div>
                 )}

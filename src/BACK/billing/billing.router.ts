@@ -62,4 +62,7 @@ router.get(
   controller.getInvoicePdf,
 );
 
+// PDF de recibo (sin datos ARCA, solo datos del turno)
+router.get("/recibo/:codTurno", userLimiter, controller.getReceiptPdf);
+
 export default router;
