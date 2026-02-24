@@ -127,8 +127,12 @@ export async function gatherInvoiceData(
     voucherInfo.ImpIVA || Math.round((importeTotal - importeNeto) * 100) / 100;
 
   return {
-    cae: String(voucherInfo.CodAutorizacion || voucherInfo.CAE || ""),
-    caeFchVto: String(voucherInfo.FchVto || voucherInfo.CAEFchVto || ""),
+    cae: String(
+      turno.cae || voucherInfo.CodAutorizacion || voucherInfo.CAE || "",
+    ),
+    caeFchVto: String(
+      turno.caeFchVto || voucherInfo.FchVto || voucherInfo.CAEFchVto || "",
+    ),
     voucherNumber,
     puntoDeVenta,
     tipoComprobante,
@@ -378,6 +382,13 @@ interface ReceiptPdfData {
 
   sucursalNombre: string;
   sucursalDireccion: string;
+
+  // Datos de facturación desde la DB (opcionales)
+  cae: string | null;
+  caeFchVto: string | null;
+  voucherNumber: number | null;
+  tipoComprobante: number | null;
+  puntoDeVenta: number | null;
 }
 
 /**
@@ -437,6 +448,11 @@ export async function gatherReceiptData(
     barberoNombre: `${barbero.nombre} ${barbero.apellido}`,
     sucursalNombre: sucursal?.nombre || "Barbería",
     sucursalDireccion: sucursal ? `${sucursal.calle} ${sucursal.altura}` : "",
+    cae: turno.cae,
+    caeFchVto: turno.caeFchVto,
+    voucherNumber: turno.voucherNumber,
+    tipoComprobante: turno.tipoComprobante,
+    puntoDeVenta: turno.puntoDeVenta,
   };
 }
 
@@ -479,11 +495,49 @@ export function generateReceiptPdf(data: ReceiptPdfData): Promise<Buffer> {
       doc.fontSize(10).text(`CUIT: ${formatCuit(cuit)}`, { align: "center" });
       doc.moveDown(0.5);
 
-      // ── Título del recibo ───────────────────────────────
-      doc
-        .fontSize(16)
-        .font("Helvetica-Bold")
-        .text("RECIBO DE PAGO", { align: "center" });
+      // ── Título / tipo de comprobante ─────────────────────
+      const hasTipoComprobante = data.tipoComprobante != null;
+      const hasVoucherNumber = data.voucherNumber != null;
+      const hasCae = !!data.cae;
+      const hasFiscalData =
+        hasTipoComprobante || hasVoucherNumber || hasCae || !!data.caeFchVto;
+
+      if (hasTipoComprobante && data.tipoComprobante != null) {
+        // Mostrar tipo de comprobante con letra en recuadro (igual que factura ARCA)
+        const tipoNombre = voucherTypeName(data.tipoComprobante);
+        const letra = tipoNombre.split(" ").pop() || "";
+
+        const letraBoxX = doc.page.width / 2 - 15;
+        const letraBoxY = doc.y;
+        doc.rect(letraBoxX, letraBoxY, 30, 30).stroke();
+        doc
+          .fontSize(18)
+          .font("Helvetica-Bold")
+          .text(letra, letraBoxX, letraBoxY + 7, {
+            width: 30,
+            align: "center",
+          });
+        doc.y = letraBoxY + 40;
+
+        doc
+          .fontSize(12)
+          .font("Helvetica-Bold")
+          .text(tipoNombre, { align: "center" });
+
+        if (hasVoucherNumber && data.voucherNumber != null) {
+          const ptoVta = data.puntoDeVenta || AFIP_PUNTO_VENTA;
+          doc
+            .fontSize(11)
+            .text(`N° ${formatVoucherNumber(ptoVta, data.voucherNumber)}`, {
+              align: "center",
+            });
+        }
+      } else {
+        doc
+          .fontSize(16)
+          .font("Helvetica-Bold")
+          .text("RECIBO DE PAGO", { align: "center" });
+      }
       doc.moveDown(0.3);
 
       const fechaParts = data.fechaEmision.split("-");
@@ -534,7 +588,6 @@ export function generateReceiptPdf(data: ReceiptPdfData): Promise<Buffer> {
         width: 100,
         align: "right",
       });
-           
 
       doc.y = rowY + 15;
       drawLine(doc);
@@ -575,18 +628,56 @@ export function generateReceiptPdf(data: ReceiptPdfData): Promise<Buffer> {
 
       doc.y = totY + 30;
       drawLine(doc);
+      doc.moveDown(1);
+
+      // ── Datos fiscales (si fue facturado) ────────────────
+      if (hasFiscalData) {
+        doc
+          .fontSize(11)
+          .font("Helvetica-Bold")
+          .fillColor("#000000")
+          .text("DATOS FISCALES", { align: "center" });
+        doc.moveDown(0.3);
+        doc.fontSize(10).font("Helvetica");
+        if (hasTipoComprobante && data.tipoComprobante != null) {
+          doc.text(
+            `Tipo de comprobante: ${voucherTypeName(data.tipoComprobante)}`,
+            {
+              align: "center",
+            },
+          );
+        }
+        if (hasVoucherNumber && data.voucherNumber != null) {
+          const ptoVta = data.puntoDeVenta || AFIP_PUNTO_VENTA;
+          doc.text(
+            `N° comprobante: ${formatVoucherNumber(ptoVta, data.voucherNumber)}`,
+            { align: "center" },
+          );
+        }
+        if (hasCae && data.cae) {
+          doc.text(`CAE: ${data.cae}`, { align: "center" });
+        }
+        if (data.caeFchVto) {
+          doc.text(
+            `Fecha de vencimiento CAE: ${formatAfipDate(data.caeFchVto)}`,
+            { align: "center" },
+          );
+        }
+      }
+
       doc.moveDown(2);
 
       // ── Pie de página ───────────────────────────────────
+      const footerText = hasCae
+        ? "Comprobante electrónico generado por sistema. Válido como factura electrónica según RG ARCA."
+        : "Recibo generado por sistema. Este documento no constituye factura electrónica.";
       doc
         .fontSize(8)
         .fillColor("#666666")
-        .text(
-          "Recibo generado por sistema. Este documento no constituye factura electrónica.",
-          50,
-          doc.page.height - 80,
-          { align: "center", width: pageWidth },
-        );
+        .text(footerText, 50, doc.page.height - 80, {
+          align: "center",
+          width: pageWidth,
+        });
 
       doc.end();
     } catch (err) {

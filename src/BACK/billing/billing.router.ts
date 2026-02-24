@@ -62,6 +62,9 @@ router.get(
   controller.getInvoicePdf,
 );
 
+// Datos de facturación de un turno (JSON, desde DB)
+router.get("/datos-turno/:codTurno", userLimiter, controller.getBillingData);
+
 // PDF de recibo (sin datos ARCA, solo datos del turno)
 router.get("/recibo/:codTurno", userLimiter, controller.getReceiptPdf);
 
