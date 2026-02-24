@@ -12,12 +12,19 @@ const Home = () => {
     navigate("/branches");
   };
 
+  const handleMisTurnos = () => {
+    navigate("/client/appointments");
+  };
+
   return (
     <div className={styles.homeContainer}>
       <h2>Bienvenido</h2>
       <div className={styles.optionsContainer}>
         <button className={styles.optionButton} onClick={handleSolicitarTurno}>
           Solicitar turno
+        </button>
+        <button className={styles.optionButton} onClick={handleMisTurnos}>
+          Mis Turnos
         </button>
         {/* <button className={styles.optionButton} disabled>
           Comprar productos

@@ -22,6 +22,7 @@ import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
 import ClientAppointments from "./components/Client/clientAppointments.tsx";
+import ReceiptViewer from "./components/Client/appointments/receiptViewer.tsx";
 import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 
 // Barber
@@ -29,6 +30,7 @@ import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 // import HomeBarber from "./components/Barber/home/home.tsx";
 import BarberAppointments from "./components/Barber/appointments/barberAppointments.tsx";
 import BranchAppointments from "./components/Barber/appointments/branchAppointments.tsx";
+import BarberReceiptViewer from "./components/Barber/appointments/receiptViewer.tsx";
 
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
@@ -88,6 +90,10 @@ function App() {
                 path="/client/appointments"
                 element={<ClientAppointments />}
               />
+              <Route
+                path="/client/appointments/recibo/:codTurno"
+                element={<ReceiptViewer />}
+              />
               <Route path="/branches" element={<Branches />} />
               <Route
                 path="/branches/:codSucursal/barbers"
@@ -128,6 +134,14 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["barber"]}>
                     <BranchAppointments />
+                  </ProtectedRoute>
+                }
+              />
+              <Route //! BARBER
+                path="/Barber/appointments/recibo/:codTurno"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberReceiptViewer />
                   </ProtectedRoute>
                 }
               />

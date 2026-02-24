@@ -39,7 +39,7 @@ const MyProfile = () => {
       try {
         console.log(
           "🔥 PROFILE DEBUG - Fetching profile for user:",
-          user.codUsuario
+          user.codUsuario,
         );
 
         const response = await fetch(`/usuarios/profiles/${user.codUsuario}`);
@@ -49,7 +49,7 @@ const MyProfile = () => {
 
         if (!response.ok) {
           console.warn(
-            "🔥 PROFILE DEBUG - Response not ok, using fallback data"
+            "🔥 PROFILE DEBUG - Response not ok, using fallback data",
           );
           setProfile({ ...user, categoriaActual: null });
           return;
@@ -61,31 +61,31 @@ const MyProfile = () => {
         if (data.success && data.data) {
           console.log(
             "🔥 PROFILE DEBUG - Setting profile with data.data:",
-            data.data
+            data.data,
           );
           console.log(
             "🔥 PROFILE DEBUG - categoriaActual in data.data:",
-            data.data.categoriaActual
+            data.data.categoriaActual,
           );
           setProfile(data.data);
         } else {
           console.log(
             "🔥 PROFILE DEBUG - No success/data structure, checking raw data:",
-            data
+            data,
           );
           if (data && typeof data === "object") {
             console.log(
               "🔥 PROFILE DEBUG - Setting profile with raw data:",
-              data
+              data,
             );
             console.log(
               "🔥 PROFILE DEBUG - categoriaActual in raw data:",
-              data.categoriaActual
+              data.categoriaActual,
             );
             setProfile(data);
           } else {
             console.warn(
-              "🔥 PROFILE DEBUG - No profile data received, using fallback"
+              "🔥 PROFILE DEBUG - No profile data received, using fallback",
             );
             setProfile({ ...user, categoriaActual: null });
           }
@@ -107,7 +107,7 @@ const MyProfile = () => {
       console.log("🔥 PROFILE DEBUG - Profile state updated:", profile);
       console.log(
         "🔥 PROFILE DEBUG - categoriaActual:",
-        profile.categoriaActual
+        profile.categoriaActual,
       );
     }
   }, [profile]);
@@ -134,7 +134,7 @@ const MyProfile = () => {
   console.log("🔥 PROFILE DEBUG - Rendering with displayUser:", displayUser);
   console.log(
     "🔥 PROFILE DEBUG - displayUser.categoriaActual:",
-    displayUser.categoriaActual
+    displayUser.categoriaActual,
   );
 
   return (
@@ -181,7 +181,15 @@ const MyProfile = () => {
             {displayUser && (
               <SecurityQuestionForm
                 codUsuario={displayUser.codUsuario}
-                initialQuestion={displayUser.hasOwnProperty("preguntaSeguridad") ? (displayUser as any).preguntaSeguridad : null}
+                initialQuestion={
+                  "preguntaSeguridad" in displayUser
+                    ? ((
+                        displayUser as UserProfile & {
+                          preguntaSeguridad?: string | null;
+                        }
+                      ).preguntaSeguridad ?? null)
+                    : null
+                }
               />
             )}
           </div>
@@ -194,7 +202,10 @@ const MyProfile = () => {
 export default MyProfile;
 
 // Small subcomponent to set/update security question and answer
-const SecurityQuestionForm: React.FC<{ codUsuario: string; initialQuestion?: string | null }> = ({ codUsuario, initialQuestion = null }) => {
+const SecurityQuestionForm: React.FC<{
+  codUsuario: string;
+  initialQuestion?: string | null;
+}> = ({ codUsuario, initialQuestion = null }) => {
   const { user } = useAuth();
   const [pregunta, setPregunta] = useState<string>(initialQuestion || "");
   const [respuesta, setRespuesta] = useState<string>("");
@@ -224,7 +235,10 @@ const SecurityQuestionForm: React.FC<{ codUsuario: string; initialQuestion?: str
           "Content-Type": "application/json",
           "x-user-id": user.codUsuario,
         },
-        body: JSON.stringify({ preguntaSeguridad: cleanPregunta, respuestaSeguridad: cleanRespuesta }),
+        body: JSON.stringify({
+          preguntaSeguridad: cleanPregunta,
+          respuestaSeguridad: cleanRespuesta,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -244,16 +258,44 @@ const SecurityQuestionForm: React.FC<{ codUsuario: string; initialQuestion?: str
   return (
     <form onSubmit={submit} className={styles.securityForm}>
       <label className={styles.securityLabel}>Pregunta:</label>
-      <select className={styles.securitySelect} value={pregunta} onChange={(e) => setPregunta(e.target.value)} required>
+      <select
+        className={styles.securitySelect}
+        value={pregunta}
+        onChange={(e) => setPregunta(e.target.value)}
+        required
+      >
         <option value="">-- Seleccione una pregunta --</option>
-        <option value="¿Cuál es el nombre de tu primera mascota?">¿Cuál es el nombre de tu primera mascota?</option>
-        <option value="¿Cuál es el nombre de la calle donde creciste?">¿Cuál es el nombre de la calle donde creciste?</option>
-        <option value="¿Cuál es el nombre de tu libro favorito?">¿Cuál es el nombre de tu libro favorito?</option>
+        <option value="¿Cuál es el nombre de tu primera mascota?">
+          ¿Cuál es el nombre de tu primera mascota?
+        </option>
+        <option value="¿Cuál es el nombre de la calle donde creciste?">
+          ¿Cuál es el nombre de la calle donde creciste?
+        </option>
+        <option value="¿Cuál es el nombre de tu libro favorito?">
+          ¿Cuál es el nombre de tu libro favorito?
+        </option>
       </select>
       <label className={styles.securityLabel}>Respuesta:</label>
-      <input className={styles.securityInput} type="text" value={respuesta} onChange={(e) => setRespuesta(e.target.value)} required maxLength={100} />
+      <input
+        className={styles.securityInput}
+        type="text"
+        value={respuesta}
+        onChange={(e) => setRespuesta(e.target.value)}
+        required
+        maxLength={100}
+      />
       <div className={styles.securityActions}>
-        <button type="submit" className={styles.securityButton} disabled={loading}>{loading ? "Guardando..." : (initialQuestion ? "Actualizar" : "Guardar")}</button>
+        <button
+          type="submit"
+          className={styles.securityButton}
+          disabled={loading}
+        >
+          {loading
+            ? "Guardando..."
+            : initialQuestion
+              ? "Actualizar"
+              : "Guardar"}
+        </button>
       </div>
     </form>
   );

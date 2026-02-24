@@ -51,7 +51,7 @@ const BranchAppointments: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fetchControllerRef = useRef<AbortController | null>(null);
   const submitControllerRef = useRef<AbortController | null>(null);
-  
+
   const navigate = useNavigate();
   // Client-side search state (search by barber or client name)
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -243,10 +243,11 @@ const BranchAppointments: React.FC = () => {
             if (userData.categoriaActual) {
               setDescuentoInfo({
                 descuento: userData.categoriaActual.descuentoCorte || 0,
-                nombreCategoria: userData.categoriaActual.nombreCategoria || "Sin categoría",
+                nombreCategoria:
+                  userData.categoriaActual.nombreCategoria || "Sin categoría",
               });
               console.log(
-                `✅ Categoría cargada: ${userData.categoriaActual.nombreCategoria} - Descuento: ${userData.categoriaActual.descuentoCorte}%`
+                `✅ Categoría cargada: ${userData.categoriaActual.nombreCategoria} - Descuento: ${userData.categoriaActual.descuentoCorte}%`,
               );
             } else {
               console.warn("❌ Sin categoría actual para el cliente");
@@ -276,20 +277,15 @@ const BranchAppointments: React.FC = () => {
 
     type CheckoutValues = z.infer<typeof CheckoutSchema>;
 
-    const {
-      register,
-      handleSubmit,
-      setValue,
-      watch,
-      formState,
-    } = useForm<CheckoutValues>({
-      resolver: zodResolver(CheckoutSchema),
-      defaultValues: {
-        codCorte: initial.codCorte || "",
-        precioTurno: initial.precioTurno || 0,
-        metodoPago: initial.metodoPago || "",
-      },
-    });
+    const { register, handleSubmit, setValue, watch, trigger, formState } =
+      useForm<CheckoutValues>({
+        resolver: zodResolver(CheckoutSchema),
+        defaultValues: {
+          codCorte: initial.codCorte || "",
+          precioTurno: initial.precioTurno || 0,
+          metodoPago: initial.metodoPago || "",
+        },
+      });
 
     const submitControllerRef = useRef<AbortController | null>(null);
 
@@ -319,14 +315,113 @@ const BranchAppointments: React.FC = () => {
         });
 
         if (response.ok) {
-          await response.json().catch(() => null);
-          toast.success("Turno cobrado con éxito", { id: toastId, duration: 2000 });
+          const resData = await response.json().catch(() => null);
+          const facturacion = resData?.data?.facturacion;
+          const facturacionError = resData?.data?.facturacionError;
+          if (facturacion?.CAE && facturacion?.voucher_number) {
+            toast.success("Turno cobrado y facturado", {
+              id: toastId,
+              duration: 2000,
+            });
+            // Popup asking to view the receipt
+            toast(
+              (t) => (
+                <div className={styles.modalContainer}>
+                  <p className={styles.modalTitle}>¿Ver Factura?</p>
+                  <p className={styles.modalDescription}>
+                    El turno fue cobrado y facturado exitosamente.
+                    <br />
+                    <span style={{ fontSize: "0.85em" }}>
+                      CAE: {facturacion.CAE}
+                    </span>
+                  </p>
+                  <div className={styles.modalButtons}>
+                    <button
+                      onClick={() => toast.dismiss(t.id)}
+                      className={styles.modalButtonCancel}
+                    >
+                      No
+                    </button>
+                    <button
+                      onClick={() => {
+                        toast.dismiss(t.id);
+                        navigate(`/Barber/appointments/recibo/${codTurno}`);
+                      }}
+                      className={styles.modalButtonConfirm}
+                    >
+                      Sí, ver factura
+                    </button>
+                  </div>
+                </div>
+              ),
+              {
+                duration: Infinity,
+                style: {
+                  minWidth: "400px",
+                  maxWidth: "500px",
+                  padding: "24px",
+                  borderRadius: "12px",
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
+                  background: "#ffffff",
+                },
+              },
+            );
+          } else {
+            toast(
+              (t) => (
+                <div className={styles.modalContainer}>
+                  <p className={styles.modalTitle}>Turno cobrado con éxito</p>
+                  <p className={styles.modalDescription}>
+                    <span style={{ color: "#e67e22" }}>
+                      Factura pendiente
+                      {facturacionError ? `: ${facturacionError}` : ""}
+                    </span>
+                    <br />
+                    Podés facturar manualmente desde el botón "Facturar (ARCA)"
+                  </p>
+                  <div className={styles.modalButtons}>
+                    <button
+                      onClick={() => toast.dismiss(t.id)}
+                      className={styles.modalButtonCancel}
+                    >
+                      Entendido
+                    </button>
+                    <button
+                      onClick={() => {
+                        toast.dismiss(t.id);
+                        navigate(`/Barber/appointments/recibo/${codTurno}`);
+                      }}
+                      className={styles.modalButtonConfirm}
+                    >
+                      Ver Recibo
+                    </button>
+                  </div>
+                </div>
+              ),
+              {
+                duration: Infinity,
+                style: {
+                  minWidth: "400px",
+                  maxWidth: "500px",
+                  padding: "24px",
+                  borderRadius: "12px",
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
+                  background: "#ffffff",
+                },
+              },
+            );
+          }
           await onCompleted();
         } else if (response.status === 404) {
           toast.error("Turno no encontrado", { id: toastId, duration: 2000 });
         } else {
-          const errorData = await response.json().catch(() => ({ message: "Error" }));
-          toast.error(errorData.message || "Error al finalizar el turno", { id: toastId, duration: 2000 });
+          const errorData = await response
+            .json()
+            .catch(() => ({ message: "Error" }));
+          toast.error(errorData.message || "Error al finalizar el turno", {
+            id: toastId,
+            duration: 2000,
+          });
         }
       } catch (error: any) {
         if (error?.name === "AbortError") {
@@ -334,14 +429,22 @@ const BranchAppointments: React.FC = () => {
           console.log("Checkout request aborted");
         } else {
           console.error("Fetch error:", error);
-          toast.error("Error de red al finalizar el turno", { id: toastId, duration: 2000 });
+          toast.error("Error de red al finalizar el turno", {
+            id: toastId,
+            duration: 2000,
+          });
         }
       } finally {
         submitControllerRef.current = null;
       }
     };
 
-    const confirmAndSubmit = () => {
+    const confirmAndSubmit = async () => {
+      const isValid = await trigger();
+      if (!isValid) {
+        toast.error("Completá todos los campos antes de continuar");
+        return;
+      }
 
       toast(
         (t) => (
@@ -352,7 +455,10 @@ const BranchAppointments: React.FC = () => {
               cobro?
             </p>
             <div className={styles.modalButtons}>
-              <button onClick={() => toast.dismiss(t.id)} className={styles.modalButtonCancel}>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className={styles.modalButtonCancel}
+              >
                 Cancelar
               </button>
               <button
@@ -377,13 +483,14 @@ const BranchAppointments: React.FC = () => {
             boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
             background: "#ffffff",
           },
-        }
+        },
       );
     };
 
     // Keep precio in sync when codCorte changes using react-hook-form watch
     const watchedCodCorte = watch("codCorte");
     const watchedPrecio = watch("precioTurno");
+    const watchedMetodoPago = watch("metodoPago");
 
     useEffect(() => {
       const selected = allCortes.find((c) => c.codCorte === watchedCodCorte);
@@ -405,7 +512,10 @@ const BranchAppointments: React.FC = () => {
       <form onSubmit={(e) => e.preventDefault()}>
         <fieldset disabled={formState.isSubmitting || loadingCategoria}>
           <div className={styles.formGroup}>
-            <label className={styles.formLabel} htmlFor={`codCorte-${codTurno}`}>
+            <label
+              className={styles.formLabel}
+              htmlFor={`codCorte-${codTurno}`}
+            >
               Tipo de Corte:
             </label>
             <select
@@ -421,7 +531,9 @@ const BranchAppointments: React.FC = () => {
               ))}
             </select>
             {formState.errors.codCorte && (
-              <div className={styles.fieldError}>{String(formState.errors.codCorte.message)}</div>
+              <div className={styles.fieldError}>
+                {String(formState.errors.codCorte.message)}
+              </div>
             )}
           </div>
 
@@ -431,7 +543,9 @@ const BranchAppointments: React.FC = () => {
             <div className={styles.priceInfo}>
               <div className={styles.priceLine}>
                 <span className={styles.priceLabel}>Precio Base:</span>
-                <span className={styles.priceValue}>${watchedPrecio.toFixed(2)}</span>
+                <span className={styles.priceValue}>
+                  ${watchedPrecio.toFixed(2)}
+                </span>
               </div>
 
               {descuentoInfo && descuentoInfo.descuento > 0 && (
@@ -444,7 +558,10 @@ const BranchAppointments: React.FC = () => {
                       -{descuentoInfo.descuento}%
                     </span>
                   </div>
-                  <div className={styles.priceLine} style={{ color: "#e74c3c" }}>
+                  <div
+                    className={styles.priceLine}
+                    style={{ color: "#e74c3c" }}
+                  >
                     <span className={styles.priceLabel}>Descuento:</span>
                     <span className={styles.priceValue}>
                       -${descuentoAplicado.toFixed(2)}
@@ -452,9 +569,15 @@ const BranchAppointments: React.FC = () => {
                   </div>
                   <div
                     className={styles.priceLine}
-                    style={{ borderTop: "2px solid #bdc3c7", paddingTop: "8px" }}
+                    style={{
+                      borderTop: "2px solid #bdc3c7",
+                      paddingTop: "8px",
+                    }}
                   >
-                    <span className={styles.priceLabel} style={{ fontWeight: "bold" }}>
+                    <span
+                      className={styles.priceLabel}
+                      style={{ fontWeight: "bold" }}
+                    >
                       TOTAL A COBRAR:
                     </span>
                     <span
@@ -470,7 +593,10 @@ const BranchAppointments: React.FC = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel} htmlFor={`precioTurno-${codTurno}`}>
+            <label
+              className={styles.formLabel}
+              htmlFor={`precioTurno-${codTurno}`}
+            >
               Precio a Cobrar:
             </label>
             <input
@@ -486,10 +612,17 @@ const BranchAppointments: React.FC = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel} htmlFor={`metodoPago-${codTurno}`}>
+            <label
+              className={styles.formLabel}
+              htmlFor={`metodoPago-${codTurno}`}
+            >
               Método de Pago:
             </label>
-            <select id={`metodoPago-${codTurno}`} className={styles.formSelect} {...register("metodoPago")}>
+            <select
+              id={`metodoPago-${codTurno}`}
+              className={styles.formSelect}
+              {...register("metodoPago")}
+            >
               <option value="">Seleccione método</option>
               <option value="Efectivo">Efectivo</option>
               <option value="Tarjeta">Tarjeta</option>
@@ -497,7 +630,9 @@ const BranchAppointments: React.FC = () => {
               <option value="QR">QR</option>
             </select>
             {formState.errors.metodoPago && (
-              <div className={styles.fieldError}>{String(formState.errors.metodoPago.message)}</div>
+              <div className={styles.fieldError}>
+                {String(formState.errors.metodoPago.message)}
+              </div>
             )}
           </div>
 
@@ -505,7 +640,9 @@ const BranchAppointments: React.FC = () => {
             type="button"
             onClick={confirmAndSubmit}
             className={`${styles.button} ${styles.buttonSuccess}`}
-            disabled={formState.isSubmitting}
+            disabled={
+              formState.isSubmitting || !watchedCodCorte || !watchedMetodoPago
+            }
           >
             {formState.isSubmitting ? "Procesando..." : "Completar y cobrar"}
           </button>
@@ -543,7 +680,85 @@ const BranchAppointments: React.FC = () => {
     return true;
   });
 
-  
+  const handleBillAppointment = async (codTurno: string) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    const toastId = toast.loading("Generando factura ARCA...");
+
+    try {
+      const response = await fetch("/facturacion/facturar-turno", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codTurno }),
+      });
+
+      if (response.ok) {
+        const resData = await response.json();
+        const cae = resData.data?.CAE || "OK";
+        toast.success("Factura generada exitosamente", {
+          id: toastId,
+          duration: 2000,
+        });
+        // Popup asking to view the invoice
+        toast(
+          (t) => (
+            <div className={styles.modalContainer}>
+              <p className={styles.modalTitle}>¿Ver Factura?</p>
+              <p className={styles.modalDescription}>
+                La factura fue generada exitosamente.
+                <br />
+                <span style={{ fontSize: "0.85em" }}>CAE: {cae}</span>
+              </p>
+              <div className={styles.modalButtons}>
+                <button
+                  onClick={() => toast.dismiss(t.id)}
+                  className={styles.modalButtonCancel}
+                >
+                  No
+                </button>
+                <button
+                  onClick={() => {
+                    toast.dismiss(t.id);
+                    navigate(`/Barber/appointments/recibo/${codTurno}`);
+                  }}
+                  className={styles.modalButtonConfirm}
+                >
+                  Sí, ver factura
+                </button>
+              </div>
+            </div>
+          ),
+          {
+            duration: Infinity,
+            style: {
+              minWidth: "400px",
+              maxWidth: "500px",
+              padding: "24px",
+              borderRadius: "12px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
+              background: "#ffffff",
+            },
+          },
+        );
+      } else {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error" }));
+        toast.error(errorData.message || "Error al generar factura", {
+          id: toastId,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error facturando:", error);
+      toast.error("Error de red al generar factura", {
+        id: toastId,
+        duration: 3000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleMarkAsNoShow = (codTurno: string) => {
     toast(
@@ -582,7 +797,7 @@ const BranchAppointments: React.FC = () => {
           boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
           background: "#ffffff",
         },
-      }
+      },
     );
   };
 
@@ -613,13 +828,15 @@ const BranchAppointments: React.FC = () => {
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
-        const errorData = await response.json().catch(() => ({ message: "Error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error" }));
         console.error("Error response:", errorData);
         toast.error(
           errorData.message || "Error al marcar turno como No asistido",
           {
             id: toastId,
-          }
+          },
         );
       }
     } catch (error: any) {
@@ -637,7 +854,6 @@ const BranchAppointments: React.FC = () => {
       submitControllerRef.current = null;
     }
   };
-  
 
   return (
     <div className={styles.appointmentsContainer}>
@@ -744,6 +960,28 @@ const BranchAppointments: React.FC = () => {
                       }
                     >
                       No asistido
+                    </button>
+                  </div>
+                )}
+
+                {turno.estado === "Cobrado" && (
+                  <div className={styles.actionButtons}>
+                    <button
+                      onClick={() =>
+                        navigate(
+                          `/Barber/appointments/recibo/${turno.codTurno}`,
+                        )
+                      }
+                      className={`${styles.button} ${styles.buttonInfo}`}
+                    >
+                      Ver Factura
+                    </button>
+                    <button
+                      onClick={() => handleBillAppointment(turno.codTurno)}
+                      className={`${styles.button} ${styles.buttonSuccess}`}
+                      disabled={isSubmitting}
+                    >
+                      Facturar (ARCA)
                     </button>
                   </div>
                 )}

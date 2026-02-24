@@ -14,7 +14,7 @@ const appointmentsController = new AppointmentsController();
 // Funciones personalizadas para appointments
 export const findByAvailableDate = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { fechaTurno, codSucursal } = req.params;
@@ -29,7 +29,7 @@ export const findByAvailableDate = async (
 
     const horasDisponibles = await model.findByAvailableDate(
       fechaTurno,
-      codSucursal
+      codSucursal,
     );
 
     res.status(200).json({
@@ -46,7 +46,7 @@ export const findByAvailableDate = async (
 
 export const findByBarberId = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codBarbero, fechaTurno } = req.params;
@@ -75,7 +75,7 @@ export const findByBarberId = async (
 
 export const findByUserId = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codUsuario } = req.params;
@@ -104,7 +104,7 @@ export const findByUserId = async (
 
 export const findByBranchId = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codSucursal } = req.params;
@@ -133,7 +133,7 @@ export const findByBranchId = async (
 
 export const findPendingByBranchId = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codSucursal } = req.params;
@@ -155,14 +155,15 @@ export const findPendingByBranchId = async (
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar turnos pendientes de la sucursal",
+      message:
+        error.message || "Error al buscar turnos pendientes de la sucursal",
     });
   }
 };
 
 export const cancelAppointment = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codTurno } = req.params;
@@ -191,11 +192,11 @@ export const cancelAppointment = async (
 
 export const checkoutAppointment = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codTurno } = req.params;
-    const { codCorte, precioTurno } = req.body;
+    const { codCorte, precioTurno, metodoPago } = req.body;
 
     if (!codTurno) {
       res.status(400).json({
@@ -208,7 +209,8 @@ export const checkoutAppointment = async (
     const result = await model.checkoutAppointment(
       codTurno,
       codCorte,
-      precioTurno
+      precioTurno,
+      metodoPago,
     );
 
     res.status(200).json({
@@ -225,7 +227,7 @@ export const checkoutAppointment = async (
 
 export const updateAppointment = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codTurno } = req.params;
@@ -243,7 +245,7 @@ export const updateAppointment = async (
       codTurno,
       fechaTurno,
       horaDesde,
-      horaHasta
+      horaHasta,
     );
 
     res.status(200).json({
@@ -260,7 +262,7 @@ export const updateAppointment = async (
 
 export const markAsNoShow = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codTurno } = req.params;
@@ -289,7 +291,7 @@ export const markAsNoShow = async (
 
 export const findPendingByBarberId = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codBarbero } = req.params;

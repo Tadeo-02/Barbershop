@@ -69,16 +69,11 @@ const BarberAppointments: React.FC = () => {
 
   type UpdateFormValues = z.infer<typeof UpdateAppointmentSchema>;
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    reset,
-    formState,
-  } = useForm<UpdateFormValues>({
-    resolver: zodResolver(UpdateAppointmentSchema),
-    defaultValues: { fechaTurno: "", horaDesde: "" },
-  });
+  const { register, handleSubmit, setValue, reset, formState } =
+    useForm<UpdateFormValues>({
+      resolver: zodResolver(UpdateAppointmentSchema),
+      defaultValues: { fechaTurno: "", horaDesde: "" },
+    });
 
   // Estados para el modal de modificación
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -226,7 +221,7 @@ const BarberAppointments: React.FC = () => {
           minWidth: "350px",
           padding: "24px",
         },
-      }
+      },
     );
   };
 
@@ -258,13 +253,15 @@ const BarberAppointments: React.FC = () => {
           turnos.map((turno) =>
             turno.codTurno === codTurno
               ? { ...turno, estado: "Cancelado" }
-              : turno
-          )
+              : turno,
+          ),
         );
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
-        const errorData = await response.json().catch(() => ({ message: "Error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error" }));
         console.error("Error response:", errorData);
         toast.error(errorData.message || "Error al cancelar el turno", {
           id: toastId,
@@ -324,21 +321,18 @@ const BarberAppointments: React.FC = () => {
     submitControllerRef.current = controller;
 
     try {
-      const response = await fetch(
-        `/turnos/${turnoToUpdate.codTurno}/update`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            fechaTurno: data.fechaTurno,
-            horaDesde: data.horaDesde,
-            horaHasta: horaHasta,
-          }),
-          signal: controller.signal,
-        }
-      );
+      const response = await fetch(`/turnos/${turnoToUpdate.codTurno}/update`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fechaTurno: data.fechaTurno,
+          horaDesde: data.horaDesde,
+          horaHasta: horaHasta,
+        }),
+        signal: controller.signal,
+      });
 
       if (response.ok) {
         await response.json().catch(() => null);
@@ -354,8 +348,8 @@ const BarberAppointments: React.FC = () => {
                   horaDesde: data.horaDesde,
                   horaHasta: horaHasta,
                 }
-              : t
-          )
+              : t,
+          ),
         );
 
         // Cerrar modal
@@ -363,7 +357,9 @@ const BarberAppointments: React.FC = () => {
         setTurnoToUpdate(null);
         reset();
       } else {
-        const errorData = await response.json().catch(() => ({ message: "Error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error" }));
         toast.error(errorData.message || "Error al modificar el turno", {
           id: toastId,
         });
@@ -474,6 +470,18 @@ const BarberAppointments: React.FC = () => {
                     </button>
                   </div>
                 )}
+                {t.estado === "Cobrado" && (
+                  <div className={barberStyles.appointmentActions}>
+                    <button
+                      className={barberStyles.receiptButton}
+                      onClick={() =>
+                        navigate(`/Barber/appointments/recibo/${t.codTurno}`)
+                      }
+                    >
+                      Ver Factura
+                    </button>
+                  </div>
+                )}
               </li>
             );
           })
@@ -522,7 +530,9 @@ const BarberAppointments: React.FC = () => {
                       className={barberStyles.updateButton}
                       disabled={!selectedUpdateTime || formState.isSubmitting}
                     >
-                      {formState.isSubmitting ? "Modificando..." : "Confirmar Modificación"}
+                      {formState.isSubmitting
+                        ? "Modificando..."
+                        : "Confirmar Modificación"}
                     </button>
                   </div>
                 </fieldset>
