@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
 
   server: {
+    // poner bien los nombres
     proxy: {
       "/appointments": "http://localhost:3001",
       "/turnos": "http://localhost:3001",
@@ -14,6 +15,7 @@ export default defineConfig({
       "/login": "http://localhost:3001",
       "/sucursales": "http://localhost:3001",
       "/horarios": "http://localhost:3001",
+      "/facturacion": "http://localhost:3001",
     },
   },
 });
