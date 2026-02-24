@@ -3,15 +3,29 @@ import { useParams, useNavigate } from "react-router-dom";
 import styles from "./receiptViewer.module.css";
 import toast from "react-hot-toast";
 
+interface BillingData {
+  codTurno: string;
+  estado: string;
+  precioTurno: number | null;
+  metodoPago: string | null;
+  servicio: string;
+  facturado: boolean;
+  cae: string | null;
+  caeFchVto: string | null;
+  voucherNumber: number | null;
+  voucherNumberFormatted: string | null;
+  tipoComprobante: number | null;
+  voucherType: string | null;
+  puntoDeVenta: number;
+}
+
 const ReceiptViewer: React.FC = () => {
   const { codTurno } = useParams<{ codTurno: string }>();
   const navigate = useNavigate();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [voucherType, setVoucherType] = useState<string | null>(null);
-  const [voucherNumber, setVoucherNumber] = useState<string | null>(null);
-  const [cae, setCae] = useState<string | null>(null);
+  const [billingData, setBillingData] = useState<BillingData | null>(null);
 
   useEffect(() => {
     if (!codTurno) {
@@ -22,24 +36,33 @@ const ReceiptViewer: React.FC = () => {
 
     let blobUrl: string | null = null;
 
-    const fetchPdf = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`/facturacion/recibo/${codTurno}`);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
+        // 1. Obtener datos de facturación desde la DB
+        const metaResponse = await fetch(
+          `/facturacion/datos-turno/${codTurno}`,
+        );
+        if (!metaResponse.ok) {
+          const errorData = await metaResponse.json().catch(() => null);
           throw new Error(
             errorData?.message ||
-              `Error al obtener el recibo (${response.status})`,
+              `Error al obtener datos de facturación (${metaResponse.status})`,
+          );
+        }
+        const metaJson = await metaResponse.json();
+        setBillingData(metaJson.data);
+
+        // 2. Obtener el PDF
+        const pdfResponse = await fetch(`/facturacion/recibo/${codTurno}`);
+        if (!pdfResponse.ok) {
+          const errorData = await pdfResponse.json().catch(() => null);
+          throw new Error(
+            errorData?.message ||
+              `Error al obtener el recibo (${pdfResponse.status})`,
           );
         }
 
-        // Read billing metadata from headers
-        setVoucherType(response.headers.get("X-Voucher-Type"));
-        setVoucherNumber(response.headers.get("X-Voucher-Number"));
-        setCae(response.headers.get("X-CAE"));
-
-        const blob = await response.blob();
+        const blob = await pdfResponse.blob();
         blobUrl = URL.createObjectURL(blob);
         setPdfUrl(blobUrl);
       } catch (err) {
@@ -52,7 +75,7 @@ const ReceiptViewer: React.FC = () => {
       }
     };
 
-    fetchPdf();
+    fetchData();
 
     return () => {
       if (blobUrl) {
@@ -103,11 +126,27 @@ const ReceiptViewer: React.FC = () => {
           ← Volver
         </button>
         <div className={styles.titleBlock}>
-          <h2 className={styles.title}>{voucherType || "Recibo de Pago"}</h2>
-          {voucherNumber && (
-            <span className={styles.voucherInfo}>N° {voucherNumber}</span>
+          <h2 className={styles.title}>
+            {billingData?.voucherType || "Recibo de Pago"}
+          </h2>
+          {billingData?.voucherNumberFormatted && (
+            <span className={styles.voucherInfo}>
+              N° {billingData.voucherNumberFormatted}
+            </span>
           )}
-          {cae && <span className={styles.voucherInfo}>CAE: {cae}</span>}
+          {billingData?.cae && (
+            <span className={styles.voucherInfo}>CAE: {billingData.cae}</span>
+          )}
+          {billingData?.caeFchVto && (
+            <span className={styles.voucherInfo}>
+              Vto. CAE: {billingData.caeFchVto}
+            </span>
+          )}
+          {billingData?.servicio && (
+            <span className={styles.voucherInfo}>
+              Servicio: {billingData.servicio}
+            </span>
+          )}
         </div>
         <button className={styles.downloadButton} onClick={handleDownload}>
           Descargar PDF

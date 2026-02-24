@@ -343,6 +343,107 @@ export const getInvoicePdf = async (
 };
 
 /**
+ * GET /facturacion/datos-turno/:codTurno
+ * Obtener datos de facturación de un turno desde la DB (sin llamar a ARCA).
+ */
+export const getBillingData = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { codTurno } = req.params;
+
+    if (!codTurno) {
+      res.status(400).json({
+        success: false,
+        message: "codTurno es requerido",
+      });
+      return;
+    }
+
+    const turno = await prisma.turno.findUnique({
+      where: { codTurno },
+      select: {
+        codTurno: true,
+        estado: true,
+        precioTurno: true,
+        metodoPago: true,
+        cae: true,
+        caeFchVto: true,
+        voucherNumber: true,
+        tipoComprobante: true,
+        puntoDeVenta: true,
+        tipos_corte: {
+          select: { nombreCorte: true },
+        },
+      },
+    });
+
+    if (!turno) {
+      res.status(404).json({
+        success: false,
+        message: "Turno no encontrado",
+      });
+      return;
+    }
+
+    // Voucher type names
+    const voucherTypeNames: Record<number, string> = {
+      1: "Factura A",
+      2: "Nota de Débito A",
+      3: "Nota de Crédito A",
+      6: "Factura B",
+      7: "Nota de Débito B",
+      8: "Nota de Crédito B",
+      11: "Factura C",
+      12: "Nota de Débito C",
+      13: "Nota de Crédito C",
+    };
+
+    const tipoComprobante = turno.tipoComprobante;
+    const puntoDeVenta = turno.puntoDeVenta || AFIP_PUNTO_VENTA;
+    const facturado = !!turno.cae;
+
+    let voucherType: string | null = null;
+    let voucherNumberFormatted: string | null = null;
+
+    if (tipoComprobante != null) {
+      voucherType =
+        voucherTypeNames[tipoComprobante] ||
+        `Comprobante tipo ${tipoComprobante}`;
+    }
+
+    if (turno.voucherNumber != null) {
+      voucherNumberFormatted = `${String(puntoDeVenta).padStart(4, "0")}-${String(turno.voucherNumber).padStart(8, "0")}`;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        codTurno: turno.codTurno,
+        estado: turno.estado,
+        precioTurno: turno.precioTurno,
+        metodoPago: turno.metodoPago,
+        servicio: turno.tipos_corte?.nombreCorte || "Servicio de barbería",
+        facturado,
+        cae: turno.cae,
+        caeFchVto: turno.caeFchVto,
+        voucherNumber: turno.voucherNumber,
+        voucherNumberFormatted,
+        tipoComprobante,
+        voucherType,
+        puntoDeVenta,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error al obtener datos de facturación",
+    });
+  }
+};
+
+/**
  * GET /facturacion/recibo/:codTurno
  * Generar PDF: factura ARCA completa si el turno tiene datos de facturación,
  * o recibo simple si no fue facturado por ARCA.
@@ -389,33 +490,9 @@ export const getReceiptPdf = async (
       const voucherNum = `${String(puntoDeVenta).padStart(4, "0")}-${String(turno.voucherNumber).padStart(8, "0")}`;
       const filename = `factura_${voucherNum}.pdf`;
 
-      // Voucher type names
-      const voucherTypeNames: Record<number, string> = {
-        1: "Factura A",
-        2: "Nota de Débito A",
-        3: "Nota de Crédito A",
-        6: "Factura B",
-        7: "Nota de Débito B",
-        8: "Nota de Crédito B",
-        11: "Factura C",
-        12: "Nota de Débito C",
-        13: "Nota de Crédito C",
-      };
-
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
       res.setHeader("Content-Length", pdfBuffer.length);
-      res.setHeader(
-        "Access-Control-Expose-Headers",
-        "X-Voucher-Type, X-Voucher-Number, X-CAE",
-      );
-      res.setHeader(
-        "X-Voucher-Type",
-        voucherTypeNames[tipoComprobante] ||
-          `Comprobante tipo ${tipoComprobante}`,
-      );
-      res.setHeader("X-Voucher-Number", voucherNum);
-      res.setHeader("X-CAE", turno.cae);
       res.send(pdfBuffer);
       return;
     }
@@ -429,10 +506,6 @@ export const getReceiptPdf = async (
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
     res.setHeader("Content-Length", pdfBuffer.length);
-    res.setHeader(
-      "Access-Control-Expose-Headers",
-      "X-Voucher-Type, X-Voucher-Number, X-CAE",
-    );
     res.send(pdfBuffer);
   } catch (error: any) {
     const statusCode =
