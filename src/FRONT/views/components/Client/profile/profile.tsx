@@ -101,17 +101,6 @@ const MyProfile = () => {
     fetchProfile();
   }, [user]);
 
-  // Agregar console.log cuando cambie el profile
-  useEffect(() => {
-    if (profile) {
-      console.log("🔥 PROFILE DEBUG - Profile state updated:", profile);
-      console.log(
-        "🔥 PROFILE DEBUG - categoriaActual:",
-        profile.categoriaActual,
-      );
-    }
-  }, [profile]);
-
   if (!user) {
     return (
       <div className={styles.emptyState}>
@@ -136,6 +125,11 @@ const MyProfile = () => {
     "🔥 PROFILE DEBUG - displayUser.categoriaActual:",
     displayUser.categoriaActual,
   );
+
+  const initialQuestion =
+    "preguntaSeguridad" in displayUser
+      ? ((displayUser as UserProfile & { preguntaSeguridad?: string | null }).preguntaSeguridad ?? null)
+      : null;
 
   return (
     <div className={styles.formContainer}>
@@ -180,16 +174,9 @@ const MyProfile = () => {
             <h3>Pregunta de seguridad</h3>
             {displayUser && (
               <SecurityQuestionForm
+                key={initialQuestion ?? ""}
                 codUsuario={displayUser.codUsuario}
-                initialQuestion={
-                  "preguntaSeguridad" in displayUser
-                    ? ((
-                        displayUser as UserProfile & {
-                          preguntaSeguridad?: string | null;
-                        }
-                      ).preguntaSeguridad ?? null)
-                    : null
-                }
+                initialQuestion={initialQuestion}
               />
             )}
           </div>
@@ -210,10 +197,6 @@ const SecurityQuestionForm: React.FC<{
   const [pregunta, setPregunta] = useState<string>(initialQuestion || "");
   const [respuesta, setRespuesta] = useState<string>("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setPregunta(initialQuestion || "");
-  }, [initialQuestion]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,8 +240,9 @@ const SecurityQuestionForm: React.FC<{
 
   return (
     <form onSubmit={submit} className={styles.securityForm}>
-      <label className={styles.securityLabel}>Pregunta:</label>
+      <label className={styles.securityLabel} htmlFor="security-pregunta">Pregunta:</label>
       <select
+        id="security-pregunta"
         className={styles.securitySelect}
         value={pregunta}
         onChange={(e) => setPregunta(e.target.value)}
@@ -275,8 +259,9 @@ const SecurityQuestionForm: React.FC<{
           ¿Cuál es el nombre de tu libro favorito?
         </option>
       </select>
-      <label className={styles.securityLabel}>Respuesta:</label>
+      <label className={styles.securityLabel} htmlFor="security-respuesta">Respuesta:</label>
       <input
+        id="security-respuesta"
         className={styles.securityInput}
         type="text"
         value={respuesta}
