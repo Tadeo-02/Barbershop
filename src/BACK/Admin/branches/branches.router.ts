@@ -4,6 +4,7 @@ import { Router } from "express";
 import {
   userModificationLimiter,
   userLimiter,
+  publicReadLimiter,
 } from "../../middleware/rateLimiter";
 import {
   strictDeduplication,
@@ -35,7 +36,8 @@ const baseRouter = createRouter(controller, {
   idParam: "codSucursal",
   updatePath: "/update",
   middleware: {
-    read: [userLimiter],
+    // Public GET (index / show) uses publicReadLimiter; admin write ops use userModificationLimiter
+    read: [publicReadLimiter],
     create: [userModificationLimiter, strictDeduplication],
     update: [userModificationLimiter, standardDeduplication],
     delete: [userModificationLimiter, standardDeduplication],

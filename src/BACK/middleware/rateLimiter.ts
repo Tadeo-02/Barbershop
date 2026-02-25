@@ -2,48 +2,48 @@ import rateLimit from "express-rate-limit";
 import { Request } from "express";
 
 /**
- * Key generator for authenticated users
- * Uses user ID from x-user-id header, falls back to a constant
+ * Generador de clave para usuarios autenticados
+ * Usa el ID de usuario del header x-user-id, con fallback a una constante
  */
 const userIdKeyGenerator = (req: Request): string => {
   const userId = req.header("x-user-id");
   if (userId) {
     return `user:${userId}`;
   }
-  // Fallback to unknown if no user ID (shouldn't happen on authenticated routes)
-  // We don't use IP here because this is for authenticated user limiting
+  // Fallback a unknown si no hay ID de usuario (no debería ocurrir en rutas autenticadas)
+  // No usamos IP aquí porque este limitador es para usuarios autenticados
   return "user:unknown";
 };
 
 /**
- * General rate limiter for all API endpoints
- * Limits: 100 requests per 15 minutes per IP
+ * Limitador general para todos los endpoints de la API
+ * Límite: 100 solicitudes cada 15 minutos por IP
  */
 export const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // Máximo 100 solicitudes por IP por ventana de tiempo
   message: {
     success: false,
     message:
       "Demasiadas solicitudes desde esta IP, por favor intente más tarde.",
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  // Skip successful requests
+  standardHeaders: true, // Devuelve info del límite en los headers `RateLimit-*`
+  legacyHeaders: false, // Deshabilita los headers `X-RateLimit-*`
+  // No omitir solicitudes exitosas
   skipSuccessfulRequests: false,
-  // Skip failed requests
+  // No omitir solicitudes fallidas
   skipFailedRequests: false,
 });
 
 /**
- * Strict rate limiter for authentication endpoints (login, register)
- * Limits: 5 requests per 15 minutes per IP
- * This prevents brute force attacks and spam registrations
- * Uses IP-based limiting (for non-authenticated users)
+ * Limitador estricto para endpoints de autenticación (login, registro)
+ * Límite: 5 solicitudes cada 15 minutos por IP
+ * Previene ataques de fuerza bruta y registros masivos
+ * Usa limitación por IP (para usuarios no autenticados)
  */
 export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // Máximo 5 solicitudes por IP por ventana de tiempo
   message: {
     success: false,
     message:
@@ -51,19 +51,19 @@ export const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  // Don't count successful requests against the limit
+  // No contar las solicitudes exitosas contra el límite
   skipSuccessfulRequests: true,
 });
 
 /**
- * Moderate rate limiter for data modification endpoints
- * Limits: 20 requests per 5 minutes per IP (for non-authenticated)
- * This prevents abuse on create/update/delete operations
- * @deprecated Use userModificationLimiter for authenticated endpoints
+ * Limitador moderado para endpoints de modificación de datos
+ * Límite: 20 solicitudes cada 5 minutos por IP (para usuarios no autenticados)
+ * Previene el abuso en operaciones de creación, actualización y eliminación
+ * @deprecated Usar userModificationLimiter para endpoints autenticados
  */
 export const modificationLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 20, // Limit each IP to 20 requests per windowMs
+  windowMs: 5 * 60 * 1000, // 5 minutos
+  max: 20, // Máximo 20 solicitudes por IP por ventana de tiempo
   message: {
     success: false,
     message:
@@ -74,13 +74,13 @@ export const modificationLimiter = rateLimit({
 });
 
 /**
- * User-based rate limiter for data modification endpoints (authenticated users)
- * Limits: 30 requests per 5 minutes per user ID
- * This prevents abuse on create/update/delete operations by authenticated users
+ * Limitador de modificación basado en usuario (usuarios autenticados)
+ * Límite: 30 solicitudes cada 5 minutos por ID de usuario
+ * Previene el abuso en operaciones de creación, actualización y eliminación
  */
 export const userModificationLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 30, // Limit each user to 30 requests per windowMs (higher than IP-based)
+  windowMs: 5 * 60 * 1000, // 5 minutos
+  max: 30, // Máximo 30 solicitudes por usuario por ventana de tiempo (mayor que el basado en IP)
   message: {
     success: false,
     message:
@@ -92,13 +92,13 @@ export const userModificationLimiter = rateLimit({
 });
 
 /**
- * Very strict rate limiter for sensitive operations (password reset, etc.)
- * Limits: 3 requests per 60 minutes per IP (for non-authenticated)
- * @deprecated Use userSensitiveLimiter for authenticated endpoints
+ * Limitador muy estricto para operaciones sensibles (recuperación de contraseña, etc.)
+ * Límite: 3 solicitudes cada 60 minutos por IP (para usuarios no autenticados)
+ * @deprecated Usar userSensitiveLimiter para endpoints autenticados
  */
 export const sensitiveLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 60 minutes
-  max: 3, // Limit each IP to 3 requests per windowMs
+  windowMs: 60 * 60 * 1000, // 60 minutos
+  max: 3, // Máximo 3 solicitudes por IP por ventana de tiempo
   message: {
     success: false,
     message:
@@ -109,13 +109,13 @@ export const sensitiveLimiter = rateLimit({
 });
 
 /**
- * User-based strict limiter for sensitive operations (authenticated users)
- * Limits: 5 requests per 60 minutes per user ID
- * Use for security-related operations for authenticated users
+ * Limitador estricto basado en usuario para operaciones sensibles (usuarios autenticados)
+ * Límite: 5 solicitudes cada 60 minutos por ID de usuario
+ * Usar para operaciones relacionadas con seguridad en usuarios autenticados
  */
 export const userSensitiveLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 60 minutes
-  max: 5, // Limit each user to 5 requests per windowMs
+  windowMs: 60 * 60 * 1000, // 60 minutos
+  max: 5, // Máximo 5 solicitudes por usuario por ventana de tiempo
   message: {
     success: false,
     message:
@@ -127,13 +127,13 @@ export const userSensitiveLimiter = rateLimit({
 });
 
 /**
- * Standard user-based rate limiter for authenticated operations
- * Limits: 100 requests per 15 minutes per user ID
- * Use for general authenticated endpoints (GET, POST, PUT, DELETE)
+ * Limitador estándar basado en usuario para operaciones autenticadas
+ * Límite: 100 solicitudes cada 15 minutos por ID de usuario
+ * Usar para endpoints autenticados en general (GET, POST, PUT, DELETE)
  */
 export const userLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each user to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // Máximo 100 solicitudes por usuario por ventana de tiempo
   message: {
     success: false,
     message: "Demasiadas solicitudes. Por favor, intente más tarde.",
@@ -143,4 +143,21 @@ export const userLimiter = rateLimit({
   keyGenerator: userIdKeyGenerator,
   skipSuccessfulRequests: false,
   skipFailedRequests: false,
+});
+
+/**
+ * Limitador de lectura pública para endpoints GET no autenticados (ej. datos de la landing page)
+ * Usa clave por IP. Permite 300 solicitudes cada 15 minutos por IP.
+ * Omite las solicitudes exitosas, por lo que solo los errores cuentan contra el límite.
+ */
+export const publicReadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 300,
+  message: {
+    success: false,
+    message: "Demasiadas solicitudes. Por favor, intente más tarde.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
 });
