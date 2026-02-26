@@ -45,7 +45,7 @@ const BranchAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<Appointment[]>([]);
   const [allCortes, setAllCortes] = useState<Cut[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -113,6 +113,7 @@ const BranchAppointments: React.FC = () => {
     fetchControllerRef.current?.abort();
     const controller = new AbortController();
     fetchControllerRef.current = controller;
+    setLoading(true);
 
     try {
       const endpoint = `/turnos/branch/${user.codSucursal}`;
@@ -148,10 +149,9 @@ const BranchAppointments: React.FC = () => {
       }
       console.error("Error fetching appointments:", error);
       setTurnos([]);
-      // On error, stop both loading flags so UI shows the error/empty state
-      setLoadingData(false);
-      setLoading(false);
     } finally {
+      setLoading(false);
+      setLoadingData(false);
       fetchControllerRef.current = null;
     }
   };
@@ -164,18 +164,6 @@ const BranchAppointments: React.FC = () => {
       fetchControllerRef.current?.abort();
     };
   }, [authChecked, isAuthenticated, user, navigate]);
-
-  useEffect(() => {
-    if (turnos.length === 0) {
-      setLoadingData(false);
-      setLoading(false);
-      return;
-    }
-
-    // Los datos de barberos y clientes ya vienen incluidos en turnos
-    setLoadingData(false);
-    setLoading(false);
-  }, [turnos]);
 
   // Cargar todos los tipos de corte disponibles
   useEffect(() => {

@@ -10,9 +10,11 @@ interface Turno {
 
 const IndexAppointments = () => {
   const [turnos, setTurnos] = useState<Turno[]>([]);
+  const [isLoadingTurnos, setIsLoadingTurnos] = useState(false);
 
   useEffect(() => {
     // llama al backend para obtener los turnos
+    setIsLoadingTurnos(true);
     fetch("/appointments")
       .then((res) => res.json())
       .then((data) => {
@@ -21,6 +23,9 @@ const IndexAppointments = () => {
       })
       .catch((error) => {
         console.error("Error al obtener turnos:", error);
+      })
+      .finally(() => {
+        setIsLoadingTurnos(false);
       });
   }, []);
 
@@ -53,7 +58,9 @@ const IndexAppointments = () => {
   return (
   <div className={styles.indexAppointments}>
       <h2>Gestión de Turnos</h2>
-      {turnos.length === 0 ? (
+      {isLoadingTurnos ? (
+        <div className={styles.loadingState}>Cargando turnos...</div>
+      ) : turnos.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No hay turnos disponibles.</p>
         </div>
