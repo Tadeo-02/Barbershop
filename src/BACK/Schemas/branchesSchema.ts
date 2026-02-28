@@ -15,8 +15,9 @@ export const BranchSchema = z.object({
     .max(10000, "Altura no puede ser mayor a 10000"),
 });
 
-// Schema for API responses that includes the auto-generated ID
+// Schema para respuestas de la API que incluye el ID auto-generado
+// MySQL devuelve activo como 0 o 1, por eso se acepta ambos tipos y se transforma a booleano
 export const BranchWithIdSchema = BranchSchema.extend({
   codSucursal: z.string(),
-  activo: z.boolean(),
+  activo: z.union([z.boolean(), z.number()]).transform((val) => Boolean(val)),
 });

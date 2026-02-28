@@ -169,6 +169,14 @@
   font-size: 1rem;
 }
 
+.loadingState {
+  text-align: center;
+  padding: 30px;
+  color: #718096;
+  font-size: 1rem;
+  font-style: italic;
+}
+
 /* Modal de confirmación */
 .modalContainer {
   text-align: center;

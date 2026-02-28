@@ -20,7 +20,7 @@
   padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .title {
@@ -35,6 +35,9 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .voucherInfo {
@@ -124,10 +127,6 @@
 
   .title {
     font-size: 1.3rem;
-  }
-
-  .toolbar {
-    flex-wrap: nowrap;
   }
 }
 
