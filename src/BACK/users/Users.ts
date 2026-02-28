@@ -58,6 +58,20 @@ export const store = async (
       // Limpiar CUIL para almacenamiento
       cuilValue = validatedData.cuil.replace(/[-\s]/g, "");
     }
+
+    // Verificar duplicados antes de intentar insertar para dar mensajes claros
+    const [existingEmail, existingDni] = await Promise.all([
+      prisma.usuarios.findUnique({ where: { email: validatedData.email } }),
+      prisma.usuarios.findUnique({ where: { dni: validatedData.dni } }),
+    ]);
+
+    const duplicados: string[] = [];
+    if (existingEmail) duplicados.push("El email ya está registrado en el sistema");
+    if (existingDni) duplicados.push("El DNI ya está registrado en el sistema");
+    if (duplicados.length > 0) {
+      throw new DatabaseError(duplicados.join(". "));
+    }
+
     // Crear usuario (mapeando contraseña -> contrase_a, sin transacción para evitar errores de transacción en dev)
     const usuario = await prisma.usuarios.create({
       // cast a any because prisma client types may need regeneration after schema change
@@ -109,6 +123,11 @@ export const store = async (
       "Error creating user:",
       error instanceof Error ? error.message : "Unknown error",
     );
+
+    // Re-lanzar DatabaseError directamente (ej: duplicados detectados proactivamente)
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
 
     // Manejo de errores de validación
     if (error instanceof z.ZodError) {
