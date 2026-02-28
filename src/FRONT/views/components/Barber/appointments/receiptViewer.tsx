@@ -93,7 +93,7 @@ const BarberReceiptViewer: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate("/Barber/BranchAppointments");
+    navigate("/Barber/MyAppointments");
   };
 
   if (loading) {

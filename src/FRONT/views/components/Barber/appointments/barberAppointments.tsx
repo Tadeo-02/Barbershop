@@ -51,6 +51,7 @@ const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<Appointment[]>([]);
   const [authChecked, setAuthChecked] = useState(false);
+  const [isLoadingTurnos, setIsLoadingTurnos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fetchControllerRef = useRef<AbortController | null>(null);
   const submitControllerRef = useRef<AbortController | null>(null);
@@ -144,6 +145,7 @@ const BarberAppointments: React.FC = () => {
       fetchControllerRef.current?.abort();
       const controller = new AbortController();
       fetchControllerRef.current = controller;
+      setIsLoadingTurnos(true);
 
       try {
         const res = await fetch(`/turnos/user/${user.codUsuario}`, {
@@ -181,6 +183,7 @@ const BarberAppointments: React.FC = () => {
         console.error("Error fetching appointments:", error);
         setTurnos([]);
       } finally {
+        setIsLoadingTurnos(false);
         fetchControllerRef.current = null;
       }
     };
@@ -382,7 +385,11 @@ const BarberAppointments: React.FC = () => {
     <div className={barberStyles.appointmentsContainer}>
       <h2>Mis turnos</h2>
       <ul className={barberStyles.appointmentList}>
-        {turnos.length === 0 ? (
+        {isLoadingTurnos ? (
+          <li className={barberStyles.loadingState}>
+            Cargando turnos...
+          </li>
+        ) : turnos.length === 0 ? (
           <li className={barberStyles.emptyState}>
             No tienes turnos a tu nombre.
           </li>
