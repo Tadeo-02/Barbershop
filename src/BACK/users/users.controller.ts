@@ -359,3 +359,31 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
     res.status(status).json({ success: false, message: errMsg });
   }
 };
+
+// Resetear contraseña (paso separado, luego de verificar la respuesta de seguridad)
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, respuestaSeguridad, nuevaContraseña } = req.body;
+    if (!email || !respuestaSeguridad || !nuevaContraseña) {
+      res.status(400).json({ success: false, message: "Email, respuesta y nueva contraseña son requeridos" });
+      return;
+    }
+
+    await model.verifySecurityAnswerAndReset(email, respuestaSeguridad, nuevaContraseña);
+
+    res.status(200).json({ success: true, message: "Contraseña actualizada correctamente" });
+  } catch (error: any) {
+    console.error("Error resetting password:", error);
+    const errMsg = error && error.message ? error.message : "Error interno";
+    let status = 500;
+    const lowerMsg = errMsg.toLowerCase();
+    if (lowerMsg.includes("incorrecta")) {
+      status = 401;
+    } else if (lowerMsg.includes("usuario no encontrado") || lowerMsg.includes("no user found")) {
+      status = 404;
+    } else if (lowerMsg.includes("no hay respuesta")) {
+      status = 400;
+    }
+    res.status(status).json({ success: false, message: errMsg });
+  }
+};
