@@ -35,6 +35,13 @@ router.post(
   strictDeduplication,
   controller.verifySecurityAnswer,
 );
+// Dedicated password-reset endpoint (separate rate-limit bucket from answer verification)
+router.post(
+  "/reset-password",
+  sensitiveLimiter,
+  strictDeduplication,
+  controller.resetPassword,
+);
 
 // User registration - IP-based limiting for non-authenticated users
 router.post("/", authLimiter, strictDeduplication, controller.store);

@@ -90,7 +90,7 @@ const ResetSecurity: React.FC = () => {
             return;
         }
         try {
-            const res = await fetch(`/usuarios/verify-security-answer`, {
+            const res = await fetch(`/usuarios/reset-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: cleanEmail, respuestaSeguridad: cleanRespuesta, nuevaContraseña }),
