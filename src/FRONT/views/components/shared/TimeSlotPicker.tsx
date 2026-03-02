@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from "./TimeSlotPicker.module.css";
@@ -47,6 +47,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
   const [loading, setLoading] = useState(true);
   const [loadingHorarios, setLoadingHorarios] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isFirstRender = useRef(true);
 
   // Determinar qué endpoint usar basado en los props
   const isBarbero = !!codBarbero;
@@ -60,8 +61,10 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
     }
 
     // Mostrar loading de horarios al cambiar fecha/código
-    if (!loading) {
+    if (!isFirstRender.current) {
       setLoadingHorarios(true);
+    } else {
+      isFirstRender.current = false;
     }
 
     // Ir directamente al endpoint correcto según el tipo
@@ -110,7 +113,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
         setLoading(false);
         setLoadingHorarios(false);
       });
-  }, [codigo, fechaTurno, isBarbero, loading]);
+  }, [codigo, fechaTurno, isBarbero]);
 
   const handleDateChange = (date: Date | null) => {
     if (date) {

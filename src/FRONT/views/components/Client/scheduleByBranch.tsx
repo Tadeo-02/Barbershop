@@ -126,7 +126,7 @@ const ScheduleByBranch = () => {
 
           // Si el barbero trae codSucursal y aún no tenemos la sucursal, pedirla para mostrar ambos datos
           try {
-            if (bObj && bObj.codSucursal && !sucursal) {
+            if (bObj && bObj.codSucursal) {
               const sucursalEndpointFromBarber = `/sucursales/${bObj.codSucursal}`;
               fetch(sucursalEndpointFromBarber)
                 .then(async (res) => {
@@ -175,7 +175,7 @@ const ScheduleByBranch = () => {
     }
 
     setLoading(false);
-  }, [codigo, codSucursal, codBarbero, sucursal, isBarbero]);
+  }, [codigo, codSucursal, codBarbero, isBarbero]);
 
   const handleTimeSlotSelect = (fecha: string, hora: string) => {
     setSelectedFechaTurno(fecha);
