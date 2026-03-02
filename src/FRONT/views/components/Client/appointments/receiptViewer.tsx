@@ -125,10 +125,15 @@ const ReceiptViewer: React.FC = () => {
         <button className={styles.backButton} onClick={handleBack}>
           ← Volver
         </button>
-        <div className={styles.titleBlock}>
-          <h2 className={styles.title}>
-            {billingData?.voucherType || "Recibo de Pago"}
-          </h2>
+        <button className={styles.downloadButton} onClick={handleDownload}>
+          Descargar PDF
+        </button>
+      </div>
+      <div className={styles.titleBlock}>
+        <h2 className={styles.title}>
+          {billingData?.voucherType || "Recibo de Pago"}
+        </h2>
+        <div className={styles.voucherInfoRow}>
           {billingData?.voucherNumberFormatted && (
             <span className={styles.voucherInfo}>
               N° {billingData.voucherNumberFormatted}
@@ -148,9 +153,6 @@ const ReceiptViewer: React.FC = () => {
             </span>
           )}
         </div>
-        <button className={styles.downloadButton} onClick={handleDownload}>
-          Descargar PDF
-        </button>
       </div>
       <div className={styles.pdfWrapper}>
         {pdfUrl && (

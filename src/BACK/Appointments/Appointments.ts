@@ -793,9 +793,19 @@ export const checkoutAppointment = async (
       );
     }
 
-    // Validar que la fecha/hora del turno ya haya pasado
+    // Validar que el turno sea de hoy
     const now = new Date();
     const fechaTurno = new Date(turnoExistente.fechaTurno);
+
+    const todayUTC = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
+    const appointmentDateUTC = fechaTurno.toISOString().substring(0, 10);
+
+    if (appointmentDateUTC !== todayUTC) {
+      console.log("El turno no corresponde a la fecha de hoy");
+      throw new DatabaseError(
+        "Solo se pueden cobrar turnos del día de hoy",
+      );
+    }
 
     // Combinar fecha del turno con hora desde para obtener el momento exacto de inicio
     const horaDesde = turnoExistente.horaDesde;
@@ -803,7 +813,7 @@ export const checkoutAppointment = async (
       .toISOString()
       .substring(11, 16)
       .split(":");
-    fechaTurno.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    fechaTurno.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
 
     if (fechaTurno > now) {
       console.log("El turno aún no ha comenzado");
@@ -1165,9 +1175,19 @@ export const markAsNoShow = async (codTurno: string) => {
       throw new DatabaseError("Turno no encontrado");
     }
 
-    // Validar que la fecha/hora del turno ya haya pasado
+    // Validar que el turno sea de hoy
     const now = new Date();
     const fechaTurno = new Date(turnoExistente.fechaTurno);
+
+    const todayUTC = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
+    const appointmentDateUTC = fechaTurno.toISOString().substring(0, 10);
+
+    if (appointmentDateUTC !== todayUTC) {
+      console.log("El turno no corresponde a la fecha de hoy");
+      throw new DatabaseError(
+        "Solo se pueden marcar como no asistido los turnos del día de hoy",
+      );
+    }
 
     // Combinar fecha del turno con hora hasta para obtener el momento exacto de finalización
     const horaHasta = turnoExistente.horaHasta;
@@ -1175,7 +1195,7 @@ export const markAsNoShow = async (codTurno: string) => {
       .toISOString()
       .substring(11, 16)
       .split(":");
-    fechaTurno.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    fechaTurno.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
 
     if (fechaTurno > now) {
       console.log("El turno aún no ha finalizado");

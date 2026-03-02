@@ -17,10 +17,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-bottom: 1px solid #e2e8f0;
   gap: 12px;
-  flex-wrap: nowrap;
 }
 
 .title {
@@ -28,22 +27,30 @@
   color: #2d3748;
   margin: 0;
   font-weight: 700;
+  text-align: center;
 }
 
 .titleBlock {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 6px;
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.voucherInfoRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 2px;
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
 }
 
 .voucherInfo {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #718096;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .backButton {
