@@ -111,18 +111,9 @@ const CreateUser: React.FC = () => {
           navigate("/login");
         }, 2000);
       } else {
-        // ERROR DEL BACKEND (Ej: DNI o email duplicado)
-        const mensajes: string[] = (responseData.message || "Error al crear usuario")
-          .split(". ")
-          .map((m: string) => m.trim())
-          .filter(Boolean);
-
-        // Cerrar el toast de carga
-        toast.dismiss(toastId);
-
-        // Mostrar un toast por cada error
-        mensajes.forEach((msg: string) => {
-          toast.error(msg, { duration: 5000 });
+        // ERROR DEL BACKEND (Ej: DNI duplicado)
+        toast.error(responseData.message || "Error al crear usuario", {
+          id: toastId,
         });
       }
     } catch (error) {
