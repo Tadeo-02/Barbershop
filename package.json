@@ -10,7 +10,10 @@
     "start": "node dist/index.js",
     "dev:backend": "pnpm exec ts-node --project tsconfig.backend.json index.ts",
     "build:backend": "tsc index.ts --outDir dist --module commonjs --target es2020",
-    "start:backend": "node dist/index.js"
+    "start:backend": "node dist/index.js",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@afipsdk/afip.js": "^1.2.2",
@@ -40,6 +43,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
@@ -51,18 +57,21 @@
     "@types/react-router-dom": "^5.3.3",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.7.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.29.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
+    "jsdom": "^28.1.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.12",
     "ts-node": "^10.9.2",
     "tsc-watch": "^7.1.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18"
   },
   "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a"
 }
