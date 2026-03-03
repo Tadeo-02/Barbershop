@@ -40,7 +40,7 @@ function Header() {
           <Link to={getHomeRoute()} aria-label="Ir al inicio">
             <img
               src="/images/logoBarber.png"
-              // alt="logo-barber"
+              alt="logo-barber"
               className={styles.logo}
             />
           </Link>
@@ -170,7 +170,14 @@ function Header() {
       </div>
 
       {open && (
-        <div className={styles.overlay} onClick={() => setOpen(false)} />
+        <div
+          className={styles.overlay}
+          onClick={() => setOpen(false)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setOpen(false); }}
+          role="button"
+          tabIndex={0}
+          aria-label="Cerrar menú"
+        />
       )}
     </nav>
   );
