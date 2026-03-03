@@ -1,3 +1,6 @@
+
+### QUITAR 'ANY's
+
 # FRONT:
 ## Usuarios:
     - [X] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal
@@ -17,7 +20,6 @@
     - [X] Listado de rentabilidad (proposal.md)
 ## General:
     - [X] Definir estructura mobile first en estilos
-    - [ ] Sección Productos
     - [X] Fix de Toasts de error cuando hay success (ej: create barberos desde admin)
     - [X] Fix boton de login en Landing Page
     - [X] Validar datos en front -> Implementar actualizacion aplicada en login/createUser para mejoras frontend al resto de formularios
@@ -51,7 +53,6 @@
     - [ ] Revisar validaciones zod en general
     - [X] Añadir/Mejorar validaciones Backend
     - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
-    - [ ] Sección Productos
     - [X] Cambiar NPM por PNPM
     - [X] Cambiar logica del estado de turnos
     - [X] Lógica de subida de categoría (AD)
