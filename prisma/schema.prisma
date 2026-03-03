@@ -75,7 +75,7 @@ model tipos_corte {
 
 model usuarios {
   codUsuario                         String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  dni                                String              @unique(map: "dni") @db.VarChar(8)
+  dni                                String              @db.VarChar(8)
   cuil                               String?             @db.VarChar(13)
   codSucursal                        String?             @db.VarChar(36)
   nombre                             String              @db.VarChar(50)
