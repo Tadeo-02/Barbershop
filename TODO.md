@@ -24,6 +24,7 @@
     - [X] Fix boton de login en Landing Page
     - [X] Validar datos en front -> Implementar actualizacion aplicada en login/createUser para mejoras frontend al resto de formularios
     - [X] Para muestreo de datos ver cambios aplicados en la infoSection (analizar si es necesario, es mas que nada para robustez)
+    - [ ] Arreglar pdf de factura
 # BACK:
 ## - Usuarios:
     - [X] Pedir turnos
