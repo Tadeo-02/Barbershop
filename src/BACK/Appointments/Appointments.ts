@@ -61,10 +61,13 @@ const generateAvailableTimeSlots = (
   turnos: Array<{ codBarbero: string; horaDesde: Date }>,
   barberoId?: string,
   barberos?: Array<{ codUsuario: string }>,
+  fecha?: string,
 ): Array<{ hora: string }> => {
   const horasDisponibles = [];
+  const isSaturday = fecha ? new Date(fecha).getUTCDay() === 6 : false;
 
   for (let hora = 8; hora <= 19.5; hora += 0.5) {
+    if (isSaturday && hora >= 13) break;
     // Convertir la hora del bucle a formato de tiempo
     const horaString = `${Math.floor(hora).toString().padStart(2, "0")}:${(
       (hora % 1) *
@@ -382,6 +385,7 @@ export const findByAvailableDate = async (
       turnos,
       undefined,
       barberos,
+      sanitizedFechaTurno,
     );
 
     return horasDisponibles;
@@ -422,6 +426,8 @@ export const findByBarberId = async (
     const horasDisponibles = generateAvailableTimeSlots(
       turnos,
       sanitizedCodBarbero,
+      undefined,
+      sanitizedFechaTurno,
     );
 
     console.log(`Found ${horasDisponibles.length} available slots for barber`);

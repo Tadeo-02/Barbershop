@@ -191,6 +191,10 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 
   const { manana, tarde, noche } = groupHorariosByPeriod();
 
+  const isWeekday = (date) => {
+    return date.getDay() >= 1 && date.getDay() <= 6;
+  };
+
   return (
     <div className={styles.timeSlotContainer}>
       <h3 className={styles.title}>Selecciona fecha y horario</h3>
@@ -202,6 +206,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
           selected={selectedDate}
           onChange={handleDateChange}
           minDate={minDate || getTomorrowDate()}
+          filterDate={isWeekday}
           dateFormat="yyyy-MM-dd"
           placeholderText="Selecciona una fecha"
           className={styles.datePicker}
