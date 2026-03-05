@@ -128,7 +128,7 @@ export const store = async (
       estado: sanitizeInput(estado),
     };
 
-    // validación con zod - omitir codTurno y codEstado para creación
+    // validación con zod - omitir codTurno para creación
     const validatedData = AppointmentSchema.omit({
       codTurno: true,
     }).parse(sanitizedData);
