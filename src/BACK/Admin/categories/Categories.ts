@@ -1,5 +1,6 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
+import { CategorySchema } from "../../Schemas/categoriesSchema";
 
 type CategoryDirection = "promote" | "demote";
 type DeleteCategoryAction = "promote_all" | "demote_all" | "per_client";
@@ -8,25 +9,25 @@ export const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const
 export const PROTECTED_CATEGORY_NAMES = ["Inicial"] as const;
 
 
-const CategoriaSchema = z.object({
-  nombreCategoria: z
-    .string()
-    .min(2, "Nombre de categoría debe tener al menos 2 caracteres")
-    .max(50, "Nombre de categoría no puede tener más de 50 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
-  descCategoria: z
-    .string()
-    .min(10, "Descripción debe tener al menos 10 caracteres")
-    .max(250, "Descripción no puede tener más de 250 caracteres"),
-  descuentoCorte: z
-    .number()
-    .min(0, "Descuento de corte debe ser mayor o igual a 0")
-    .max(100, "Descuento de corte no puede ser mayor a 100%"),
-  descuentoProducto: z
-    .number()
-    .min(0, "Descuento de producto debe ser mayor o igual a 0")
-    .max(100, "Descuento de producto no puede ser mayor a 100%"),
-});
+// const CategoriaSchema = z.object({
+//   nombreCategoria: z
+//     .string()
+//     .min(2, "Nombre de categoría debe tener al menos 2 caracteres")
+//     .max(50, "Nombre de categoría no puede tener más de 50 caracteres")
+//     .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
+//   descCategoria: z
+//     .string()
+//     .min(10, "Descripción debe tener al menos 10 caracteres")
+//     .max(250, "Descripción no puede tener más de 250 caracteres"),
+//   descuentoCorte: z
+//     .number()
+//     .min(0, "Descuento de corte debe ser mayor o igual a 0")
+//     .max(100, "Descuento de corte no puede ser mayor a 100%"),
+//   descuentoProducto: z
+//     .number()
+//     .min(0, "Descuento de producto debe ser mayor o igual a 0")
+//     .max(100, "Descuento de producto no puede ser mayor a 100%"),
+// });
 
 // funciones backend para Categorías
 export const store = async (
@@ -45,7 +46,7 @@ export const store = async (
     };
 
     // validacion con zod
-    const validatedData = CategoriaSchema.parse(sanitizedData);
+    const validatedData = CategorySchema.parse(sanitizedData);
 
     console.log("Creating categoria");
 
@@ -146,7 +147,7 @@ export const update = async (
     };
 
     // validar (menos codCategoria)
-    const validatedData = CategoriaSchema.parse({
+    const validatedData = CategorySchema.parse({
       nombreCategoria: sanitizedData.nombreCategoria,
       descCategoria: sanitizedData.descCategoria,
       descuentoCorte: sanitizedData.descuentoCorte,
