@@ -86,6 +86,7 @@ model usuarios {
   preguntaSeguridad                  String?             @db.VarChar(255)
   respuestaSeguridad                 String?             @db.VarChar(255)
   activo                             Boolean             @default(true)
+  bloqueos_barbero                   bloqueos_barbero[]
   categoria_vigente                  categoria_vigente[]
   turnos_turnos_codBarberoTousuarios Turno[]             @relation("turnos_codBarberoTousuarios")
   turnos_turnos_codClienteTousuarios Turno[]             @relation("turnos_codClienteTousuarios")
@@ -104,6 +105,17 @@ model token_blacklist {
 
   @@index([expiresAt], map: "idx_expires")
   @@index([token], map: "idx_token")
+}
+
+model bloqueos_barbero {
+  codBloqueo     String   @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codBarbero     String   @db.VarChar(36)
+  fechaHoraDesde DateTime @db.DateTime(0)
+  fechaHoraHasta DateTime @db.DateTime(0)
+  motivo         String   @db.VarChar(250)
+  usuarios       usuarios @relation(fields: [codBarbero], references: [codUsuario], onUpdate: Restrict, map: "fk_bloqueos_barbero_usuario")
+
+  @@index([codBarbero], map: "codBarbero")
 }
 
 enum token_blacklist_reason {
