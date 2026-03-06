@@ -34,6 +34,10 @@ const Home = () => {
     navigate("/Barber/MyAppointments");
   };
 
+  const handleMisAusencias = () => {
+    navigate("/Barber/availability");
+  }
+
   // const handleEntregarPedidos = () => {
   //   console.log("Navigating to orders..."); // Debug log
   //   navigate("/orders/orders");
@@ -48,6 +52,9 @@ const Home = () => {
         </button>
         <button className={styles.optionButton} onClick={handleMisTurnos}>
           Mis Turnos
+        </button>
+        <button className={styles.optionButton} onClick={handleMisAusencias}>
+          Registrar ausencia
         </button>
         {/*<button className={styles.optionButton} onClick={handleEntregarPedidos}>
           Entregar pedidos
