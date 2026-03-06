@@ -31,6 +31,7 @@ import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 import BarberAppointments from "./components/Barber/appointments/barberAppointments.tsx";
 import BranchAppointments from "./components/Barber/appointments/branchAppointments.tsx";
 import BarberReceiptViewer from "./components/Barber/appointments/receiptViewer.tsx";
+import BarberAvailability from "./components/Barber/appointments/barberAvailability.tsx";
 
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
@@ -142,6 +143,14 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["barber"]}>
                     <BarberReceiptViewer />
+                  </ProtectedRoute>
+                }
+              />
+              <Route //! BARBER
+                path="/Barber/availability"
+                element={
+                  <ProtectedRoute allowedRoles={["barber"]}>
+                    <BarberAvailability />
                   </ProtectedRoute>
                 }
               />
