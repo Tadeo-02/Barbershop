@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useAuth } from "../../login/AuthContext";
+import toast from "react-hot-toast";
 import styles from "./barberAvailability.module.css";
 
 const BarberAvailability: React.FC = () => {
@@ -8,16 +10,97 @@ const BarberAvailability: React.FC = () => {
   const [hastaHora, setHastaHora] = useState("");
   const [motivo, setMotivo] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { user, isAuthenticated } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: integrar con backend
-    console.log({
-      desdeFecha,
-      desdeHora,
-      hastaFecha,
-      hastaHora,
+
+    if (!isAuthenticated || !user || !user.codUsuario) {
+      toast.error("Debes iniciar sesión como barbero");
+      return;
+    }
+
+    // Validar orden de fechas
+    const desdeIso = `${desdeFecha}T${desdeHora}`;
+    const hastaIso = `${hastaFecha}T${hastaHora}`;
+    const fechaDesde = new Date(desdeIso);
+    const fechaHasta = new Date(hastaIso);
+
+    if (isNaN(fechaDesde.getTime()) || isNaN(fechaHasta.getTime())) {
+      toast.error("Fecha u hora inválida");
+      return;
+    }
+
+    if (fechaDesde >= fechaHasta) {
+      toast.error("La fecha/hora 'Desde' debe ser anterior a 'Hasta'");
+      return;
+    }
+
+    const payload = {
+      codBarbero: user.codUsuario,
+      // Backend espera 'YYYY-MM-DD HH:MM:SS'
+      fechaHoraDesde: `${desdeFecha} ${desdeHora}:00`,
+      fechaHoraHasta: `${hastaFecha} ${hastaHora}:00`,
       motivo,
-    });
+    };
+
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = new AbortController();
+
+    const toastId = toast.loading("Registrando ausencia...");
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch("/availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: abortRef.current.signal,
+      });
+
+      const contentType = res.headers.get("content-type") || "";
+      const data = contentType.includes("application/json")
+        ? await res.json()
+        : null;
+
+      if (res.ok) {
+        toast.success("Ausencia registrada", { id: toastId });
+        // reset form
+        setDesdeFecha("");
+        setDesdeHora("");
+        setHastaFecha("");
+        setHastaHora("");
+        setMotivo("");
+      } else {
+        const message =
+          data?.message || data?.error || "Error al registrar ausencia";
+        toast.error(message, { id: toastId });
+      }
+    } catch (err: any) {
+      if (err instanceof Error && err.name === "AbortError") {
+        toast.dismiss(toastId);
+        return;
+      }
+
+      if (err instanceof Error) {
+        console.error("Error registrando ausencia:", err.message);
+      } else {
+        console.error("Error registrando ausencia:", err);
+      }
+
+      toast.error("Error de conexión", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+      abortRef.current = null;
+    }
   };
 
   return (
@@ -38,12 +121,15 @@ const BarberAvailability: React.FC = () => {
           <h2 className={styles.sectionTitle}>Desde</h2>
           <div className={styles.fieldsRow}>
             <div className={styles.fieldGroup}>
-              <label className={styles.label} htmlFor="desdeFecha">Fecha</label>
+              <label className={styles.label} htmlFor="desdeFecha">
+                Fecha
+              </label>
               <input
                 id="desdeFecha"
                 type="date"
                 className={styles.input}
                 value={desdeFecha}
+                max={hastaFecha}
                 onChange={(e) => setDesdeFecha(e.target.value)}
                 required
               />

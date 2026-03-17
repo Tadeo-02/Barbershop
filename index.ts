@@ -24,6 +24,7 @@ import { login } from "./src/BACK/users/users.controller";
 
 import typeOfHaircutRouter from "./src/BACK/Admin/typeOfHaircut/typeOfHaircut.router";
 import billingRouter from "./src/BACK/billing/billing.router";
+import availabilityRouter from "./src/BACK/Availability/availability.router";
 
 // console.log("🔍 Categories router:", categoriesRouter);
 // console.log("🔍 TypeOfHaircut router:", typeOfHaircutRouter);
@@ -86,6 +87,8 @@ app.use("/sucursales", branchesRouter);
 app.post("/login", authLimiter, login);
 
 app.use("/turnos", appointmentsRouter);
+
+app.use("/availability", availabilityRouter);
 
 app.use("/facturacion", billingRouter);
 

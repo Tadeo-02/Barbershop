@@ -7,7 +7,7 @@ export const store = async (
   codBarbero: string,
   fechaHoraDesde: string,
   fechaHoraHasta: string,
-  motivo: string
+  motivo: string,
 ) => {
   try {
     // sanitizar de inputs
@@ -25,22 +25,26 @@ export const store = async (
 
     console.log("Creating barber unavailability");
 
-    // convertir strings a DateTime objects para Prisma
-    const fechaDesde = new Date(validatedData.fechaHoraDesde.replace(" ", "T"));
-    const fechaHasta = new Date(validatedData.fechaHoraHasta.replace(" ", "T"));
+    // convertir strings a DateTime objects para Prisma (forzar UTC para evitar shift horario)
+    const fechaDesde = new Date(
+      validatedData.fechaHoraDesde.replace(" ", "T") + ".000Z",
+    );
+    const fechaHasta = new Date(
+      validatedData.fechaHoraHasta.replace(" ", "T") + ".000Z",
+    );
 
     const existingUnavailability = await prisma.bloqueos_barbero.findMany({
-    where: {
-      codBarbero: validatedData.codBarbero,
-      fechaHoraDesde: { lte: fechaHasta },
-      fechaHoraHasta: { gte: fechaDesde },
-    },
+      where: {
+        codBarbero: validatedData.codBarbero,
+        fechaHoraDesde: { lte: fechaHasta },
+        fechaHoraHasta: { gte: fechaDesde },
+      },
     });
 
     if (existingUnavailability.length > 0) {
-    throw new DatabaseError(
-      "Ya existe un bloqueo en ese horario para ese barbero",
-    );
+      throw new DatabaseError(
+        "Ya existe un bloqueo en ese horario para ese barbero",
+      );
     }
 
     // crear bloqueo usando el modelo correcto de Prisma
@@ -58,7 +62,7 @@ export const store = async (
   } catch (error) {
     console.error(
       "Error creating barber unavailability:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     //  de errores de validación
@@ -97,7 +101,7 @@ export const findAll = async () => {
   } catch (error) {
     console.error(
       "Error fetching unavailabilities:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al obtener lista de bloqueos");
   }
@@ -120,7 +124,7 @@ export const findById = async (codBloqueo: string) => {
 
     console.error(
       "Error finding unavailability:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar bloqueo");
   }
@@ -151,9 +155,13 @@ export const update = async (
       motivo: sanitizedData.motivo,
     });
 
-    // convertir strings a DateTime objects para Prisma
-    const fechaDesde = new Date(validatedData.fechaHoraDesde.replace(" ", "T"));
-    const fechaHasta = new Date(validatedData.fechaHoraHasta.replace(" ", "T"));
+    // convertir strings a DateTime objects para Prisma (forzar UTC para evitar shift horario)
+    const fechaDesde = new Date(
+      validatedData.fechaHoraDesde.replace(" ", "T") + ".000Z",
+    );
+    const fechaHasta = new Date(
+      validatedData.fechaHoraHasta.replace(" ", "T") + ".000Z",
+    );
 
     // verificar que el bloqueo existe
     const existingBloqueo = await prisma.bloqueos_barbero.findUnique({
@@ -165,7 +173,7 @@ export const update = async (
     }
 
     // actualizar bloqueo
-    const updatedBloqueo = await prisma.bloqueos_barbero.update({ 
+    const updatedBloqueo = await prisma.bloqueos_barbero.update({
       where: { codBloqueo: sanitizedData.codBloqueo },
       data: {
         codBarbero: validatedData.codBarbero,
@@ -180,7 +188,7 @@ export const update = async (
   } catch (error) {
     console.error(
       "Error updating bloqueo:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // Manejo de errores de validación
@@ -233,7 +241,7 @@ export const destroy = async (codBloqueo: string) => {
   } catch (error) {
     console.error(
       "Error deleting bloqueo:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // manejo de errores de DB
@@ -246,7 +254,7 @@ export const destroy = async (codBloqueo: string) => {
 
       if (prismaError.code === "P2003") {
         throw new DatabaseError(
-          "No se puede eliminar: el bloqueo está siendo utilizado"
+          "No se puede eliminar: el bloqueo está siendo utilizado",
         );
       }
     }
