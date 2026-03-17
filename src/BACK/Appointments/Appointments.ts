@@ -2,49 +2,6 @@ import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importam
 import { z } from "zod";
 import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 import { billAppointment } from "../billing/Billing";
-/*
-// schema de validación con Zod (más robusto que las funciones manuales)
-  const AppointmentsSchema = z.object({
-  codTurno: z.string().uuid("ID de turno inválido").optional(),
-  codCorte: z.string().min(1, "Código de corte es requerido").optional(),
-  codCliente: z.string().min(1, "Código de cliente es requerido"),
-  codBarbero: z.string().min(1, "Código de barbero es requerido"),
-  precioTurno: z
-    .string()
-    .min(1, "Precio es requerido")
-    .regex(
-      /^\d+(\.\d{1,2})?$/,
-      "Precio inválido. Formato numérico con hasta 2 decimales"
-    )
-    .optional(),
-  metodoPago: z
-    .string()
-    .min(1, "Método de pago es requerido")
-    .max(50, "Método de pago no puede tener más de 50 caracteres")
-    .optional(),
-  fechaCancelacion: z
-    .string()
-    .min(1, "Fecha es requerida")
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida. Formato YYYY-MM-DD")
-    .optional(),
-  fechaTurno: z
-    .string()
-    .min(1, "Fecha de turno es requerida")
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida. Formato YYYY-MM-DD"),
-  horaDesde: z
-    .string()
-    .min(1, "Hora desde es requerida")
-    .regex(/^\d{2}:\d{2}$/, "Hora inválida. Formato HH:MM"),
-  horaHasta: z
-    .string()
-    .min(1, "Hora hasta es requerida")
-    .regex(/^\d{2}:\d{2}$/, "Hora inválida. Formato HH:MM"),
-  estado: z
-    .string()
-    .min(1, "Estado es requerido")
-    .max(50, "Estado no puede tener más de 50 caracteres"),
-  });
-*/
 
 // Umbrales configurables (pueden ser sobreescritos por env vars durante pruebas)
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
@@ -56,38 +13,59 @@ const INITIAL_TO_MEDIUM_COUNT = parseInt(
   10,
 );
 
-// Helper function para generar horarios disponibles
+// Helper function para generar horarios disponibles.
+// Ahora toma en cuenta también los bloqueos de barberos (`bloqueos`) y trata
+// los bloqueos como si fueran turnos (no mostrar horas bloqueadas).
 const generateAvailableTimeSlots = (
   turnos: Array<{ codBarbero: string; horaDesde: Date }>,
   barberoId?: string,
   barberos?: Array<{ codUsuario: string }>,
   fecha?: string,
+  bloqueos?: Array<{
+    codBarbero: string;
+    fechaHoraDesde: Date;
+    fechaHoraHasta: Date;
+  }>,
 ): Array<{ hora: string }> => {
-  const horasDisponibles = [];
+  const horasDisponibles: Array<{ hora: string }> = [];
   const isSaturday = fecha ? new Date(fecha).getUTCDay() === 6 : false;
 
   for (let hora = 8; hora <= 19.5; hora += 0.5) {
     if (isSaturday && hora >= 13) break;
-    // Convertir la hora del bucle a formato de tiempo
-    const horaString = `${Math.floor(hora).toString().padStart(2, "0")}:${(
-      (hora % 1) *
-      60
-    )
+
+    const horaString = `${Math.floor(hora)
       .toString()
-      .padStart(2, "0")}`;
+      .padStart(2, "0")}:${((hora % 1) * 60).toString().padStart(2, "0")}`;
+
+    // Crear fecha/hora candidata en formato ISO UTC para comparar con bloqueos
+    const candidateIso = fecha ? `${fecha}T${horaString}:00.000Z` : null;
+    const candidateDate = candidateIso ? new Date(candidateIso) : null;
+
+    const isBlockedForBarber = (bId: string) => {
+      if (!bloqueos || !candidateDate) return false;
+      return bloqueos.some((b) => {
+        if (b.codBarbero !== bId) return false;
+        const from = new Date(b.fechaHoraDesde).getTime();
+        const to = new Date(b.fechaHoraHasta).getTime();
+        const cand = candidateDate.getTime();
+        return cand >= from && cand < to;
+      });
+    };
 
     if (barberoId) {
-      // Caso: findByBarberId - verificar disponibilidad para un barbero específico
+      // Caso: buscar disponibilidad para un barbero específico
       const turnoExistente = turnos.find((t) => {
         const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
         return t.codBarbero === barberoId && turnoHoraCorrecta === horaString;
       });
 
-      if (!turnoExistente) {
+      const bloqueado = isBlockedForBarber(barberoId);
+
+      if (!turnoExistente && !bloqueado) {
         horasDisponibles.push({ hora: horaString });
       }
     } else if (barberos) {
-      // Caso: findByAvailableDate - verificar si algún barbero está disponible
+      // Caso: buscar horarios donde al menos UN barbero de la sucursal esté libre
       for (const barbero of barberos) {
         const turnoExistente = turnos.find((t) => {
           const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
@@ -97,9 +75,11 @@ const generateAvailableTimeSlots = (
           );
         });
 
-        if (!turnoExistente) {
+        const bloqueado = isBlockedForBarber(barbero.codUsuario);
+
+        if (!turnoExistente && !bloqueado) {
           horasDisponibles.push({ hora: horaString });
-          break; // Salir del bucle de barberos una vez que se encuentra disponibilidad
+          break; // Una vez que encontramos un barbero libre para esa hora, mostrar la hora
         }
       }
     }
@@ -380,12 +360,29 @@ export const findByAvailableDate = async (
       where: { codSucursal: sanitizedCodSucursal },
     });
 
-    // Usar la función helper
+    // También buscar bloqueos de los barberos en esa sucursal para la fecha
+    const fechaDate = new Date(sanitizedFechaTurno);
+    const startOfDay = new Date(fechaDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(fechaDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const barberoIds = barberos.map((b) => b.codUsuario);
+    const bloqueos = await prisma.bloqueos_barbero.findMany({
+      where: {
+        codBarbero: { in: barberoIds },
+        fechaHoraDesde: { lte: endOfDay },
+        fechaHoraHasta: { gte: startOfDay },
+      },
+    });
+
+    // Usar la función helper (ahora con bloqueos)
     const horasDisponibles = generateAvailableTimeSlots(
       turnos,
       undefined,
       barberos,
       sanitizedFechaTurno,
+      bloqueos,
     );
 
     return horasDisponibles;
@@ -422,12 +419,28 @@ export const findByBarberId = async (
       `Found ${turnos.length} existing appointments for barber ${sanitizedCodBarbero} on ${sanitizedFechaTurno}`,
     );
 
-    // Usar la función helper
+    // Buscar bloqueos del barbero en esa fecha y pasarlos al helper
+    const fechaDate = new Date(sanitizedFechaTurno);
+    const startOfDay = new Date(fechaDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(fechaDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const bloqueos = await prisma.bloqueos_barbero.findMany({
+      where: {
+        codBarbero: sanitizedCodBarbero,
+        fechaHoraDesde: { lte: endOfDay },
+        fechaHoraHasta: { gte: startOfDay },
+      },
+    });
+
+    // Usar la función helper (ahora considera bloqueos)
     const horasDisponibles = generateAvailableTimeSlots(
       turnos,
       sanitizedCodBarbero,
       undefined,
       sanitizedFechaTurno,
+      bloqueos,
     );
 
     console.log(`Found ${horasDisponibles.length} available slots for barber`);
@@ -808,9 +821,7 @@ export const checkoutAppointment = async (
 
     if (appointmentDateUTC !== todayUTC) {
       console.log("El turno no corresponde a la fecha de hoy");
-      throw new DatabaseError(
-        "Solo se pueden cobrar turnos del día de hoy",
-      );
+      throw new DatabaseError("Solo se pueden cobrar turnos del día de hoy");
     }
 
     // Combinar fecha del turno con hora desde para obtener el momento exacto de inicio
