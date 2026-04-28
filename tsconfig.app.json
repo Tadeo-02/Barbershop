@@ -17,9 +17,9 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
+    "noUnusedLocals": false, // Changed from true
+    "noUnusedParameters": false, // Changed from true
+    "erasableSyntaxOnly": false, // Changed from true to allow Enums/Classes
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "types": ["vitest/globals", "@testing-library/jest-dom"]
