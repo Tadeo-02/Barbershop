@@ -1,0 +1,58 @@
+# Multi-stage build for backend
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@10.17.1
+
+# Copy workspace files
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY src/BACK src/BACK
+COPY prisma prisma
+COPY tsconfig*.json ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build backend
+RUN pnpm run build:backend
+
+# Generate Prisma Client
+RUN pnpm exec prisma generate
+
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@10.17.1
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Copy package files
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY prisma prisma
+
+# Install only production dependencies
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy built backend from builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+USER nodejs
+
+EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/index.js"]
