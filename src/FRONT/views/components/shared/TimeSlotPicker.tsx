@@ -191,7 +191,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 
   const { manana, tarde, noche } = groupHorariosByPeriod();
 
-  const isWeekday = (date) => {
+  const isWeekday = (date: Date) => {
     return date.getDay() >= 1 && date.getDay() <= 6;
   };
 
