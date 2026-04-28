@@ -59,8 +59,6 @@ docker-compose.yml
 
 # Misc
 .editorconfig
-tsconfig*.json
-vite.config.ts
 eslint.config.js
 vitest.config.ts
 postcss.config.js

@@ -1,3 +1,26 @@
+# Development stage
+FROM node:20-alpine AS dev
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@10.17.1
+
+# Copy files
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY src/FRONT src/FRONT
+COPY src/BACK/Schemas src/BACK/Schemas
+COPY src/BACK/Admin/categories/Categories.ts src/BACK/Admin/categories/Categories.ts
+COPY src/assets src/assets
+COPY src/vite-env.d.ts src/vite-env.d.ts
+COPY public public
+COPY tsconfig*.json vite.config.ts index.html ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+CMD ["pnpm", "dev", "--host", "0.0.0.0", "--port", "3000"]
+
 # Build stage
 FROM node:20-alpine AS builder
 
@@ -9,15 +32,18 @@ RUN npm install -g pnpm@10.17.1
 # Copy files
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY src/FRONT src/FRONT
+COPY src/BACK/Schemas src/BACK/Schemas
+COPY src/BACK/Admin/categories/Categories.ts src/BACK/Admin/categories/Categories.ts
+COPY src/assets src/assets
+COPY src/vite-env.d.ts src/vite-env.d.ts
 COPY public public
 COPY tsconfig*.json vite.config.ts index.html ./
-COPY __tests__ __tests__
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
 # Build frontend
-RUN pnpm run build
+RUN pnpm run build:frontend
 
 # Production stage - serve with Nginx
 FROM nginx:alpine
@@ -30,12 +56,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built app from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Create non-root user
-RUN addgroup -g 1001 -S nginx && \
-    adduser -S nginx -u 1001
-
-USER nginx
 
 EXPOSE 3000
 

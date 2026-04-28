@@ -33,7 +33,7 @@
    - Add from `.env.example`:
      ```
      NODE_ENV=production
-     DATABASE_URL=postgresql://... (Railway generates this)
+     DATABASE_URL=mysql://... (Railway generates this)
      AFIP_ACCESS_TOKEN=...
      AFIP_CUIT=...
      ```
