@@ -1,5 +1,5 @@
 import rateLimit from "express-rate-limit";
-import { Request } from "express";
+import type { Request } from "express";
 
 /**
  * Generador de clave para usuarios autenticados

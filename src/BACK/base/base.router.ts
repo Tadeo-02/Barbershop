@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import express from "express";
-import { Router, RequestHandler } from "express";
+import type { Router, RequestHandler } from "express";
 
 export interface RouterConfig {
   create: string;
