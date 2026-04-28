@@ -2,6 +2,8 @@
 
 ## Common Issues & Solutions
 
+Note: This setup uses a remote MySQL database by default. Unless you added a local db service, commands that reference a `db` container do not apply.
+
 ### 1. Containers Won't Start
 
 #### Symptom
@@ -19,7 +21,6 @@ docker-compose up
 docker-compose logs -f
 docker-compose logs backend
 docker-compose logs frontend
-docker-compose logs db
 ```
 
 **Rebuild without cache:**
@@ -68,23 +69,16 @@ Error: Client network socket disconnected before secure TLS connection was estab
 - If still failing:
 
 ```bash
-# Check database health
-docker-compose ps
-# Look for db container status
-
-# View database logs
-docker-compose logs db
-
-# Manually check connection
-docker-compose exec db mysql -u barbershop_user -p
-# Enter password from .env file
+# Manually check connection to your remote DB
+mysql -h your-db-host.com -u your_user -p your_database
+# Enter password from DATABASE_URL or DB_* values
 ```
 
 **Fix DATABASE_URL format:**
 
 ```bash
-# ✓ Correct for Docker:
-DATABASE_URL=mysql://barbershop_user:password@db:3306/barbershop
+# ✓ Correct for remote DB:
+DATABASE_URL=mysql://barbershop_user:password@your-db-host:3306/barbershop
 
 # ✗ Wrong (localhost):
 DATABASE_URL=mysql://barbershop_user:password@localhost:3306/barbershop
@@ -102,7 +96,7 @@ DB_PASSWORD=barbershop_secure_password_change_me
 DB_NAME=barbershop
 
 # And DATABASE_URL uses same:
-DATABASE_URL=mysql://barbershop_user:barbershop_secure_password_change_me@db:3306/barbershop
+DATABASE_URL=mysql://barbershop_user:barbershop_secure_password_change_me@your-db-host:3306/barbershop
 ```
 
 ---
@@ -414,7 +408,7 @@ docker-compose exec backend pnpm exec prisma migrate status
 docker-compose exec backend pnpm exec prisma db validate
 
 # Or check manually
-docker-compose exec db mysql -u barbershop_user -p -e "USE barbershop; SHOW TABLES;"
+mysql -h your-db-host.com -u your_user -p your_database -e "SHOW TABLES;"
 ```
 
 ---
@@ -424,7 +418,7 @@ docker-compose exec db mysql -u barbershop_user -p -e "USE barbershop; SHOW TABL
 #### Symptom
 
 ```
-ERROR: Can't reach database server at `db:3306`
+ERROR: Can't reach database server at `your-db-host:3306`
 ```
 
 #### Solutions
@@ -433,8 +427,8 @@ ERROR: Can't reach database server at `db:3306`
 # Prisma Studio requires direct connection, not through Docker bridge
 # Instead use MySQL client:
 
-# Access the database directly
-docker-compose exec db mysql -u barbershop_user -p barbershop
+# Access the database directly (remote)
+mysql -h your-db-host.com -u your_user -p your_database
 
 # Or setup tunneling
 # From host machine:
@@ -453,7 +447,6 @@ docker-compose exec backend pnpm exec prisma studio --browser none
 ```bash
 docker-compose logs backend
 docker-compose logs frontend
-docker-compose logs db
 ```
 
 **Follow only new logs:**
@@ -552,17 +545,15 @@ services:
 **Check database performance:**
 
 ```bash
-# Connect to database
-docker-compose exec db mysql -u barbershop_user -p -e "
-  SELECT * FROM INFORMATION_SCHEMA.PROCESSLIST;
-"
+# Connect to database (remote)
+mysql -h your-db-host.com -u your_user -p your_database -e "SELECT * FROM INFORMATION_SCHEMA.PROCESSLIST;"
 ```
 
 **View container logs for errors:**
 
 ```bash
 docker-compose logs backend | tail -100
-docker-compose logs db | tail -100
+# Check your DB provider logs for slow queries/errors
 ```
 
 ---
@@ -575,16 +566,14 @@ docker-compose logs db | tail -100
 # Get shell access to container
 docker-compose exec backend sh
 docker-compose exec frontend sh
-docker-compose exec db bash
-
 # Check file permissions
 docker-compose exec backend ls -la dist/
 
 # Check Node version
 docker-compose exec backend node --version
 
-# Check MySQL version
-docker-compose exec db mysql --version
+# Check MySQL version (remote)
+mysql -h your-db-host.com -u your_user -p -e "SELECT VERSION();"
 ```
 
 **Collect diagnostics for support:**

@@ -121,11 +121,17 @@ print_urls() {
     print_header "Application URLs"
     echo -e "${GREEN}Frontend:${NC} http://localhost:3000"
     echo -e "${GREEN}Backend API:${NC} http://localhost:3001"
-    echo -e "${GREEN}Database:${NC} localhost:3306"
+    echo -e "${GREEN}Database:${NC} remote (see .env DATABASE_URL)"
     echo ""
-    echo -e "${BLUE}Database credentials:${NC}"
-    echo "  User: $(grep DB_USER .env | cut -d '=' -f2)"
-    echo "  Database: $(grep DB_NAME .env | cut -d '=' -f2)"
+    echo -e "${BLUE}Database connection:${NC}"
+    if grep -q "^DATABASE_URL=" .env; then
+        db_url=$(grep "^DATABASE_URL=" .env | cut -d '=' -f2- | tr -d '"')
+        db_url_masked=$(echo "$db_url" | sed -E 's#(mysql://[^:]+:)[^@]+@#\1****@#')
+        echo "  $db_url_masked"
+    else
+        echo "  User: $(grep DB_USER .env | cut -d '=' -f2)"
+        echo "  Database: $(grep DB_NAME .env | cut -d '=' -f2)"
+    fi
     echo ""
 }
 

@@ -6,10 +6,10 @@ Use this checklist before deploying to production.
 
 ## 🔐 Security
 
-- [ ] Change all default passwords in `.env`
-  - [ ] `DB_ROOT_PASSWORD` (16+ characters, mixed case, numbers, symbols)
-  - [ ] `DB_PASSWORD` (16+ characters, mixed case, numbers, symbols)
-  - [ ] Database backup credentials
+- [ ] Verify database credentials
+  - [ ] `DATABASE_URL` uses strong, non-default credentials
+  - [ ] Database provider credentials are rotated and stored securely
+  - [ ] Backup access credentials stored securely
 - [ ] Update AFIP credentials
   - [ ] `AFIP_ACCESS_TOKEN` is production token
   - [ ] `AFIP_CUIT` is production CUIT (not testing)
@@ -108,7 +108,7 @@ Use this checklist before deploying to production.
   - [ ] Port conflicts resolved
 
 - [ ] Volumes and data persistence
-  - [ ] Database data persists (named volumes)
+  - [ ] Database persistence and backups configured in DB provider
   - [ ] Log storage configured
   - [ ] Backup strategy for persistent data
 
@@ -261,10 +261,10 @@ Use this checklist before deploying to production.
 
 ## 🎯 Sign-off
 
-- [ ] **Dev Lead:** ********\_\_******** Date: ****\_\_\_****
-- [ ] **QA/Tester:** ********\_******** Date: ****\_\_\_****
-- [ ] **DevOps/Ops:** ******\_\_\_\_****** Date: ****\_\_\_****
-- [ ] **Product/Owner:** ******\_****** Date: ****\_\_\_****
+- [ ] **Dev Lead:** **\*\*\*\***\_\_**\*\*\*\*** Date: \***\*\_\_\_\*\***
+- [ ] **QA/Tester:** **\*\*\*\***\_**\*\*\*\*** Date: \***\*\_\_\_\*\***
+- [ ] **DevOps/Ops:** **\*\***\_\_\_\_**\*\*** Date: \***\*\_\_\_\*\***
+- [ ] **Product/Owner:** **\*\***\_**\*\*** Date: \***\*\_\_\_\*\***
 
 ---
 

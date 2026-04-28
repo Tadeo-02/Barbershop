@@ -8,9 +8,9 @@ The Docker setup includes:
 
 - **Frontend**: React app served via Nginx (port 3000)
 - **Backend**: Express.js API server (port 3001)
-- **Database**: MySQL 8.0 (port 3306)
+- **Database**: Remote MySQL (external service)
 
-All services communicate through a Docker network and are defined in `docker-compose.yml`.
+Frontend and backend communicate through a Docker network. The database is external and accessed via `DATABASE_URL`.
 
 ## Prerequisites
 
@@ -46,15 +46,10 @@ All services communicate through a Docker network and are defined in `docker-com
    docker-compose up --build
    ```
 
-   On first run, the backend will:
-   - Install dependencies
-   - Run Prisma migrations
-   - Start the API server
-
 5. **Access the application**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:3001
-   - Database: localhost:3306
+   - Database: your remote MySQL host
 
 6. **Stop services**
    ```bash
@@ -92,7 +87,6 @@ docker-compose down -v
 # Stop specific service
 docker-compose stop backend
 docker-compose stop frontend
-docker-compose stop db
 ```
 
 ### Viewing Logs
@@ -104,7 +98,6 @@ docker-compose logs -f
 # View logs from specific service
 docker-compose logs -f backend
 docker-compose logs -f frontend
-docker-compose logs -f db
 
 # View last 100 lines
 docker-compose logs --tail=100
@@ -112,11 +105,11 @@ docker-compose logs --tail=100
 
 ### Database Management
 
-#### Access MySQL directly
+#### Access MySQL directly (remote)
 
 ```bash
-docker exec -it barbershop-db mysql -u barbershop_user -p barbershop
-# Enter password when prompted (check .env for DB_PASSWORD)
+mysql -h your-db-host.com -u your_user -p your_database
+# Enter password when prompted (check DATABASE_URL or DB_* values)
 ```
 
 #### Run Prisma commands inside backend container
@@ -135,18 +128,16 @@ docker-compose exec backend pnpm exec prisma db push
 docker-compose exec backend pnpm exec prisma studio
 ```
 
-#### Backup database
+#### Backup database (remote)
 
 ```bash
-docker exec barbershop-db mysqldump -u barbershop_user -p barbershop > backup.sql
-# Enter password when prompted
+mysqldump -h your-db-host.com -u your_user -p your_database > backup.sql
 ```
 
-#### Restore database
+#### Restore database (remote)
 
 ```bash
-docker exec -i barbershop-db mysql -u barbershop_user -p barbershop < backup.sql
-# Enter password when prompted
+mysql -h your-db-host.com -u your_user -p your_database < backup.sql
 ```
 
 ### Debugging
@@ -167,8 +158,7 @@ docker-compose exec backend sh
 # Get shell access to frontend
 docker-compose exec frontend sh
 
-# Get shell access to database
-docker-compose exec db bash
+# Database access is via your remote provider
 ```
 
 #### View container resource usage
@@ -213,30 +203,23 @@ Before deploying, create a `.env` file with production values:
 ```env
 NODE_ENV=production
 
-# Use strong, random passwords
-DB_ROOT_PASSWORD=your_strong_root_password_here
-DB_PASSWORD=your_strong_db_password_here
-DB_USER=barbershop_user
-DB_NAME=barbershop
+# Remote MySQL connection
+DATABASE_URL=mysql://user:password@your-db-host.com:3306/database_name
 
 # Your backend configuration
 # AFIP_CUIT=your_production_cuit
 # AFIP_SECRET=your_production_secret
 ```
 
-### Database URL for Production
+### Database URL (required)
 
-If using an external MySQL database:
-
-```env
-DATABASE_URL=mysql://user:password@your-db-host.com:3306/database_name
-```
+Set `DATABASE_URL` to your remote MySQL connection string.
 
 ## Security Considerations
 
-1. **Change Default Passwords**
-   - Update `DB_ROOT_PASSWORD` and `DB_PASSWORD` in `.env`
-   - Use strong, random passwords (minimum 16 characters)
+1. **Database Credentials**
+   - Ensure `DATABASE_URL` uses strong, non-default credentials
+   - Rotate database credentials regularly
 
 2. **Environment Variables**
    - Never commit `.env` file to Git
@@ -301,14 +284,11 @@ docker-compose up
 ### Database connection issues
 
 ```bash
-# Verify database is healthy
-docker-compose ps
-
-# Check database logs
-docker-compose logs db
-
 # Verify connection string in .env
-# Format: mysql://user:password@db:3306/database_name
+# Format: mysql://user:password@your-db-host:3306/database_name
+
+# Check connectivity to your remote DB host
+mysql -h your-db-host.com -u your_user -p your_database
 ```
 
 ### Backend port conflicts
@@ -353,7 +333,7 @@ docker image prune
 # Scale backend to 3 instances (requires load balancer)
 docker-compose up -d --scale backend=3
 
-# Note: Frontend and Database should only run 1 instance each
+# Note: Frontend should only run 1 instance in Compose
 ```
 
 ### Resource limits

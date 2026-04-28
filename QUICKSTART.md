@@ -35,7 +35,7 @@ docker-compose up -d
 
 - **Frontend:** http://localhost:3000
 - **Backend API:** http://localhost:3001
-- **Database:** localhost:3306
+- **Database:** Your remote MySQL server
 
 ### 4. Done! 🎉
 
@@ -76,7 +76,7 @@ docker-compose ps
 ```bash
 docker-compose logs -f
 docker-compose logs -f backend    # Just backend
-docker-compose logs -f db         # Just database
+docker-compose logs -f frontend   # Just frontend
 ```
 
 ### Stop Everything
@@ -94,9 +94,18 @@ docker-compose up --build
 
 ### Access Database
 
+Since your MySQL is remote, use your database client directly:
+
 ```bash
-docker-compose exec db mysql -u barbershop_user -p barbershop
-# Password: (from .env DB_PASSWORD)
+# Connect to your remote MySQL
+mysql -h your-db-host.com -u your_user -p your_database
+```
+
+Or run Prisma commands in the backend container:
+
+```bash
+docker-compose exec backend pnpm exec prisma db validate
+docker-compose exec backend pnpm exec prisma migrate deploy
 ```
 
 ### Run Migrations
@@ -184,22 +193,21 @@ sleep 15
 docker-compose exec backend pnpm exec prisma db push
 ```
 
-👉 See [DOCKER_TROUBLESHOOTING.md](DOCKER_TROUBLESHOOTING.md) for more issues
-
----
-
-## Environment Variables
-
-Edit `.env` before running in production:
+- especially the `DATABASE_URL`:
 
 ```env
-# Security: Change these!
-DB_ROOT_PASSWORD=change_me_strong_password
-DB_PASSWORD=change_me_strong_password
+NODE_ENV=production
+BACKEND_PORT=3001
+FRONTEND_PORT=3000
+FRONTEND_URL=http://localhost:3000
 
-# Your AFIP credentials
+# Your REMOTE MySQL connection string
+DATABASE_URL="mysql://YOUR_USER:YOUR_PASSWORD@your-host.com:3306/your_database"
+
+# Your AFIP credentials (if using billing)
 AFIP_ACCESS_TOKEN=your_token
 AFIP_CUIT=your_cuit
+AFIP_ENVIRONMENT=testing
 
 # SMTP (optional)
 SMTP_HOST=smtp.example.com
@@ -211,18 +219,18 @@ SMTP_PASS=your_password
 
 ## File Reference
 
-| File                        | Purpose                                            |
-| --------------------------- | -------------------------------------------------- |
-| `docker-compose.yml`        | Defines all services (backend, frontend, database) |
-| `Dockerfile.backend`        | Builds the Node.js backend container               |
-| `Dockerfile.frontend`       | Builds the Nginx frontend container                |
-| `nginx.conf`                | Nginx configuration (routes, proxies)              |
-| `.env.example`              | Environment variables template                     |
-| `docker-manage.bat`         | Windows management script                          |
-| `docker-manage.sh`          | Linux/Mac management script                        |
-| `DOCKER_SETUP.md`           | Comprehensive Docker documentation                 |
-| `DEPLOYMENT_GUIDES.md`      | Platform-specific deployment guides                |
-| `DOCKER_TROUBLESHOOTING.md` | Common issues & solutions                          |
+| File                        | Purpose                                       |
+| --------------------------- | --------------------------------------------- |
+| `docker-compose.yml`        | Defines all services (backend, frontend only) |
+| `Dockerfile.backend`        | Builds the Node.js backend container          |
+| `Dockerfile.frontend`       | Builds the Nginx frontend container           |
+| `nginx.conf`                | Nginx configuration (routes, proxies)         |
+| `.env.example`              | Environment variables template                |
+| `docker-manage.bat`         | Windows management script                     |
+| `docker-manage.sh`          | Linux/Mac management script                   |
+| `DOCKER_SETUP.md`           | Comprehensive Docker documentation            |
+| `DEPLOYMENT_GUIDES.md`      | Platform-specific deployment guides           |
+| `DOCKER_TROUBLESHOOTING.md` | Common issues & solutions                     |
 
 ---
 
