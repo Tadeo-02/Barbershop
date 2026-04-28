@@ -1,0 +1,42 @@
+# Development Override Configuration for Docker Compose
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+# Or add to .env: COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml
+
+version: "3.8"
+
+services:
+  db:
+    # Allow connection from host machine for development tools
+    ports:
+      - "3306:3306"
+    # Keep data between sessions
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    # Mount source code for hot reloading
+    volumes:
+      - ./src/BACK:/app/src/BACK
+      - ./prisma:/app/prisma
+      - ./tsconfig*.json:/app/tsconfig.json
+      - ./index.ts:/app/index.ts
+      - /app/node_modules # Prevent host node_modules from overwriting
+
+    # Use watch mode for development
+    environment:
+      NODE_ENV: development
+
+    # Restart on file changes
+    command: pnpm run dev:backend
+
+  frontend:
+    # Mount source code for Vite hot module reloading (HMR)
+    volumes:
+      - ./src/FRONT:/app/src/FRONT
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - /app/node_modules
+
+    environment:
+      NODE_ENV: development

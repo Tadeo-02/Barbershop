@@ -1,0 +1,67 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node
+node_modules
+npm-debug.log
+pnpm-debug.log
+yarn-error.log
+
+# Dependencies and lock files (we'll use the repo's lock)
+package-lock.json
+yarn.lock
+
+# Environment files (don't include in image)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build output (we'll rebuild)
+dist
+build
+.next
+
+# Tests
+__tests__
+.coverage
+coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Docs
+docs.md
+README.md
+proposal.md
+SECURITY_TESTING.md
+TODO.md
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# Docker files
+Dockerfile*
+docker-compose.yml
+.dockerignore
+
+# Misc
+.editorconfig
+tsconfig*.json
+vite.config.ts
+eslint.config.js
+vitest.config.ts
+postcss.config.js
+tailwind.config.js

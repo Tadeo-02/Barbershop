@@ -5,6 +5,12 @@ import type { Request, Response } from "express";
 //  res.render("index");
 //};
 
+const health = (req: Request, res: Response) => {
+  res
+    .status(200)
+    .json({ status: "healthy", timestamp: new Date().toISOString() });
+};
+
 const privated = (req: Request, res: Response) => {
   // console.log(__dirname)
   res.sendFile(path.resolve(__dirname, "../../index.html"));
@@ -12,5 +18,6 @@ const privated = (req: Request, res: Response) => {
 
 export {
   // index,
+  health,
   privated,
 };
