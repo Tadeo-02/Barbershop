@@ -10,10 +10,7 @@ The easiest way to get started is with **Docker**:
 cp .env.example .env
 docker-compose up -d
 ```
-
 Then visit: **http://localhost:3000**
-
-📖 See [QUICKSTART.md](QUICKSTART.md) for detailed Docker setup.
 
 ## 📚 Documentation
 

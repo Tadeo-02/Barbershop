@@ -6,8 +6,11 @@ export const prisma = new PrismaClient();
 
 // error universal
 export class DatabaseError extends Error {
-  constructor(message: string, public code?: string) {
+  code?: string;
+
+  constructor(message: string, code?: string) {
     super(message);
+    this.code = code;
     this.name = "DatabaseError";
   }
 }

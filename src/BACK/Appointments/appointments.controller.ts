@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as model from "./Appointments";
 import { BaseController } from "../base/base.controller"; // importamos las reques, responde y dataBaseError de la base
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 // creamos la clase barberController para enviar y manejar el base
 class AppointmentsController extends BaseController<any> {
   protected model = model;
