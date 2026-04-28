@@ -1,25 +1,16 @@
 import path from "path";
 import type { Request, Response } from "express";
 
-//const index = (req: Request, res: Response) => {
-//  res.render("index");
-//};
-
 const health = (_req: Request, res: Response) => {
-  void _req;
+  // Removed 'void _req;' - the underscore in the parameter is enough
   res
     .status(200)
     .json({ status: "healthy", timestamp: new Date().toISOString() });
 };
 
 const privated = (_req: Request, res: Response) => {
-  void _req;
-  // console.log(__dirname)
+  // Ensure __dirname is available (common issue in ESM)
   res.sendFile(path.resolve(__dirname, "../../index.html"));
 };
 
-export {
-  // index,
-  health,
-  privated,
-};
+export { health, privated };
