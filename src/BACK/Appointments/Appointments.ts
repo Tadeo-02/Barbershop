@@ -2,6 +2,7 @@ import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importam
 import { z } from "zod";
 import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 import { billAppointment } from "../billing/Billing";
+import { getDiscountCycle, applyDiscountIfEligible } from "../lib/discount";
 
 // Umbrales configurables (pueden ser sobreescritos por env vars durante pruebas)
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
@@ -864,22 +865,20 @@ export const checkoutAppointment = async (
           },
         });
 
-        // incluir el turno actual en el conteo para evaluar si corresponde el descuento
-        const cobradoCountConEsteTurno = cobradoCount + 1;
+        const categoriaNombre = latestCategory.nombreCategoria || null;
+        const cycle = getDiscountCycle(categoriaNombre);
 
-        let cycle = 0;
-        const categoriaNombre = latestCategory.nombreCategoria || "";
-        if (categoriaNombre === "Medium") cycle = 4;
-        else if (categoriaNombre === "Premium") cycle = 6;
+        const { precioFinal: appliedPrice, applied } = applyDiscountIfEligible(
+          precioTurno,
+          latestCategory.descuentoCorte,
+          cobradoCount,
+          cycle,
+        );
 
-        if (cycle > 0 && cobradoCountConEsteTurno % cycle === 0) {
-          const descuentoCorte = latestCategory.descuentoCorte;
-          precioFinal =
-            descuentoCorte >= 100
-              ? 0
-              : precioTurno * (1 - descuentoCorte / 100);
+        if (applied) {
+          precioFinal = appliedPrice;
           console.log(
-            `Aplicando descuento de ${descuentoCorte}% - Precio original: ${precioTurno}, Precio final: ${precioFinal}`,
+            `Aplicando descuento de ${latestCategory.descuentoCorte}% - Precio original: ${precioTurno}, Precio final: ${precioFinal}`,
           );
         }
       }

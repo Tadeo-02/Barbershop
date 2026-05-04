@@ -2,6 +2,11 @@ import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
 import { hashPassword, comparePassword } from "../users/bcrypt";
 import { UserSchema, UserBaseSchemaExport } from "../Schemas/usersSchema";
+import {
+  getDiscountCycle,
+  turnsUntilNextDiscount as calcTurnsUntilNextDiscount,
+  isThisTurnEligible,
+} from "../lib/discount";
 
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
   process.env.INITIAL_TO_MEDIUM_DAYS || "30",
@@ -67,36 +72,42 @@ const buildLoyaltyProgress = async (
   });
 
   const now = new Date();
-  const totalMs = thresholdDate ? Math.max(thresholdDate.getTime() - startDate.getTime(), 0) : 0;
+  const totalMs = thresholdDate
+    ? Math.max(thresholdDate.getTime() - startDate.getTime(), 0)
+    : 0;
   const elapsedMs = thresholdDate
     ? Math.min(Math.max(now.getTime() - startDate.getTime(), 0), totalMs)
     : 0;
 
   const timeProgress = totalMs > 0 ? elapsedMs / totalMs : 1;
-  const countProgress = countRequired && countRequired > 0 ? Math.min(countCurrent / countRequired, 1) : 1;
+  const countProgress =
+    countRequired && countRequired > 0
+      ? Math.min(countCurrent / countRequired, 1)
+      : 1;
   const progress = nextCategory ? Math.min(timeProgress, countProgress) : null;
   const daysRequired = totalMs > 0 ? Math.ceil(totalMs / MS_PER_DAY) : null;
   const daysCurrent = totalMs > 0 ? Math.floor(elapsedMs / MS_PER_DAY) : null;
 
   // Calcular ciclo de descuento para la categoría actual (si aplica)
-  let discountCycle: number | null = null;
-  if (nombreCategoria === "Medium") discountCycle = 4;
-  else if (nombreCategoria === "Premium") discountCycle = 6;
+  const discountCycle = getDiscountCycle(nombreCategoria);
 
   let turnsUntilNextDiscount: number | null = null;
   let discountProgress: number | null = null;
+  let isThisTurnEligibleFlag: boolean | null = null;
 
   if (discountCycle && typeof countCurrent === "number") {
-    // contar cuántos turnos faltan hasta el próximo turno que recibirá descuento
-    // Nota: en el backend al cobrar se utiliza (count + 1) para evaluar si el turno actual
-    // corresponde al múltiplo del ciclo. Para la UI calculamos cuántos turnos faltan
-    // antes de que un turno futuro (incluyendo el próximo) sea elegible.
-    turnsUntilNextDiscount =
-      (discountCycle - ((countCurrent + 1) % discountCycle)) % discountCycle;
+    turnsUntilNextDiscount = calcTurnsUntilNextDiscount(
+      countCurrent,
+      discountCycle,
+    );
     discountProgress =
       discountCycle > 0
-        ? Math.round(((discountCycle - turnsUntilNextDiscount) / discountCycle) * 100) / 100
+        ? Math.round(
+            ((discountCycle - (turnsUntilNextDiscount ?? 0)) / discountCycle) *
+              100,
+          ) / 100
         : null;
+    isThisTurnEligibleFlag = isThisTurnEligible(countCurrent, discountCycle);
   }
 
   return {
@@ -113,6 +124,7 @@ const buildLoyaltyProgress = async (
     discountCycle,
     turnsUntilNextDiscount,
     discountProgress,
+    isThisTurnEligible: isThisTurnEligibleFlag,
   };
 };
 
