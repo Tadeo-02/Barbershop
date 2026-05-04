@@ -819,7 +819,7 @@ export const checkoutAppointment = async (
     const todayUTC = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
     const appointmentDateUTC = fechaTurno.toISOString().substring(0, 10);
 
-    if (appointmentDateUTC !== todayUTC) {
+    if (appointmentDateUTC > todayUTC) {
       console.log("El turno no corresponde a la fecha de hoy");
       throw new DatabaseError("Solo se pueden cobrar turnos del día de hoy");
     }
@@ -839,52 +839,70 @@ export const checkoutAppointment = async (
       );
     }
 
-    // Obtener la categoría vigente del cliente ANTES de actualizar para aplicar descuentos
-    const latestCvBeforeUpdate = await prisma.categoria_vigente.findFirst({
-      where: { codCliente: turnoExistente.codCliente },
-      orderBy: { ultimaFechaInicio: "desc" },
-      include: { categorias: true },
-    });
-
-    // Calcular precio con descuento si existe categoría vigente
-    let precioFinal = precioTurno;
-    if (latestCvBeforeUpdate && latestCvBeforeUpdate.categorias) {
-      const descuentoCorte = latestCvBeforeUpdate.categorias.descuentoCorte;
-      precioFinal = precioTurno * (1 - descuentoCorte / 100);
-      console.log(
-        `🎟️ Aplicando descuento de ${descuentoCorte}% - Precio original: ${precioTurno}, Precio final: ${precioFinal}`,
-      );
-    }
-
-    // Actualizar el turno con el precio con descuento aplicado
-    const turnoUpdated = await prisma.turno.update({
-      where: { codTurno: sanitizedCodTurno },
-      data: {
-        codCorte: sanitizedCodCorte,
-        precioTurno: precioFinal,
-        metodoPago: metodoPago || null,
-        estado: "Cobrado",
-      },
-    });
-
-    await prisma.$transaction(async (tx) => {
-      const codCliente = turnoUpdated.codCliente;
+    const { turnoUpdated } = await prisma.$transaction(async (tx) => {
+      const codCliente = turnoExistente.codCliente;
 
       const latestCv = await tx.categoria_vigente.findFirst({
         where: { codCliente },
         orderBy: { ultimaFechaInicio: "desc" },
+        include: { categorias: true },
+      });
+
+      const latestCategory = latestCv?.categorias ?? null;
+
+      // Calcular el descuento desde la última categoría vigente.      // Regla actualizada:
+      let precioFinal = precioTurno;
+
+      if (latestCv && latestCategory) {
+        const cobradoCount = await tx.turno.count({
+          where: {
+            codCliente,
+            estado: "Cobrado",
+            fechaTurno: latestCv.ultimaFechaInicio
+              ? { gt: latestCv.ultimaFechaInicio }
+              : undefined,
+          },
+        });
+
+        // incluir el turno actual en el conteo para evaluar si corresponde el descuento
+        const cobradoCountConEsteTurno = cobradoCount + 1;
+
+        let cycle = 0;
+        const categoriaNombre = latestCategory.nombreCategoria || "";
+        if (categoriaNombre === "Medium") cycle = 4;
+        else if (categoriaNombre === "Premium") cycle = 6;
+
+        if (cycle > 0 && cobradoCountConEsteTurno % cycle === 0) {
+          const descuentoCorte = latestCategory.descuentoCorte;
+          precioFinal =
+            descuentoCorte >= 100
+              ? 0
+              : precioTurno * (1 - descuentoCorte / 100);
+          console.log(
+            `Aplicando descuento de ${descuentoCorte}% - Precio original: ${precioTurno}, Precio final: ${precioFinal}`,
+          );
+        }
+      }
+
+      // Actualizar el turno con el precio calculado
+      const turnoUpdated = await tx.turno.update({
+        where: { codTurno: sanitizedCodTurno },
+        data: {
+          codCorte: sanitizedCodCorte,
+          precioTurno: precioFinal,
+          metodoPago: metodoPago || null,
+          estado: "Cobrado",
+        },
       });
 
       if (!latestCv) {
         console.warn(
           `No categoria_vigente encontrada para cliente ${codCliente}`,
         );
-        return;
+        return { turnoUpdated };
       }
 
-      const currentCategoria = await tx.categoria.findUnique({
-        where: { codCategoria: latestCv.codCategoria },
-      });
+      const currentCategoria = latestCategory;
       const nombreCategoria = currentCategoria?.nombreCategoria || null;
       const ultimaFechaInicio = latestCv.ultimaFechaInicio;
 
@@ -944,6 +962,7 @@ export const checkoutAppointment = async (
           }
         }
       }
+      return { turnoUpdated };
     });
 
     console.log("Turno cobrado exitosamente", {
@@ -960,8 +979,11 @@ export const checkoutAppointment = async (
         CAE: facturacion.CAE,
         voucherNumber: facturacion.voucher_number,
       });
-    } catch (billingError: any) {
-      facturacionError = billingError.message || "Error desconocido de ARCA";
+    } catch (billingError: unknown) {
+      facturacionError =
+        billingError instanceof Error
+          ? billingError.message
+          : "Error desconocido de ARCA";
       console.warn(
         "⚠️ No se pudo generar factura ARCA automáticamente. Se puede facturar manualmente desde /facturacion/facturar-turno",
         facturacionError,
