@@ -284,28 +284,29 @@ const Home = () => {
   const currentDiscount = loyaltyProgress?.currentDiscount ?? null;
 
   const remainingTurns = loyaltyProgress?.turnsUntilNextDiscount ?? null;
+  const discountTurnsRequired = (() => {
+    if (typeof loyaltyProgress?.discountCycle !== "number") return null;
+    return Math.max(loyaltyProgress.discountCycle - 1, 0);
+  })();
+  const discountTurnsCompleted = (() => {
+    if (discountTurnsRequired === null || remainingTurns === null) return null;
+    return Math.min(
+      Math.max(discountTurnsRequired - remainingTurns, 0),
+      discountTurnsRequired,
+    );
+  })();
   const discountProgressPercent = (() => {
-    if (typeof loyaltyProgress?.discountProgress === "number") {
-      return Math.round(loyaltyProgress.discountProgress * 100);
-    }
-    const cycle = loyaltyProgress?.discountCycle ?? null;
-    const turns = loyaltyProgress?.turnsUntilNextDiscount ?? null;
-    if (cycle && typeof turns === "number") {
-      const pct = Math.round(((cycle - turns) / cycle) * 100);
+    if (
+      discountTurnsRequired !== null &&
+      discountTurnsRequired > 0 &&
+      discountTurnsCompleted !== null
+    ) {
+      const pct = Math.round(
+        (discountTurnsCompleted / discountTurnsRequired) * 100,
+      );
       return Number.isFinite(pct) ? pct : null;
     }
     return null;
-  })();
-  const discountLabel =
-    currentDiscount !== null
-      ? `Descuento actual: ${currentDiscount}%`
-      : "Sin descuento disponible";
-  const loyaltyMessage = (() => {
-    if (remainingTurns === null)
-      return "Sin información de fidelidad disponible.";
-    if (remainingTurns === 0)
-      return "Tenés el descuento listo para tu próximo turno.";
-    return "";
   })();
 
   return (
@@ -399,24 +400,28 @@ const Home = () => {
 
         <div className={styles.loyaltyCard}>
           {loadingLoyalty ? (
-            <p className={styles.cardEmpty}>Cargando fidelidad...</p>
+            <p className={styles.cardEmpty}>Cargando descuento...</p>
           ) : remainingTurns === null ? (
-            <p className={styles.cardEmpty}>
-              Sin información de fidelidad disponible.
-            </p>
+            <p className={styles.cardEmpty}>Sin información disponible.</p>
           ) : (
             <>
               <div className={styles.discountContent}>
                 <p className={styles.discountTurns}>
                   <span className={styles.discountTurnsCount}>
-                    {typeof loyaltyProgress?.discountCycle === "number"
-                      ? `${loyaltyProgress.discountCycle - remainingTurns} de ${loyaltyProgress.discountCycle}`
+                    {discountTurnsRequired !== null &&
+                    discountTurnsCompleted !== null
+                      ? `${discountTurnsCompleted} de ${discountTurnsRequired}`
                       : "-"}
                   </span>
                 </p>
                 <p className={styles.discountDescription}>
                   Para tu próximo {currentDiscount}% de descuento
                 </p>
+                { remainingTurns === 0 && ( 
+                  <p className={styles.progressPercentage}>
+                    ¡Listo! En tu próximo turno se aplicará el descuento.
+                  </p>
+                )}
               </div>
 
               <div className={styles.progressBar}>
