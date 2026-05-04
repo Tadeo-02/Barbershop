@@ -3,6 +3,119 @@ import { z } from "zod";
 import { hashPassword, comparePassword } from "../users/bcrypt";
 import { UserSchema, UserBaseSchemaExport } from "../Schemas/usersSchema";
 
+const INITIAL_TO_MEDIUM_DAYS = parseInt(
+  process.env.INITIAL_TO_MEDIUM_DAYS || "30",
+  10,
+);
+const INITIAL_TO_MEDIUM_COUNT = parseInt(
+  process.env.INITIAL_TO_MEDIUM_COUNT || "5",
+  10,
+);
+const MEDIUM_TO_PREMIUM_YEARS = parseInt(
+  process.env.MEDIUM_TO_PREMIUM_YEARS || "3",
+  10,
+);
+const MEDIUM_TO_PREMIUM_COUNT = parseInt(
+  process.env.MEDIUM_TO_PREMIUM_COUNT || "25",
+  10,
+);
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+const buildLoyaltyProgress = async (
+  codCliente: string,
+  categoriaActual?: {
+    categorias?: { nombreCategoria: string; descuentoCorte: number };
+    ultimaFechaInicio?: Date;
+  } | null,
+) => {
+  if (
+    !categoriaActual ||
+    !categoriaActual.categorias ||
+    !categoriaActual.ultimaFechaInicio
+  ) {
+    return null;
+  }
+
+  const nombreCategoria = categoriaActual.categorias.nombreCategoria;
+  const descuentoCorte = categoriaActual.categorias.descuentoCorte;
+  const startDate = new Date(categoriaActual.ultimaFechaInicio);
+
+  let nextCategory: string | null = null;
+  let countRequired: number | null = null;
+  let thresholdDate: Date | null = null;
+
+  if (nombreCategoria === "Inicial") {
+    nextCategory = "Medium";
+    countRequired = INITIAL_TO_MEDIUM_COUNT;
+    thresholdDate = new Date(startDate);
+    thresholdDate.setDate(thresholdDate.getDate() + INITIAL_TO_MEDIUM_DAYS);
+  } else if (nombreCategoria === "Medium") {
+    nextCategory = "Premium";
+    countRequired = MEDIUM_TO_PREMIUM_COUNT;
+    thresholdDate = new Date(startDate);
+    thresholdDate.setFullYear(
+      thresholdDate.getFullYear() + MEDIUM_TO_PREMIUM_YEARS,
+    );
+  }
+
+  const countCurrent = await prisma.turno.count({
+    where: {
+      codCliente,
+      estado: "Cobrado",
+      fechaTurno: { gt: startDate },
+    },
+  });
+
+  const now = new Date();
+  const totalMs = thresholdDate ? Math.max(thresholdDate.getTime() - startDate.getTime(), 0) : 0;
+  const elapsedMs = thresholdDate
+    ? Math.min(Math.max(now.getTime() - startDate.getTime(), 0), totalMs)
+    : 0;
+
+  const timeProgress = totalMs > 0 ? elapsedMs / totalMs : 1;
+  const countProgress = countRequired && countRequired > 0 ? Math.min(countCurrent / countRequired, 1) : 1;
+  const progress = nextCategory ? Math.min(timeProgress, countProgress) : null;
+  const daysRequired = totalMs > 0 ? Math.ceil(totalMs / MS_PER_DAY) : null;
+  const daysCurrent = totalMs > 0 ? Math.floor(elapsedMs / MS_PER_DAY) : null;
+
+  // Calcular ciclo de descuento para la categoría actual (si aplica)
+  let discountCycle: number | null = null;
+  if (nombreCategoria === "Medium") discountCycle = 4;
+  else if (nombreCategoria === "Premium") discountCycle = 6;
+
+  let turnsUntilNextDiscount: number | null = null;
+  let discountProgress: number | null = null;
+
+  if (discountCycle && typeof countCurrent === "number") {
+    // contar cuántos turnos faltan hasta el próximo turno que recibirá descuento
+    // Nota: en el backend al cobrar se utiliza (count + 1) para evaluar si el turno actual
+    // corresponde al múltiplo del ciclo. Para la UI calculamos cuántos turnos faltan
+    // antes de que un turno futuro (incluyendo el próximo) sea elegible.
+    turnsUntilNextDiscount =
+      (discountCycle - ((countCurrent + 1) % discountCycle)) % discountCycle;
+    discountProgress =
+      discountCycle > 0
+        ? Math.round(((discountCycle - turnsUntilNextDiscount) / discountCycle) * 100) / 100
+        : null;
+  }
+
+  return {
+    currentCategory: nombreCategoria,
+    currentDiscount: descuentoCorte,
+    nextCategory,
+    countCurrent,
+    countRequired,
+    daysCurrent,
+    daysRequired,
+    progress,
+    isMaxCategory: false,
+    // Campos adicionales para progreso hacia el próximo descuento dentro de la categoría
+    discountCycle,
+    turnsUntilNextDiscount,
+    discountProgress,
+  };
+};
+
 // Función para crear usuario normal (sin CUIL)
 export const store = async (
   dni: string,
@@ -251,6 +364,10 @@ export const findByIdWithCategory = async (codUsuario: string) => {
       throw new DatabaseError("Usuario no encontrado");
     }
     const categoriaActual = usuario.categoria_vigente[0];
+    const loyaltyProgress = await buildLoyaltyProgress(
+      sanitizedCodUsuario,
+      categoriaActual,
+    );
     return {
       ...usuario,
       categoriaActual: categoriaActual
@@ -263,6 +380,7 @@ export const findByIdWithCategory = async (codUsuario: string) => {
             fechaInicio: categoriaActual.ultimaFechaInicio,
           }
         : null,
+      loyaltyProgress,
       categoria_vigente: undefined, // Remover para limpiar la respuesta
     };
   } catch (error) {
