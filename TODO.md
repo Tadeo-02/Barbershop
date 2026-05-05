@@ -1,4 +1,8 @@
-
+- factura, distibucion de datos
+- perfil cliente
+- sidebar
+- seleccion sucursal, lugar botones para continuar
+- arreglar pantalla de home cuando la sesión esta iniciada
 ### QUITAR 'ANY's
 
 # FRONT:
@@ -64,3 +68,4 @@
     - [X] Reestablecer contraseña y unificacion de patrones. Se permite mantener las contraseñas viejas a excepcion de cp3 (revisar readme para ver nueva contraseña).
     - [X] Implementar los descuentos de las categorias
     - [ ] Manejo dias feriados en el DatePicker
+
