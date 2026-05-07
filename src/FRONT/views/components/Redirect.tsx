@@ -39,18 +39,10 @@ export const AutoRedirect = () => {
 
   React.useEffect(() => {
     if (!user) return;
-
-    const target =
-      user.cuil === "1"
-        ? "/Admin/HomePageAdmin"
-        : user.cuil
-        ? "/Barber/HomePageBarber"
-        : "/Client/Home";
-
-    if (location.pathname !== target) {
+    if (location.pathname === "/") {
       redirectUser(user);
     }
-  }, [user, location.pathname, redirectUser, navigate]);
+  }, [user, location.pathname, redirectUser]);
 
   React.useEffect(() => {
     if (user) {
