@@ -6,18 +6,18 @@ body {
   background-color: #f8f8f8;
   color: #333;
   margin: 0;
-  padding: 10px;
+  padding: 12px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Headings */
-.pageTitle, h2  {
-  font-size: 2rem;
+.pageTitle, h2 {
+  font-size: 1.7rem;
   color: #1a202c;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-weight: 700;
   letter-spacing: -0.025em;
 }
@@ -26,8 +26,8 @@ body {
 /* Container for IndexCategorias */
 .indexCategories {
   max-width: 100%;
-  margin: 20px 0;
-  padding: 15px;
+  margin: 16px auto;
+  padding: 14px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -72,8 +72,8 @@ body {
 /* Form Styles (for Create and Modificar) */
 .formContainer {
   max-width: 100%;
-  margin: 20px auto;
-  padding: 15px;
+  margin: 16px auto;
+  padding: 14px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -141,6 +141,17 @@ body {
   margin: 10px 0 0 0;
 }
 
+.createButton {
+  width: 100%;
+  margin: 0 auto 12px;
+}
+
+.createButtonWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .buttonPrimary {
   background-color: #2b6cb0;
   /* Azul más intenso para el primario */
@@ -205,6 +216,7 @@ body {
 .indexCategories li .button {
   margin-top: 0;
   width: auto;
+  min-width: 130px;
 }
 
 /* contenedor de los botones con acciones */
@@ -212,16 +224,16 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
+  align-items: stretch;
+  justify-content: stretch;
 }
 
 
 .categoryInfo {
-  flex: 1; /* permitir que el área de información crezca como .sucursalInfo */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .categoryTitle {
@@ -387,7 +399,7 @@ body {
   text-decoration: none;
   font-weight: 500;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .backButton:hover {
@@ -397,21 +409,24 @@ body {
 
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
+  body {
+    padding: 24px;
+  }
   .pageTitle,
   h2 {
-    font-size: 2.5rem;
-    margin-bottom: 30px;
+    font-size: 2.4rem;
+    margin-bottom: 26px;
   }
   .indexCategories,
   .formContainer {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 30px;
+    max-width: 920px;
+    margin: 32px auto;
+    padding: 28px;
   }
   .indexCategories li {
-    padding: 20px;
-    gap: 10px;
-    margin-bottom: 15px;
+    padding: 20px 22px;
+    gap: 14px;
+    margin-bottom: 16px;
   }
   .button {
     width: auto;
@@ -419,26 +434,37 @@ body {
     margin-top: 10px;
     margin-bottom: 0;
   }
+
+  .indexCategories li .button {
+    min-width: 140px;
+  }
+
+  .createButton {
+    width: 240px;
+    margin: 0 auto 18px;
+  }
   .actionButtons {
     flex-direction: row;
     gap: 10px;
     margin-top: 0;
+    justify-content: flex-end;
+    align-items: center;
   }
   .categoryTitle {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
   }
   .loadingState,
   .emptyState {
-    padding: 40px;
-    font-size: 1.1rem;
+    padding: 36px;
+    font-size: 1.05rem;
   }
   .emptyState p {
-    font-size: 1.1rem;
-    margin-bottom: 20px;
+    font-size: 1.05rem;
+    margin-bottom: 18px;
   }
   .backButton {
     padding: 10px 20px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
   .successMessage,
   .errorMessage {
