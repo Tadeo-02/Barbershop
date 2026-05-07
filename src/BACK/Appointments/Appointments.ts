@@ -664,6 +664,9 @@ export const update = async (
     const fechaCancelacionDate = validatedData.fechaCancelacion
       ? new Date(validatedData.fechaCancelacion)
       : null;
+    const estadoFinal = fechaCancelacionDate
+      ? "Cancelado"
+      : validatedData.estado;
     const precio = validatedData.precioTurno
       ? parseFloat(validatedData.precioTurno)
       : null;
@@ -680,7 +683,7 @@ export const update = async (
         fechaTurno: fechaDate,
         horaDesde: horaDesdeDate,
         horaHasta: horaHastaDate,
-        estado: validatedData.estado,
+        estado: estadoFinal,
       },
     });
 
@@ -1050,7 +1053,7 @@ export const cancelAppointment = async (codTurno: string) => {
     // Actualizar el estado del turno
     const existingTurno = await prisma.turno.update({
       where: { codTurno: sanitizedCodTurno },
-      data: { fechaCancelacion: fechaDate },
+      data: { fechaCancelacion: fechaDate, estado: "Cancelado" },
     });
 
     // Verificar si quien cancela es un cliente (no tiene codSucursal ni cuil)
