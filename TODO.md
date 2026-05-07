@@ -1,8 +1,4 @@
-- factura, distibucion de datos
-- perfil cliente
-- sidebar
-- seleccion sucursal, lugar botones para continuar
-- arreglar pantalla de home cuando la sesión esta iniciada
+
 ### QUITAR 'ANY's
 
 # FRONT:
@@ -28,7 +24,7 @@
     - [X] Fix boton de login en Landing Page
     - [X] Validar datos en front -> Implementar actualizacion aplicada en login/createUser para mejoras frontend al resto de formularios
     - [X] Para muestreo de datos ver cambios aplicados en la infoSection (analizar si es necesario, es mas que nada para robustez)
-    - [ ] Arreglar pdf de factura
+    - [X] Arreglar pdf de factura
 # BACK:
 ## - Usuarios:
     - [X] Pedir turnos
@@ -52,7 +48,6 @@
     - [X] No permitir eliminar barbero o sucursal si hay turnos vigentes
     - [X] Si se elimina una categoria, que sucede con los clientes de la misma? suben o bajan de categoria --> decision del admin, la unica que no se puede eliminar es la inicial
     - [X] Cuando se crea categoria, qué se hace con los descuentos (se aplican cuando se cobran los turnos?)
-    - [ ] Cuando se crea una categoria, que se hace con la lógica de subida y bajada de categoría? Deberiamos no permitir la creacion directamente?
     
 ## General:
     - [ ] Revisar validaciones zod en general
@@ -63,9 +58,8 @@
     - [X] Lógica de subida de categoría (AD)
     - [X] Lógica de bajada de categoría (AD)
     - [X] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
-    - [ ] Manejo horarios ocupados del barbero /no está arreglado esto?
+    - [X] Manejo horarios ocupados del barbero 
     - [X] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
     - [X] Reestablecer contraseña y unificacion de patrones. Se permite mantener las contraseñas viejas a excepcion de cp3 (revisar readme para ver nueva contraseña).
     - [X] Implementar los descuentos de las categorias
-    - [ ] Manejo dias feriados en el DatePicker
 

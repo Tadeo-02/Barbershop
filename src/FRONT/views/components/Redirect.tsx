@@ -38,32 +38,42 @@ export const AutoRedirect = () => {
   const [isRedirecting, setIsRedirecting] = React.useState(false);
 
   React.useEffect(() => {
-    // Compute target path for the current user state
-    const getTarget = (u: any) =>
-      u
-        ? u.cuil === "1"
-          ? "/Admin/HomePageAdmin"
-          : u.cuil
-          ? "/Barber/HomePageBarber"
-          : "/Client/Home"
-        : "/";
+    if (!user) return;
 
-    const target = getTarget(user);
+    const target =
+      user.cuil === "1"
+        ? "/Admin/HomePageAdmin"
+        : user.cuil
+        ? "/Barber/HomePageBarber"
+        : "/Client/Home";
 
     if (location.pathname !== target) {
-      // show overlay while redirecting
-      setIsRedirecting(true);
-      if (user) {
-        redirectUser(user);
-      } else {
-        navigate(target, { replace: true });
-      }
+      redirectUser(user);
+    }
+  }, [user, location.pathname, redirectUser, navigate]);
 
+  React.useEffect(() => {
+    if (user) {
+      setIsRedirecting(false);
+      return;
+    }
+
+    const publicRoutes = ["/", "/login", "/signUp", "/changePassword"];
+    if (publicRoutes.includes(location.pathname)) {
+      setIsRedirecting(false);
+      return;
+    }
+
+    const target = "/";
+    if (location.pathname !== target) {
+      setIsRedirecting(true);
+      navigate(target, { replace: true });
       const t = setTimeout(() => setIsRedirecting(false), 800);
       return () => clearTimeout(t);
     }
-  }, [user]);
 
+    setIsRedirecting(false);
+  }, [user, location.pathname, navigate]);
 
   if (isRedirecting) {
     return (
