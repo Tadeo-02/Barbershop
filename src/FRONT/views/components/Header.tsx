@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./login/AuthContext.tsx";
@@ -9,13 +9,14 @@ function Header() {
   const [open, setOpen] = useState(false);
   const { user, userType, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [clientCategory, setClientCategory] = useState<string | null>(null);
 
   const handleLogout = () => {
     logout();
     setOpen(false);
     navigate("/");
   };
-//determino tipo de usuario
+  //determino tipo de usuario
   const getHomeRoute = () => {
     if (!isAuthenticated) {
       return "/"; // Si no está autenticado, ir a landingPage
@@ -29,9 +30,39 @@ function Header() {
       case "client":
         return "/client/home";
       default:
-        return "/"; 
+        return "/";
     }
   };
+
+  useEffect(() => {
+    if (!isAuthenticated || userType !== "client" || !user?.codUsuario) {
+      setClientCategory(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const loadCategory = async () => {
+      try {
+        const response = await fetch(`/usuarios/profiles/${user.codUsuario}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          setClientCategory("Sin categoría");
+          return;
+        }
+        const data = await response.json().catch(() => null);
+        const profile = data?.success && data.data ? data.data : data;
+        const category = profile?.categoriaActual?.nombreCategoria;
+        setClientCategory(category || "Sin categoría");
+      } catch (error: any) {
+        if (error?.name === "AbortError") return;
+        setClientCategory("Sin categoría");
+      }
+    };
+
+    void loadCategory();
+    return () => controller.abort();
+  }, [isAuthenticated, userType, user?.codUsuario]);
   return (
     <nav>
       <div className={styles.header}>
@@ -57,7 +88,10 @@ function Header() {
 
         {/* boton a la derecha */}
         <div className={styles.menuButton}>
-          <button className={styles.button} onClick={open ? () => setOpen(false) : () => setOpen(true)}>
+          <button
+            className={styles.button}
+            onClick={open ? () => setOpen(false) : () => setOpen(true)}
+          >
             <FaBars style={{ fontSize: "2.2rem" }} />
           </button>
         </div>
@@ -73,9 +107,7 @@ function Header() {
           maxWidth: 400,
         }}
       >
-
         <ul className={styles.sidebarMenu}>
-
           {/* Mostrar diferentes opciones según el estado de autenticación */}
           {!isAuthenticated ? (
             <>
@@ -99,10 +131,11 @@ function Header() {
                 </span>
                 <br />
                 <span style={{ color: "#999", fontSize: "0.8em" }}>
-                  Tipo: {userType}
+                  {userType === "client"
+                    ? `Categoría: ${clientCategory || "Sin categoría"}`
+                    : `Tipo: ${userType}`}
                 </span>
               </li>
-
 
               {/* Opciones específicas por tipo de usuario */}
               {userType === "client" && (
@@ -111,12 +144,15 @@ function Header() {
                     <img src="/images/home.png" alt="Inicio" />
                     Inicio
                   </Link>
-                
+
                   <Link to="/client/profile" onClick={() => setOpen(false)}>
                     <img src="/images/user.png" alt="Mi Perfil" />
                     Mi Perfil
                   </Link>
-                  <Link to="/client/appointments" onClick={() => setOpen(false)}>
+                  <Link
+                    to="/client/appointments"
+                    onClick={() => setOpen(false)}
+                  >
                     <img src="/images/calendar.png" alt="Mis Turnos" />
                     Mis Turnos
                   </Link>
@@ -125,12 +161,18 @@ function Header() {
 
               {userType === "barber" && (
                 <li>
-                  <Link to="/Barber/HomePageBarber" onClick={() => setOpen(false)}>
-                    <img src="/images/home.png" alt="Inicio"/>
+                  <Link
+                    to="/Barber/HomePageBarber"
+                    onClick={() => setOpen(false)}
+                  >
+                    <img src="/images/home.png" alt="Inicio" />
                     Inicio
                   </Link>
-                  <Link to="/Barber/myAppointments" onClick={() => setOpen(false)}>
-                  <img src="/images/calendar.png" alt="Mis Turnos" />
+                  <Link
+                    to="/Barber/myAppointments"
+                    onClick={() => setOpen(false)}
+                  >
+                    <img src="/images/calendar.png" alt="Mis Turnos" />
                     Mis turnos
                   </Link>
                 </li>
@@ -138,14 +180,17 @@ function Header() {
 
               {userType === "admin" && (
                 <li>
-                  <Link to="/Admin/HomePageAdmin" onClick={() => setOpen(false)}>
-                    <img src="/images/home.png" alt="Inicio"/>
+                  <Link
+                    to="/Admin/HomePageAdmin"
+                    onClick={() => setOpen(false)}
+                  >
+                    <img src="/images/home.png" alt="Inicio" />
                     Inicio
                   </Link>
                 </li>
               )}
 
-{/* lo saco para desarrollo
+              {/* lo saco para desarrollo
           <li>
             <Link
               to="/productos/mainProductos.tsx"
@@ -157,15 +202,13 @@ function Header() {
 */}
 
               <li>
-                <button className={styles.logOut}
-                  onClick={handleLogout}>
+                <button className={styles.logOut} onClick={handleLogout}>
                   <img src="/images/logOut.png" alt="Cerrar Sesión" />
                   Cerrar Sesión
                 </button>
               </li>
             </>
           )}
-
         </ul>
       </div>
 
@@ -173,7 +216,9 @@ function Header() {
         <div
           className={styles.overlay}
           onClick={() => setOpen(false)}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setOpen(false); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setOpen(false);
+          }}
           role="button"
           tabIndex={0}
           aria-label="Cerrar menú"

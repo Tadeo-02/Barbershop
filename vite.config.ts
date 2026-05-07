@@ -21,6 +21,7 @@ export default defineConfig({
     proxy: {
       "/appointments": "http://localhost:3001",
       "/turnos": "http://localhost:3001",
+      "/availability": "http://localhost:3001",
       "/tipoCortes": "http://localhost:3001",
       "/categorias": "http://localhost:3001",
       "/usuarios": "http://localhost:3001",
