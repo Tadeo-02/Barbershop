@@ -5,6 +5,7 @@ export const PASSWORD_MIN_LENGTH = 10;
 export const PASSWORD_MAX_LENGTH = 128;
 export const PASSWORD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)/;
 export const PASSWORD_PATTERN = `(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*\\W).{${PASSWORD_MIN_LENGTH},${PASSWORD_MAX_LENGTH}}`;
+export const PHONE_REGEX = /^\+?[\d\s()\-]{6,20}$/;
 // Función para validar CUIL
 const validateCUIL = (cuil: string, dni: string): boolean => {
   // Verificar formato XX-XXXXXXXX-X
@@ -42,8 +43,8 @@ const UserBaseSchema = z.object({
   telefono: z
     .string()
     .regex(
-      /^(\+?54\s?)?(\(?\d{2,4}\)?\s?)?\d{4}-?\d{4}$/,
-      "Teléfono inválido. Formato esperado: +54 11 1234-5678",
+      PHONE_REGEX,
+      "Teléfono inválido. Usa números, espacios, paréntesis, guiones y +",
     ),
   email: z.string().email("Email inválido"),
 
