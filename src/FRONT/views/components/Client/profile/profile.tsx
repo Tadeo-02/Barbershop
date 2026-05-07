@@ -128,7 +128,8 @@ const MyProfile = () => {
 
   const initialQuestion =
     "preguntaSeguridad" in displayUser
-      ? ((displayUser as UserProfile & { preguntaSeguridad?: string | null }).preguntaSeguridad ?? null)
+      ? ((displayUser as UserProfile & { preguntaSeguridad?: string | null })
+          .preguntaSeguridad ?? null)
       : null;
 
   return (
@@ -155,31 +156,36 @@ const MyProfile = () => {
           </div>
 
           <div className={styles.profileField}>
-            <strong>Categoría:</strong>{" "}
-            {displayUser.categoriaActual
-              ? displayUser.categoriaActual.nombreCategoria
-              : "Sin categoría asignada"}
-            {displayUser.categoriaActual && (
-              <div className={styles.actionButtons}>
-                <Link
-                  to={`/categorias/${displayUser.categoriaActual.codCategoria}`}
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                >
-                  Ver Beneficios
-                </Link>
-              </div>
-            )}
+            <strong>Categoría:</strong>
+            <div className={styles.profileValue}>
+              <span>
+                {displayUser.categoriaActual
+                  ? displayUser.categoriaActual.nombreCategoria
+                  : "Sin categoría asignada"}
+              </span>
+              {displayUser.categoriaActual && (
+                <div className={styles.actionButtons}>
+                  <Link
+                    to={`/categorias/${displayUser.categoriaActual.codCategoria}`}
+                    className={styles.actionLink}
+                  >
+                    Ver Beneficios
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
-          <div className={styles.profileSection}>
-            <h3>Pregunta de seguridad</h3>
-            {displayUser && (
-              <SecurityQuestionForm
-                key={initialQuestion ?? ""}
-                codUsuario={displayUser.codUsuario}
-                initialQuestion={initialQuestion}
-              />
-            )}
-          </div>
+        </div>
+
+        <div className={styles.profileSection}>
+          <h3>Pregunta de seguridad</h3>
+          {displayUser && (
+            <SecurityQuestionForm
+              key={initialQuestion ?? ""}
+              codUsuario={displayUser.codUsuario}
+              initialQuestion={initialQuestion}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -240,7 +246,9 @@ const SecurityQuestionForm: React.FC<{
 
   return (
     <form onSubmit={submit} className={styles.securityForm}>
-      <label className={styles.securityLabel} htmlFor="security-pregunta">Pregunta:</label>
+      <label className={styles.securityLabel} htmlFor="security-pregunta">
+        Pregunta:
+      </label>
       <select
         id="security-pregunta"
         className={styles.securitySelect}
@@ -259,7 +267,9 @@ const SecurityQuestionForm: React.FC<{
           ¿Cuál es el nombre de tu libro favorito?
         </option>
       </select>
-      <label className={styles.securityLabel} htmlFor="security-respuesta">Respuesta:</label>
+      <label className={styles.securityLabel} htmlFor="security-respuesta">
+        Respuesta:
+      </label>
       <input
         id="security-respuesta"
         className={styles.securityInput}
