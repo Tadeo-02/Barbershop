@@ -246,7 +246,7 @@
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
   .appointmentsContainer {
-    max-width: 100%;
+    max-width: 500px;
     margin: 40px auto;
     padding: 30px;
   }
