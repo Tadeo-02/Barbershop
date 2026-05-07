@@ -21,7 +21,7 @@ const userIdKeyGenerator = (req: Request): string => {
  */
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Máximo 100 solicitudes por IP por ventana de tiempo
+  max: 300, // Máximo 300 solicitudes por IP por ventana de tiempo
   message: {
     success: false,
     message:
@@ -80,7 +80,7 @@ export const modificationLimiter = rateLimit({
  */
 export const userModificationLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutos
-  max: 30, // Máximo 30 solicitudes por usuario por ventana de tiempo (mayor que el basado en IP)
+  max: 90, // Máximo 90 solicitudes por usuario por ventana de tiempo (mayor que el basado en IP)
   message: {
     success: false,
     message:
@@ -133,7 +133,7 @@ export const userSensitiveLimiter = rateLimit({
  */
 export const userLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Máximo 100 solicitudes por usuario por ventana de tiempo
+  max: 300, // Máximo 300 solicitudes por usuario por ventana de tiempo
   message: {
     success: false,
     message: "Demasiadas solicitudes. Por favor, intente más tarde.",
