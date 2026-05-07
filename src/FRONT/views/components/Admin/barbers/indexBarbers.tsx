@@ -350,7 +350,10 @@ const IndexBarbers = () => {
 
   return (
     <>
-    <div className={styles.createButtonWrapper}>
+
+    <div className={styles.indexBarberos}>
+      <h2>Gestión de Barberos</h2>
+      <div className={styles.createButtonWrapper}>
       <Link
           to="createBarbers"
           className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
@@ -358,8 +361,6 @@ const IndexBarbers = () => {
           CREAR BARBERO
         </Link>
     </div>
-    <div className={styles.indexBarberos}>
-      <h2>Gestión de Barberos</h2>
       {barberos.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No hay barberos disponibles.</p>
