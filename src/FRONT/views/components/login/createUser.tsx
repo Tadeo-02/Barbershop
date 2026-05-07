@@ -140,6 +140,9 @@ const CreateUser: React.FC = () => {
                 disabled={isSubmitting}
                 style={{ border: "none", padding: 0, margin: 0 }}
               >
+                <br />
+                <br />
+                <br />
                 <h1 className={styles.titleSignUp}>CREAR CUENTA</h1>
 
                 {/* DNI */}
@@ -268,6 +271,7 @@ const CreateUser: React.FC = () => {
                   required
                   {...register("preguntaSeguridad")}
                   defaultValue=""
+                  className={styles.smallSelect}
                 >
                   <option value="" disabled>
                     -- Seleccione una pregunta --
