@@ -112,6 +112,14 @@
 .titleSignUp {
   margin-top: 300px;
 }
+.smallSelect {
+width: 280px;
+max-width: 100%;
+box-sizing: border-box;
+padding: 0.4rem 0.6rem;
+font-size: 0.95rem;
+border-radius: 4px;
+}
 
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
