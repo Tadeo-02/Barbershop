@@ -485,3 +485,34 @@
     transform: translateY(0);
   }
 }
+
+.filtersContainer {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: #f7fafc;
+  color: #2d3748;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filterSelect:focus {
+  border-color: #4299e1;
+}
+
+@media (min-width: 769px) {
+  .filtersContainer {
+    margin-bottom: 24px;
+  }
+}
+

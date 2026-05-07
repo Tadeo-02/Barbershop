@@ -54,6 +54,8 @@ const isAbortError = (error: unknown): boolean =>
 const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<Appointment[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>("Todos");
+  const [dateSort, setDateSort] = useState<string>("desc");
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoadingTurnos, setIsLoadingTurnos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -388,6 +390,28 @@ const BarberAppointments: React.FC = () => {
   return (
     <div className={barberStyles.appointmentsContainer}>
       <h2>Mis turnos</h2>
+      <div className={barberStyles.filtersContainer}>
+        <select
+          className={barberStyles.filterSelect}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="Todos">Todos los estados</option>
+          <option value="Programado">Programado</option>
+          <option value="Cobrado">Cobrado</option>
+          <option value="Sin cobrar">Sin cobrar</option>
+          <option value="Cancelado">Cancelado</option>
+          <option value="No asistido">No asistido</option>
+        </select>
+        <select
+          className={barberStyles.filterSelect}
+          value={dateSort}
+          onChange={(e) => setDateSort(e.target.value)}
+        >
+          <option value="desc">Lejanos primero</option>
+          <option value="asc">Próximos primero</option>
+        </select>
+      </div>
       <ul className={barberStyles.appointmentList}>
         {isLoadingTurnos ? (
           <li className={barberStyles.loadingState}>Cargando turnos...</li>
@@ -396,7 +420,14 @@ const BarberAppointments: React.FC = () => {
             No tienes turnos a tu nombre.
           </li>
         ) : (
-          turnos.map((t) => {
+          [...turnos]
+            .filter((t) => statusFilter === "Todos" || t.estado === statusFilter)
+            .sort((a, b) => {
+              const strA = `${a.fechaTurno.split("T")[0]}T${formatTime(a.horaDesde)}`;
+              const strB = `${b.fechaTurno.split("T")[0]}T${formatTime(b.horaDesde)}`;
+              return dateSort === "desc" ? strB.localeCompare(strA) : strA.localeCompare(strB);
+            })
+            .map((t) => {
             const client = t.usuarios_turnos_codClienteTousuarios;
             const barber = t.usuarios_turnos_codBarberoTousuarios;
             const branch = barber?.sucursales;
