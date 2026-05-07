@@ -32,7 +32,6 @@ import BarberAppointments from "./components/Barber/appointments/barberAppointme
 import BranchAppointments from "./components/Barber/appointments/branchAppointments.tsx";
 import BarberReceiptViewer from "./components/Barber/appointments/receiptViewer.tsx";
 import BarberAvailability from "./components/Barber/appointments/barberAvailability.tsx";
-import MyAvailability from "./components/Barber/appointments/myAvailability.tsx";
 
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
@@ -51,7 +50,7 @@ function App() {
         <div className="appContainer">
           <Header />
           <main className="mainContent">
-            <AutoRedirect />
+            <AutoRedirect />  
             <Routes>
               <Route path="/" element={<LandingPage />} />
               {/* Ruta temporal para testing */}
@@ -153,14 +152,6 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["barber"]}>
                     <BarberAvailability />
-                  </ProtectedRoute>
-                }
-              />
-              <Route //! BARBER
-                path="/Barber/myAvailability"
-                element={
-                  <ProtectedRoute allowedRoles={["barber"]}>
-                    <MyAvailability />
                   </ProtectedRoute>
                 }
               />

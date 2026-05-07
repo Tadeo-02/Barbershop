@@ -242,22 +242,6 @@ function Header() {
                             <span className={styles.menuLabel}>Mis turnos</span>
                           </Link>
                         </li>
-                        <li className={styles.menuItem}>
-                          <Link
-                            to="/Barber/myAvailability"
-                            onClick={() => setOpen(false)}
-                            className={styles.menuLink}
-                          >
-                            <img
-                              src="/images/calendar.png"
-                              alt="Mis Ausencias"
-                              className={styles.menuIcon}
-                            />
-                            <span className={styles.menuLabel}>
-                              Mis Ausencias
-                            </span>
-                          </Link>
-                        </li>
                       </>
                     )}
 
