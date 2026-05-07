@@ -36,3 +36,5 @@ const baseRouter = createRouter(controller, {
 
 // Merge base routes
 router.use(baseRouter);
+
+export default router;

@@ -53,6 +53,8 @@ const CheckoutForm: React.FC<{
   const [descuentoInfo, setDescuentoInfo] = useState<{
     descuento: number;
     nombreCategoria: string;
+    turnsUntilNextDiscount?: number | null;
+    isThisTurnEligible?: boolean | null;
   } | null>(null);
   const [loadingCategoria, setLoadingCategoria] = useState(true);
   const loadedClientRef = useRef<string | null>(null);
@@ -77,6 +79,9 @@ const CheckoutForm: React.FC<{
               descuento: userData.categoriaActual.descuentoCorte || 0,
               nombreCategoria:
                 userData.categoriaActual.nombreCategoria || "Sin categoría",
+              turnsUntilNextDiscount:
+                userData.loyaltyProgress?.turnsUntilNextDiscount ?? null,
+              isThisTurnEligible: userData.loyaltyProgress?.isThisTurnEligible ?? null,
             });
             console.log(
               `✅ Categoría cargada: ${userData.categoriaActual.nombreCategoria} - Descuento: ${userData.categoriaActual.descuentoCorte}%`,
@@ -330,13 +335,14 @@ const CheckoutForm: React.FC<{
   }, [watchedCodCorte, allCortes, setValue]);
 
   // Calcular precio final con descuento
+  // Aplicar descuento solo si la categoría aplica Y este turno es elegible
   const precioFinal =
-    descuentoInfo && descuentoInfo.descuento > 0
+    descuentoInfo && descuentoInfo.descuento > 0 && descuentoInfo.isThisTurnEligible
       ? watchedPrecio * (1 - descuentoInfo.descuento / 100)
       : watchedPrecio;
 
   const descuentoAplicado =
-    descuentoInfo && descuentoInfo.descuento > 0
+    descuentoInfo && descuentoInfo.descuento > 0 && descuentoInfo.isThisTurnEligible
       ? watchedPrecio - precioFinal
       : 0;
 
@@ -380,7 +386,7 @@ const CheckoutForm: React.FC<{
               </span>
             </div>
 
-            {descuentoInfo && descuentoInfo.descuento > 0 && (
+            {descuentoInfo && descuentoInfo.descuento > 0 && descuentoInfo.isThisTurnEligible && (
               <>
                 <div className={styles.categoryBadge}>
                   <span className={styles.categoryName}>
