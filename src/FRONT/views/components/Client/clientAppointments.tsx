@@ -46,6 +46,8 @@ interface Appointment {
 const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<Appointment[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>("Todos");
+  const [dateSort, setDateSort] = useState<string>("asc");
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
@@ -221,13 +223,42 @@ const ClientAppointments: React.FC = () => {
   return (
     <div className={barberStyles.appointmentsContainer}>
       <h2>Mis turnos</h2>
+      <div className={barberStyles.filtersContainer}>
+        <select
+          className={barberStyles.filterSelect}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="Todos">Todos los estados</option>
+          <option value="Programado">Programado</option>
+          <option value="Cobrado">Cobrado</option>
+          <option value="Sin cobrar">Sin cobrar</option>
+          <option value="Cancelado">Cancelado</option>
+          <option value="No asistido">No asistido</option>
+        </select>
+        <select
+          className={barberStyles.filterSelect}
+          value={dateSort}
+          onChange={(e) => setDateSort(e.target.value)}
+        >
+          <option value="desc">Lejanos primero</option>
+          <option value="asc">Próximos primero</option>
+        </select>
+      </div>
       <ul className={barberStyles.appointmentList}>
         {turnos.length === 0 ? (
           <li className={barberStyles.emptyState}>
             Nunca has agendado un turno.
           </li>
         ) : (
-          turnos.map((t) => {
+          [...turnos]
+            .filter((t) => statusFilter === "Todos" || t.estado === statusFilter)
+            .sort((a, b) => {
+              const strA = `${a.fechaTurno.split("T")[0]}T${formatTime(a.horaDesde)}`;
+              const strB = `${b.fechaTurno.split("T")[0]}T${formatTime(b.horaDesde)}`;
+              return dateSort === "desc" ? strB.localeCompare(strA) : strA.localeCompare(strB);
+            })
+            .map((t) => {
             const barber = t.usuarios_turnos_codBarberoTousuarios;
             const branch = barber?.sucursales;
             const cut = t.tipos_corte;
