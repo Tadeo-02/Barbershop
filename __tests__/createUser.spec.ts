@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "playwright/test";
 
 test.describe("Flujo de Creación de Usuario", () => {
   test.beforeEach(async ({ page }) => {
