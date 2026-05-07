@@ -1,10 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as model from "./Branches";
 import type { Request, Response } from "express";
 import { BranchResponseSchema } from "../../Schemas/branchesSchema";
 import { BaseController } from "../../base/base.controller"; // improtamos al base controller
 // creamos el modelo de controlador de sucursales
-class BranchesController extends BaseController<any> {
+type BranchEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
+type BranchCreateArgs = Parameters<typeof model.store>;
+type BranchUpdateArgs = Parameters<typeof model.update> extends [
+  string,
+  ...infer Rest
+]
+  ? Rest
+  : never;
+
+class BranchesController extends BaseController<
+  BranchEntity,
+  BranchCreateArgs,
+  BranchUpdateArgs
+> {
   protected model: typeof model = model;
   protected entityName = "sucursales";
   protected idFieldName = "codSucursal";

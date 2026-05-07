@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request, Response } from "express";
 import * as model from "./Billing";
 import {
@@ -13,6 +12,17 @@ import {
   gatherReceiptData,
   generateReceiptPdf,
 } from "./invoicePdf";
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
+const getErrorCode = (error: unknown): string | undefined => {
+  if (error && typeof error === "object" && "code" in error) {
+    const code = (error as { code?: unknown }).code;
+    return typeof code === "string" ? code : undefined;
+  }
+  return undefined;
+};
 
 // ============================================================
 // Controller de Facturación Electrónica - ARCA
@@ -44,11 +54,11 @@ export const createVoucher = async (
       message: "Comprobante creado exitosamente",
       data: result,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al crear comprobante",
-      code: error.code,
+      message: getErrorMessage(error, "Error al crear comprobante"),
+      code: getErrorCode(error),
     });
   }
 };
@@ -93,19 +103,20 @@ export const billAppointment = async (
       message: "Turno facturado exitosamente",
       data: result,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorCode = getErrorCode(error);
     const statusCode =
-      error.code === "APPOINTMENT_NOT_FOUND"
+      errorCode === "APPOINTMENT_NOT_FOUND"
         ? 404
-        : error.code === "APPOINTMENT_NOT_COMPLETED" ||
-            error.code === "APPOINTMENT_NO_PRICE"
+        : errorCode === "APPOINTMENT_NOT_COMPLETED" ||
+            errorCode === "APPOINTMENT_NO_PRICE"
           ? 400
           : 500;
 
     res.status(statusCode).json({
       success: false,
-      message: error.message || "Error al facturar turno",
-      code: error.code,
+      message: getErrorMessage(error, "Error al facturar turno"),
+      code: errorCode,
     });
   }
 };
@@ -137,10 +148,13 @@ export const getLastVoucher = async (
         tipoComprobante,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al obtener último comprobante",
+      message: getErrorMessage(
+        error,
+        "Error al obtener último comprobante",
+      ),
     });
   }
 };
@@ -186,10 +200,10 @@ export const getVoucherInfo = async (
       success: true,
       data: info,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al obtener comprobante",
+      message: getErrorMessage(error, "Error al obtener comprobante"),
     });
   }
 };
@@ -205,10 +219,13 @@ export const getVoucherTypes = async (
   try {
     const types = await model.getVoucherTypes();
     res.status(200).json({ success: true, data: types });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al obtener tipos de comprobante",
+      message: getErrorMessage(
+        error,
+        "Error al obtener tipos de comprobante",
+      ),
     });
   }
 };
@@ -224,10 +241,10 @@ export const getDocumentTypes = async (
   try {
     const types = await model.getDocumentTypes();
     res.status(200).json({ success: true, data: types });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al obtener tipos de documento",
+      message: getErrorMessage(error, "Error al obtener tipos de documento"),
     });
   }
 };
@@ -243,10 +260,10 @@ export const getAliquotTypes = async (
   try {
     const types = await model.getAliquotTypes();
     res.status(200).json({ success: true, data: types });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al obtener tipos de alícuota",
+      message: getErrorMessage(error, "Error al obtener tipos de alícuota"),
     });
   }
 };
@@ -262,10 +279,13 @@ export const getServerStatus = async (
   try {
     const status = await model.getServerStatus();
     res.status(200).json({ success: true, data: status });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al verificar estado del servidor",
+      message: getErrorMessage(
+        error,
+        "Error al verificar estado del servidor",
+      ),
     });
   }
 };
@@ -281,10 +301,10 @@ export const getSalesPoints = async (
   try {
     const points = await model.getSalesPoints();
     res.status(200).json({ success: true, data: points });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al obtener puntos de venta",
+      message: getErrorMessage(error, "Error al obtener puntos de venta"),
     });
   }
 };
@@ -328,16 +348,17 @@ export const getInvoicePdf = async (
     res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
     res.setHeader("Content-Length", pdfBuffer.length);
     res.send(pdfBuffer);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorCode = getErrorCode(error);
     const statusCode =
-      error.code === "VOUCHER_NOT_FOUND" ||
-      error.code === "APPOINTMENT_NOT_FOUND"
+      errorCode === "VOUCHER_NOT_FOUND" ||
+      errorCode === "APPOINTMENT_NOT_FOUND"
         ? 404
         : 500;
 
     res.status(statusCode).json({
       success: false,
-      message: error.message || "Error al generar PDF de factura",
+      message: getErrorMessage(error, "Error al generar PDF de factura"),
     });
   }
 };
@@ -435,10 +456,13 @@ export const getBillingData = async (
         puntoDeVenta,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al obtener datos de facturación",
+      message: getErrorMessage(
+        error,
+        "Error al obtener datos de facturación",
+      ),
     });
   }
 };
@@ -507,18 +531,19 @@ export const getReceiptPdf = async (
     res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
     res.setHeader("Content-Length", pdfBuffer.length);
     res.send(pdfBuffer);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorCode = getErrorCode(error);
     const statusCode =
-      error.code === "APPOINTMENT_NOT_FOUND" ||
-      error.code === "VOUCHER_NOT_FOUND"
+      errorCode === "APPOINTMENT_NOT_FOUND" ||
+      errorCode === "VOUCHER_NOT_FOUND"
         ? 404
-        : error.code === "APPOINTMENT_NOT_CHARGED"
+        : errorCode === "APPOINTMENT_NOT_CHARGED"
           ? 400
           : 500;
 
     res.status(statusCode).json({
       success: false,
-      message: error.message || "Error al generar PDF",
+      message: getErrorMessage(error, "Error al generar PDF"),
     });
   }
 };

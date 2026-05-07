@@ -76,6 +76,15 @@ function formatVoucherNumber(ptoVta: number, nro: number): string {
   return `${String(ptoVta).padStart(4, "0")}-${String(nro).padStart(8, "0")}`;
 }
 
+const toNumber = (value: unknown): number | undefined => {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  }
+  return undefined;
+};
+
 /**
  * Recopilar todos los datos para el PDF a partir de codTurno + datos ARCA.
  */
@@ -120,11 +129,15 @@ export async function gatherInvoiceData(
   const barbero = turno.usuarios_turnos_codBarberoTousuarios;
   const sucursal = barbero.sucursales;
 
-  const importeTotal = voucherInfo.ImpTotal || turno.precioTurno || 0;
+  const voucherImpTotal = toNumber((voucherInfo as Record<string, unknown>).ImpTotal);
+  const voucherImpNeto = toNumber((voucherInfo as Record<string, unknown>).ImpNeto);
+  const voucherImpIVA = toNumber((voucherInfo as Record<string, unknown>).ImpIVA);
+
+  const importeTotal = voucherImpTotal ?? turno.precioTurno ?? 0;
   const importeNeto =
-    voucherInfo.ImpNeto || Math.round((importeTotal / 1.21) * 100) / 100;
+    voucherImpNeto ?? Math.round((importeTotal / 1.21) * 100) / 100;
   const importeIVA =
-    voucherInfo.ImpIVA || Math.round((importeTotal - importeNeto) * 100) / 100;
+    voucherImpIVA ?? Math.round((importeTotal - importeNeto) * 100) / 100;
 
   return {
     cae: String(

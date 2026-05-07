@@ -1,18 +1,40 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as model from "./Users";
 import { BaseController } from "../base/base.controller";
 import { Request, Response } from "express";
+import { sanitizeOutput } from "../middleware/zodValidation";
+import {
+  BarberResponseSchema,
+  UserResponseSchema,
+} from "../Schemas/usersSchema";
 
-class UsersController extends BaseController<any> {
+type UserEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
+type UserCreateArgs = Parameters<typeof model.store>;
+type UserUpdateArgs = Parameters<typeof model.update> extends [
+  string,
+  ...infer Rest
+]
+  ? Rest
+  : never;
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
+class UsersController extends BaseController<
+  UserEntity,
+  UserCreateArgs,
+  UserUpdateArgs
+> {
   protected model = model;
   protected entityName = "usuario";
   protected idFieldName = "codUsuario";
+  protected responseSchema = UserResponseSchema;
 
   index = async (req: Request, res: Response): Promise<void> => {
     try {
       const userType = req.query.type as "client" | "barber" | undefined;
       const entities = await model.findAll(userType);
-      res.status(200).json(entities);
+  const safeEntities = sanitizeOutput(UserResponseSchema, entities);
+  res.status(200).json(safeEntities);
     } catch (error) {
       this.handleError(error, res);
     }
@@ -54,12 +76,13 @@ class UsersController extends BaseController<any> {
       );
 
       const userType = cuil ? "barbero" : "cliente";
+      const safeUser = sanitizeOutput(UserResponseSchema, newUser);
 
       res.status(201).json({
         message: `${
           userType.charAt(0).toUpperCase() + userType.slice(1)
         } creado exitosamente`,
-        user: newUser,
+        user: safeUser,
       });
     } catch (error) {
       console.error("Error creating user:", error);
@@ -102,11 +125,13 @@ class UsersController extends BaseController<any> {
 
       const userType = cuil ? "barbero" : "cliente";
 
+  const safeUser = sanitizeOutput(UserResponseSchema, updatedUser);
+
       res.status(200).json({
         message: `${
           userType.charAt(0).toUpperCase() + userType.slice(1)
         } actualizado exitosamente`,
-        user: updatedUser,
+        user: safeUser,
       });
     } catch (error) {
       console.error("Error updating user:", error);
@@ -118,9 +143,10 @@ class UsersController extends BaseController<any> {
     const { codUsuario } = req.params;
     try {
       const result = await model.destroy(codUsuario);
+      const safeUser = sanitizeOutput(UserResponseSchema, result);
       res.status(200).json({
         message: "Usuario dado de baja correctamente",
-        user: result,
+        user: safeUser,
       });
     } catch (error) {
       this.handleError(error, res);
@@ -131,9 +157,10 @@ class UsersController extends BaseController<any> {
     const { codUsuario } = req.params;
     try {
       const result = await model.deactivate(codUsuario);
+      const safeUser = sanitizeOutput(UserResponseSchema, result);
       res.status(200).json({
         message: "Usuario dado de baja correctamente",
-        user: result,
+        user: safeUser,
       });
     } catch (error) {
       this.handleError(error, res);
@@ -144,9 +171,10 @@ class UsersController extends BaseController<any> {
     const { codUsuario } = req.params;
     try {
       const result = await model.reactivate(codUsuario);
+      const safeUser = sanitizeOutput(UserResponseSchema, result);
       res.status(200).json({
         message: "Barbero reactivado correctamente",
-        user: result,
+        user: safeUser,
       });
     } catch (error) {
       this.handleError(error, res);
@@ -176,16 +204,19 @@ class UsersController extends BaseController<any> {
       }
 
       const usuario = await model.validateLogin(userEmail, userPassword);
+      const safeUser = sanitizeOutput(UserResponseSchema, usuario);
 
       res.status(200).json({
         message: "Login exitoso",
-        user: usuario,
+        user: safeUser,
       });
     } catch (error) {
       console.error("Login error:", error);
 
-      const errorMessage =
-        error instanceof Error ? error.message : "Error interno del servidor";
+      const errorMessage = getErrorMessage(
+        error,
+        "Error interno del servidor",
+      );
 
       const statusCode = errorMessage.includes("incorrectos") ? 401 : 500;
 
@@ -214,16 +245,20 @@ export const findByBranchId = async (
     }
 
     const usuarios = await model.findByBranchId(codSucursal);
+    const safeUsuarios = sanitizeOutput(BarberResponseSchema, usuarios);
 
     res.status(200).json({
       success: true,
-      data: usuarios,
+      data: safeUsuarios,
       message: `Se encontraron ${usuarios.length} barberos en la sucursal`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar usuarios por sucursal",
+      message: getErrorMessage(
+        error,
+        "Error al buscar usuarios por sucursal",
+      ),
     });
   }
 };
@@ -248,16 +283,23 @@ export const findBySchedule = async (
       fechaTurno,
       horaDesde
     );
+    const safeBarberos = sanitizeOutput(
+      BarberResponseSchema,
+      barberosDisponibles,
+    );
 
     res.status(200).json({
       success: true,
-      data: barberosDisponibles,
+      data: safeBarberos,
       message: `Se encontraron ${barberosDisponibles.length} barberos disponibles`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar barberos disponibles",
+      message: getErrorMessage(
+        error,
+        "Error al buscar barberos disponibles",
+      ),
     });
   }
 };
@@ -282,9 +324,12 @@ export const getSecurityQuestion = async (req: Request, res: Response) => {
     const pregunta = await model.getSecurityQuestionByEmail(email);
     console.log("getSecurityQuestion result for", email, "-> pregunta:", pregunta);
     res.status(200).json({ success: true, pregunta });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error getting security question:", error);
-    res.status(500).json({ success: false, message: error.message || "Error interno" });
+    res.status(500).json({
+      success: false,
+      message: getErrorMessage(error, "Error interno"),
+    });
   }
 };
 
@@ -316,9 +361,12 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
     const updated = await model.updateSecurityQuestion(codUsuario, preguntaSeguridad, respuestaSeguridad);
 
     res.status(200).json({ success: true, message: "Pregunta de seguridad actualizada", data: { codUsuario: updated.codUsuario } });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating security question:", error);
-    res.status(500).json({ success: false, message: error.message || "Error interno" });
+    res.status(500).json({
+      success: false,
+      message: getErrorMessage(error, "Error interno"),
+    });
   }
 };
 
@@ -341,10 +389,10 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
     await model.verifySecurityAnswerAndReset(email, respuestaSeguridad, nuevaContraseña);
 
     res.status(200).json({ success: true, message: "Contraseña actualizada correctamente" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error verifying security answer:", error);
-    if (error && error.stack) console.error(error.stack);
-    const errMsg = error && error.message ? error.message : "Error interno";
+    if (error instanceof Error && error.stack) console.error(error.stack);
+    const errMsg = getErrorMessage(error, "Error interno");
     let status = 500;
 
     const lowerMsg = errMsg.toLowerCase();
@@ -372,9 +420,9 @@ export const resetPassword = async (req: Request, res: Response) => {
     await model.verifySecurityAnswerAndReset(email, respuestaSeguridad, nuevaContraseña);
 
     res.status(200).json({ success: true, message: "Contraseña actualizada correctamente" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error resetting password:", error);
-    const errMsg = error && error.message ? error.message : "Error interno";
+    const errMsg = getErrorMessage(error, "Error interno");
     let status = 500;
     const lowerMsg = errMsg.toLowerCase();
     if (lowerMsg.includes("incorrecta")) {

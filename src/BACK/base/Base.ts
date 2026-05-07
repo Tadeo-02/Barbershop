@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PrismaClient } from "@prisma/client";
 
 // instancia de prima universal
@@ -25,10 +24,14 @@ export const disconnect = async () => {
 };
 
 // funciones universales
-export interface BaseModel {
-  store: (...args: any[]) => Promise<any>;
-  findAll: () => Promise<any[]>;
-  findById: (id: string) => Promise<any | null>;
-  update: (id: string, ...args: any[]) => Promise<any>;
-  destroy: (id: string) => Promise<any>;
+export interface BaseModel<
+  TEntity,
+  TCreateArgs extends unknown[] = unknown[],
+  TUpdateArgs extends unknown[] = unknown[],
+> {
+  store: (...args: TCreateArgs) => Promise<TEntity>;
+  findAll: () => Promise<TEntity[]>;
+  findById: (id: string) => Promise<TEntity | null>;
+  update: (id: string, ...args: TUpdateArgs) => Promise<TEntity>;
+  destroy: (id: string) => Promise<TEntity>;
 }
