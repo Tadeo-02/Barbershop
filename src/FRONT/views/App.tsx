@@ -50,6 +50,7 @@ function App() {
         <div className="appContainer">
           <Header />
           <main className="mainContent">
+            <AutoRedirect />  
             <Routes>
               <Route path="/" element={<LandingPage />} />
               {/* Ruta temporal para testing */}
