@@ -396,7 +396,6 @@ const IndexClients = () => {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>DNI</th>
                 <th>Turnos (cancel.)</th>
                 <th>Nombre</th>
@@ -406,7 +405,7 @@ const IndexClients = () => {
             <tbody>
               {visibleClients.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className={styles.empty}>
+                  <td colSpan={5} className={styles.empty}>
                     No hay clientes
                   </td>
                 </tr>
@@ -414,7 +413,6 @@ const IndexClients = () => {
                 visibleClients.map((cliente) => (
                   <React.Fragment key={cliente.codUsuario}>
                     <tr>
-                      <td className={styles.code}>{cliente.codUsuario}</td>
                       <td>{cliente.dni}</td>
                       <td>
                         {appointmentCounts[cliente.codUsuario]?.total ?? 0} (
@@ -440,7 +438,7 @@ const IndexClients = () => {
 
                     {expandedClient === cliente.codUsuario && (
                       <tr>
-                        <td colSpan={6}>
+                        <td colSpan={5}>
                           <div className={styles.clientProfile}>
                             {profilesCache[cliente.codUsuario] ? (
                               <div className={styles.profileInner}>
