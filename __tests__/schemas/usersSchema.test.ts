@@ -147,7 +147,7 @@ describe("UserSchema — telefono", () => {
   it("rejects a completely invalid phone", () => {
     const result = UserSchema.safeParse({ ...validUser, telefono: "abc" });
     expect(messages(result)).toContain(
-      "Teléfono inválido. Formato esperado: +54 11 1234-5678",
+      "Teléfono inválido. Usa números, espacios, paréntesis, guiones y +",
     );
   });
 });

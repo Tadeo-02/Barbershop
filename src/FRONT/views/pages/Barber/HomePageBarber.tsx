@@ -238,13 +238,13 @@ const Home = () => {
 
       <div className={styles.optionsContainer}>
         <button className={styles.optionButton} onClick={handleVerTurnos}>
-          Atender turnos
+          Atender Turnos
         </button>
         <button className={styles.optionButton} onClick={handleMisTurnos}>
           Mis Turnos
         </button>
         <button className={styles.optionButton} onClick={handleMisAusencias}>
-          Registrar ausencia
+          Registrar Ausencia
         </button>
       </div>
     </div>
