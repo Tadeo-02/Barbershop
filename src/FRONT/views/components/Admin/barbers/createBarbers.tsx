@@ -22,6 +22,10 @@ const CreateBarberSchema = UserBaseSchemaExport.extend({
 
 type CreateBarberForm = z.infer<typeof CreateBarberSchema>;
 
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
 const CreateBarbers: React.FC = () => {
   const navigate = useNavigate();
 
@@ -37,7 +41,6 @@ const CreateBarbers: React.FC = () => {
     mode: "onBlur",
   });
 
-
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
   // Cargar sucursales al montar el componente
@@ -52,8 +55,8 @@ const CreateBarbers: React.FC = () => {
         } else {
           toast.error("Error al cargar las sucursales");
         }
-      } catch (error: any) {
-        if (error.name === "AbortError") return;
+      } catch (error: unknown) {
+        if (isAbortError(error)) return;
         console.error("Error fetching sucursales:", error);
         toast.error("Error de conexión al cargar sucursales");
       }
@@ -85,17 +88,22 @@ const CreateBarbers: React.FC = () => {
       const responseData = await response.json();
 
       if (response.ok) {
-        toast.success(responseData.message || "Barbero creado exitosamente", { id: toastId, duration: 4000 });
+        toast.success(responseData.message || "Barbero creado exitosamente", {
+          id: toastId,
+          duration: 4000,
+        });
         reset();
         // Redirección con delay
         setTimeout(() => {
-        navigate("/Admin/BarbersPage");
+          navigate("/Admin/BarbersPage");
         }, 2000);
       } else {
-        toast.error(responseData.message || "Error al crear barbero", { id: toastId });
+        toast.error(responseData.message || "Error al crear barbero", {
+          id: toastId,
+        });
       }
-    } catch (error: any) {
-      if (error && error.name === "AbortError") {
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
         toast.dismiss(toastId);
         return;
       }
@@ -121,7 +129,11 @@ const CreateBarbers: React.FC = () => {
               required
               {...register("dni")}
             />
-            {errors.dni && <div className={styles.errorMessage}>{errors.dni.message as string}</div>}
+            {errors.dni && (
+              <div className={styles.errorMessage}>
+                {errors.dni.message as string}
+              </div>
+            )}
           </div>
 
           {/* NOMBRE */}
@@ -135,7 +147,11 @@ const CreateBarbers: React.FC = () => {
               required
               {...register("nombre")}
             />
-            {errors.nombre && <div className={styles.errorMessage}>{errors.nombre.message as string}</div>}
+            {errors.nombre && (
+              <div className={styles.errorMessage}>
+                {errors.nombre.message as string}
+              </div>
+            )}
           </div>
 
           {/* APELLIDO */}
@@ -149,7 +165,11 @@ const CreateBarbers: React.FC = () => {
               required
               {...register("apellido")}
             />
-            {errors.apellido && <div className={styles.errorMessage}>{errors.apellido.message as string}</div>}
+            {errors.apellido && (
+              <div className={styles.errorMessage}>
+                {errors.apellido.message as string}
+              </div>
+            )}
           </div>
 
           {/* TELÉFONO */}
@@ -163,7 +183,11 @@ const CreateBarbers: React.FC = () => {
               required
               {...register("telefono")}
             />
-            {errors.telefono && <div className={styles.errorMessage}>{errors.telefono.message as string}</div>}
+            {errors.telefono && (
+              <div className={styles.errorMessage}>
+                {errors.telefono.message as string}
+              </div>
+            )}
           </div>
 
           {/* EMAIL */}
@@ -177,7 +201,11 @@ const CreateBarbers: React.FC = () => {
               required
               {...register("email")}
             />
-            {errors.email && <div className={styles.errorMessage}>{errors.email.message as string}</div>}
+            {errors.email && (
+              <div className={styles.errorMessage}>
+                {errors.email.message as string}
+              </div>
+            )}
           </div>
 
           {/* CUIL */}
@@ -190,7 +218,11 @@ const CreateBarbers: React.FC = () => {
               placeholder="20-40300123-4"
               {...register("cuil")}
             />
-            {errors.cuil && <div className={styles.errorMessage}>{errors.cuil.message as string}</div>}
+            {errors.cuil && (
+              <div className={styles.errorMessage}>
+                {errors.cuil.message as string}
+              </div>
+            )}
           </div>
 
           {/* CONTRASEÑA */}
@@ -207,7 +239,11 @@ const CreateBarbers: React.FC = () => {
               required
               {...register("contraseña")}
             />
-            {errors["contraseña"] && <div className={styles.errorMessage}>{errors["contraseña"]?.message as string}</div>}
+            {errors["contraseña"] && (
+              <div className={styles.errorMessage}>
+                {errors["contraseña"]?.message as string}
+              </div>
+            )}
           </div>
 
           {/* CONFIRMAR CONTRASEÑA */}
@@ -222,7 +258,11 @@ const CreateBarbers: React.FC = () => {
               required
               {...register("confirmarContraseña")}
             />
-            {errors.confirmarContraseña && <div className={styles.errorMessage}>{errors.confirmarContraseña.message as string}</div>}
+            {errors.confirmarContraseña && (
+              <div className={styles.errorMessage}>
+                {errors.confirmarContraseña.message as string}
+              </div>
+            )}
           </div>
 
           {/* ASIGNAR SUCURSAL - Cambiar a radio buttons */}
@@ -247,14 +287,27 @@ const CreateBarbers: React.FC = () => {
                 </div>
               ))}
             </div>
-            {errors.codSucursal && <div className={styles.errorMessage}>{errors.codSucursal.message as string}</div>}
+            {errors.codSucursal && (
+              <div className={styles.errorMessage}>
+                {errors.codSucursal.message as string}
+              </div>
+            )}
           </div>
 
           <div className={styles.actionButtons}>
-            <button type="submit" disabled={isSubmitting} className={`${styles.button} ${styles.buttonPrimary}`}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`${styles.button} ${styles.buttonPrimary}`}
+            >
               {isSubmitting ? "Creando..." : "Crear Barbero"}
             </button>
-            <button type="button" disabled={isSubmitting} className={`${styles.button} ${styles.buttonSuccess}`} onClick={() => navigate("/Admin/BarbersPage")}>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              onClick={() => navigate("/Admin/BarbersPage")}
+            >
               Volver
             </button>
           </div>

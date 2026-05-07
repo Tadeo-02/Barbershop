@@ -47,6 +47,10 @@ interface Appointment {
   } | null;
 }
 
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
 const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<Appointment[]>([]);
@@ -175,8 +179,8 @@ const BarberAppointments: React.FC = () => {
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
-      } catch (error: any) {
-        if (error.name === "AbortError") {
+      } catch (error: unknown) {
+        if (isAbortError(error)) {
           console.log("Fetch aborted for turnos");
           return;
         }
@@ -270,8 +274,8 @@ const BarberAppointments: React.FC = () => {
           id: toastId,
         });
       }
-    } catch (error: any) {
-      if (error.name === "AbortError") {
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
         // request was intentionally aborted
         toast.dismiss(toastId);
         console.log("Cancel request aborted");
@@ -367,8 +371,8 @@ const BarberAppointments: React.FC = () => {
           id: toastId,
         });
       }
-    } catch (error: any) {
-      if (error?.name === "AbortError") {
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
         toast.dismiss(toastId);
         console.log("Update request aborted");
         return; // early return for aborted requests
@@ -386,9 +390,7 @@ const BarberAppointments: React.FC = () => {
       <h2>Mis turnos</h2>
       <ul className={barberStyles.appointmentList}>
         {isLoadingTurnos ? (
-          <li className={barberStyles.loadingState}>
-            Cargando turnos...
-          </li>
+          <li className={barberStyles.loadingState}>Cargando turnos...</li>
         ) : turnos.length === 0 ? (
           <li className={barberStyles.emptyState}>
             No tienes turnos a tu nombre.

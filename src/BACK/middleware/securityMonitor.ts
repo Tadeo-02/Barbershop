@@ -93,8 +93,7 @@ export function securityMonitor() {
 
     // Track response to detect failures
     const originalJson = res.json.bind(res);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    res.json = function (body: any): Response {
+    res.json = function (body: unknown): Response {
       // Check if this was an error response
       if (res.statusCode >= 400) {
         const attempts = ipAttempts.get(ip) || { count: 0, lastAttempt: 0 };
@@ -112,16 +111,17 @@ export function securityMonitor() {
         }
 
         // Log specific error types
-        if (body && body.message) {
+        if (body && typeof body === "object" && "message" in body) {
+          const message = String((body as { message?: unknown }).message ?? "");
           if (res.statusCode === 429) {
-            logSecurityEvent(req, "rate_limit", body.message);
+            logSecurityEvent(req, "rate_limit", message);
           } else if (
-            body.message.includes("duplicada") ||
-            body.message.includes("duplicate")
+            message.includes("duplicada") ||
+            message.includes("duplicate")
           ) {
-            logSecurityEvent(req, "duplicate_request", body.message);
+            logSecurityEvent(req, "duplicate_request", message);
           } else if (res.statusCode === 401 || res.statusCode === 403) {
-            logSecurityEvent(req, "auth_failure", body.message);
+            logSecurityEvent(req, "auth_failure", message);
           }
         }
       } else if (res.statusCode >= 200 && res.statusCode < 300) {

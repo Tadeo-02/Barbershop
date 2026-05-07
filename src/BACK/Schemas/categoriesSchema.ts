@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export const CategorySchema = z.object({
@@ -22,3 +21,41 @@ export const CategorySchema = z.object({
     .max(100, "Descuento de producto no puede ser mayor a 100%"),
 });
 
+export const CategoryResponseSchema = CategorySchema.pick({
+  codCategoria: true,
+  nombreCategoria: true,
+  descCategoria: true,
+  descuentoCorte: true,
+  descuentoProducto: true,
+});
+
+const CategoryClientBaseSchema = z.object({
+  codCliente: z.string(),
+  dni: z.string(),
+  nombre: z.string(),
+  apellido: z.string(),
+  email: z.string().nullable().optional(),
+  telefono: z.string().nullable().optional(),
+  stats: z.object({
+    total: z.number(),
+    cancelados: z.number(),
+  }),
+});
+
+export const CategoryClientSchema = CategoryClientBaseSchema.pick({
+  codCliente: true,
+  dni: true,
+  nombre: true,
+  apellido: true,
+  email: true,
+  telefono: true,
+  stats: true,
+});
+
+export const CategoryClientsResponseSchema = z.object({
+  categoria: CategorySchema.pick({
+    codCategoria: true,
+    nombreCategoria: true,
+  }),
+  clientes: z.array(CategoryClientSchema),
+});

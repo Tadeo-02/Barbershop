@@ -23,8 +23,12 @@ const ShowBranches = () => {
     setLoadingBarberos(true);
 
     // Obtener sucursal y barberos en paralelo
-    const fetchSucursal = fetch(`/sucursales/${codSucursal}`).then((res) => res.json());
-  const fetchUsuarios = fetch(`/usuarios/branch/${codSucursal}`).then((res) => res.json());
+    const fetchSucursal = fetch(`/sucursales/${codSucursal}`).then((res) =>
+      res.json(),
+    );
+    const fetchUsuarios = fetch(`/usuarios/branch/${codSucursal}`).then((res) =>
+      res.json(),
+    );
 
     Promise.all([fetchSucursal, fetchUsuarios])
       .then(([sucursalData, usuariosResp]) => {
@@ -32,12 +36,14 @@ const ShowBranches = () => {
         setSucursal(sucursalData);
 
         // la ruta de usuarios devuelve { success: true, data: [...] }
-        const usuarios = usuariosResp && usuariosResp.data ? usuariosResp.data : [];
+        const usuarios = Array.isArray(usuariosResp?.data)
+          ? (usuariosResp.data as Usuario[])
+          : [];
 
         // Filtrar solo barberos: cuil presente y distinto de "1" (según convención en el backend)
-        const soloBarberos = Array.isArray(usuarios)
-          ? usuarios.filter((u: any) => u.cuil !== null && u.cuil !== undefined && u.cuil !== "1")
-          : [];
+        const soloBarberos = usuarios.filter(
+          (u) => u.cuil !== null && u.cuil !== undefined && u.cuil !== "1",
+        );
 
         setBarberos(soloBarberos);
       })

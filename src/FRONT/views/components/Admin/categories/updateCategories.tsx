@@ -3,17 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
-import type { Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const CategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),
   descCategoria: z.string().min(10, "Descripción requerida"),
-  descuentoCorte: z.coerce
-    .number()
-    .min(0, "Mínimo 0")
-    .max(100, "Máximo 100"),
+  descuentoCorte: z.coerce.number().min(0, "Mínimo 0").max(100, "Máximo 100"),
   descuentoProducto: z.coerce
     .number()
     .min(0, "Mínimo 0")
@@ -21,6 +17,10 @@ const CategorySchema = z.object({
 });
 
 type CategoryForm = z.infer<typeof CategorySchema>;
+
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
 
 const UpdateCategories: React.FC = () => {
   const { codCategoria } = useParams<{ codCategoria: string }>();
@@ -32,7 +32,10 @@ const UpdateCategories: React.FC = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CategoryForm>({ resolver: zodResolver(CategorySchema) as unknown as Resolver<CategoryForm>, mode: "onBlur" });
+  } = useForm<CategoryForm>({
+    resolver: zodResolver(CategorySchema),
+    mode: "onBlur",
+  });
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -40,7 +43,9 @@ const UpdateCategories: React.FC = () => {
 
     const fetchCategoria = async () => {
       try {
-        const response = await fetch(`/categorias/${codCategoria}`, { signal: ctrl.signal });
+        const response = await fetch(`/categorias/${codCategoria}`, {
+          signal: ctrl.signal,
+        });
 
         if (response.ok) {
           const data = await response.json();
@@ -56,10 +61,12 @@ const UpdateCategories: React.FC = () => {
           toast.error("Categoría no encontrada", { id: toastId });
           navigate("/Admin/CategoriesPage");
         } else {
-          toast.error("Error al cargar los datos de la categoría", { id: toastId });
+          toast.error("Error al cargar los datos de la categoría", {
+            id: toastId,
+          });
         }
-      } catch (err: any) {
-        if (err && err.name === "AbortError") {
+      } catch (err: unknown) {
+        if (isAbortError(err)) {
           toast.dismiss(toastId);
           return;
         }
@@ -88,13 +95,13 @@ const UpdateCategories: React.FC = () => {
 
       await res.json();
       if (res.ok) {
-        toast.success( "Categoría actualizada exitosamente", { id: toastId });
+        toast.success("Categoría actualizada exitosamente", { id: toastId });
         navigate("/Admin/CategoriesPage");
       } else {
-        toast.error( "Error al actualizar categoría", { id: toastId });
+        toast.error("Error al actualizar categoría", { id: toastId });
       }
-    } catch (err: any) {
-      if (err && err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
         toast.dismiss(toastId);
         return;
       }
@@ -113,16 +120,36 @@ const UpdateCategories: React.FC = () => {
             <label className={styles.formLabel} htmlFor="nombreCategoria">
               Nombre de la Categoría:
             </label>
-            <input className={styles.formInput} type="text" id="nombreCategoria" {...register("nombreCategoria")} required />
-            {errors.nombreCategoria && <div className={styles.errorMessage}>{errors.nombreCategoria.message as string}</div>}
+            <input
+              className={styles.formInput}
+              type="text"
+              id="nombreCategoria"
+              {...register("nombreCategoria")}
+              required
+            />
+            {errors.nombreCategoria && (
+              <div className={styles.errorMessage}>
+                {errors.nombreCategoria.message as string}
+              </div>
+            )}
           </div>
           {/* DESCRIPCION CATEGORIA */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="descCategoria">
               Descripción:
             </label>
-            <textarea className={styles.formTextarea} id="descCategoria" rows={4} {...register("descCategoria")} required />
-            {errors.descCategoria && <div className={styles.errorMessage}>{errors.descCategoria.message as string}</div>}
+            <textarea
+              className={styles.formTextarea}
+              id="descCategoria"
+              rows={4}
+              {...register("descCategoria")}
+              required
+            />
+            {errors.descCategoria && (
+              <div className={styles.errorMessage}>
+                {errors.descCategoria.message as string}
+              </div>
+            )}
           </div>
 
           {/* DESCUENTO CORTES */}
@@ -140,7 +167,11 @@ const UpdateCategories: React.FC = () => {
               {...register("descuentoCorte", { valueAsNumber: true })}
               required
             />
-            {errors.descuentoCorte && <div className={styles.errorMessage}>{errors.descuentoCorte.message as string}</div>}
+            {errors.descuentoCorte && (
+              <div className={styles.errorMessage}>
+                {errors.descuentoCorte.message as string}
+              </div>
+            )}
           </div>
           {/* DESCUENTO PRODUCTO */}
           <div className={styles.formGroup}>
@@ -157,11 +188,19 @@ const UpdateCategories: React.FC = () => {
               {...register("descuentoProducto", { valueAsNumber: true })}
               required
             />
-            {errors.descuentoProducto && <div className={styles.errorMessage}>{errors.descuentoProducto.message as string}</div>}
+            {errors.descuentoProducto && (
+              <div className={styles.errorMessage}>
+                {errors.descuentoProducto.message as string}
+              </div>
+            )}
           </div>
 
           <div className={styles.buttonGroup}>
-            <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit" disabled={isSubmitting}>
+            <button
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Guardando..." : "Guardar Cambios"}
             </button>
           </div>

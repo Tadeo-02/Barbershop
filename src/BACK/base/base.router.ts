@@ -1,6 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import express from "express";
 import { Router, RequestHandler } from "express";
+export interface ControllerHandlers {
+  create: RequestHandler;
+  store: RequestHandler;
+  index: RequestHandler;
+  show: RequestHandler;
+  edit: RequestHandler;
+  update: RequestHandler;
+  destroy: RequestHandler;
+}
 
 export interface RouterConfig {
   create: string;
@@ -16,7 +24,7 @@ export interface RouterConfig {
 }
 // creacion de router general
 const createRouter = (
-  controller: any,
+  controller: ControllerHandlers,
   config: RouterConfig = {
     create: "/create",
     idParam: "id",

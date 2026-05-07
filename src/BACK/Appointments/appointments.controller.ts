@@ -1,12 +1,35 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as model from "./Appointments";
 import { BaseController } from "../base/base.controller"; // importamos las reques, responde y dataBaseError de la base
 import { Request, Response } from "express";
+import {
+  AppointmentOutputSchema,
+  AvailableSlotSchema,
+} from "../Schemas/appointmentsSchema";
+import { sanitizeOutput } from "../middleware/zodValidation";
 // creamos la clase barberController para enviar y manejar el base
-class AppointmentsController extends BaseController<any> {
+type AppointmentEntity = NonNullable<
+  Awaited<ReturnType<typeof model.findById>>
+>;
+type AppointmentCreateArgs = Parameters<typeof model.store>;
+type AppointmentUpdateArgs = Parameters<typeof model.update> extends [
+  string,
+  ...infer Rest
+]
+  ? Rest
+  : never;
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
+class AppointmentsController extends BaseController<
+  AppointmentEntity,
+  AppointmentCreateArgs,
+  AppointmentUpdateArgs
+> {
   protected model = model;
   protected entityName = "appointments";
   protected idFieldName = "codTurno";
+  protected responseSchema = AppointmentOutputSchema;
 }
 
 const appointmentsController = new AppointmentsController();
@@ -31,15 +54,19 @@ export const findByAvailableDate = async (
       fechaTurno,
       codSucursal,
     );
+    const safeHoras = sanitizeOutput(AvailableSlotSchema, horasDisponibles);
 
     res.status(200).json({
       success: true,
-      data: horasDisponibles,
+      data: safeHoras,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar horas disponibles",
+      message: getErrorMessage(
+        error,
+        "Error al buscar horas disponibles",
+      ),
     });
   }
 };
@@ -60,15 +87,19 @@ export const findByBarberId = async (
     }
 
     const horasDisponibles = await model.findByBarberId(codBarbero, fechaTurno);
+    const safeHoras = sanitizeOutput(AvailableSlotSchema, horasDisponibles);
 
     res.status(200).json({
       success: true,
-      data: horasDisponibles,
+      data: safeHoras,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar horas disponibles del barbero",
+      message: getErrorMessage(
+        error,
+        "Error al buscar horas disponibles del barbero",
+      ),
     });
   }
 };
@@ -89,15 +120,19 @@ export const findByUserId = async (
     }
 
     const turno = await model.findByUserId(codUsuario);
+    const safeTurno = sanitizeOutput(AppointmentOutputSchema, turno);
 
     res.status(200).json({
       success: true,
-      data: turno,
+      data: safeTurno,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar turno del cliente",
+      message: getErrorMessage(
+        error,
+        "Error al buscar turno del cliente",
+      ),
     });
   }
 };
@@ -118,15 +153,19 @@ export const findByBranchId = async (
     }
 
     const turnos = await model.findByBranchId(codSucursal);
+    const safeTurnos = sanitizeOutput(AppointmentOutputSchema, turnos);
 
     res.status(200).json({
       success: true,
-      data: turnos,
+      data: safeTurnos,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar turnos de la sucursal",
+      message: getErrorMessage(
+        error,
+        "Error al buscar turnos de la sucursal",
+      ),
     });
   }
 };
@@ -147,16 +186,20 @@ export const findPendingByBranchId = async (
     }
 
     const turnos = await model.findPendingByBranchId(codSucursal);
+    const safeTurnos = sanitizeOutput(AppointmentOutputSchema, turnos);
 
     res.status(200).json({
       success: true,
-      data: turnos,
+      data: safeTurnos,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       message:
-        error.message || "Error al buscar turnos pendientes de la sucursal",
+        getErrorMessage(
+          error,
+          "Error al buscar turnos pendientes de la sucursal",
+        ),
     });
   }
 };
@@ -177,15 +220,16 @@ export const cancelAppointment = async (
     }
 
     const result = await model.cancelAppointment(codTurno);
+    const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: safeResult,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al cancelar turno",
+      message: getErrorMessage(error, "Error al cancelar turno"),
     });
   }
 };
@@ -212,15 +256,19 @@ export const checkoutAppointment = async (
       precioTurno,
       metodoPago,
     );
+    const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: safeResult,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al realizar checkout del turno",
+      message: getErrorMessage(
+        error,
+        "Error al realizar checkout del turno",
+      ),
     });
   }
 };
@@ -247,15 +295,16 @@ export const updateAppointment = async (
       horaDesde,
       horaHasta,
     );
+    const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: safeResult,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al actualizar turno",
+      message: getErrorMessage(error, "Error al actualizar turno"),
     });
   }
 };
@@ -276,15 +325,19 @@ export const markAsNoShow = async (
     }
 
     const result = await model.markAsNoShow(codTurno);
+    const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: safeResult,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al marcar turno como No asistido",
+      message: getErrorMessage(
+        error,
+        "Error al marcar turno como No asistido",
+      ),
     });
   }
 };
@@ -305,15 +358,22 @@ export const findPendingByBarberId = async (
     }
 
     const pendingAppointments = await model.findPendingByBarberId(codBarbero);
+    const safePending = sanitizeOutput(
+      AppointmentOutputSchema,
+      pendingAppointments,
+    );
 
     res.status(200).json({
       success: true,
-      data: pendingAppointments,
+      data: safePending,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar turnos pendientes del barbero",
+      message: getErrorMessage(
+        error,
+        "Error al buscar turnos pendientes del barbero",
+      ),
     });
   }
 };

@@ -5,8 +5,28 @@ import {
   userModificationLimiter,
 } from "../middleware/rateLimiter";
 import { standardDeduplication } from "../middleware/deduplication";
+import { validateRequest } from "../middleware/zodValidation";
+import { z } from "zod";
+import {
+  BillAppointmentSchema,
+  CreateVoucherSchema,
+} from "../Schemas/billingSchema";
 
 const router: Router = Router();
+
+const tipoComprobanteParamSchema = z.object({
+  tipoComprobante: z.string().optional(),
+});
+const voucherInfoParamsSchema = z.object({
+  numeroComprobante: z.string(),
+  tipoComprobante: z.string().optional(),
+});
+const invoicePdfParamsSchema = z.object({
+  codTurno: z.string().min(1),
+  voucherNumber: z.string().min(1),
+  tipoComprobante: z.string().optional(),
+});
+const codTurnoParamSchema = z.object({ codTurno: z.string().min(1) });
 
 // ============================================================
 // Rutas de Facturación Electrónica - ARCA
@@ -19,6 +39,7 @@ router.post(
   "/comprobante",
   userModificationLimiter,
   standardDeduplication,
+  validateRequest({ body: CreateVoucherSchema }),
   controller.createVoucher,
 );
 
@@ -27,6 +48,7 @@ router.post(
   "/facturar-turno",
   userModificationLimiter,
   standardDeduplication,
+  validateRequest({ body: BillAppointmentSchema }),
   controller.billAppointment,
 );
 
@@ -39,6 +61,7 @@ router.get("/estado-servidor", userLimiter, controller.getServerStatus);
 router.get(
   "/ultimo-comprobante{/:tipoComprobante}",
   userLimiter,
+  validateRequest({ params: tipoComprobanteParamSchema }),
   controller.getLastVoucher,
 );
 
@@ -46,6 +69,7 @@ router.get(
 router.get(
   "/comprobante/:numeroComprobante{/:tipoComprobante}",
   userLimiter,
+  validateRequest({ params: voucherInfoParamsSchema }),
   controller.getVoucherInfo,
 );
 
@@ -59,13 +83,24 @@ router.get("/puntos-venta", userLimiter, controller.getSalesPoints);
 router.get(
   "/pdf/:codTurno/:voucherNumber{/:tipoComprobante}",
   userLimiter,
+  validateRequest({ params: invoicePdfParamsSchema }),
   controller.getInvoicePdf,
 );
 
 // Datos de facturación de un turno (JSON, desde DB)
-router.get("/datos-turno/:codTurno", userLimiter, controller.getBillingData);
+router.get(
+  "/datos-turno/:codTurno",
+  userLimiter,
+  validateRequest({ params: codTurnoParamSchema }),
+  controller.getBillingData,
+);
 
 // PDF de recibo (sin datos ARCA, solo datos del turno)
-router.get("/recibo/:codTurno", userLimiter, controller.getReceiptPdf);
+router.get(
+  "/recibo/:codTurno",
+  userLimiter,
+  validateRequest({ params: codTurnoParamSchema }),
+  controller.getReceiptPdf,
+);
 
 export default router;
