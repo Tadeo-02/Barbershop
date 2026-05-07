@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
 // import toast from "react-hot-toast";
@@ -12,7 +12,6 @@ interface Branch {
 const IndexBranches = () => {
   const navigate = useNavigate();
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [showOptions, setShowOptions] = React.useState(false);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [loading, setLoading] = useState(true); // loading inicial
 
@@ -31,7 +30,7 @@ const IndexBranches = () => {
       });
   }, []);
 
-  if(loading) {
+  if (loading) {
     return <div className={styles.loadingState}>Cargando sucursales...</div>;
   }
 
@@ -39,22 +38,18 @@ const IndexBranches = () => {
     // Toggle selection: si ya está seleccionada, la deseleccionamos
     if (selectedBranch === codSucursal) {
       setSelectedBranch(null);
-      setShowOptions(false);
     } else {
       setSelectedBranch(codSucursal);
-      setShowOptions(true);
     }
   };
 
-  const handleBarberFirst = () => {
-    const cod = selectedBranch ?? (branches[0] && branches[0].codSucursal);
-    if (!cod) return;
-    navigate(`/branches/${cod}/barbers`);
+  const handleBarberFirst = (codSucursal: string) => {
+    if (!codSucursal) return;
+    navigate(`/branches/${codSucursal}/barbers`);
   };
-  const handleScheduleFirst = () => {
-    const cod = selectedBranch ?? (branches[0] && branches[0].codSucursal);
-    if (!cod) return;
-    navigate(`/branches/${cod}/schedule`);
+  const handleScheduleFirst = (codSucursal: string) => {
+    if (!codSucursal) return;
+    navigate(`/branches/${codSucursal}/schedule`);
   };
 
   return (
@@ -66,36 +61,57 @@ const IndexBranches = () => {
         </div>
       ) : (
         <ul className={styles.branchList}>
-          {branches.map((branch, idx) => (
+          {branches.map((branch) => (
             <li
-              key={idx}
+              key={branch.codSucursal}
               className={`${styles.branchItem} ${
-                selectedBranch === branch.codSucursal ? styles.branchItemSelected : ""
+                selectedBranch === branch.codSucursal
+                  ? styles.branchItemSelected
+                  : ""
               }`}
               onClick={() => handleSelectBranch(branch.codSucursal)}
               style={{ cursor: "pointer" }}
               role="button"
               aria-pressed={selectedBranch === branch.codSucursal}
+              aria-expanded={selectedBranch === branch.codSucursal}
             >
               <div className={styles.branchName}>{branch.nombre}</div>
               <div className={styles.branchAddress}>
                 {branch.calle} {branch.altura}
               </div>
+              {selectedBranch === branch.codSucursal && (
+                <div
+                  className={styles.inlineOptions}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <div className={styles.inlineOptionsTitle}>
+                    ¿Cómo quieres buscar tu turno?
+                  </div>
+                  <div className={styles.inlineOptionButtons}>
+                    <button
+                      className={`${styles.optionButton} ${styles.inlineOptionButton}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleBarberFirst(branch.codSucursal);
+                      }}
+                    >
+                      Elegir barbero
+                    </button>
+                    <button
+                      className={`${styles.optionButton} ${styles.inlineOptionButton}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleScheduleFirst(branch.codSucursal);
+                      }}
+                    >
+                      Elegir horario
+                    </button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
-      )}
-      
-      {showOptions && (
-        <div className={styles.optionsContainer}>
-          <h3>¿Cómo quieres buscar tu turno?</h3>
-          <button className={styles.optionButton} onClick={handleBarberFirst}>
-            Elegir barbero
-          </button>
-          <button className={styles.optionButton} onClick={handleScheduleFirst}>
-            Elegir horario
-          </button>
-        </div>
       )}
     </div>
   );
