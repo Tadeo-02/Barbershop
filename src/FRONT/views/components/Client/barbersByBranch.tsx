@@ -306,37 +306,47 @@ const BarbersByBranch = () => {
               }`}
               onClick={() => handleSelectBarber(barbero.codUsuario)}
               style={{ cursor: "pointer" }}
+              aria-pressed={selectedBarber === barbero.codUsuario}
+              role="button"
             >
               <div className={styles.barberName}>
                 {barbero.apellido}, {barbero.nombre}
               </div>
               <div className={styles.barberPhone}>Tel: {barbero.telefono}</div>
+              {selectedBarber === barbero.codUsuario && (
+                <div
+                  className={styles.inlineActions}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  {isHorario ? (
+                    <button
+                      className={`${styles.backButton} ${styles.inlineButton}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleSubmit(event);
+                      }}
+                      disabled={!selectedBarber}
+                    >
+                      Confirmar Turno
+                    </button>
+                  ) : (
+                    <button
+                      className={`${styles.backButton} ${styles.inlineButton}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleSchedule();
+                      }}
+                      disabled={!selectedBarber}
+                    >
+                      Seleccionar Horario
+                    </button>
+                  )}
+                </div>
+              )}
             </li>
           ))
         )}
       </ul>
-
-      {barberos.length > 0 && (
-        <div>
-          {isHorario ? (
-            <button
-              className={styles.backButton}
-              onClick={handleSubmit}
-              disabled={!selectedBarber}
-            >
-              Confirmar Turno
-            </button>
-          ) : (
-            <button
-              className={styles.backButton}
-              onClick={handleSchedule}
-              disabled={!selectedBarber}
-            >
-              Seleccionar Horario
-            </button>
-          )}
-        </div>
-      )}
       {/* {showSchedule && (
         <div className={styles.optionsContainer}>
           <h3>Ahora elige el horario</h3>
