@@ -1,15 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { DatabaseError } from "./Base";
 import { sanitizeOutput } from "../middleware/zodValidation";
 // manejo universal de los distintos datos que llegan del front
-export abstract class BaseController<T> {
+export abstract class BaseController<
+  T,
+  TCreateArgs extends unknown[] = unknown[],
+  TUpdateArgs extends unknown[] = unknown[],
+> {
   protected abstract model: {
-    store: (...args: any[]) => Promise<T>;
+    store: (...args: TCreateArgs) => Promise<T | T[]>;
     findAll: () => Promise<T[]>;
     findById: (id: string) => Promise<T | null>;
-    update: (id: string, ...args: any[]) => Promise<T>;
+    update: (id: string, ...args: TUpdateArgs) => Promise<T>;
     destroy: (id: string) => Promise<T>;
   };
   protected responseSchema?: z.ZodTypeAny;
@@ -31,7 +34,8 @@ export abstract class BaseController<T> {
   store = async (req: Request, res: Response) => {
     // manejo de errores generales en estructura generica
     try {
-      const result = await this.model.store(...Object.values(req.body));
+      const args = Object.values(req.body) as unknown as TCreateArgs;
+      const result = await this.model.store(...args);
       const safeResult = this.shapeResponse(result);
       res.status(201).json({
         message: `${this.entityName} creado exitosamente`,
@@ -89,7 +93,8 @@ export abstract class BaseController<T> {
   update = async (req: Request, res: Response) => {
     const id = req.params[this.idFieldName];
     try {
-      const result = await this.model.update(id, ...Object.values(req.body));
+      const args = Object.values(req.body) as unknown as TUpdateArgs;
+      const result = await this.model.update(id, ...args);
       const safeResult = this.shapeResponse(result);
       res.status(200).json({
         message: `${this.entityName} actualizado exitosamente`,

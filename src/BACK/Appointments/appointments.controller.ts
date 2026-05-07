@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as model from "./Appointments";
 import { BaseController } from "../base/base.controller"; // importamos las reques, responde y dataBaseError de la base
 import { Request, Response } from "express";
@@ -8,7 +7,25 @@ import {
 } from "../Schemas/appointmentsSchema";
 import { sanitizeOutput } from "../middleware/zodValidation";
 // creamos la clase barberController para enviar y manejar el base
-class AppointmentsController extends BaseController<any> {
+type AppointmentEntity = NonNullable<
+  Awaited<ReturnType<typeof model.findById>>
+>;
+type AppointmentCreateArgs = Parameters<typeof model.store>;
+type AppointmentUpdateArgs = Parameters<typeof model.update> extends [
+  string,
+  ...infer Rest
+]
+  ? Rest
+  : never;
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
+class AppointmentsController extends BaseController<
+  AppointmentEntity,
+  AppointmentCreateArgs,
+  AppointmentUpdateArgs
+> {
   protected model = model;
   protected entityName = "appointments";
   protected idFieldName = "codTurno";
@@ -43,10 +60,13 @@ export const findByAvailableDate = async (
       success: true,
       data: safeHoras,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar horas disponibles",
+      message: getErrorMessage(
+        error,
+        "Error al buscar horas disponibles",
+      ),
     });
   }
 };
@@ -73,10 +93,13 @@ export const findByBarberId = async (
       success: true,
       data: safeHoras,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar horas disponibles del barbero",
+      message: getErrorMessage(
+        error,
+        "Error al buscar horas disponibles del barbero",
+      ),
     });
   }
 };
@@ -103,10 +126,13 @@ export const findByUserId = async (
       success: true,
       data: safeTurno,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar turno del cliente",
+      message: getErrorMessage(
+        error,
+        "Error al buscar turno del cliente",
+      ),
     });
   }
 };
@@ -133,10 +159,13 @@ export const findByBranchId = async (
       success: true,
       data: safeTurnos,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar turnos de la sucursal",
+      message: getErrorMessage(
+        error,
+        "Error al buscar turnos de la sucursal",
+      ),
     });
   }
 };
@@ -163,11 +192,14 @@ export const findPendingByBranchId = async (
       success: true,
       data: safeTurnos,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       message:
-        error.message || "Error al buscar turnos pendientes de la sucursal",
+        getErrorMessage(
+          error,
+          "Error al buscar turnos pendientes de la sucursal",
+        ),
     });
   }
 };
@@ -194,10 +226,10 @@ export const cancelAppointment = async (
       success: true,
       data: safeResult,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al cancelar turno",
+      message: getErrorMessage(error, "Error al cancelar turno"),
     });
   }
 };
@@ -230,10 +262,13 @@ export const checkoutAppointment = async (
       success: true,
       data: safeResult,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al realizar checkout del turno",
+      message: getErrorMessage(
+        error,
+        "Error al realizar checkout del turno",
+      ),
     });
   }
 };
@@ -266,10 +301,10 @@ export const updateAppointment = async (
       success: true,
       data: safeResult,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al actualizar turno",
+      message: getErrorMessage(error, "Error al actualizar turno"),
     });
   }
 };
@@ -296,10 +331,13 @@ export const markAsNoShow = async (
       success: true,
       data: safeResult,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al marcar turno como No asistido",
+      message: getErrorMessage(
+        error,
+        "Error al marcar turno como No asistido",
+      ),
     });
   }
 };
@@ -329,10 +367,13 @@ export const findPendingByBarberId = async (
       success: true,
       data: safePending,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: error.message || "Error al buscar turnos pendientes del barbero",
+      message: getErrorMessage(
+        error,
+        "Error al buscar turnos pendientes del barbero",
+      ),
     });
   }
 };

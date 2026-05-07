@@ -186,3 +186,8 @@ export const UserResponseSchema = UserBaseSchemaExport.omit({
 });
 
 export type UserResponse = z.infer<typeof UserResponseSchema>;
+
+export const LoginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  contraseña: z.string().min(1, "Contraseña es requerida"),
+});

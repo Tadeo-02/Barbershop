@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as model from "./Categories";
 import { BaseController } from "../../base/base.controller"; // improtamos al base controller
 import type { Request, Response } from "express";
@@ -8,7 +7,20 @@ import {
 } from "../../Schemas/categoriesSchema";
 import { sanitizeOutput } from "../../middleware/zodValidation";
 // creamos el modelo de controlador de categorias
-class CategoriesController extends BaseController<any> {
+type CategoryEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
+type CategoryCreateArgs = Parameters<typeof model.store>;
+type CategoryUpdateArgs = Parameters<typeof model.update> extends [
+  string,
+  ...infer Rest
+]
+  ? Rest
+  : never;
+
+class CategoriesController extends BaseController<
+  CategoryEntity,
+  CategoryCreateArgs,
+  CategoryUpdateArgs
+> {
   protected model = model;
   protected entityName = "categories";
   protected idFieldName = "codCategoria";
