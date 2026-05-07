@@ -51,10 +51,6 @@ const ShowCategories = () => {
           <div className={styles.discountItem}>
             <strong>Descuento en Cortes:</strong> {categoria.descuentoCorte}%
           </div>
-          <div className={styles.discountItem}>
-            <strong>Descuento en Productos:</strong>{" "}
-            {categoria.descuentoProducto}%
-          </div>
         </div>
       </div>
     </div>
