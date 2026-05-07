@@ -116,12 +116,6 @@ const ShowBarbers = () => {
                 <span className={styles.detailValue}>{sucursal.nombre}</span>
               </div>
               <div className={styles.detailItem}>
-                <span className={styles.barberoDetails}>Código: </span>
-                <span className={styles.detailValue}>
-                  {sucursal.codSucursal}
-                </span>
-              </div>
-              <div className={styles.detailItem}>
                 <span className={styles.barberoDetails}>Dirección: </span>
                 <span className={styles.detailValue}>
                   {sucursal.calle} {sucursal.altura}
@@ -137,7 +131,7 @@ const ShowBarbers = () => {
       </div>
 
       {/* Botones de acción */}
-      <div className={styles.actionButtons}>
+      <div className={styles.detailsActionButtons}>
         <Link
           to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}
           className={`${styles.button} ${styles.buttonPrimary}`}
