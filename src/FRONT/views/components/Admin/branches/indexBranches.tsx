@@ -198,7 +198,10 @@ const IndexBranches = () => {
 
   return (
     <>
-    <div className={styles.createButtonWrapper}>
+
+    <div className={styles.indexSucursales}>
+      <h2>Gestión de Sucursales</h2>
+      <div className={styles.createButtonWrapper}>
       <Link
         to="createBranches"
         className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
@@ -206,8 +209,6 @@ const IndexBranches = () => {
         CREAR SUCURSAL
       </Link>
     </div>
-    <div className={styles.indexSucursales}>
-      <h2>Gestión de Sucursales</h2>
       {sucursales.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No hay sucursales disponibles.</p>

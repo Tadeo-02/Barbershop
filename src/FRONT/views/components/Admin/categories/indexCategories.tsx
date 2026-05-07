@@ -382,7 +382,10 @@ const IndexCategories = () => {
 
   return (
       <>
-      <div className={styles.createButtonWrapper}>
+
+    <div className={styles.indexCategories}>
+      <h2>Gestión de Categorías</h2>
+        <div className={styles.createButtonWrapper}>
         <Link
           to="createCategories"
           className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
@@ -390,8 +393,6 @@ const IndexCategories = () => {
           CREAR CATEGORÍA
         </Link>
       </div>
-    <div className={styles.indexCategories}>
-      <h2>Gestión de Categorías</h2>
       {categorias.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No hay categorías disponibles.</p>
