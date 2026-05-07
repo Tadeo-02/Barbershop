@@ -350,14 +350,12 @@ const IndexBarbers = () => {
 
   return (
     <>
-    <div className={styles.createButtonWrapper}>
-      <Link
-          to="createBarbers"
-          className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-        >
-          CREAR BARBERO
-        </Link>
-    </div>
+    <Link
+        to="createBarbers"
+        className={`${styles.button} ${styles.buttonPrimary}`}
+      >
+        CREAR BARBERO
+      </Link>
     <div className={styles.indexBarberos}>
       <h2>Gestión de Barberos</h2>
       {barberos.length === 0 ? (
@@ -388,13 +386,18 @@ const IndexBarbers = () => {
                 <div className={styles.barberoSucursal}>
                   Sucursal: {getSucursalNombre(barbero.codSucursal)}
                 </div>
+                <div className={styles.barberoContacto}>
+                  Tel: {barbero.telefono} 
+                  <br />
+                  Email: {barbero.email}
+                </div>
               </div>
               <div className={styles.actionButtons}>
                 <Link
                   to={`/Admin/BarbersPage/${barbero.codUsuario}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  Ver Info
+                  Ver +
                 </Link>
                 <Link
                   to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}
@@ -407,7 +410,7 @@ const IndexBarbers = () => {
                     className={`${styles.button} ${styles.buttonDanger}`}
                     onClick={() => handleDelete(barbero.codUsuario)}
                   >
-                    Desactivar
+                    Desactiv.
                   </button>
                 ) : (
                   <button

@@ -198,14 +198,12 @@ const IndexBranches = () => {
 
   return (
     <>
-    <div className={styles.createButtonWrapper}>
-      <Link
-        to="createBranches"
-        className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-      >
-        CREAR SUCURSAL
-      </Link>
-    </div>
+    <Link
+      to="createBranches"
+      className={`${styles.button} ${styles.buttonPrimary}`}
+    >
+      CREAR SUCURSAL
+    </Link>
     <div className={styles.indexSucursales}>
       <h2>Gestión de Sucursales</h2>
       {sucursales.length === 0 ? (
@@ -238,7 +236,7 @@ const IndexBranches = () => {
                   to={`/Admin/BranchesPage/${sucursal.codSucursal}`}
                   className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  Ver Info
+                  Ver +
                 </Link>
                 <Link
                   to={`/Admin/BranchesPage/updateBranches/${sucursal.codSucursal}`}
@@ -251,7 +249,7 @@ const IndexBranches = () => {
                     className={`${styles.button} ${styles.buttonDanger}`}
                     onClick={() => handleDelete(sucursal.codSucursal)}
                   >
-                    Desactivar
+                    Desactiv.
                   </button>
                 ) : (
                   <button

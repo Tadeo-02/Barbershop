@@ -382,14 +382,12 @@ const IndexCategories = () => {
 
   return (
       <>
-      <div className={styles.createButtonWrapper}>
-        <Link
-          to="createCategories"
-          className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-        >
-          CREAR CATEGORÍA
-        </Link>
-      </div>
+      <Link
+        to="createCategories"
+        className={`${styles.button} ${styles.buttonPrimary}`}
+      >
+        CREAR CATEGORÍA
+      </Link>
     <div className={styles.indexCategories}>
       <h2>Gestión de Categorías</h2>
       {categorias.length === 0 ? (
@@ -421,7 +419,7 @@ const IndexCategories = () => {
                     to={`/Admin/CategoriesPage/${categoria.codCategoria}`}
                     className={`${styles.button} ${styles.buttonPrimary}`}
                   >
-                    Ver Info
+                    Ver +
                   </Link>
                   <Link
                     to={`/Admin/CategoriesPage/updateCategories/${categoria.codCategoria}`}

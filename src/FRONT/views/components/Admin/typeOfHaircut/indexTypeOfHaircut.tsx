@@ -144,14 +144,12 @@ const IndexTypeOfHaircut = () => {
 
   return (
       <>
-      <div className={styles.createButtonWrapper}>
-        <Link
-          to="createTypeOfHaircut"
-          className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-        >
-          CREAR TIPO DE CORTE
-        </Link>
-      </div>
+      <Link
+        to="createTypeOfHaircut"
+        className={`${styles.button} ${styles.buttonPrimary}`}
+      >
+        CREAR TIPO DE CORTE
+      </Link>
     <div className={styles.indexTipoCortes}>
       <h2>Gestión de Tipos de Corte</h2>
       {tipoCortes.length === 0 ? (
