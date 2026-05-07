@@ -12,6 +12,19 @@ const CreateBranchSchema = BranchSchema.extend({});
 
 type CreateBranchFormData = z.infer<typeof CreateBranchSchema>;
 
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
+const getResponseMessage = (data: unknown): string | undefined => {
+  if (!data || typeof data !== "object" || !("message" in data))
+    return undefined;
+  const message = (data as { message?: unknown }).message;
+  if (typeof message === "string") return message;
+  if (message != null) return String(message);
+  return undefined;
+};
+
 const CreateBranches: React.FC = () => {
   const navigate = useNavigate();
   {
@@ -51,7 +64,7 @@ const CreateBranches: React.FC = () => {
       });
 
       // Intentar parsear JSON; si falla, crear mensaje fallback
-      let responseData: any = { message: response.statusText };
+      let responseData: unknown = { message: response.statusText };
       try {
         responseData = await response.json();
       } catch (parseErr) {
@@ -59,9 +72,12 @@ const CreateBranches: React.FC = () => {
         // console.warn("No JSON en la respuesta:", parseErr);
       }
 
+      const responseMessage =
+        getResponseMessage(responseData) ?? response.statusText;
+
       if (response.ok) {
         // ÉXITO
-        toast.success(responseData.message || "Sucursal creada exitosamente", {
+        toast.success(responseMessage || "Sucursal creada exitosamente", {
           id: toastId,
           duration: 2000,
         });
@@ -74,13 +90,13 @@ const CreateBranches: React.FC = () => {
         }, 1200);
       } else {
         // ERROR DEL BACKEND
-        toast.error(responseData.message || "Error al crear sucursal", {
+        toast.error(responseMessage || "Error al crear sucursal", {
           id: toastId,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Ignorar errores de abort (son intencionales)
-      if (error && (error.name === "AbortError" || (error instanceof DOMException && error.name === "AbortError"))) {
+      if (isAbortError(error)) {
         toast.dismiss(toastId);
         // console.log("Request cancelado");
         return;
@@ -114,7 +130,7 @@ const CreateBranches: React.FC = () => {
           style={{ border: "none", padding: 0, margin: 0 }}
         >
           <div className={styles.formGroup}>
-          {/*PROPIEDAD PARA DESHABILITAR ENVÍOS MULIPLES MEDIANTE HTML PURO  */}
+            {/*PROPIEDAD PARA DESHABILITAR ENVÍOS MULIPLES MEDIANTE HTML PURO  */}
             <label htmlFor="nombre" className={styles.formLabel}>
               NOMBRE:
             </label>
@@ -131,54 +147,54 @@ const CreateBranches: React.FC = () => {
                 {errors.nombre.message}
               </p>
             )}
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="calle" className={styles.formLabel}>
-            CALLE:
-          </label>
-          <input
-            className={styles.formInput}
-            type="text"
-            id="calle"
-            {...register("calle")}
-            required
-          />
-          {errors.calle && (
-            <p style={{ color: "red", fontSize: "0.875rem" }}>
-              {errors.calle.message}
-            </p>
-          )}
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="altura">
-            ALTURA:
-          </label>
-          <input
-            className={styles.formInput}
-            type="number"
-            id="altura"
-            min={1}
-            step={1}
-            {...register("altura", { valueAsNumber: true })}
-            required
-          />
-          {errors.altura && (
-            <p style={{ color: "red", fontSize: "0.875rem" }}>
-              {errors.altura.message}
-            </p>
-          )}
-        </div>
-        <button
-          className={`${styles.button} ${styles.buttonSuccess}`}
-          type="submit"
-          disabled={isSubmitting}
-          aria-disabled={isSubmitting}
-        >
-          {isSubmitting ? "Creando..." : "Guardar Sucursal"}
-        </button>
-      </fieldset>
-    </form>
-    </div >
+          </div>
+          <div className={styles.formGroup}>
+            <label htmlFor="calle" className={styles.formLabel}>
+              CALLE:
+            </label>
+            <input
+              className={styles.formInput}
+              type="text"
+              id="calle"
+              {...register("calle")}
+              required
+            />
+            {errors.calle && (
+              <p style={{ color: "red", fontSize: "0.875rem" }}>
+                {errors.calle.message}
+              </p>
+            )}
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="altura">
+              ALTURA:
+            </label>
+            <input
+              className={styles.formInput}
+              type="number"
+              id="altura"
+              min={1}
+              step={1}
+              {...register("altura", { valueAsNumber: true })}
+              required
+            />
+            {errors.altura && (
+              <p style={{ color: "red", fontSize: "0.875rem" }}>
+                {errors.altura.message}
+              </p>
+            )}
+          </div>
+          <button
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            type="submit"
+            disabled={isSubmitting}
+            aria-disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creando..." : "Guardar Sucursal"}
+          </button>
+        </fieldset>
+      </form>
+    </div>
   );
 };
 

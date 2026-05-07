@@ -9,6 +9,19 @@ import { useNavigate } from "react-router-dom";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;
 
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
+const getResponseMessage = (data: unknown): string | undefined => {
+  if (!data || typeof data !== "object" || !("message" in data))
+    return undefined;
+  const message = (data as { message?: unknown }).message;
+  if (typeof message === "string") return message;
+  if (message != null) return String(message);
+  return undefined;
+};
+
 const CreateTypeOfHaircut: React.FC = () => {
   const navigate = useNavigate();
   const abortRef = useRef<AbortController | null>(null);
@@ -42,7 +55,7 @@ const CreateTypeOfHaircut: React.FC = () => {
       });
 
       // parse JSON safely (some responses may not include a JSON body)
-      let data: any = null;
+      let data: unknown = null;
       try {
         data = await res.json();
       } catch (parseErr) {
@@ -55,18 +68,17 @@ const CreateTypeOfHaircut: React.FC = () => {
         setTimeout(() => navigate("/Admin/HaircutTypesPage"), 600);
       } else {
         // if server returned JSON with message, show it; otherwise show generic
-        const msg = data && data.message ? String(data.message) : "Error al crear tipo de corte";
+        const msg = getResponseMessage(data) ?? "Error al crear tipo de corte";
         toast.error(msg, { id: toastId });
       }
-    } catch (err: any) {
-      if (err && err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
         toast.dismiss(toastId);
         return;
       }
       console.error("Error en handleSubmit:", err);
       toast.error("Error de conexión con el servidor", { id: toastId });
-    }
-    finally {
+    } finally {
       // clear the controller reference so future requests start fresh
       abortRef.current = null;
     }
@@ -86,7 +98,10 @@ const CreateTypeOfHaircut: React.FC = () => {
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Crear Tipo de Corte</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset disabled={isSubmitting} style={{ border: "none", padding: 0, margin: 0 }}>
+        <fieldset
+          disabled={isSubmitting}
+          style={{ border: "none", padding: 0, margin: 0 }}
+        >
           <div className={styles.formGroup}>
             <label htmlFor="nombre" className={styles.formLabel}>
               Nombre del corte:
@@ -99,7 +114,9 @@ const CreateTypeOfHaircut: React.FC = () => {
               maxLength={50}
               required
             />
-            {errors.nombre && (<div className={styles.errorMessage}>{errors.nombre.message}</div>)}
+            {errors.nombre && (
+              <div className={styles.errorMessage}>{errors.nombre.message}</div>
+            )}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="valorBase">
@@ -114,9 +131,17 @@ const CreateTypeOfHaircut: React.FC = () => {
               {...register("valorBase", { valueAsNumber: true })}
               required
             />
-            {errors.valorBase && (<div className={styles.errorMessage}>{errors.valorBase.message}</div>)}
+            {errors.valorBase && (
+              <div className={styles.errorMessage}>
+                {errors.valorBase.message}
+              </div>
+            )}
           </div>
-          <button className={`${styles.button} ${styles.buttonPrimary}`} type="submit" disabled={isSubmitting}>
+          <button
+            className={`${styles.button} ${styles.buttonPrimary}`}
+            type="submit"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Creando..." : "Guardar Tipo de Corte"}
           </button>
         </fieldset>

@@ -21,6 +21,10 @@ const CreateAppointmentSchema = BackendAppointmentSchema.pick({
 
 type AppointmentForm = z.infer<typeof CreateAppointmentSchema>;
 
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
 const CreateAppointment: React.FC = () => {
   const navigate = useNavigate();
   const abortRef = useRef<AbortController | null>(null);
@@ -30,7 +34,10 @@ const CreateAppointment: React.FC = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<AppointmentForm>({ resolver: zodResolver(CreateAppointmentSchema), mode: "onBlur" });
+  } = useForm<AppointmentForm>({
+    resolver: zodResolver(CreateAppointmentSchema),
+    mode: "onBlur",
+  });
 
   const onSubmit = async (values: AppointmentForm) => {
     if (abortRef.current) abortRef.current.abort();
@@ -57,7 +64,9 @@ const CreateAppointment: React.FC = () => {
 
       // parsear body sólo si es JSON (evita exceptions si el servidor retorna texto)
       const contentType = res.headers.get("content-type") || "";
-      const data = contentType.includes("application/json") ? await res.json() : null;
+      const data = contentType.includes("application/json")
+        ? await res.json()
+        : null;
 
       if (res.ok) {
         toast.success("Turno creado", { id: toastId, duration: 2000 });
@@ -67,8 +76,8 @@ const CreateAppointment: React.FC = () => {
         const message = data?.message || data?.error || "Error al crear turno";
         toast.error(message, { id: toastId, duration: 4000 });
       }
-    } catch (err: any) {
-      if (err && err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
         toast.dismiss(toastId);
         return;
       }
@@ -88,21 +97,41 @@ const CreateAppointment: React.FC = () => {
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Crear Turno</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset aria-busy={isSubmitting} disabled={isSubmitting} style={{ border: "none", padding: 0, margin: 0 }}>
+        <fieldset
+          aria-busy={isSubmitting}
+          disabled={isSubmitting}
+          style={{ border: "none", padding: 0, margin: 0 }}
+        >
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="codCliente">
               Código Cliente:
             </label>
-            <input className={styles.formInput} type="text" id="codCliente" {...register("codCliente")} required />
-            {errors.codCliente && <p style={{ color: "red" }}>{errors.codCliente.message}</p>}
+            <input
+              className={styles.formInput}
+              type="text"
+              id="codCliente"
+              {...register("codCliente")}
+              required
+            />
+            {errors.codCliente && (
+              <p style={{ color: "red" }}>{errors.codCliente.message}</p>
+            )}
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="codBarbero">
               Código Barbero:
             </label>
-            <input className={styles.formInput} type="text" id="codBarbero" {...register("codBarbero")} required />
-            {errors.codBarbero && <p style={{ color: "red" }}>{errors.codBarbero.message}</p>}
+            <input
+              className={styles.formInput}
+              type="text"
+              id="codBarbero"
+              {...register("codBarbero")}
+              required
+            />
+            {errors.codBarbero && (
+              <p style={{ color: "red" }}>{errors.codBarbero.message}</p>
+            )}
           </div>
 
           <div className={styles.formGroup}>
@@ -117,28 +146,50 @@ const CreateAppointment: React.FC = () => {
               required
               min={new Date().toISOString().split("T")[0]}
             />
-            {errors.fechaTurno && <p style={{ color: "red" }}>{errors.fechaTurno.message}</p>}
+            {errors.fechaTurno && (
+              <p style={{ color: "red" }}>{errors.fechaTurno.message}</p>
+            )}
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="horaDesde">
               Hora Desde:
             </label>
-            <input className={styles.formInput} type="time" id="horaDesde" {...register("horaDesde")} required />
-            {errors.horaDesde && <p style={{ color: "red" }}>{errors.horaDesde.message}</p>}
+            <input
+              className={styles.formInput}
+              type="time"
+              id="horaDesde"
+              {...register("horaDesde")}
+              required
+            />
+            {errors.horaDesde && (
+              <p style={{ color: "red" }}>{errors.horaDesde.message}</p>
+            )}
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="horaHasta">
               Hora Hasta:
             </label>
-            <input className={styles.formInput} type="time" id="horaHasta" {...register("horaHasta")} required />
-            {errors.horaHasta && <p style={{ color: "red" }}>{errors.horaHasta.message}</p>}
+            <input
+              className={styles.formInput}
+              type="time"
+              id="horaHasta"
+              {...register("horaHasta")}
+              required
+            />
+            {errors.horaHasta && (
+              <p style={{ color: "red" }}>{errors.horaHasta.message}</p>
+            )}
           </div>
 
           <input type="hidden" {...register("estado")} value={"Programado"} />
 
-          <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit" disabled={isSubmitting}>
+          <button
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            type="submit"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Creando..." : "Guardar Turno"}
           </button>
         </fieldset>

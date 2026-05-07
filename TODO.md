@@ -1,5 +1,4 @@
 - factura, distibucion de datos
-- perfil cliente
 - sidebar
 - seleccion sucursal, lugar botones para continuar
 - arreglar pantalla de home cuando la sesión esta iniciada

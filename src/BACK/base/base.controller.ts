@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request, Response } from "express";
+import { z } from "zod";
 import { DatabaseError } from "./Base";
+import { sanitizeOutput } from "../middleware/zodValidation";
 // manejo universal de los distintos datos que llegan del front
 export abstract class BaseController<T> {
   protected abstract model: {
@@ -10,21 +12,30 @@ export abstract class BaseController<T> {
     update: (id: string, ...args: any[]) => Promise<T>;
     destroy: (id: string) => Promise<T>;
   };
-// nombre del componente y el id que se utilizan para navegar
+  protected responseSchema?: z.ZodTypeAny;
+  // nombre del componente y el id que se utilizan para navegar
   protected abstract entityName: string;
   protected abstract idFieldName: string;
-// los path son generados de acuerdo a los parametros que llegan (nombre del componente e id)
+  // aplica schema de respuesta si existe
+  protected shapeResponse(data: unknown) {
+    if (!this.responseSchema) return data;
+    return sanitizeOutput(this.responseSchema, data);
+  }
+  // los path son generados de acuerdo a los parametros que llegan (nombre del componente e id)
   create = (_req: Request, res: Response) => {
-    res.render(`/src/FRONT/views/components/${this.entityName}/create${this.entityName}`);
+    res.render(
+      `/src/FRONT/views/components/${this.entityName}/create${this.entityName}`,
+    );
   };
 
   store = async (req: Request, res: Response) => {
     // manejo de errores generales en estructura generica
     try {
       const result = await this.model.store(...Object.values(req.body));
+      const safeResult = this.shapeResponse(result);
       res.status(201).json({
         message: `${this.entityName} creado exitosamente`,
-        [this.entityName]: result,
+        [this.entityName]: safeResult,
       });
     } catch (error) {
       this.handleError(error, res);
@@ -34,7 +45,8 @@ export abstract class BaseController<T> {
   index = async (_req: Request, res: Response) => {
     try {
       const entities = await this.model.findAll();
-      res.status(200).json(entities);
+      const safeEntities = this.shapeResponse(entities);
+      res.status(200).json(safeEntities);
     } catch (error) {
       this.handleError(error, res);
     }
@@ -50,7 +62,8 @@ export abstract class BaseController<T> {
           type: "not_found",
         });
       }
-      res.status(200).json(entity);
+      const safeEntity = this.shapeResponse(entity);
+      res.status(200).json(safeEntity);
     } catch (error) {
       this.handleError(error, res);
     }
@@ -66,7 +79,8 @@ export abstract class BaseController<T> {
           type: "not_found",
         });
       }
-      res.json(entity);
+      const safeEntity = this.shapeResponse(entity);
+      res.json(safeEntity);
     } catch (error) {
       this.handleError(error, res);
     }
@@ -76,9 +90,10 @@ export abstract class BaseController<T> {
     const id = req.params[this.idFieldName];
     try {
       const result = await this.model.update(id, ...Object.values(req.body));
+      const safeResult = this.shapeResponse(result);
       res.status(200).json({
         message: `${this.entityName} actualizado exitosamente`,
-        [this.entityName]: result,
+        [this.entityName]: safeResult,
       });
     } catch (error) {
       this.handleError(error, res);
@@ -89,9 +104,10 @@ export abstract class BaseController<T> {
     const id = req.params[this.idFieldName];
     try {
       const result = await this.model.destroy(id);
+      const safeResult = this.shapeResponse(result);
       res.status(200).json({
         message: `${this.entityName} eliminado correctamente`,
-        [this.entityName]: result,
+        [this.entityName]: safeResult,
       });
     } catch (error) {
       this.handleError(error, res);
@@ -101,7 +117,7 @@ export abstract class BaseController<T> {
   protected handleError(error: unknown, res: Response) {
     console.error(
       `Error in ${this.entityName}:`,
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     if (error instanceof DatabaseError) {

@@ -41,6 +41,10 @@ interface Cut {
   valorBase: number;
 }
 
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
 // --- CheckoutForm component: encapsula formulario de cobro con react-hook-form + zod ---
 const CheckoutForm: React.FC<{
   codTurno: string;
@@ -81,7 +85,8 @@ const CheckoutForm: React.FC<{
                 userData.categoriaActual.nombreCategoria || "Sin categoría",
               turnsUntilNextDiscount:
                 userData.loyaltyProgress?.turnsUntilNextDiscount ?? null,
-              isThisTurnEligible: userData.loyaltyProgress?.isThisTurnEligible ?? null,
+              isThisTurnEligible:
+                userData.loyaltyProgress?.isThisTurnEligible ?? null,
             });
             console.log(
               `✅ Categoría cargada: ${userData.categoriaActual.nombreCategoria} - Descuento: ${userData.categoriaActual.descuentoCorte}%`,
@@ -260,8 +265,8 @@ const CheckoutForm: React.FC<{
           duration: 2000,
         });
       }
-    } catch (error: any) {
-      if (error?.name === "AbortError") {
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
         toast.dismiss(toastId);
         console.log("Checkout request aborted");
       } else {
@@ -337,12 +342,16 @@ const CheckoutForm: React.FC<{
   // Calcular precio final con descuento
   // Aplicar descuento solo si la categoría aplica Y este turno es elegible
   const precioFinal =
-    descuentoInfo && descuentoInfo.descuento > 0 && descuentoInfo.isThisTurnEligible
+    descuentoInfo &&
+    descuentoInfo.descuento > 0 &&
+    descuentoInfo.isThisTurnEligible
       ? watchedPrecio * (1 - descuentoInfo.descuento / 100)
       : watchedPrecio;
 
   const descuentoAplicado =
-    descuentoInfo && descuentoInfo.descuento > 0 && descuentoInfo.isThisTurnEligible
+    descuentoInfo &&
+    descuentoInfo.descuento > 0 &&
+    descuentoInfo.isThisTurnEligible
       ? watchedPrecio - precioFinal
       : 0;
 
@@ -350,10 +359,7 @@ const CheckoutForm: React.FC<{
     <form onSubmit={(e) => e.preventDefault()}>
       <fieldset disabled={formState.isSubmitting || loadingCategoria}>
         <div className={styles.formGroup}>
-          <label
-            className={styles.formLabel}
-            htmlFor={`codCorte-${codTurno}`}
-          >
+          <label className={styles.formLabel} htmlFor={`codCorte-${codTurno}`}>
             Tipo de Corte:
           </label>
           <select
@@ -386,47 +392,49 @@ const CheckoutForm: React.FC<{
               </span>
             </div>
 
-            {descuentoInfo && descuentoInfo.descuento > 0 && descuentoInfo.isThisTurnEligible && (
-              <>
-                <div className={styles.categoryBadge}>
-                  <span className={styles.categoryName}>
-                    Categoría: {descuentoInfo.nombreCategoria}
-                  </span>
-                  <span className={styles.discountBadge}>
-                    -{descuentoInfo.descuento}%
-                  </span>
-                </div>
-                <div
-                  className={styles.priceLine}
-                  style={{ color: "#e74c3c" }}
-                >
-                  <span className={styles.priceLabel}>Descuento:</span>
-                  <span className={styles.priceValue}>
-                    -${descuentoAplicado.toFixed(2)}
-                  </span>
-                </div>
-                <div
-                  className={styles.priceLine}
-                  style={{
-                    borderTop: "2px solid #bdc3c7",
-                    paddingTop: "8px",
-                  }}
-                >
-                  <span
-                    className={styles.priceLabel}
-                    style={{ fontWeight: "bold" }}
+            {descuentoInfo &&
+              descuentoInfo.descuento > 0 &&
+              descuentoInfo.isThisTurnEligible && (
+                <>
+                  <div className={styles.categoryBadge}>
+                    <span className={styles.categoryName}>
+                      Categoría: {descuentoInfo.nombreCategoria}
+                    </span>
+                    <span className={styles.discountBadge}>
+                      -{descuentoInfo.descuento}%
+                    </span>
+                  </div>
+                  <div
+                    className={styles.priceLine}
+                    style={{ color: "#e74c3c" }}
                   >
-                    TOTAL A COBRAR:
-                  </span>
-                  <span
-                    className={styles.priceValue}
-                    style={{ fontWeight: "bold", color: "#27ae60" }}
+                    <span className={styles.priceLabel}>Descuento:</span>
+                    <span className={styles.priceValue}>
+                      -${descuentoAplicado.toFixed(2)}
+                    </span>
+                  </div>
+                  <div
+                    className={styles.priceLine}
+                    style={{
+                      borderTop: "2px solid #bdc3c7",
+                      paddingTop: "8px",
+                    }}
                   >
-                    ${precioFinal.toFixed(2)}
-                  </span>
-                </div>
-              </>
-            )}
+                    <span
+                      className={styles.priceLabel}
+                      style={{ fontWeight: "bold" }}
+                    >
+                      TOTAL A COBRAR:
+                    </span>
+                    <span
+                      className={styles.priceValue}
+                      style={{ fontWeight: "bold", color: "#27ae60" }}
+                    >
+                      ${precioFinal.toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
           </div>
         </div>
 
@@ -590,8 +598,8 @@ const BranchAppointments: React.FC = () => {
 
       console.log("Turnos array procesado:", turnosArray);
       setTurnos(turnosArray);
-    } catch (error: any) {
-      if (error.name === "AbortError") {
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
         console.log("Fetch aborted for branch turnos");
         return;
       }
@@ -634,8 +642,8 @@ const BranchAppointments: React.FC = () => {
         } else {
           console.warn("Formato de respuesta inesperado:", data);
         }
-      } catch (error: any) {
-        if (error.name === "AbortError") return;
+      } catch (error: unknown) {
+        if (isAbortError(error)) return;
         console.error("Error fetching cuts:", error);
         toast.error("Error al cargar tipos de corte");
       }
@@ -834,8 +842,8 @@ const BranchAppointments: React.FC = () => {
           },
         );
       }
-    } catch (error: any) {
-      if (error.name === "AbortError") {
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
         toast.dismiss(toastId);
         console.log("No-show request aborted");
       } else {
@@ -887,104 +895,112 @@ const BranchAppointments: React.FC = () => {
           {(() => {
             const visibleIds = new Set(filteredTurnos.map((t) => t.codTurno));
             return turnos.map((turno) => {
-            const barbero = turno.usuarios_turnos_codBarberoTousuarios;
-            const cliente = turno.usuarios_turnos_codClienteTousuarios;
-            const currentForm = {
-              codCorte: turno.codCorte || "",
-              precioTurno: turno.precioTurno || 0,
-              metodoPago: turno.metodoPago || "",
-            };
+              const barbero = turno.usuarios_turnos_codBarberoTousuarios;
+              const cliente = turno.usuarios_turnos_codClienteTousuarios;
+              const currentForm = {
+                codCorte: turno.codCorte || "",
+                precioTurno: turno.precioTurno || 0,
+                metodoPago: turno.metodoPago || "",
+              };
 
-            return (
-              <li key={turno.codTurno} className={styles.appointmentItem} style={visibleIds.has(turno.codTurno) ? undefined : { display: "none" }}>
-                <div className={styles.appointmentDetails}>
-                  <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>Fecha:</span>
-                    <span className={styles.detailValue}>
-                      {formatDate(turno.fechaTurno)}
-                    </span>
+              return (
+                <li
+                  key={turno.codTurno}
+                  className={styles.appointmentItem}
+                  style={
+                    visibleIds.has(turno.codTurno)
+                      ? undefined
+                      : { display: "none" }
+                  }
+                >
+                  <div className={styles.appointmentDetails}>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>Fecha:</span>
+                      <span className={styles.detailValue}>
+                        {formatDate(turno.fechaTurno)}
+                      </span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>Hora:</span>
+                      <span className={styles.detailValue}>
+                        {formatTime(turno.horaDesde)} -{" "}
+                        {formatTime(turno.horaHasta)}
+                      </span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>Barbero:</span>
+                      <span className={styles.detailValue}>
+                        {barbero
+                          ? `${barbero.nombre} ${barbero.apellido}`
+                          : "Cargando..."}
+                      </span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>Cliente:</span>
+                      <span className={styles.detailValue}>
+                        {cliente
+                          ? `${cliente.nombre} ${cliente.apellido}`
+                          : "Cargando..."}
+                      </span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>Estado:</span>
+                      <span
+                        className={`${styles.statusBadge} ${styles.statusProgramado}`}
+                      >
+                        {turno.estado}
+                      </span>
+                    </div>
                   </div>
-                  <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>Hora:</span>
-                    <span className={styles.detailValue}>
-                      {formatTime(turno.horaDesde)} -{" "}
-                      {formatTime(turno.horaHasta)}
-                    </span>
-                  </div>
-                  <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>Barbero:</span>
-                    <span className={styles.detailValue}>
-                      {barbero
-                        ? `${barbero.nombre} ${barbero.apellido}`
-                        : "Cargando..."}
-                    </span>
-                  </div>
-                  <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>Cliente:</span>
-                    <span className={styles.detailValue}>
-                      {cliente
-                        ? `${cliente.nombre} ${cliente.apellido}`
-                        : "Cargando..."}
-                    </span>
-                  </div>
-                  <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>Estado:</span>
-                    <span
-                      className={`${styles.statusBadge} ${styles.statusProgramado}`}
-                    >
-                      {turno.estado}
-                    </span>
-                  </div>
-                </div>
 
-                {turno.estado === "Programado" && (
-                  <div className={styles.actionButtons}>
-                    <CheckoutForm
-                      codTurno={turno.codTurno}
-                      codCliente={turno.codCliente}
-                      initial={currentForm}
-                      allCortes={allCortes}
-                      onCompleted={async () => {
-                        await loadTurnos();
-                      }}
-                    />
+                  {turno.estado === "Programado" && (
+                    <div className={styles.actionButtons}>
+                      <CheckoutForm
+                        codTurno={turno.codTurno}
+                        codCliente={turno.codCliente}
+                        initial={currentForm}
+                        allCortes={allCortes}
+                        onCompleted={async () => {
+                          await loadTurnos();
+                        }}
+                      />
 
-                    <button
-                      onClick={() => handleMarkAsNoShow(turno.codTurno)}
-                      className={`${styles.button} ${styles.buttonWarning}`}
-                      disabled={
-                        !hasTurnoPassed(turno.fechaTurno, turno.horaHasta)
-                      }
-                    >
-                      No asistido
-                    </button>
-                  </div>
-                )}
+                      <button
+                        onClick={() => handleMarkAsNoShow(turno.codTurno)}
+                        className={`${styles.button} ${styles.buttonWarning}`}
+                        disabled={
+                          !hasTurnoPassed(turno.fechaTurno, turno.horaHasta)
+                        }
+                      >
+                        No asistido
+                      </button>
+                    </div>
+                  )}
 
-                {turno.estado === "Cobrado" && (
-                  <div className={styles.actionButtons}>
-                    <button
-                      onClick={() =>
-                        navigate(
-                          `/Barber/appointments/recibo/${turno.codTurno}`,
-                        )
-                      }
-                      className={`${styles.button} ${styles.buttonInfo}`}
-                    >
-                      Ver Factura
-                    </button>
-                    <button
-                      onClick={() => handleBillAppointment(turno.codTurno)}
-                      className={`${styles.button} ${styles.buttonSuccess}`}
-                      disabled={isSubmitting}
-                    >
-                      Facturar (ARCA)
-                    </button>
-                  </div>
-                )}
-              </li>
-            );
-          });
+                  {turno.estado === "Cobrado" && (
+                    <div className={styles.actionButtons}>
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/Barber/appointments/recibo/${turno.codTurno}`,
+                          )
+                        }
+                        className={`${styles.button} ${styles.buttonInfo}`}
+                      >
+                        Ver Factura
+                      </button>
+                      <button
+                        onClick={() => handleBillAppointment(turno.codTurno)}
+                        className={`${styles.button} ${styles.buttonSuccess}`}
+                        disabled={isSubmitting}
+                      >
+                        Facturar (ARCA)
+                      </button>
+                    </div>
+                  )}
+                </li>
+              );
+            });
           })()}
         </ul>
       )}
