@@ -94,127 +94,197 @@ function Header() {
         <div className={styles.menuButton}>
           <button
             className={styles.button}
-            onClick={open ? () => setOpen(false) : () => setOpen(true)}
+            onClick={() => setOpen((prev) => !prev)}
+            aria-label={open ? "Cerrar menu" : "Abrir menu"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            type="button"
           >
-            <FaBars style={{ fontSize: "2.2rem" }} />
+            <FaBars />
           </button>
         </div>
       </div>
 
       {/* sidebar */}
-      <div
+      <aside
+        id="mobile-menu"
         className={`${styles.sidebar} ${
-          open ? styles["sidebar-open"] : styles["sidebar-closed"]
+          open ? styles.sidebarOpen : styles.sidebarClosed
         }`}
-        style={{
-          width: "50vw",
-          maxWidth: 400,
-        }}
+        aria-hidden={!open}
       >
-        <ul className={styles.sidebarMenu}>
-          {/* Mostrar diferentes opciones según el estado de autenticación */}
-          {!isAuthenticated ? (
-            <>
-              <li>
-                <Link to="/login" onClick={() => setOpen(false)}>
-                  Iniciar Sesión
-                </Link>
-              </li>
-              <li>
-                <Link to="/signUp" onClick={() => setOpen(false)}>
-                  Registrarse
-                </Link>
-              </li>
-            </>
-          ) : (
-            <>
-              {/* Opciones para usuarios autenticados */}
-              <li className={styles.dataUser}>
-                <span style={{ color: "#ccc", fontSize: "0.9em" }}>
-                  Bienvenido, {user?.nombre || user?.email}
-                </span>
-                <br />
-                <span style={{ color: "#999", fontSize: "0.8em" }}>
-                  {userType === "client"
-                    ? `Categoría: ${clientCategory || "Sin categoría"}`
-                    : `Tipo: ${userType}`}
-                </span>
-              </li>
-
-              {/* Opciones específicas por tipo de usuario */}
-              {userType === "client" && (
-                <li>
-                  <Link to="/client/home" onClick={() => setOpen(false)}>
-                    <img src="/images/home.png" alt="Inicio" />
-                    Inicio
-                  </Link>
-
-                  <Link to="/client/profile" onClick={() => setOpen(false)}>
-                    <img src="/images/user.png" alt="Mi Perfil" />
-                    Mi Perfil
-                  </Link>
-                  <Link
-                    to="/client/appointments"
-                    onClick={() => setOpen(false)}
-                  >
-                    <img src="/images/calendar.png" alt="Mis Turnos" />
-                    Mis Turnos
-                  </Link>
-                </li>
-              )}
-
-              {userType === "barber" && (
-                <li>
-                  <Link
-                    to="/Barber/HomePageBarber"
-                    onClick={() => setOpen(false)}
-                  >
-                    <img src="/images/home.png" alt="Inicio" />
-                    Inicio
-                  </Link>
-                  <Link
-                    to="/Barber/myAppointments"
-                    onClick={() => setOpen(false)}
-                  >
-                    <img src="/images/calendar.png" alt="Mis Turnos" />
-                    Mis turnos
-                  </Link>
-                </li>
-              )}
-
-              {userType === "admin" && (
-                <li>
-                  <Link
-                    to="/Admin/HomePageAdmin"
-                    onClick={() => setOpen(false)}
-                  >
-                    <img src="/images/home.png" alt="Inicio" />
-                    Inicio
-                  </Link>
-                </li>
-              )}
-
-              {/* lo saco para desarrollo
-          <li>
-            <Link
-              to="/productos/mainProductos.tsx"
+        <div className={styles.sidebarContent}>
+          <div className={styles.sidebarHeader}>
+            <span className={styles.sidebarTitle}>Menu</span>
+            <button
+              type="button"
+              className={styles.closeButton}
               onClick={() => setOpen(false)}
+              aria-label="Cerrar menu"
             >
-              Productos
-            </Link>
-          </li>
-*/}
+              X
+            </button>
+          </div>
 
-              <li>
-                <button className={styles.logOut} onClick={handleLogout}>
-                  <img src="/images/logOut.png" alt="Cerrar Sesión" />
-                  Cerrar Sesión
-                </button>
-              </li>
-            </>
+          <div className={styles.sidebarBody}>
+            {!isAuthenticated ? (
+              <nav className={styles.navSection} aria-label="Autenticacion">
+                <ul className={styles.menuList}>
+                  <li className={styles.menuItem}>
+                    <Link
+                      to="/login"
+                      onClick={() => setOpen(false)}
+                      className={styles.menuLink}
+                    >
+                      <span className={styles.menuLabel}>Iniciar Sesión</span>
+                    </Link>
+                  </li>
+                  <li className={styles.menuItem}>
+                    <Link
+                      to="/signUp"
+                      onClick={() => setOpen(false)}
+                      className={styles.menuLink}
+                    >
+                      <span className={styles.menuLabel}>Registrarse</span>
+                    </Link>
+                  </li>
+                </ul>
+              </nav>
+            ) : (
+              <>
+                <div className={styles.userCard}>
+                  <span className={styles.userName}>
+                    Bienvenido, {user?.nombre || user?.email}
+                  </span>
+                  <span className={styles.userMeta}>
+                    {userType === "client"
+                      ? `Categoría: ${clientCategory || "Sin categoría"}`
+                      : `Tipo: ${userType}`}
+                  </span>
+                </div>
+
+                <nav className={styles.navSection} aria-label="Navegacion">
+                  <ul className={styles.menuList}>
+                    {userType === "client" && (
+                      <>
+                        <li className={styles.menuItem}>
+                          <Link
+                            to="/client/home"
+                            onClick={() => setOpen(false)}
+                            className={styles.menuLink}
+                          >
+                            <img
+                              src="/images/home.png"
+                              alt="Inicio"
+                              className={styles.menuIcon}
+                            />
+                            <span className={styles.menuLabel}>Inicio</span>
+                          </Link>
+                        </li>
+                        <li className={styles.menuItem}>
+                          <Link
+                            to="/client/profile"
+                            onClick={() => setOpen(false)}
+                            className={styles.menuLink}
+                          >
+                            <img
+                              src="/images/user.png"
+                              alt="Mi Perfil"
+                              className={styles.menuIcon}
+                            />
+                            <span className={styles.menuLabel}>Mi Perfil</span>
+                          </Link>
+                        </li>
+                        <li className={styles.menuItem}>
+                          <Link
+                            to="/client/appointments"
+                            onClick={() => setOpen(false)}
+                            className={styles.menuLink}
+                          >
+                            <img
+                              src="/images/calendar.png"
+                              alt="Mis Turnos"
+                              className={styles.menuIcon}
+                            />
+                            <span className={styles.menuLabel}>Mis Turnos</span>
+                          </Link>
+                        </li>
+                      </>
+                    )}
+
+                    {userType === "barber" && (
+                      <>
+                        <li className={styles.menuItem}>
+                          <Link
+                            to="/Barber/HomePageBarber"
+                            onClick={() => setOpen(false)}
+                            className={styles.menuLink}
+                          >
+                            <img
+                              src="/images/home.png"
+                              alt="Inicio"
+                              className={styles.menuIcon}
+                            />
+                            <span className={styles.menuLabel}>Inicio</span>
+                          </Link>
+                        </li>
+                        <li className={styles.menuItem}>
+                          <Link
+                            to="/Barber/myAppointments"
+                            onClick={() => setOpen(false)}
+                            className={styles.menuLink}
+                          >
+                            <img
+                              src="/images/calendar.png"
+                              alt="Mis Turnos"
+                              className={styles.menuIcon}
+                            />
+                            <span className={styles.menuLabel}>Mis turnos</span>
+                          </Link>
+                        </li>
+                      </>
+                    )}
+
+                    {userType === "admin" && (
+                      <li className={styles.menuItem}>
+                        <Link
+                          to="/Admin/HomePageAdmin"
+                          onClick={() => setOpen(false)}
+                          className={styles.menuLink}
+                        >
+                          <img
+                            src="/images/home.png"
+                            alt="Inicio"
+                            className={styles.menuIcon}
+                          />
+                          <span className={styles.menuLabel}>Inicio</span>
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
+                </nav>
+              </>
+            )}
+          </div>
+
+          {isAuthenticated && (
+            <div className={styles.sidebarFooter}>
+              <button
+                className={styles.logoutButton}
+                onClick={handleLogout}
+                type="button"
+              >
+                <img
+                  src="/images/logOut.png"
+                  alt="Cerrar Sesión"
+                  className={styles.menuIcon}
+                />
+                <span className={styles.menuLabel}>Cerrar Sesión</span>
+              </button>
+            </div>
           )}
-        </ul>
-      </div>
+        </div>
+      </aside>
 
       {open && (
         <div
