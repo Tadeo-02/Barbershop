@@ -9,7 +9,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const CreateCategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),
-  descCategoria: z.string().min(10, "Descripción requerida. Mínimo 10 caracteres."),
+  descCategoria: z
+    .string()
+    .min(10, "Descripción requerida. Mínimo 10 caracteres."),
   descuentoCorte: z.coerce
     .number()
     .refine((v) => !Number.isNaN(v), { message: "Ingrese un número." })
@@ -24,6 +26,49 @@ const CreateCategorySchema = z.object({
 
 type CreateCategoryForm = z.infer<typeof CreateCategorySchema>;
 
+const baseResolver = zodResolver(CreateCategorySchema);
+
+const normalizeMessage = (msg: unknown): string | undefined => {
+  if (!msg) return undefined;
+  const s = String(msg).toLowerCase();
+  if (
+    s.includes("invalid input") ||
+    s.includes("received nan") ||
+    s.includes("expected number")
+  ) {
+    return "Ingrese un número válido";
+  }
+  return String(msg);
+};
+
+const createCategoryResolver: Resolver<CreateCategoryForm> = async (
+  values,
+  context,
+  options,
+) => {
+  const result = await baseResolver(values, context, options);
+
+  if (result.errors) {
+    const errors = result.errors;
+    for (const key of Object.keys(errors)) {
+      const err = errors[key as keyof typeof errors];
+      if (!err || typeof err !== "object" || !("message" in err)) continue;
+      const normalized = normalizeMessage(
+        (err as { message?: unknown }).message,
+      );
+      if (normalized) {
+        (err as { message?: unknown }).message = normalized;
+      }
+    }
+  }
+
+  return result;
+};
+
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
 const CreateCategories: React.FC = () => {
   const navigate = useNavigate();
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -34,30 +79,8 @@ const CreateCategories: React.FC = () => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateCategoryForm>({
-    resolver: (async (values, context, options) => {
-      // traducir mensajes de error de Zod para campos numéricos a algo más amigable en español
-      const zodRes = (await (zodResolver(CreateCategorySchema) as any)(values, context, options)) as any;
-      if (zodRes && zodRes.errors) {
-        const normalizeMessage = (msg: any) => {
-          if (!msg) return msg;
-          const s = String(msg).toLowerCase();
-          if (s.includes("invalid input") || s.includes("received nan") || s.includes("expected number")) {
-            return "Ingrese un número válido";
-          }
-          return msg;
-        };
-        const keys = Object.keys(zodRes.errors);
-        for (const k of keys) {
-          const e = zodRes.errors[k];
-          if (e && e.message) {
-            e.message = normalizeMessage(e.message);
-          }
-        }
-      }
-      return zodRes;
-    }) as Resolver<CreateCategoryForm>,
+    resolver: createCategoryResolver,
     mode: "onBlur",
-
     defaultValues: {
       descuentoCorte: 0,
       descuentoProducto: 0,
@@ -78,14 +101,20 @@ const CreateCategories: React.FC = () => {
       });
 
       if (res.ok) {
-        toast.success("Categoría creada exitosamente", { id: toastId, duration: 2000 });
+        toast.success("Categoría creada exitosamente", {
+          id: toastId,
+          duration: 2000,
+        });
         reset();
         setTimeout(() => navigate("/Admin/CategoriesPage"), 600);
       } else {
-        toast.error("Error al crear categoría", { id: toastId, duration: 2000 });
+        toast.error("Error al crear categoría", {
+          id: toastId,
+          duration: 2000,
+        });
       }
-    } catch (err: any) {
-      if (err && err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
         toast.dismiss(toastId);
         return;
       }
@@ -98,7 +127,10 @@ const CreateCategories: React.FC = () => {
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Crear Nueva Categoría</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset disabled={isSubmitting} style={{ border: "none", padding: 0, margin: 0 }}>
+        <fieldset
+          disabled={isSubmitting}
+          style={{ border: "none", padding: 0, margin: 0 }}
+        >
           {/* NOMBRE CATEGORIA */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="nombreCategoria">
@@ -113,7 +145,9 @@ const CreateCategories: React.FC = () => {
               required
             />
             {errors.nombreCategoria && (
-              <div className={styles.errorMessage}>{errors.nombreCategoria.message}</div>
+              <div className={styles.errorMessage}>
+                {errors.nombreCategoria.message}
+              </div>
             )}
           </div>
           {/* DESCRIPCIÓN */}
@@ -130,7 +164,9 @@ const CreateCategories: React.FC = () => {
               required
             />
             {errors.descCategoria && (
-              <div className={styles.errorMessage}>{errors.descCategoria.message}</div>
+              <div className={styles.errorMessage}>
+                {errors.descCategoria.message}
+              </div>
             )}
           </div>
 
@@ -150,7 +186,9 @@ const CreateCategories: React.FC = () => {
               required
             />
             {errors.descuentoCorte && (
-              <div className={styles.errorMessage}>{errors.descuentoCorte.message}</div>
+              <div className={styles.errorMessage}>
+                {errors.descuentoCorte.message}
+              </div>
             )}
           </div>
           {/* DESCUENTO EN PRODUCTOS */}
@@ -169,11 +207,17 @@ const CreateCategories: React.FC = () => {
               required
             />
             {errors.descuentoProducto && (
-              <div className={styles.errorMessage}>{errors.descuentoProducto.message}</div>
+              <div className={styles.errorMessage}>
+                {errors.descuentoProducto.message}
+              </div>
             )}
           </div>
 
-          <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit" disabled={isSubmitting}>
+          <button
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            type="submit"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Creando..." : "Guardar Categoría"}
           </button>
         </fieldset>

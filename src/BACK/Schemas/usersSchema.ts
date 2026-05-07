@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CategorySchema } from "./categoriesSchema";
 
 export const PASSWORD_MIN_LENGTH = 10;
 export const PASSWORD_MAX_LENGTH = 128;
@@ -48,9 +49,18 @@ const UserBaseSchema = z.object({
 
   contraseña: z
     .string()
-    .min(PASSWORD_MIN_LENGTH, `Contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`)
-    .max(PASSWORD_MAX_LENGTH, `Contraseña no puede tener más de ${PASSWORD_MAX_LENGTH} caracteres`)
-    .regex(PASSWORD_REGEX, "La contraseña debe incluir minúsculas, mayúsculas, números y símbolos"),
+    .min(
+      PASSWORD_MIN_LENGTH,
+      `Contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`,
+    )
+    .max(
+      PASSWORD_MAX_LENGTH,
+      `Contraseña no puede tener más de ${PASSWORD_MAX_LENGTH} caracteres`,
+    )
+    .regex(
+      PASSWORD_REGEX,
+      "La contraseña debe incluir minúsculas, mayúsculas, números y símbolos",
+    ),
 
   cuil: z.string().optional(),
   codSucursal: z.string().optional(),
@@ -86,7 +96,35 @@ export const UserSchema = UserBaseSchema.refine(
   },
 );
 
+const UserUpdateBaseSchema = UserBaseSchema.extend({
+  contraseña: z.string().optional(),
+  preguntaSeguridad: z.string().optional(),
+  respuestaSeguridad: z.string().optional(),
+});
 
+export const UserUpdateSchema = UserUpdateBaseSchema.refine(
+  (data) => {
+    if (data.cuil && !/^\d{2}-\d{8}-\d{1}$/.test(data.cuil)) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X",
+    path: ["cuil"],
+  },
+).refine(
+  (data) => {
+    if (data.cuil) {
+      return validateCUIL(data.cuil, data.dni);
+    }
+    return true;
+  },
+  {
+    message: "El DNI en el CUIL no coincide con el DNI proporcionado",
+    path: ["cuil"],
+  },
+);
 
 export const UserBaseSchemaExport = UserBaseSchema;
 
@@ -101,18 +139,55 @@ export type Barber = z.infer<typeof BarberSchema>;
 
 // Schema used for backend -> frontend responses (no password required)
 // MySQL stores booleans as 0/1, so we accept both formats
-export const BarberResponseSchema = z.object({
-  codUsuario: z.string(),
-  dni: z.string(),
-  nombre: z.string(),
-  apellido: z.string(),
-  telefono: z.string(),
-  email: z.string(),
-  cuil: z.string().nullable(),
-  codSucursal: z.string().nullable().optional(),
-  preguntaSeguridad: z.string().optional().nullable(),
-  respuestaSeguridad: z.string().optional().nullable(),
-  activo: z.union([z.boolean(), z.number()]).transform(val => Boolean(val)),
-}).passthrough(); // Allow extra fields from database
+export const BarberResponseSchema = z
+  .object({
+    codUsuario: z.string(),
+    dni: z.string(),
+    nombre: z.string(),
+    apellido: z.string(),
+    telefono: z.string(),
+    email: z.string(),
+    cuil: z.string().nullable(),
+    codSucursal: z.string().nullable().optional(),
+    preguntaSeguridad: z.string().optional().nullable(),
+    respuestaSeguridad: z.string().optional().nullable(),
+    activo: z.union([z.boolean(), z.number()]).transform((val) => Boolean(val)),
+  })
+  .passthrough(); // Allow extra fields from database
 
 export type BarberResponse = z.infer<typeof BarberResponseSchema>;
+
+const CategorySummarySchema = CategorySchema.pick({
+  codCategoria: true,
+  nombreCategoria: true,
+  descCategoria: true,
+  descuentoCorte: true,
+  descuentoProducto: true,
+}).extend({
+  fechaInicio: z.union([z.string(), z.date()]).optional(),
+});
+
+const LoyaltyProgressSchema = z.object({}).passthrough();
+
+export const UserResponseSchema = UserBaseSchemaExport.omit({
+  contraseña: true,
+  preguntaSeguridad: true,
+  respuestaSeguridad: true,
+}).extend({
+  codUsuario: z.string(),
+  cuil: z.string().nullable().optional(),
+  codSucursal: z.string().nullable().optional(),
+  activo: z
+    .union([z.boolean(), z.number()])
+    .optional()
+    .transform((val) => Boolean(val)),
+  categoriaActual: CategorySummarySchema.nullable().optional(),
+  loyaltyProgress: LoyaltyProgressSchema.nullable().optional(),
+});
+
+export type UserResponse = z.infer<typeof UserResponseSchema>;
+
+export const LoginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  contraseña: z.string().min(1, "Contraseña es requerida"),
+});

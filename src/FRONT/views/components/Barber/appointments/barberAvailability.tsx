@@ -3,6 +3,10 @@ import { useAuth } from "../../login/AuthContext";
 import toast from "react-hot-toast";
 import styles from "./barberAvailability.module.css";
 
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
 const BarberAvailability: React.FC = () => {
   const [desdeFecha, setDesdeFecha] = useState("");
   const [desdeHora, setDesdeHora] = useState("");
@@ -84,8 +88,8 @@ const BarberAvailability: React.FC = () => {
           data?.message || data?.error || "Error al registrar ausencia";
         toast.error(message, { id: toastId });
       }
-    } catch (err: any) {
-      if (err instanceof Error && err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
         toast.dismiss(toastId);
         return;
       }

@@ -14,17 +14,24 @@ const AppointmentFormSchema = BackendAppointmentSchema.pick({
   fechaTurno: true,
   horaDesde: true,
   horaHasta: true,
-}).refine((obj) => {
-  // ensure fechaTurno is today or later
-  const val = (obj as any).fechaTurno;
-  const selected = new Date(val);
-  const today = new Date();
-  selected.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-  return selected >= today;
-}, { message: "La fecha debe ser hoy o posterior", path: ["fechaTurno"] });
+}).refine(
+  (obj) => {
+    // ensure fechaTurno is today or later
+    const val = obj.fechaTurno;
+    const selected = new Date(val);
+    const today = new Date();
+    selected.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return selected >= today;
+  },
+  { message: "La fecha debe ser hoy o posterior", path: ["fechaTurno"] },
+);
 
 type AppointmentForm = z.infer<typeof AppointmentFormSchema>;
+
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
 
 const UpdateAppointment: React.FC = () => {
   const { appointmentId } = useParams<{ appointmentId: string }>();
@@ -36,7 +43,10 @@ const UpdateAppointment: React.FC = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<AppointmentForm>({ resolver: zodResolver(AppointmentFormSchema), mode: "onBlur" });
+  } = useForm<AppointmentForm>({
+    resolver: zodResolver(AppointmentFormSchema),
+    mode: "onBlur",
+  });
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -44,19 +54,32 @@ const UpdateAppointment: React.FC = () => {
 
     const fetchAppointment = async () => {
       try {
-        const response = await fetch(`/appointments/${appointmentId}`, { signal: ctrl.signal });
+        const response = await fetch(`/appointments/${appointmentId}`, {
+          signal: ctrl.signal,
+        });
         if (response.ok) {
           const data = await response.json();
           // map backend fields to form fields
-          const horaDesde = data.horaDesde ? new Date(data.horaDesde).toISOString().substring(11, 16) : "";
-          const horaHasta = data.horaHasta ? new Date(data.horaHasta).toISOString().substring(11, 16) : "";
-          reset({ fechaTurno: data.fechaTurno ? data.fechaTurno.split("T")[0] : "", horaDesde, horaHasta });
+          const horaDesde = data.horaDesde
+            ? new Date(data.horaDesde).toISOString().substring(11, 16)
+            : "";
+          const horaHasta = data.horaHasta
+            ? new Date(data.horaHasta).toISOString().substring(11, 16)
+            : "";
+          reset({
+            fechaTurno: data.fechaTurno ? data.fechaTurno.split("T")[0] : "",
+            horaDesde,
+            horaHasta,
+          });
           toast.dismiss(toastId);
         } else {
-          toast.error("No se pudo cargar el turno", { id: toastId, duration: 2000 });
+          toast.error("No se pudo cargar el turno", {
+            id: toastId,
+            duration: 2000,
+          });
         }
-      } catch (err: any) {
-        if (err && err.name === "AbortError") {
+      } catch (err: unknown) {
+        if (isAbortError(err)) {
           toast.dismiss(toastId);
           return;
         }
@@ -90,15 +113,20 @@ const UpdateAppointment: React.FC = () => {
       });
 
       const contentType = res.headers.get("content-type") || "";
-      const data = contentType.includes("application/json") ? await res.json() : null;
+      const data = contentType.includes("application/json")
+        ? await res.json()
+        : null;
       if (res.ok) {
         toast.success("Turno actualizado", { id: toastId, duration: 2000 });
         navigate("/indexAppointments");
       } else {
-        toast.error(data?.message || "Error al actualizar turno", { id: toastId, duration: 2000 });
+        toast.error(data?.message || "Error al actualizar turno", {
+          id: toastId,
+          duration: 2000,
+        });
       }
-    } catch (err: any) {
-      if (err && err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
         toast.dismiss(toastId);
         return;
       }
@@ -111,32 +139,64 @@ const UpdateAppointment: React.FC = () => {
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Editar Turno</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <fieldset disabled={isSubmitting} style={{ border: "none", padding: 0, margin: 0 }}>
+        <fieldset
+          disabled={isSubmitting}
+          style={{ border: "none", padding: 0, margin: 0 }}
+        >
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="fechaTurno">
               Fecha del Turno:
             </label>
-            <input className={styles.formInput} type="date" id="fechaTurno" {...register("fechaTurno")} required min={new Date().toISOString().split("T")[0]} />
-            {errors.fechaTurno && <p style={{ color: "red" }}>{errors.fechaTurno.message}</p>}
+            <input
+              className={styles.formInput}
+              type="date"
+              id="fechaTurno"
+              {...register("fechaTurno")}
+              required
+              min={new Date().toISOString().split("T")[0]}
+            />
+            {errors.fechaTurno && (
+              <p style={{ color: "red" }}>{errors.fechaTurno.message}</p>
+            )}
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="horaDesde">
               Hora Desde:
             </label>
-            <input className={styles.formInput} type="time" id="horaDesde" {...register("horaDesde")} required />
-            {errors.horaDesde && <p style={{ color: "red" }}>{errors.horaDesde.message}</p>}
+            <input
+              className={styles.formInput}
+              type="time"
+              id="horaDesde"
+              {...register("horaDesde")}
+              required
+            />
+            {errors.horaDesde && (
+              <p style={{ color: "red" }}>{errors.horaDesde.message}</p>
+            )}
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="horaHasta">
               Hora Hasta:
             </label>
-            <input className={styles.formInput} type="time" id="horaHasta" {...register("horaHasta")} required />
-            {errors.horaHasta && <p style={{ color: "red" }}>{errors.horaHasta.message}</p>}
+            <input
+              className={styles.formInput}
+              type="time"
+              id="horaHasta"
+              {...register("horaHasta")}
+              required
+            />
+            {errors.horaHasta && (
+              <p style={{ color: "red" }}>{errors.horaHasta.message}</p>
+            )}
           </div>
 
-          <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit" disabled={isSubmitting}>
+          <button
+            className={`${styles.button} ${styles.buttonSuccess}`}
+            type="submit"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Guardando..." : "Guardar Cambios"}
           </button>
         </fieldset>

@@ -1,7 +1,12 @@
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { hashPassword, comparePassword } from "../users/bcrypt";
-import { UserSchema, UserBaseSchemaExport } from "../Schemas/usersSchema";
+import {
+  LoginSchema,
+  UserSchema,
+  UserBaseSchemaExport,
+} from "../Schemas/usersSchema";
 import {
   getDiscountCycle,
   turnsUntilNextDiscount as calcTurnsUntilNextDiscount,
@@ -184,9 +189,7 @@ export const store = async (
       cuilValue = validatedData.cuil.replace(/[-\s]/g, "");
     }
     // Crear usuario (mapeando contraseña -> contrase_a, sin transacción para evitar errores de transacción en dev)
-    const usuario = await prisma.usuarios.create({
-      // cast a any because prisma client types may need regeneration after schema change
-      data: {
+  const createData: Prisma.usuariosUncheckedCreateInput = {
         dni: validatedData.dni,
         cuil: cuilValue, // Los usuarios normales no tienen CUIL !
         nombre: validatedData.nombre,
@@ -198,7 +201,10 @@ export const store = async (
         preguntaSeguridad:
           validatedData.preguntaSeguridad || preguntaSeguridad || null,
         respuestaSeguridad: hashedRespuestaSeguridad || null,
-      } as any,
+      };
+
+    const usuario = await prisma.usuarios.create({
+      data: createData,
     });
 
     // Solo crear categoría vigente para clientes (sin CUIL)
@@ -586,8 +592,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       }
     }
     // preparo los datos obligatorios para la actualizacion
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: any = {
+  const updateData: Prisma.usuariosUncheckedUpdateInput = {
       //! Criminal
       dni: validatedData.dni,
       nombre: validatedData.nombre,
@@ -780,12 +785,6 @@ export const reactivate = async (codUsuario: string) => {
   }
 };
 
-// Schema de validación para login
-const LoginSchema = z.object({
-  email: z.string().email("Email inválido"),
-  contraseña: z.string().min(1, "Contraseña es requerida"),
-});
-
 // Función para validar login del usuario
 export const validateLogin = async (email: string, contraseña: string) => {
   try {
@@ -878,10 +877,10 @@ export const validateLogin = async (email: string, contraseña: string) => {
 export const getSecurityQuestionByEmail = async (email: string) => {
   try {
     const sanitizedEmail = sanitizeInput(email);
-    const usuario = (await prisma.usuarios.findFirst({
+    const usuario = await prisma.usuarios.findFirst({
       where: { email: sanitizedEmail, activo: true },
       select: { preguntaSeguridad: true },
-    })) as any;
+    });
 
     if (!usuario) {
       throw new DatabaseError("Usuario no encontrado");
@@ -903,9 +902,9 @@ const getUserAndValidateSecurityAnswer = async (
 
   console.log("validateSecurityAnswer called for:", sanitizedEmail);
 
-  const usuario = (await prisma.usuarios.findFirst({
+  const usuario = await prisma.usuarios.findFirst({
     where: { email: sanitizedEmail, activo: true },
-  })) as any;
+  });
 
   console.log(
     "User lookup result:",
@@ -975,8 +974,7 @@ export const verifySecurityAnswerAndReset = async (
 
     const updated = await prisma.usuarios.update({
       where: { codUsuario: usuario.codUsuario },
-      // cast any to avoid generated types mismatch until client is regenerated
-      data: { contrase_a: hashedNewPassword } as any,
+      data: { contrase_a: hashedNewPassword },
     });
 
     return updated;
@@ -1011,7 +1009,7 @@ export const updateSecurityQuestion = async (
       data: {
         preguntaSeguridad: sanitizedPregunta,
         respuestaSeguridad: hashedRespuesta,
-      } as any,
+      },
     });
 
     return updated;

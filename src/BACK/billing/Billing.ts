@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma, DatabaseError } from "../base/Base";
 import {
   getAfip,
@@ -13,6 +12,36 @@ import type {
   CreateVoucherInput,
   VoucherResponse,
 } from "../Schemas/billingSchema";
+
+type AfipCatalogItem = Record<string, unknown>;
+type AfipVoucherInfo = Record<string, unknown>;
+type AfipServerStatus = Record<string, unknown>;
+
+type AfipVoucherPayload = {
+  CantReg: number;
+  PtoVta: number;
+  CbteTipo: number;
+  Concepto: number;
+  DocTipo: number;
+  DocNro: number;
+  CbteFch: number;
+  ImpTotal: number;
+  ImpTotConc: number;
+  ImpNeto: number;
+  ImpOpEx: number;
+  ImpIVA: number;
+  ImpTrib: number;
+  MonId: string;
+  MonCotiz: number;
+  CondicionIVAReceptorId: number;
+  FchServDesde?: number;
+  FchServHasta?: number;
+  FchVtoPago?: number;
+  Iva?: Array<{ Id: number; BaseImp: number; Importe: number }>;
+};
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
 
 // ============================================================
 // Modelo de Facturación Electrónica - ARCA (ex-AFIP)
@@ -32,9 +61,9 @@ const getLastVoucherNumber = async (
       tipoComprobante,
     );
     return lastVoucher;
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new DatabaseError(
-      `Error al obtener último comprobante: ${error.message}`,
+      `Error al obtener último comprobante: ${getErrorMessage(error, "")}`,
       "AFIP_LAST_VOUCHER_ERROR",
     );
   }
@@ -57,7 +86,7 @@ const createVoucher = async (
       .split("T")[0];
 
     // Construir data del comprobante
-    const data: Record<string, any> = {
+    const data: AfipVoucherPayload = {
       CantReg: 1,
       PtoVta: puntoDeVenta,
       CbteTipo: input.tipoComprobante,
@@ -104,9 +133,9 @@ const createVoucher = async (
       tipoComprobante: input.tipoComprobante,
       puntoDeVenta,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new DatabaseError(
-      `Error al crear comprobante ARCA: ${error.message}`,
+      `Error al crear comprobante ARCA: ${getErrorMessage(error, "")}`,
       "AFIP_CREATE_VOUCHER_ERROR",
     );
   }
@@ -199,10 +228,10 @@ const billAppointment = async (
       ...voucherResult,
       codTurno,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof DatabaseError) throw error;
     throw new DatabaseError(
-      `Error al facturar turno: ${error.message}`,
+      `Error al facturar turno: ${getErrorMessage(error, "")}`,
       "AFIP_BILL_APPOINTMENT_ERROR",
     );
   }
@@ -215,7 +244,7 @@ const getVoucherInfo = async (
   numeroComprobante: number,
   puntoDeVenta: number = AFIP_PUNTO_VENTA,
   tipoComprobante: number = VOUCHER_TYPES.FACTURA_B,
-): Promise<any | null> => {
+): Promise<AfipVoucherInfo | null> => {
   try {
     const afip = getAfip();
     const voucherInfo = await afip.ElectronicBilling.getVoucherInfo(
@@ -224,9 +253,9 @@ const getVoucherInfo = async (
       tipoComprobante,
     );
     return voucherInfo;
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new DatabaseError(
-      `Error al obtener info del comprobante: ${error.message}`,
+      `Error al obtener info del comprobante: ${getErrorMessage(error, "")}`,
       "AFIP_VOUCHER_INFO_ERROR",
     );
   }
@@ -235,13 +264,13 @@ const getVoucherInfo = async (
 /**
  * Obtener tipos de comprobantes disponibles.
  */
-const getVoucherTypes = async (): Promise<any[]> => {
+const getVoucherTypes = async (): Promise<AfipCatalogItem[]> => {
   try {
     const afip = getAfip();
     return await afip.ElectronicBilling.getVoucherTypes();
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new DatabaseError(
-      `Error al obtener tipos de comprobante: ${error.message}`,
+      `Error al obtener tipos de comprobante: ${getErrorMessage(error, "")}`,
       "AFIP_VOUCHER_TYPES_ERROR",
     );
   }
@@ -250,13 +279,13 @@ const getVoucherTypes = async (): Promise<any[]> => {
 /**
  * Obtener tipos de documentos disponibles.
  */
-const getDocumentTypes = async (): Promise<any[]> => {
+const getDocumentTypes = async (): Promise<AfipCatalogItem[]> => {
   try {
     const afip = getAfip();
     return await afip.ElectronicBilling.getDocumentTypes();
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new DatabaseError(
-      `Error al obtener tipos de documento: ${error.message}`,
+      `Error al obtener tipos de documento: ${getErrorMessage(error, "")}`,
       "AFIP_DOC_TYPES_ERROR",
     );
   }
@@ -265,13 +294,13 @@ const getDocumentTypes = async (): Promise<any[]> => {
 /**
  * Obtener tipos de alícuotas de IVA disponibles.
  */
-const getAliquotTypes = async (): Promise<any[]> => {
+const getAliquotTypes = async (): Promise<AfipCatalogItem[]> => {
   try {
     const afip = getAfip();
     return await afip.ElectronicBilling.getAliquotTypes();
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new DatabaseError(
-      `Error al obtener tipos de alícuota: ${error.message}`,
+      `Error al obtener tipos de alícuota: ${getErrorMessage(error, "")}`,
       "AFIP_ALIQUOT_TYPES_ERROR",
     );
   }
@@ -280,13 +309,13 @@ const getAliquotTypes = async (): Promise<any[]> => {
 /**
  * Obtener estado del servidor de ARCA.
  */
-const getServerStatus = async (): Promise<any> => {
+const getServerStatus = async (): Promise<AfipServerStatus> => {
   try {
     const afip = getAfip();
     return await afip.ElectronicBilling.getServerStatus();
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new DatabaseError(
-      `Error al verificar estado del servidor ARCA: ${error.message}`,
+      `Error al verificar estado del servidor ARCA: ${getErrorMessage(error, "")}`,
       "AFIP_SERVER_STATUS_ERROR",
     );
   }
@@ -296,13 +325,13 @@ const getServerStatus = async (): Promise<any> => {
  * Obtener puntos de venta disponibles.
  * NOTA: En testing siempre devuelve error (usar punto de venta 1).
  */
-const getSalesPoints = async (): Promise<any[]> => {
+const getSalesPoints = async (): Promise<AfipCatalogItem[]> => {
   try {
     const afip = getAfip();
     return await afip.ElectronicBilling.getSalesPoints();
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new DatabaseError(
-      `Error al obtener puntos de venta: ${error.message}`,
+      `Error al obtener puntos de venta: ${getErrorMessage(error, "")}`,
       "AFIP_SALES_POINTS_ERROR",
     );
   }
