@@ -15,6 +15,19 @@ interface TipoCorte {
 
 type TypeForm = z.infer<typeof HaircutSchema>;
 
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
+const getResponseMessage = (data: unknown): string | undefined => {
+  if (!data || typeof data !== "object" || !("message" in data))
+    return undefined;
+  const message = (data as { message?: unknown }).message;
+  if (typeof message === "string") return message;
+  if (message != null) return String(message);
+  return undefined;
+};
+
 const UpdateTypeOfHaircut: React.FC = () => {
   const { codCorte } = useParams<{ codCorte: string }>();
   const navigate = useNavigate();
@@ -26,7 +39,11 @@ const UpdateTypeOfHaircut: React.FC = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<TypeForm>({ resolver: zodResolver(HaircutSchema) as any, mode: "onBlur", defaultValues: { valorBase: 0 } });
+  } = useForm<TypeForm>({
+    resolver: zodResolver(HaircutSchema),
+    mode: "onBlur",
+    defaultValues: { valorBase: 0 },
+  });
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -34,20 +51,27 @@ const UpdateTypeOfHaircut: React.FC = () => {
 
     const fetchCorte = async () => {
       try {
-        const response = await fetch(`/tipoCortes/${codCorte}`, { signal: ctrl.signal });
+        const response = await fetch(`/tipoCortes/${codCorte}`, {
+          signal: ctrl.signal,
+        });
         if (response.ok) {
           const data = await response.json();
           setCorte(data);
-          reset({ nombre: data.nombre || "", valorBase: data.valorBase ?? undefined });
+          reset({
+            nombre: data.nombre || "",
+            valorBase: data.valorBase ?? undefined,
+          });
           toast.dismiss(toastId);
         } else if (response.status === 404) {
           toast.error("Tipo de corte no encontrado", { id: toastId });
           navigate("/Admin/HaircutTypesPage");
         } else {
-          toast.error("Error al cargar los datos del tipo de corte", { id: toastId });
+          toast.error("Error al cargar los datos del tipo de corte", {
+            id: toastId,
+          });
         }
-      } catch (err: any) {
-        if (err && err.name === "AbortError") {
+      } catch (err: unknown) {
+        if (isAbortError(err)) {
           toast.dismiss(toastId);
           return;
         }
@@ -74,7 +98,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
         signal: abortRef.current.signal,
       });
 
-      let data: any = null;
+      let data: unknown = null;
       try {
         data = await res.json();
       } catch (parseErr) {
@@ -82,21 +106,24 @@ const UpdateTypeOfHaircut: React.FC = () => {
       }
 
       if (res.ok) {
-        toast.success("Tipo de corte actualizado", { id: toastId, duration: 2000 });
+        toast.success("Tipo de corte actualizado", {
+          id: toastId,
+          duration: 2000,
+        });
         navigate("/Admin/HaircutTypesPage");
       } else {
-        const msg = data && data.message ? String(data.message) : "Error al actualizar tipo de corte";
+        const msg =
+          getResponseMessage(data) ?? "Error al actualizar tipo de corte";
         toast.error(msg, { id: toastId, duration: 2000 });
       }
-    } catch (err: any) {
-      if (err && err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
         toast.dismiss(toastId);
         return;
       }
       console.error("Error modificando Tipo de Corte:", err);
       toast.error("Error de conexión", { id: toastId, duration: 2000 });
-    }
-    finally {
+    } finally {
       // clear controller reference
       abortRef.current = null;
     }
@@ -125,8 +152,19 @@ const UpdateTypeOfHaircut: React.FC = () => {
             <label className={styles.formLabel} htmlFor="nombre">
               Nombre del corte:
             </label>
-            <input className={styles.formInput} type="text" id="nombre" {...register("nombre")} maxLength={50} required />
-            {errors.nombre && (<div className={styles.errorMessage}>{errors.nombre.message as string}</div>)}
+            <input
+              className={styles.formInput}
+              type="text"
+              id="nombre"
+              {...register("nombre")}
+              maxLength={50}
+              required
+            />
+            {errors.nombre && (
+              <div className={styles.errorMessage}>
+                {errors.nombre.message as string}
+              </div>
+            )}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="valorBase">
@@ -141,10 +179,18 @@ const UpdateTypeOfHaircut: React.FC = () => {
               {...register("valorBase", { valueAsNumber: true })}
               required
             />
-            {errors.valorBase && (<div className={styles.errorMessage}>{errors.valorBase.message as string}</div>)}
+            {errors.valorBase && (
+              <div className={styles.errorMessage}>
+                {errors.valorBase.message as string}
+              </div>
+            )}
           </div>
           <div className={styles.buttonGroup}>
-            <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit" disabled={isSubmitting}>
+            <button
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Guardando..." : "Guardar Cambios"}
             </button>
           </div>

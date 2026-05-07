@@ -2,11 +2,17 @@
 import * as model from "./Categories";
 import { BaseController } from "../../base/base.controller"; // improtamos al base controller
 import type { Request, Response } from "express";
+import {
+  CategoryClientsResponseSchema,
+  CategoryResponseSchema,
+} from "../../Schemas/categoriesSchema";
+import { sanitizeOutput } from "../../middleware/zodValidation";
 // creamos el modelo de controlador de categorias
 class CategoriesController extends BaseController<any> {
   protected model = model;
   protected entityName = "categories";
   protected idFieldName = "codCategoria";
+  protected responseSchema = CategoryResponseSchema;
 
   listClients = async (req: Request, res: Response) => {
     const { codCategoria } = req.params;
@@ -18,9 +24,10 @@ class CategoriesController extends BaseController<any> {
     }
     try {
       const result = await model.listClientsForCategory(codCategoria);
+      const safeResult = sanitizeOutput(CategoryClientsResponseSchema, result);
       res.status(200).json({
         success: true,
-        data: result,
+        data: safeResult,
       });
     } catch (error) {
       this.handleError(error, res);
@@ -41,12 +48,16 @@ class CategoriesController extends BaseController<any> {
       const result = await model.destroyWithClientReassignment(
         codCategoria,
         action,
-        perClient
+        perClient,
+      );
+      const safeCategoria = sanitizeOutput(
+        CategoryResponseSchema,
+        result.categoria,
       );
 
       res.status(200).json({
         message: "Categoría eliminada correctamente",
-        categoria: result.categoria,
+        categoria: safeCategoria,
         reassignedCount: result.reassignedCount,
       });
     } catch (error) {
@@ -56,9 +67,15 @@ class CategoriesController extends BaseController<any> {
 }
 //creamos la instancia del controlador de categorias
 const categoriesController = new CategoriesController();
-console.log(
-  "Categories controller store:",
-  typeof categoriesController.store
-);
+console.log("Categories controller store:", typeof categoriesController.store);
 console.log("Categories model:", typeof model.store);
-export const { create, store, index, show, edit, update, destroy, listClients } = categoriesController;
+export const {
+  create,
+  store,
+  index,
+  show,
+  edit,
+  update,
+  destroy,
+  listClients,
+} = categoriesController;

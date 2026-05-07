@@ -4,27 +4,31 @@ import React from "react";
 import "./Redirect.module.css";
 import toast from "react-hot-toast";
 
+type RedirectUser = { cuil: string | null };
 
 export const useUserRedirect = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectUser = React.useCallback((user: any, message?: string) => {
-    // Determinar tipo de usuario y redireccionar
-    const userType =
-      user.cuil === "1" ? "admin" : user.cuil ? "barber" : "client";
-    const target =
-      userType === "admin"
-        ? "/Admin/HomePageAdmin"
-        : userType === "barber"
-        ? "/Barber/HomePageBarber"
-        : "/Client/Home";
-    // solo navegar si no estamos ya en el destino
-    if (location.pathname !== target) {
-      navigate(target, { replace: true });
-    }
+  const redirectUser = React.useCallback(
+    (user: RedirectUser, message?: string) => {
+      // Determinar tipo de usuario y redireccionar
+      const userType =
+        user.cuil === "1" ? "admin" : user.cuil ? "barber" : "client";
+      const target =
+        userType === "admin"
+          ? "/Admin/HomePageAdmin"
+          : userType === "barber"
+            ? "/Barber/HomePageBarber"
+            : "/Client/Home";
+      // solo navegar si no estamos ya en el destino
+      if (location.pathname !== target) {
+        navigate(target, { replace: true });
+      }
 
-  if (message) toast.success(message);
-  }, [navigate, location]);
+      if (message) toast.success(message);
+    },
+    [navigate, location],
+  );
 
   return { redirectUser };
 };
@@ -39,13 +43,13 @@ export const AutoRedirect = () => {
 
   React.useEffect(() => {
     // Compute target path for the current user state
-    const getTarget = (u: any) =>
+    const getTarget = (u: RedirectUser | null) =>
       u
         ? u.cuil === "1"
           ? "/Admin/HomePageAdmin"
           : u.cuil
-          ? "/Barber/HomePageBarber"
-          : "/Client/Home"
+            ? "/Barber/HomePageBarber"
+            : "/Client/Home"
         : "/";
 
     const target = getTarget(user);
@@ -64,7 +68,6 @@ export const AutoRedirect = () => {
     }
   }, [user]);
 
-
   if (isRedirecting) {
     return (
       <div className="redirect-overlay">
@@ -76,7 +79,14 @@ export const AutoRedirect = () => {
             xmlns="http://www.w3.org/2000/svg"
           >
             <g transform="translate(25,25)">
-              <circle cx="0" cy="0" r="18" stroke="#e6e6e6" strokeWidth="6" fill="none" />
+              <circle
+                cx="0"
+                cy="0"
+                r="18"
+                stroke="#e6e6e6"
+                strokeWidth="6"
+                fill="none"
+              />
               <path
                 d="M18 0 A18 18 0 0 1 0 18"
                 stroke="#333"

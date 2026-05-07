@@ -5,6 +5,10 @@ import { useAuth } from "./login/AuthContext.tsx";
 import styles from "./header.module.css";
 // import logoBarber from "../../public/images/logoBarber.png";
 
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
+
 function Header() {
   const [open, setOpen] = useState(false);
   const { user, userType, logout, isAuthenticated } = useAuth();
@@ -54,8 +58,8 @@ function Header() {
         const profile = data?.success && data.data ? data.data : data;
         const category = profile?.categoriaActual?.nombreCategoria;
         setClientCategory(category || "Sin categoría");
-      } catch (error: any) {
-        if (error?.name === "AbortError") return;
+      } catch (error: unknown) {
+        if (isAbortError(error)) return;
         setClientCategory("Sin categoría");
       }
     };

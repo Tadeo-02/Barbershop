@@ -21,3 +21,13 @@ export const BranchWithIdSchema = BranchSchema.extend({
   codSucursal: z.string(),
   activo: z.union([z.boolean(), z.number()]).transform((val) => Boolean(val)),
 });
+
+export const BranchResponseSchema = BranchWithIdSchema.pick({
+  codSucursal: true,
+  nombre: true,
+  calle: true,
+  altura: true,
+  activo: true,
+});
+
+export type BranchResponse = z.infer<typeof BranchResponseSchema>;

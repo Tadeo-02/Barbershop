@@ -2,11 +2,17 @@
 import * as model from "./Appointments";
 import { BaseController } from "../base/base.controller"; // importamos las reques, responde y dataBaseError de la base
 import { Request, Response } from "express";
+import {
+  AppointmentOutputSchema,
+  AvailableSlotSchema,
+} from "../Schemas/appointmentsSchema";
+import { sanitizeOutput } from "../middleware/zodValidation";
 // creamos la clase barberController para enviar y manejar el base
 class AppointmentsController extends BaseController<any> {
   protected model = model;
   protected entityName = "appointments";
   protected idFieldName = "codTurno";
+  protected responseSchema = AppointmentOutputSchema;
 }
 
 const appointmentsController = new AppointmentsController();
@@ -31,10 +37,11 @@ export const findByAvailableDate = async (
       fechaTurno,
       codSucursal,
     );
+    const safeHoras = sanitizeOutput(AvailableSlotSchema, horasDisponibles);
 
     res.status(200).json({
       success: true,
-      data: horasDisponibles,
+      data: safeHoras,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -60,10 +67,11 @@ export const findByBarberId = async (
     }
 
     const horasDisponibles = await model.findByBarberId(codBarbero, fechaTurno);
+    const safeHoras = sanitizeOutput(AvailableSlotSchema, horasDisponibles);
 
     res.status(200).json({
       success: true,
-      data: horasDisponibles,
+      data: safeHoras,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -89,10 +97,11 @@ export const findByUserId = async (
     }
 
     const turno = await model.findByUserId(codUsuario);
+    const safeTurno = sanitizeOutput(AppointmentOutputSchema, turno);
 
     res.status(200).json({
       success: true,
-      data: turno,
+      data: safeTurno,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -118,10 +127,11 @@ export const findByBranchId = async (
     }
 
     const turnos = await model.findByBranchId(codSucursal);
+    const safeTurnos = sanitizeOutput(AppointmentOutputSchema, turnos);
 
     res.status(200).json({
       success: true,
-      data: turnos,
+      data: safeTurnos,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -147,10 +157,11 @@ export const findPendingByBranchId = async (
     }
 
     const turnos = await model.findPendingByBranchId(codSucursal);
+    const safeTurnos = sanitizeOutput(AppointmentOutputSchema, turnos);
 
     res.status(200).json({
       success: true,
-      data: turnos,
+      data: safeTurnos,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -177,10 +188,11 @@ export const cancelAppointment = async (
     }
 
     const result = await model.cancelAppointment(codTurno);
+    const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: safeResult,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -212,10 +224,11 @@ export const checkoutAppointment = async (
       precioTurno,
       metodoPago,
     );
+    const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: safeResult,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -247,10 +260,11 @@ export const updateAppointment = async (
       horaDesde,
       horaHasta,
     );
+    const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: safeResult,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -276,10 +290,11 @@ export const markAsNoShow = async (
     }
 
     const result = await model.markAsNoShow(codTurno);
+    const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: safeResult,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -305,10 +320,14 @@ export const findPendingByBarberId = async (
     }
 
     const pendingAppointments = await model.findPendingByBarberId(codBarbero);
+    const safePending = sanitizeOutput(
+      AppointmentOutputSchema,
+      pendingAppointments,
+    );
 
     res.status(200).json({
       success: true,
-      data: pendingAppointments,
+      data: safePending,
     });
   } catch (error: any) {
     res.status(500).json({

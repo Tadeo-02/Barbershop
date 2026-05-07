@@ -19,3 +19,19 @@ export const AvailabilitySchema = z.object({
     ),
   motivo: z.string().max(250, "Motivo no puede tener más de 250 caracteres"),
 });
+
+const AvailabilityResponseBaseSchema = z.object({
+  codBloqueo: z.string(),
+  codBarbero: z.string(),
+  fechaHoraDesde: z.union([z.string(), z.date()]),
+  fechaHoraHasta: z.union([z.string(), z.date()]),
+  motivo: z.string(),
+});
+
+export const AvailabilityResponseSchema = AvailabilityResponseBaseSchema.pick({
+  codBloqueo: true,
+  codBarbero: true,
+  fechaHoraDesde: true,
+  fechaHoraHasta: true,
+  motivo: true,
+});

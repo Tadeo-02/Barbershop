@@ -6,7 +6,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserBaseSchemaExport, UserSchema } from "../../../../../BACK/Schemas/usersSchema";
+import {
+  UserBaseSchemaExport,
+  UserSchema,
+} from "../../../../../BACK/Schemas/usersSchema";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 
@@ -16,23 +19,32 @@ const UpdateBarberSchema = UserBaseSchemaExport.extend({
   contraseña: z.string().optional(),
   confirmarContraseña: z.string().optional(),
   codSucursal: z.string().min(1, "Debe seleccionar una sucursal"),
-}).refine((data) => {
-  if (data.contraseña || data.confirmarContraseña) {
-    return data.contraseña === data.confirmarContraseña;
-  }
-  return true;
-}, {
-  message: "Las contraseñas no coinciden",
-  path: ["confirmarContraseña"],
-});
+}).refine(
+  (data) => {
+    if (data.contraseña || data.confirmarContraseña) {
+      return data.contraseña === data.confirmarContraseña;
+    }
+    return true;
+  },
+  {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmarContraseña"],
+  },
+);
 
 type UpdateBarberForm = z.infer<typeof UpdateBarberSchema>;
+
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "AbortError");
 
 const UpdateBarber: React.FC = () => {
   const { codUsuario } = useParams<{ codUsuario: string }>();
   const navigate = useNavigate();
   const [barbero, setBarbero] = useState<Barbero | null>(null);
-  const [sucursalesDisponibles, setSucursalesDisponibles] = useState<Sucursal[]>([]);
+  const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
+    Sucursal[]
+  >([]);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -56,8 +68,8 @@ const UpdateBarber: React.FC = () => {
           const data = await response.json();
           setSucursalesDisponibles(data);
         }
-      } catch (error: any) {
-        if (error.name === "AbortError") return;
+      } catch (error: unknown) {
+        if (isAbortError(error)) return;
         console.error("Error fetching sucursales:", error);
       }
     };
@@ -71,7 +83,9 @@ const UpdateBarber: React.FC = () => {
     const fetchBarbero = async () => {
       const toastId = toast.loading("Cargando datos del barbero...");
       try {
-        const response = await fetch(`/usuarios/${codUsuario}`, { signal: ctrl.signal });
+        const response = await fetch(`/usuarios/${codUsuario}`, {
+          signal: ctrl.signal,
+        });
 
         if (response.ok) {
           const data = await response.json();
@@ -93,18 +107,21 @@ const UpdateBarber: React.FC = () => {
 
           toast.dismiss(toastId);
         } else if (response.status === 404) {
-          toast.error("Barbero no encontrado", { id: toastId, duration: 2000  });
+          toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
           navigate("/BarbersPage");
         } else {
-          toast.error("Error al cargar los datos del barbero", { id: toastId, duration: 2000 });
+          toast.error("Error al cargar los datos del barbero", {
+            id: toastId,
+            duration: 2000,
+          });
         }
-      } catch (error: any) {
-        if (error.name === "AbortError") {
+      } catch (error: unknown) {
+        if (isAbortError(error)) {
           toast.dismiss(toastId);
           return;
         }
         console.error("🔍 Debug - Fetch error:", error);
-        toast.error("Error de conexión", { id: toastId, duration: 2000  });
+        toast.error("Error de conexión", { id: toastId, duration: 2000 });
       }
     };
 
@@ -124,7 +141,9 @@ const UpdateBarber: React.FC = () => {
       try {
         const response = await fetch(`/turnos/pending/barber/${codUsuario}`);
         if (!response.ok) {
-          throw new Error(`Failed to check pending appointments: ${response.status}`);
+          throw new Error(
+            `Failed to check pending appointments: ${response.status}`,
+          );
         }
 
         const { data: pendingAppointments } = await response.json();
@@ -132,7 +151,7 @@ const UpdateBarber: React.FC = () => {
         if (pendingAppointments && pendingAppointments.length > 0) {
           toast.error(
             `No se puede cambiar de sucursal. El barbero tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
-            { duration: 2000 }
+            { duration: 2000 },
           );
           return;
         }
@@ -147,7 +166,7 @@ const UpdateBarber: React.FC = () => {
 
     // preparar payload y eliminar confirmarContraseña
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { confirmarContraseña: _, ...datosParaBackend } = formValues as any;
+    const { confirmarContraseña: _, ...datosParaBackend } = formValues;
 
     // remove empty contraseña to avoid overwriting
     if (!datosParaBackend.contraseña) delete datosParaBackend.contraseña;
@@ -165,13 +184,19 @@ const UpdateBarber: React.FC = () => {
       console.log("🔍 Debug - Response data:", responseData);
 
       if (response.ok) {
-        toast.success(responseData.message || "Barbero actualizado exitosamente", { id: toastId, duration: 2000  });
+        toast.success(
+          responseData.message || "Barbero actualizado exitosamente",
+          { id: toastId, duration: 2000 },
+        );
         navigate("/Admin/BarbersPage");
       } else {
-        toast.error(responseData.message || "Error al actualizar barbero", { id: toastId, duration: 2000 });
+        toast.error(responseData.message || "Error al actualizar barbero", {
+          id: toastId,
+          duration: 2000,
+        });
       }
-    } catch (error: any) {
-      if (error && error.name === "AbortError") {
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
         toast.dismiss(toastId);
         return;
       }
@@ -202,7 +227,11 @@ const UpdateBarber: React.FC = () => {
               required
               {...register("dni")}
             />
-            {errors.dni && <div className={styles.errorMessage}>{errors.dni.message as string}</div>}
+            {errors.dni && (
+              <div className={styles.errorMessage}>
+                {errors.dni.message as string}
+              </div>
+            )}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="nombre">
@@ -217,7 +246,11 @@ const UpdateBarber: React.FC = () => {
               required
               {...register("nombre")}
             />
-            {errors.nombre && <div className={styles.errorMessage}>{errors.nombre.message as string}</div>}
+            {errors.nombre && (
+              <div className={styles.errorMessage}>
+                {errors.nombre.message as string}
+              </div>
+            )}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="apellido">
@@ -232,7 +265,11 @@ const UpdateBarber: React.FC = () => {
               required
               {...register("apellido")}
             />
-            {errors.apellido && <div className={styles.errorMessage}>{errors.apellido.message as string}</div>}
+            {errors.apellido && (
+              <div className={styles.errorMessage}>
+                {errors.apellido.message as string}
+              </div>
+            )}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="telefono">
@@ -247,7 +284,11 @@ const UpdateBarber: React.FC = () => {
               required
               {...register("telefono")}
             />
-            {errors.telefono && <div className={styles.errorMessage}>{errors.telefono.message as string}</div>}
+            {errors.telefono && (
+              <div className={styles.errorMessage}>
+                {errors.telefono.message as string}
+              </div>
+            )}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="email">
@@ -262,7 +303,11 @@ const UpdateBarber: React.FC = () => {
               required
               {...register("email")}
             />
-            {errors.email && <div className={styles.errorMessage}>{errors.email.message as string}</div>}
+            {errors.email && (
+              <div className={styles.errorMessage}>
+                {errors.email.message as string}
+              </div>
+            )}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="contraseña">
@@ -275,7 +320,11 @@ const UpdateBarber: React.FC = () => {
               placeholder="Ingrese nueva contraseña o deje vacío para mantener la actual"
               {...register("contraseña")}
             />
-            {errors.contraseña && <div className={styles.errorMessage}>{errors.contraseña.message as string}</div>}
+            {errors.contraseña && (
+              <div className={styles.errorMessage}>
+                {errors.contraseña.message as string}
+              </div>
+            )}
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="cuil">
@@ -288,7 +337,11 @@ const UpdateBarber: React.FC = () => {
               placeholder="20-40300123-4"
               {...register("cuil")}
             />
-            {errors.cuil && <div className={styles.errorMessage}>{errors.cuil.message as string}</div>}
+            {errors.cuil && (
+              <div className={styles.errorMessage}>
+                {errors.cuil.message as string}
+              </div>
+            )}
           </div>
           {/* ASIGNAR SUCURSAL - Cambiar a radio buttons */}
           <div className={styles.formGroup}>
@@ -303,17 +356,28 @@ const UpdateBarber: React.FC = () => {
                     {...register("codSucursal")}
                     className={styles.radio}
                   />
-                  <label htmlFor={`sucursal-${sucursal.codSucursal}`} className={styles.radioLabel}>
+                  <label
+                    htmlFor={`sucursal-${sucursal.codSucursal}`}
+                    className={styles.radioLabel}
+                  >
                     {sucursal.nombre}
                   </label>
                 </div>
               ))}
             </div>
-            {errors.codSucursal && <div className={styles.errorMessage}>{errors.codSucursal.message as string}</div>}
+            {errors.codSucursal && (
+              <div className={styles.errorMessage}>
+                {errors.codSucursal.message as string}
+              </div>
+            )}
           </div>
 
           <div className={styles.buttonGroup}>
-            <button className={`${styles.button} ${styles.buttonSuccess}`} type="submit" disabled={isSubmitting}>
+            <button
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Guardando..." : "Guardar Cambios"}
             </button>
           </div>
