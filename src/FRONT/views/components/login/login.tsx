@@ -3,12 +3,13 @@ import styles from "./login.module.css";
 import { PASSWORD_MAX_LENGTH } from "../../lib/passwordConstants.ts";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
-import {useUserRedirect} from "../Redirect.tsx";
+import { useUserRedirect } from "../Redirect.tsx";
 import toast from "react-hot-toast";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [contraseña, setContraseña] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const { redirectUser } = useUserRedirect();
 
@@ -83,16 +84,41 @@ function Login() {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <label>Contraseña:</label>
-              <input
-                className="form-control"
-                type="password"
-                name="claveUsuario"
-                maxLength={PASSWORD_MAX_LENGTH}
-                placeholder="********"
-                required
-                value={contraseña}
-                onChange={(e) => setContraseña(e.target.value)}
-              />
+              <div className={styles.inputWithIcon}>
+                <input
+                  className="form-control"
+                  type={showPassword ? "text" : "password"}
+                  name="claveUsuario"
+                  maxLength={PASSWORD_MAX_LENGTH}
+                  placeholder="********"
+                  required
+                  value={contraseña}
+                  onChange={(e) => setContraseña(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className={styles.inputIconButton}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={
+                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
+                  aria-pressed={showPassword}
+                >
+                  <svg
+                    className={styles.inputIcon}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </div>
               <p className="has-text-centered">
                 <br />
                 <button

@@ -42,6 +42,53 @@
   transition: 0.25s;
   font-size: 16px;
 }
+.inputWithIcon {
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  margin: 16px auto;
+}
+
+.inputWithIcon input {
+  margin: 0;
+  width: 100%;
+  padding-right: 40px;
+}
+
+.form .inputIconButton {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  border: 0;
+  background: none;
+  padding: 4px;
+  margin: 0;
+  cursor: pointer;
+  line-height: 0;
+  color: #3498db;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form .inputIconButton:hover {
+  background: none;
+  color: #2ecc71;
+  border: 0;
+}
+
+.form .inputIconButton:focus-visible {
+  outline: 2px solid #2ecc71;
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.inputIcon {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
 .form input[type="email"]:focus,
 .form input[type="password"]:focus,
 .form select:hover {
@@ -65,7 +112,7 @@
 .form input[type="submit"]:hover {
   background: #2ecc71;
 }
-.form button {
+.form button:not(.inputIconButton) {
   border: solid 2px black;
   border-radius: 24px;
   border: 0;
@@ -80,7 +127,7 @@
   cursor: pointer;
   font-size: 16px;
 }
-.form button:hover {
+.form button:not(.inputIconButton):hover {
   background: #2ecc71;
   color: black;
   border-color: #2ecc71;
@@ -155,8 +202,11 @@
     font-size: 18px;
     padding: 14px 10px;
   }
+  .inputWithIcon {
+    max-width: 280px;
+  }
   .form input[type="submit"],
-  .form button {
+  .form button:not(.inputIconButton) {
     font-size: 18px;
     padding: 14px 40px;
   }
