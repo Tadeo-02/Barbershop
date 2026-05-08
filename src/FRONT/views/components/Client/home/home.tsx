@@ -309,6 +309,9 @@ const Home = () => {
     return null;
   })();
 
+  const isInitialCategory =
+    loyaltyProgress?.currentCategory?.trim().toLowerCase() === "inicial";
+
   return (
     <div className={styles.homeContainer}>
       <section className={styles.welcomeSection}>
@@ -401,6 +404,13 @@ const Home = () => {
         <div className={styles.loyaltyCard}>
           {loadingLoyalty ? (
             <p className={styles.cardEmpty}>Cargando descuento...</p>
+          ) : isInitialCategory ? (
+            <div className={styles.discountContent}>
+              <p className={styles.loyaltyMessage}>
+                ¡Seguí solicitando turnos y sumando actividad para subir de
+                categoría y desbloquear nuevos beneficios exclusivos!
+              </p>
+            </div>
           ) : remainingTurns === null ? (
             <p className={styles.cardEmpty}>Sin información disponible.</p>
           ) : (
@@ -417,7 +427,7 @@ const Home = () => {
                 <p className={styles.discountDescription}>
                   Para tu próximo {currentDiscount}% de descuento
                 </p>
-                { remainingTurns === 0 && ( 
+                {remainingTurns === 0 && (
                   <p className={styles.progressPercentage}>
                     ¡Listo! En tu próximo turno se aplicará el descuento.
                   </p>
