@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./login/AuthContext.tsx";
@@ -14,10 +14,30 @@ function Header() {
   const { user, userType, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [clientCategory, setClientCategory] = useState<string | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const closeMenu = () => {
+    setOpen((prev) => {
+      if (prev) {
+        menuButtonRef.current?.focus();
+      }
+      return false;
+    });
+  };
+
+  const toggleMenu = () => {
+    setOpen((prev) => {
+      const next = !prev;
+      if (!next) {
+        menuButtonRef.current?.focus();
+      }
+      return next;
+    });
+  };
 
   const handleLogout = () => {
     logout();
-    setOpen(false);
+    closeMenu();
     navigate("/");
   };
   //determino tipo de usuario
@@ -94,11 +114,12 @@ function Header() {
         <div className={styles.menuButton}>
           <button
             className={styles.button}
-            onClick={() => setOpen((prev) => !prev)}
+            onClick={toggleMenu}
             aria-label={open ? "Cerrar menu" : "Abrir menu"}
             aria-expanded={open}
             aria-controls="mobile-menu"
             type="button"
+            ref={menuButtonRef}
           >
             <FaBars />
           </button>
@@ -119,7 +140,7 @@ function Header() {
             <button
               type="button"
               className={styles.closeButton}
-              onClick={() => setOpen(false)}
+              onClick={closeMenu}
               aria-label="Cerrar menu"
             >
               X
@@ -133,7 +154,7 @@ function Header() {
                   <li className={styles.menuItem}>
                     <Link
                       to="/login"
-                      onClick={() => setOpen(false)}
+                      onClick={closeMenu}
                       className={styles.menuLink}
                     >
                       <span className={styles.menuLabel}>Iniciar Sesión</span>
@@ -142,7 +163,7 @@ function Header() {
                   <li className={styles.menuItem}>
                     <Link
                       to="/signUp"
-                      onClick={() => setOpen(false)}
+                      onClick={closeMenu}
                       className={styles.menuLink}
                     >
                       <span className={styles.menuLabel}>Registrarse</span>
@@ -170,7 +191,7 @@ function Header() {
                         <li className={styles.menuItem}>
                           <Link
                             to="/client/home"
-                            onClick={() => setOpen(false)}
+                            onClick={closeMenu}
                             className={styles.menuLink}
                           >
                             <img
@@ -184,7 +205,7 @@ function Header() {
                         <li className={styles.menuItem}>
                           <Link
                             to="/client/profile"
-                            onClick={() => setOpen(false)}
+                            onClick={closeMenu}
                             className={styles.menuLink}
                           >
                             <img
@@ -198,7 +219,7 @@ function Header() {
                         <li className={styles.menuItem}>
                           <Link
                             to="/client/appointments"
-                            onClick={() => setOpen(false)}
+                            onClick={closeMenu}
                             className={styles.menuLink}
                           >
                             <img
@@ -217,7 +238,7 @@ function Header() {
                         <li className={styles.menuItem}>
                           <Link
                             to="/Barber/HomePageBarber"
-                            onClick={() => setOpen(false)}
+                            onClick={closeMenu}
                             className={styles.menuLink}
                           >
                             <img
@@ -231,7 +252,7 @@ function Header() {
                         <li className={styles.menuItem}>
                           <Link
                             to="/Barber/myAppointments"
-                            onClick={() => setOpen(false)}
+                            onClick={closeMenu}
                             className={styles.menuLink}
                           >
                             <img
@@ -245,7 +266,7 @@ function Header() {
                         <li className={styles.menuItem}>
                           <Link
                             to="/Barber/myAvailability"
-                            onClick={() => setOpen(false)}
+                            onClick={closeMenu}
                             className={styles.menuLink}
                           >
                             <img
@@ -265,7 +286,7 @@ function Header() {
                       <li className={styles.menuItem}>
                         <Link
                           to="/Admin/HomePageAdmin"
-                          onClick={() => setOpen(false)}
+                          onClick={closeMenu}
                           className={styles.menuLink}
                         >
                           <img
@@ -305,9 +326,9 @@ function Header() {
       {open && (
         <div
           className={styles.overlay}
-          onClick={() => setOpen(false)}
+            onClick={closeMenu}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") setOpen(false);
+              if (e.key === "Enter" || e.key === " ") closeMenu();
           }}
           role="button"
           tabIndex={0}
