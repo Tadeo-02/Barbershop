@@ -73,6 +73,14 @@
   overflow: visible;
   margin-bottom: 60px;
 }
+.detailsActionButtons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+}
 
 .appointmentList {
   list-style: none;
@@ -173,6 +181,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.appointmentActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
 }
 
 .detailRow {
@@ -461,6 +477,11 @@
     font-size: 0.95rem;
     margin-top: 0;
   }
+
+  .appoinmentActions {
+    flex-direction: column;
+    justify-content: flex-end;
+  }
 }
 
 /* Ensure barber info is visible on small screens (force ordering and visibility) */
@@ -515,6 +536,9 @@
 @media (min-width: 769px) {
   .filtersContainer {
     margin-bottom: 24px;
+  }
+  .detailsActionButtons .button {
+    width: 240px;
   }
 }
 

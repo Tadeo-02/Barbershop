@@ -481,7 +481,7 @@ const CheckoutForm: React.FC<{
             </div>
           )}
         </div>
-
+            
         <button
           type="button"
           onClick={confirmAndSubmit}
