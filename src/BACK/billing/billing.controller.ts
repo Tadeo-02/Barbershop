@@ -111,7 +111,9 @@ export const billAppointment = async (
         : errorCode === "APPOINTMENT_NOT_COMPLETED" ||
             errorCode === "APPOINTMENT_NO_PRICE"
           ? 400
-          : 500;
+          : errorCode === "APPOINTMENT_BILLING_INCONSISTENT"
+            ? 409
+            : 500;
 
     res.status(statusCode).json({
       success: false,
@@ -151,10 +153,7 @@ export const getLastVoucher = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al obtener último comprobante",
-      ),
+      message: getErrorMessage(error, "Error al obtener último comprobante"),
     });
   }
 };
@@ -222,10 +221,7 @@ export const getVoucherTypes = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al obtener tipos de comprobante",
-      ),
+      message: getErrorMessage(error, "Error al obtener tipos de comprobante"),
     });
   }
 };
@@ -282,10 +278,7 @@ export const getServerStatus = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al verificar estado del servidor",
-      ),
+      message: getErrorMessage(error, "Error al verificar estado del servidor"),
     });
   }
 };
@@ -351,8 +344,7 @@ export const getInvoicePdf = async (
   } catch (error: unknown) {
     const errorCode = getErrorCode(error);
     const statusCode =
-      errorCode === "VOUCHER_NOT_FOUND" ||
-      errorCode === "APPOINTMENT_NOT_FOUND"
+      errorCode === "VOUCHER_NOT_FOUND" || errorCode === "APPOINTMENT_NOT_FOUND"
         ? 404
         : 500;
 
@@ -459,10 +451,7 @@ export const getBillingData = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al obtener datos de facturación",
-      ),
+      message: getErrorMessage(error, "Error al obtener datos de facturación"),
     });
   }
 };
@@ -534,8 +523,7 @@ export const getReceiptPdf = async (
   } catch (error: unknown) {
     const errorCode = getErrorCode(error);
     const statusCode =
-      errorCode === "APPOINTMENT_NOT_FOUND" ||
-      errorCode === "VOUCHER_NOT_FOUND"
+      errorCode === "APPOINTMENT_NOT_FOUND" || errorCode === "VOUCHER_NOT_FOUND"
         ? 404
         : errorCode === "APPOINTMENT_NOT_CHARGED"
           ? 400

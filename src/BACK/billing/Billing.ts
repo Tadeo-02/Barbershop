@@ -43,6 +43,85 @@ type AfipVoucherPayload = {
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
 
+const ARGENTINA_TIMEZONE = "America/Argentina/Buenos_Aires";
+
+const formatArgentinaDate = (date: Date): string => {
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: ARGENTINA_TIMEZONE,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(date);
+  } catch {
+    const argentinaOffsetMs = 3 * 60 * 60 * 1000;
+    return new Date(date.getTime() - argentinaOffsetMs)
+      .toISOString()
+      .split("T")[0];
+  }
+};
+
+const toAfipDateNumber = (date: string): number =>
+  parseInt(date.replace(/-/g, ""), 10);
+
+const parseAfipDate = (value: unknown): number | null => {
+  if (typeof value === "number") return value;
+  if (typeof value === "string" && /^\d{8}$/.test(value)) {
+    return parseInt(value, 10);
+  }
+  return null;
+};
+
+const resolveIssueDate = async (
+  puntoDeVenta: number,
+  tipoComprobante: number,
+): Promise<number> => {
+  const today = toAfipDateNumber(formatArgentinaDate(new Date()));
+  let issueDate = today;
+
+  try {
+    const lastVoucher = await getLastVoucherNumber(
+      puntoDeVenta,
+      tipoComprobante,
+    );
+
+    if (lastVoucher > 0) {
+      const lastInfo = await getVoucherInfo(
+        lastVoucher,
+        puntoDeVenta,
+        tipoComprobante,
+      );
+      const lastDate = parseAfipDate(
+        (lastInfo as { CbteFch?: unknown } | null)?.CbteFch,
+      );
+      if (lastDate && lastDate > issueDate) {
+        issueDate = lastDate;
+      }
+    }
+  } catch {
+    return issueDate;
+  }
+
+  return issueDate;
+};
+
+const extractVoucherAuth = (
+  info: AfipVoucherInfo | null,
+): { cae?: string; caeFchVto?: string } => {
+  if (!info) return {};
+  const cae =
+    (info as { CodAutorizacion?: unknown }).CodAutorizacion ??
+    (info as { CAE?: unknown }).CAE;
+  const caeFchVto =
+    (info as { FchVto?: unknown }).FchVto ??
+    (info as { CAEFchVto?: unknown }).CAEFchVto;
+
+  return {
+    cae: cae != null ? String(cae) : undefined,
+    caeFchVto: caeFchVto != null ? String(caeFchVto) : undefined,
+  };
+};
+
 // ============================================================
 // Modelo de Facturación Electrónica - ARCA (ex-AFIP)
 // ============================================================
@@ -80,10 +159,11 @@ const createVoucher = async (
     const afip = getAfip();
     const puntoDeVenta = input.puntoDeVenta || AFIP_PUNTO_VENTA;
 
-    // Fecha actual en formato ARCA (yyyymmdd)
-    const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-      .toISOString()
-      .split("T")[0];
+    // Fecha ARCA: Argentina + no menor a la del ultimo comprobante
+    const issueDate = await resolveIssueDate(
+      puntoDeVenta,
+      input.tipoComprobante,
+    );
 
     // Construir data del comprobante
     const data: AfipVoucherPayload = {
@@ -93,7 +173,7 @@ const createVoucher = async (
       Concepto: input.concepto,
       DocTipo: input.tipoDocumento,
       DocNro: input.numeroDocumento,
-      CbteFch: parseInt(date.replace(/-/g, ""), 10),
+      CbteFch: issueDate,
       ImpTotal: input.importeTotal,
       ImpTotConc: input.importeNetoNoGravado,
       ImpNeto: input.importeNetoGravado,
@@ -110,9 +190,9 @@ const createVoucher = async (
       input.concepto === CONCEPT_TYPES.SERVICIOS ||
       input.concepto === CONCEPT_TYPES.PRODUCTOS_Y_SERVICIOS
     ) {
-      data.FchServDesde = parseInt(date.replace(/-/g, ""), 10);
-      data.FchServHasta = parseInt(date.replace(/-/g, ""), 10);
-      data.FchVtoPago = parseInt(date.replace(/-/g, ""), 10);
+      data.FchServDesde = issueDate;
+      data.FchServHasta = issueDate;
+      data.FchVtoPago = issueDate;
     }
 
     // Agregar alícuotas de IVA si se proporcionan
@@ -172,6 +252,55 @@ const billAppointment = async (
       );
     }
 
+    const puntoDeVenta = turno.puntoDeVenta || AFIP_PUNTO_VENTA;
+    const tipoComprobanteFinal = turno.tipoComprobante || tipoComprobante;
+
+    if (turno.cae && turno.caeFchVto && turno.voucherNumber) {
+      return {
+        CAE: turno.cae,
+        CAEFchVto: turno.caeFchVto,
+        voucher_number: turno.voucherNumber,
+        tipoComprobante: tipoComprobanteFinal,
+        puntoDeVenta,
+        codTurno,
+      };
+    }
+
+    if (turno.voucherNumber && (!turno.cae || !turno.caeFchVto)) {
+      const info = await getVoucherInfo(
+        turno.voucherNumber,
+        puntoDeVenta,
+        tipoComprobanteFinal,
+      );
+      const { cae, caeFchVto } = extractVoucherAuth(info);
+
+      if (cae || caeFchVto) {
+        await prisma.turno.update({
+          where: { codTurno },
+          data: {
+            cae: cae ?? turno.cae ?? null,
+            caeFchVto: caeFchVto ?? turno.caeFchVto ?? null,
+            tipoComprobante: tipoComprobanteFinal,
+            puntoDeVenta,
+          },
+        });
+
+        return {
+          CAE: cae ?? turno.cae ?? "",
+          CAEFchVto: caeFchVto ?? turno.caeFchVto ?? "",
+          voucher_number: turno.voucherNumber,
+          tipoComprobante: tipoComprobanteFinal,
+          puntoDeVenta,
+          codTurno,
+        };
+      }
+
+      throw new DatabaseError(
+        "Datos de facturación incompletos para este turno",
+        "APPOINTMENT_BILLING_INCONSISTENT",
+      );
+    }
+
     // Obtener el importe del turno
     const importeTotal = turno.precioTurno || turno.tipos_corte?.valorBase || 0;
 
@@ -190,7 +319,8 @@ const billAppointment = async (
 
     // Crear el comprobante
     const voucherResult = await createVoucher({
-      tipoComprobante,
+      puntoDeVenta,
+      tipoComprobante: tipoComprobanteFinal,
       concepto: CONCEPT_TYPES.SERVICIOS,
       tipoDocumento,
       numeroDocumento,
@@ -219,8 +349,8 @@ const billAppointment = async (
         cae: voucherResult.CAE,
         caeFchVto: voucherResult.CAEFchVto,
         voucherNumber: voucherResult.voucher_number,
-        tipoComprobante,
-        puntoDeVenta: voucherResult.puntoDeVenta || AFIP_PUNTO_VENTA,
+        tipoComprobante: tipoComprobanteFinal,
+        puntoDeVenta: voucherResult.puntoDeVenta || puntoDeVenta,
       },
     });
 

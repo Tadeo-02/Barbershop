@@ -213,14 +213,14 @@ const CheckoutForm: React.FC<{
             (t) => (
               <div className={styles.modalContainer}>
                 <p className={styles.modalTitle}>Turno cobrado con éxito</p>
-                <p className={styles.modalDescription}>
+                {/* <p className={styles.modalDescription}>
                   <span style={{ color: "#e67e22" }}>
                     Factura pendiente
                     {facturacionError ? `: ${facturacionError}` : ""}
                   </span>
                   <br />
                   Podés facturar manualmente desde el botón "Facturar (ARCA)"
-                </p>
+                </p> */}
                 <div className={styles.modalButtons}>
                   <button
                     onClick={() => toast.dismiss(t.id)}
