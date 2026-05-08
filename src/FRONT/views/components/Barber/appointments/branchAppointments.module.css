@@ -195,6 +195,8 @@ body {
   margin: 5px 0;
 }
 
+
+
 .buttonSuccess {
   background-color: #38a169;
   color: #ffffff;
@@ -428,36 +430,50 @@ body {
   }
 
   .appointmentsContainer {
-    max-width: 100%;
+    max-width: 500px;
     margin: 40px auto;
     padding: 30px;
   }
-
-  .appointmentItem {
+.appointmentItem {
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch; /* Asegura que los hijos tengan la misma altura */
     padding: 20px;
-    gap: 12px;
+    gap: 20px; /* Más espacio entre columnas */
     margin-bottom: 15px;
+    overflow: hidden; /* Evita que contenido interno sobresalga */
+  }
+
+.appointmentDetails {
+    flex: 2; /* Toma más espacio para los datos del cliente */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+/* Contenedor de la derecha (Formularios y Precio) */
+  .actionButtons {
+    flex: 1; /* Toma menos espacio que los detalles */
+    min-width: 300px; /* Evita que se haga demasiado pequeño */
+    margin-top: 0; /* Quita el margen superior en desktop */
+    display: flex;
+    flex-direction: column; /* Mantiene los inputs uno arriba del otro */
+    gap: 10px;
   }
 
   .detailRow {
-    font-size: 1rem;
+    grid-template-columns: 120px 1fr; /* Ajustado para que no ocupe tanto */
   }
-
   .detailLabel {
     min-width: 120px;
   }
 
   .button {
-    width: auto;
+    min-width: 300px;
     margin-right: 10px;
     margin-top: 10px;
     margin-bottom: 0;
-  }
-
-  .actionButtons {
-    flex-direction: row;
-    gap: 10px;
-    margin-top: 15px;
+    flex-shrink: 0;
   }
 
   .loadingState,
