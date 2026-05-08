@@ -359,13 +359,7 @@ const IndexBarbers = () => {
           >
             CREAR BARBERO
           </Link>
-          <Link
-            to="/Admin/HomePageAdmin"
-            className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-          >
-            VOLVER
-          </Link>
-        </div>
+        </div>  
         {barberos.length === 0 ? (
           <div className={styles.emptyState}>
             <p>No hay barberos disponibles.</p>

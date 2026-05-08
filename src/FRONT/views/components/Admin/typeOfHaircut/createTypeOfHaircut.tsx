@@ -137,6 +137,7 @@ const CreateTypeOfHaircut: React.FC = () => {
               </div>
             )}
           </div>
+          <div className={styles.detailsActionButtons}>
           <button
             className={`${styles.button} ${styles.buttonSuccess}`}
             type="submit"
@@ -152,6 +153,7 @@ const CreateTypeOfHaircut: React.FC = () => {
           >
             Volver
           </button>
+          </div>
         </fieldset>
       </form>
     </div>

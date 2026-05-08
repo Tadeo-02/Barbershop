@@ -235,6 +235,7 @@ h2 {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   margin-top: 16px;
@@ -476,6 +477,9 @@ h2 {
   }
   .detailsActionButtons .button {
     width: 240px;
+  }
+  .detailsActionButtons {
+    flex-direction: row;
   }
   .actionButtons {
     flex-direction: row;

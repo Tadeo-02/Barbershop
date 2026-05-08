@@ -207,12 +207,6 @@ const IndexBranches = () => {
           >
             CREAR SUCURSAL
           </Link>
-          <Link
-            to="/Admin/HomePageAdmin"
-            className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-          >
-            VOLVER
-          </Link>
         </div>
         {sucursales.length === 0 ? (
           <div className={styles.emptyState}>

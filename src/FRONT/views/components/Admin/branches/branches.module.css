@@ -248,6 +248,15 @@ h2 {
   }
 }
 
+.detailsActionButtons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+}
+
 /* Información de la sucursal */
 .sucursalInfo {
   flex: 1;
@@ -379,6 +388,9 @@ h2 {
   .barberList {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
+  }
+    .detailsActionButtons .button {
+    width: 240px;
   }
 }
 

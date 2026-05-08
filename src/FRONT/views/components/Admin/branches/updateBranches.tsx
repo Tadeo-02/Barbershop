@@ -209,7 +209,7 @@ const UpdateBranches: React.FC = () => {
               </div>
             )}
           </div>
-          <div className={styles.buttonGroup}>
+          <div className={styles.detailsActionButtons}>
             <button
               className={`${styles.button} ${styles.buttonSuccess}`}
               type="submit"
