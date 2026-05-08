@@ -134,15 +134,15 @@ const CreateUser: React.FC = () => {
       <div className="container-fluid">
         <div className="row">
           <div className="col-12">
-            <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+            <form
+              className={`${styles.form} ${styles.formLong}`}
+              onSubmit={handleSubmit(onSubmit)}
+            >
               {/*PROPIEDAD PARA DESHABILITAR ENVÍOS MULIPLES MEDIANTE HTML PURO  */}
               <fieldset
                 disabled={isSubmitting}
                 style={{ border: "none", padding: 0, margin: 0 }}
               >
-                <br />
-                <br />
-                <br />
                 <h1 className={styles.titleSignUp}>CREAR CUENTA</h1>
 
                 {/* DNI */}
@@ -274,11 +274,17 @@ const CreateUser: React.FC = () => {
                   className={styles.smallSelect}
                 >
                   <option value="" disabled>
-                    -- Seleccione una pregunta --
+                    Seleccione una pregunta
                   </option>
-                  <option value="¿Cuál es el nombre de tu primera mascota?">¿Cuál es el nombre de tu primera mascota?</option>
-                  <option value="¿Cuál es el nombre de la calle donde creciste?">¿Cuál es el nombre de la calle donde creciste?</option>
-                  <option value="¿Cuál es el nombre de tu libro favorito?">¿Cuál es el nombre de tu libro favorito?</option>
+                  <option value="¿Cuál es el nombre de tu primera mascota?">
+                    ¿Cuál es el nombre de tu primera mascota?
+                  </option>
+                  <option value="¿Cuál es el nombre de la calle donde creciste?">
+                    ¿Cuál es el nombre de la calle donde creciste?
+                  </option>
+                  <option value="¿Cuál es el nombre de tu libro favorito?">
+                    ¿Cuál es el nombre de tu libro favorito?
+                  </option>
                 </select>
                 {errors.preguntaSeguridad && (
                   <p style={{ color: "red", fontSize: "0.875rem" }}>
