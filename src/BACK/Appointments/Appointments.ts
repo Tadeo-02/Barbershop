@@ -14,6 +14,51 @@ const INITIAL_TO_MEDIUM_COUNT = parseInt(
   10,
 );
 
+// type BillingErrorInfo = {
+//   message: string;
+//   code?: string;
+//   afipCode?: string;
+//   fullMessage: string;
+// };
+
+// const DEFAULT_BILLING_ERROR = "Error desconocido de ARCA";
+
+// const extractBillingErrorInfo = (error: unknown): BillingErrorInfo => {
+//   let message = DEFAULT_BILLING_ERROR;
+
+//   if (error instanceof Error && error.message.trim().length > 0) {
+//     message = error.message;
+//   } else if (error && typeof error === "object" && "message" in error) {
+//     const rawMessage = (error as { message?: unknown }).message;
+//     if (typeof rawMessage === "string" && rawMessage.trim().length > 0) {
+//       message = rawMessage;
+//     }
+//   }
+
+//   let code: string | undefined;
+//   if (error instanceof DatabaseError && error.code) {
+//     code = error.code;
+//   } else if (error && typeof error === "object" && "code" in error) {
+//     const rawCode = (error as { code?: unknown }).code;
+//     if (typeof rawCode === "string" && rawCode.trim().length > 0) {
+//       code = rawCode;
+//     } else if (typeof rawCode === "number") {
+//       code = String(rawCode);
+//     }
+//   }
+
+//   const afipMatch = message.match(/\((\d{3,6})\)/);
+//   const afipCode = afipMatch ? afipMatch[1] : undefined;
+
+//   const labels: string[] = [];
+//   if (code) labels.push(`code=${code}`);
+//   if (afipCode) labels.push(`afip=${afipCode}`);
+//   const fullMessage =
+//     labels.length > 0 ? `[${labels.join(" ")}] ${message}` : message;
+
+//   return { message, code, afipCode, fullMessage };
+// };
+
 // Helper function para generar horarios disponibles.
 // Ahora toma en cuenta también los bloqueos de barberos (`bloqueos`) y trata
 // los bloqueos como si fueran turnos (no mostrar horas bloqueadas).
@@ -975,6 +1020,8 @@ export const checkoutAppointment = async (
     // Intentar facturación automática vía ARCA (no bloquea si falla)
     let facturacion = null;
     let facturacionError: string | null = null;
+    let facturacionErrorCode: string | null = null;
+    let facturacionErrorAfipCode: string | null = null;
     try {
       facturacion = await billAppointment(sanitizedCodTurno);
       console.log("✅ Factura ARCA generada automáticamente", {
@@ -982,17 +1029,28 @@ export const checkoutAppointment = async (
         voucherNumber: facturacion.voucher_number,
       });
     } catch (billingError: unknown) {
-      facturacionError =
-        billingError instanceof Error
-          ? billingError.message
-          : "Error desconocido de ARCA";
+      const errorInfo = extractBillingErrorInfo(billingError);
+      facturacionError = errorInfo.fullMessage;
+      facturacionErrorCode = errorInfo.code ?? null;
+      facturacionErrorAfipCode = errorInfo.afipCode ?? null;
       console.warn(
         "⚠️ No se pudo generar factura ARCA automáticamente. Se puede facturar manualmente desde /facturacion/facturar-turno",
-        facturacionError,
+        {
+          codTurno: sanitizedCodTurno,
+          message: errorInfo.message,
+          code: errorInfo.code,
+          afipCode: errorInfo.afipCode,
+        },
       );
     }
 
-    return { ...turnoExistente, facturacion, facturacionError };
+    return {
+      ...turnoExistente,
+      facturacion,
+      facturacionError,
+      facturacionErrorCode,
+      facturacionErrorAfipCode,
+    };
   } catch (error) {
     console.error(
       "Error cobrando turno:",
