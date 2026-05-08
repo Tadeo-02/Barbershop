@@ -350,81 +350,88 @@ const IndexBarbers = () => {
 
   return (
     <>
-
-    <div className={styles.indexBarberos}>
-      <h2>Gestión de Barberos</h2>
-      <div className={styles.createButtonWrapper}>
-      <Link
-          to="createBarbers"
-          className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-        >
-          CREAR BARBERO
-        </Link>
-    </div>
-      {barberos.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p>No hay barberos disponibles.</p>
+      <div className={styles.indexBarberos}>
+        <h2>Gestión de Barberos</h2>
+        <div className={styles.createButtonWrapper}>
+          <Link
+            to="createBarbers"
+            className={`${styles.button} ${styles.buttonSuccess} ${styles.createButton}`}
+          >
+            CREAR BARBERO
+          </Link>
+          <Link
+            to="/Admin/HomePageAdmin"
+            className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
+          >
+            VOLVER
+          </Link>
         </div>
-      ) : (
-        <ul>
-          {barberos.map((barbero) => (
-            <li
-              key={barbero.codUsuario}
-              className={!barbero.activo ? styles.inactiveRow : undefined}
-            >
-              <div className={styles.barberoInfo}>
-                <div className={styles.barberoTitle}>
-                  {barbero.apellido}, {barbero.nombre}
+        {barberos.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No hay barberos disponibles.</p>
+          </div>
+        ) : (
+          <ul>
+            {barberos.map((barbero) => (
+              <li
+                key={barbero.codUsuario}
+                className={!barbero.activo ? styles.inactiveRow : undefined}
+              >
+                <div className={styles.barberoInfo}>
+                  <div className={styles.barberoTitle}>
+                    {barbero.apellido}, {barbero.nombre}
+                  </div>
+                  <div className={styles.statusRow}>
+                    <span
+                      className={`${styles.statusBadge} ${
+                        barbero.activo
+                          ? styles.statusActive
+                          : styles.statusInactive
+                      }`}
+                    >
+                      {barbero.activo ? "Activo" : "Inactivo"}
+                    </span>
+                  </div>
+                  <div className={styles.barberoCode}>CUIL: {barbero.cuil}</div>
+                  <div className={styles.barberoSucursal}>
+                    Sucursal: {getSucursalNombre(barbero.codSucursal)}
+                  </div>
                 </div>
-                <div className={styles.statusRow}>
-                  <span
-                    className={`${styles.statusBadge} ${
-                      barbero.activo ? styles.statusActive : styles.statusInactive
-                    }`}
+                <div className={styles.actionButtons}>
+                  <Link
+                    to={`/Admin/BarbersPage/${barbero.codUsuario}`}
+                    className={`${styles.button} ${styles.buttonPrimary}`}
                   >
-                    {barbero.activo ? "Activo" : "Inactivo"}
-                  </span>
+                    Ver Info
+                  </Link>
+                  <Link
+                    to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}
+                    className={`${styles.button} ${styles.buttonPrimary}`}
+                  >
+                    Modificar
+                  </Link>
+                  {barbero.activo ? (
+                    <button
+                      className={`${styles.button} ${styles.buttonDanger}`}
+                      onClick={() => handleDelete(barbero.codUsuario)}
+                    >
+                      Desactivar
+                    </button>
+                  ) : (
+                    <button
+                      className={`${styles.button} ${styles.buttonSuccess}`}
+                      onClick={() => handleReactivate(barbero.codUsuario)}
+                    >
+                      Reactivar
+                    </button>
+                  )}
                 </div>
-                <div className={styles.barberoCode}>CUIL: {barbero.cuil}</div>
-                <div className={styles.barberoSucursal}>
-                  Sucursal: {getSucursalNombre(barbero.codSucursal)}
-                </div>
-              </div>
-              <div className={styles.actionButtons}>
-                <Link
-                  to={`/Admin/BarbersPage/${barbero.codUsuario}`}
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                >
-                  Ver Info
-                </Link>
-                <Link
-                  to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                >
-                  Modificar
-                </Link>
-                {barbero.activo ? (
-                  <button
-                    className={`${styles.button} ${styles.buttonDanger}`}
-                    onClick={() => handleDelete(barbero.codUsuario)}
-                  >
-                    Desactivar
-                  </button>
-                ) : (
-                  <button
-                    className={`${styles.button} ${styles.buttonSuccess}`}
-                    onClick={() => handleReactivate(barbero.codUsuario)}
-                  >
-                    Reactivar
-                  </button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  </>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </>
   );
 };
 

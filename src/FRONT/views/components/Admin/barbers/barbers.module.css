@@ -58,7 +58,9 @@ h2 {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .indexBarberos li:hover {
@@ -106,7 +108,9 @@ h2 {
   border-radius: 8px;
   font-size: 0.95rem;
   color: #2d3748;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   box-sizing: border-box;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -127,7 +131,9 @@ h2 {
   border-radius: 8px;
   font-size: 0.95rem;
   color: #2d3748;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   box-sizing: border-box;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
@@ -145,7 +151,9 @@ h2 {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease,
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease,
     box-shadow 0.3s ease;
   text-decoration: none;
   margin: 10px 0 0 0; /* Espacio superior para separar de otros elementos */
@@ -208,9 +216,18 @@ h2 {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: flex-end; /* push buttons to the right like branches */
-  margin-left: auto;
+  align-items: flex-end;
+  justify-content: flex-start;
+  margin-left: 0;
+  align-self: flex-end;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 
 .detailsActionButtons {
@@ -224,7 +241,7 @@ h2 {
 
 /* Barbero info */
 .barberoInfo {
-  flex: 1; 
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -235,7 +252,7 @@ h2 {
 }
 
 .barberoTitle {
-  font-size: 1.2rem; 
+  font-size: 1.2rem;
   font-weight: 700;
   color: #2d3748;
   margin-bottom: 4px;
@@ -275,7 +292,9 @@ h2 {
   font-weight: 500;
 }
 
-.barberoSucursal, .barberoContacto, .barberoCode {
+.barberoSucursal,
+.barberoContacto,
+.barberoCode {
   font-size: 0.95rem;
   color: #4a5568;
 }
@@ -479,7 +498,7 @@ h2 {
     padding: 12px 16px;
     margin-bottom: 20px;
   }
-    .sectionTitle{
+  .sectionTitle {
     font-size: 1.35em;
   }
 }

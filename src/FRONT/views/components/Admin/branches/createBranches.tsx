@@ -192,6 +192,14 @@ const CreateBranches: React.FC = () => {
           >
             {isSubmitting ? "Creando..." : "Guardar Sucursal"}
           </button>
+          <button
+            type="button"
+            disabled={isSubmitting}
+            className={`${styles.button} ${styles.buttonPrimary}`}
+            onClick={() => navigate("/Admin/BranchesPage")}
+          >
+            Volver
+          </button>
         </fieldset>
       </form>
     </div>

@@ -138,11 +138,19 @@ const CreateTypeOfHaircut: React.FC = () => {
             )}
           </div>
           <button
-            className={`${styles.button} ${styles.buttonPrimary}`}
+            className={`${styles.button} ${styles.buttonSuccess}`}
             type="submit"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Creando..." : "Guardar Tipo de Corte"}
+          </button>
+          <button
+            type="button"
+            disabled={isSubmitting}
+            className={`${styles.button} ${styles.buttonPrimary}`}
+            onClick={() => navigate("/Admin/HaircutTypesPage")}
+          >
+            Volver
           </button>
         </fieldset>
       </form>

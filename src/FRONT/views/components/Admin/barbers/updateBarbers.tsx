@@ -380,6 +380,14 @@ const UpdateBarber: React.FC = () => {
             >
               {isSubmitting ? "Guardando..." : "Guardar Cambios"}
             </button>
+            <button
+              className={`${styles.button} ${styles.buttonPrimary}`}
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => navigate("/Admin/BarbersPage")}
+            >
+              Volver
+            </button>
           </div>
         </fieldset>
       </form>

@@ -198,76 +198,83 @@ const IndexBranches = () => {
 
   return (
     <>
-
-    <div className={styles.indexSucursales}>
-      <h2>Gestión de Sucursales</h2>
-      <div className={styles.createButtonWrapper}>
-      <Link
-        to="createBranches"
-        className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-      >
-        CREAR SUCURSAL
-      </Link>
-    </div>
-      {sucursales.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p>No hay sucursales disponibles.</p>
+      <div className={styles.indexSucursales}>
+        <h2>Gestión de Sucursales</h2>
+        <div className={styles.createButtonWrapper}>
+          <Link
+            to="createBranches"
+            className={`${styles.button} ${styles.buttonSuccess} ${styles.createButton}`}
+          >
+            CREAR SUCURSAL
+          </Link>
+          <Link
+            to="/Admin/HomePageAdmin"
+            className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
+          >
+            VOLVER
+          </Link>
         </div>
-      ) : (
-        <ul>
-          {sucursales.map((sucursal, idx) => (
-            <li
-              key={idx}
-              className={!sucursal.activo ? styles.inactiveRow : undefined}
-            >
-              <div className={styles.sucursalInfo}>
-                <div className={styles.sucursalTitle}>
-                  {sucursal.calle}, {sucursal.altura}
+        {sucursales.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No hay sucursales disponibles.</p>
+          </div>
+        ) : (
+          <ul>
+            {sucursales.map((sucursal, idx) => (
+              <li
+                key={idx}
+                className={!sucursal.activo ? styles.inactiveRow : undefined}
+              >
+                <div className={styles.sucursalInfo}>
+                  <div className={styles.sucursalTitle}>
+                    {sucursal.calle}, {sucursal.altura}
+                  </div>
+                  <div className={styles.statusRow}>
+                    <span
+                      className={`${styles.statusBadge} ${
+                        sucursal.activo
+                          ? styles.statusActive
+                          : styles.statusInactive
+                      }`}
+                    >
+                      {sucursal.activo ? "Activa" : "Inactiva"}
+                    </span>
+                  </div>
                 </div>
-                <div className={styles.statusRow}>
-                  <span
-                    className={`${styles.statusBadge} ${
-                      sucursal.activo ? styles.statusActive : styles.statusInactive
-                    }`}
+                <div className={styles.actionButtons}>
+                  <Link
+                    to={`/Admin/BranchesPage/${sucursal.codSucursal}`}
+                    className={`${styles.button} ${styles.buttonPrimary}`}
                   >
-                    {sucursal.activo ? "Activa" : "Inactiva"}
-                  </span>
+                    Ver Info
+                  </Link>
+                  <Link
+                    to={`/Admin/BranchesPage/updateBranches/${sucursal.codSucursal}`}
+                    className={`${styles.button} ${styles.buttonPrimary}`}
+                  >
+                    Modificar
+                  </Link>
+                  {sucursal.activo ? (
+                    <button
+                      className={`${styles.button} ${styles.buttonDanger}`}
+                      onClick={() => handleDelete(sucursal.codSucursal)}
+                    >
+                      Desactivar
+                    </button>
+                  ) : (
+                    <button
+                      className={`${styles.button} ${styles.buttonSuccess}`}
+                      onClick={() => handleReactivate(sucursal.codSucursal)}
+                    >
+                      Reactivar
+                    </button>
+                  )}
                 </div>
-              </div>
-              <div className={styles.actionButtons}>
-                <Link
-                  to={`/Admin/BranchesPage/${sucursal.codSucursal}`}
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                >
-                  Ver Info
-                </Link>
-                <Link
-                  to={`/Admin/BranchesPage/updateBranches/${sucursal.codSucursal}`}
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                >
-                  Modificar
-                </Link>
-                {sucursal.activo ? (
-                  <button
-                    className={`${styles.button} ${styles.buttonDanger}`}
-                    onClick={() => handleDelete(sucursal.codSucursal)}
-                  >
-                    Desactivar
-                  </button>
-                ) : (
-                  <button
-                    className={`${styles.button} ${styles.buttonSuccess}`}
-                    onClick={() => handleReactivate(sucursal.codSucursal)}
-                  >
-                    Reactivar
-                  </button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </>
   );
 };

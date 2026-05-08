@@ -217,6 +217,14 @@ const UpdateBranches: React.FC = () => {
             >
               {isSubmitting ? "Guardando..." : "Guardar Cambios"}
             </button>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              className={`${styles.button} ${styles.buttonPrimary}`}
+              onClick={() => navigate("/Admin/BranchesPage")}
+            >
+              Volver
+            </button>
           </div>
         </fieldset>
       </form>

@@ -298,14 +298,14 @@ const CreateBarbers: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`${styles.button} ${styles.buttonPrimary}`}
+              className={`${styles.button} ${styles.buttonSuccess}`}
             >
               {isSubmitting ? "Creando..." : "Crear Barbero"}
             </button>
             <button
               type="button"
               disabled={isSubmitting}
-              className={`${styles.button} ${styles.buttonSuccess}`}
+              className={`${styles.button} ${styles.buttonPrimary}`}
               onClick={() => navigate("/Admin/BarbersPage")}
             >
               Volver

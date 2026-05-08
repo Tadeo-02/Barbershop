@@ -143,53 +143,58 @@ const IndexTypeOfHaircut = () => {
   };
 
   return (
-      <>
-
-    <div className={styles.indexTipoCortes}>
-      <h2>Gestión de Tipos de Corte</h2>
+    <>
+      <div className={styles.indexTipoCortes}>
+        <h2>Gestión de Tipos de Corte</h2>
         <div className={styles.createButtonWrapper}>
-        <Link
-          to="createTypeOfHaircut"
-          className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-        >
-          CREAR TIPO DE CORTE
-        </Link>
-      </div>
-      {tipoCortes.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p>No hay tipos de corte disponibles.</p>
+          <Link
+            to="createTypeOfHaircut"
+            className={`${styles.button} ${styles.buttonSuccess} ${styles.createButton}`}
+          >
+            CREAR TIPO DE CORTE
+          </Link>
+          <Link
+            to="/Admin/HomePageAdmin"
+            className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
+          >
+            VOLVER
+          </Link>
         </div>
-      ) : (
-        <ul>
-          {tipoCortes.map((corte, idx) => (
-            <li key={idx}>
-              <div className={styles.corteInfo}>
-                <div className={styles.corteTitle}>
-                  <strong>{corte.nombreCorte}</strong>
+        {tipoCortes.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No hay tipos de corte disponibles.</p>
+          </div>
+        ) : (
+          <ul>
+            {tipoCortes.map((corte, idx) => (
+              <li key={idx}>
+                <div className={styles.corteInfo}>
+                  <div className={styles.corteTitle}>
+                    <strong>{corte.nombreCorte}</strong>
+                  </div>
+                  <div className={styles.cortePrice}>
+                    Valor Base: ${corte.valorBase}
+                  </div>
                 </div>
-                <div className={styles.cortePrice}>
-                  Valor Base: ${corte.valorBase}
+                <div className={styles.actionButtons}>
+                  <Link
+                    to={`updateTypeOfHaircut/${corte.codCorte}`}
+                    className={`${styles.button} ${styles.buttonPrimary}`}
+                  >
+                    Modificar
+                  </Link>
+                  <button
+                    className={`${styles.button} ${styles.buttonDanger}`}
+                    onClick={() => handleDelete(corte.codCorte)}
+                  >
+                    Eliminar
+                  </button>
                 </div>
-              </div>
-              <div className={styles.actionButtons}>
-                <Link
-                  to={`updateTypeOfHaircut/${corte.codCorte}`}
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                >
-                  Modificar
-                </Link>
-                <button
-                  className={`${styles.button} ${styles.buttonDanger}`}
-                  onClick={() => handleDelete(corte.codCorte)}
-                >
-                  Eliminar
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </>
   );
 };
