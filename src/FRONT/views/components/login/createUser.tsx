@@ -1,5 +1,5 @@
 //! TERMINAR
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -53,6 +53,8 @@ const CreateUser: React.FC = () => {
   const navigate = useNavigate();
   // AbortController ref para cancelar requests pendientes
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -223,16 +225,41 @@ const CreateUser: React.FC = () => {
 
                 {/* CONTRASEÑA */}
                 <label>Contraseña:</label>
-                <input
-                  required
-                  type="password"
-                  placeholder="********"
-                  minLength={PASSWORD_MIN_LENGTH}
-                  maxLength={PASSWORD_MAX_LENGTH}
-                  pattern={PASSWORD_PATTERN}
-                  title={`Mínimo ${PASSWORD_MIN_LENGTH} caracteres; debe incluir mayúsculas, minúsculas, números y símbolos`}
-                  {...register("contraseña")}
-                />
+                <div className={styles.inputWithIcon}>
+                  <input
+                    required
+                    type={showPassword ? "text" : "password"}
+                    placeholder="********"
+                    minLength={PASSWORD_MIN_LENGTH}
+                    maxLength={PASSWORD_MAX_LENGTH}
+                    pattern={PASSWORD_PATTERN}
+                    title={`Mínimo ${PASSWORD_MIN_LENGTH} caracteres; debe incluir mayúsculas, minúsculas, números y símbolos`}
+                    {...register("contraseña")}
+                  />
+                  <button
+                    type="button"
+                    className={styles.inputIconButton}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={
+                      showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                    }
+                    aria-pressed={showPassword}
+                  >
+                    <svg
+                      className={styles.inputIcon}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
                 {passwordValue && passwordMissing.length > 0 && (
                   <div className={styles.passwordHints}>
                     <strong>Falta:</strong>
@@ -251,14 +278,41 @@ const CreateUser: React.FC = () => {
 
                 {/* CONFIRMAR CONTRASEÑA */}
                 <label>Confirmar contraseña:</label>
-                <input
-                  required
-                  type="password"
-                  placeholder="********"
-                  minLength={PASSWORD_MIN_LENGTH}
-                  maxLength={PASSWORD_MAX_LENGTH}
-                  {...register("confirmarContraseña")}
-                />
+                <div className={styles.inputWithIcon}>
+                  <input
+                    required
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="********"
+                    minLength={PASSWORD_MIN_LENGTH}
+                    maxLength={PASSWORD_MAX_LENGTH}
+                    {...register("confirmarContraseña")}
+                  />
+                  <button
+                    type="button"
+                    className={styles.inputIconButton}
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    aria-label={
+                      showConfirmPassword
+                        ? "Ocultar contraseña"
+                        : "Mostrar contraseña"
+                    }
+                    aria-pressed={showConfirmPassword}
+                  >
+                    <svg
+                      className={styles.inputIcon}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
                 {errors.confirmarContraseña && (
                   <p style={{ color: "red", fontSize: "0.875rem" }}>
                     {errors.confirmarContraseña.message}
