@@ -95,6 +95,7 @@
 
 .appointmentActions {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-top: 8px;
 }
@@ -266,7 +267,7 @@
   }
 
   .appointmentActions {
-    flex-direction: row;
+    flex-direction: column;
     justify-content: flex-end;
   }
 
