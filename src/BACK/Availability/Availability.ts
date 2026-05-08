@@ -1,6 +1,108 @@
+import { Prisma } from "@prisma/client";
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
 import { AvailabilitySchema } from "../Schemas/availabilitySchema";
+
+const ensureValidRange = (fechaDesde: Date, fechaHasta: Date) => {
+  if (fechaDesde >= fechaHasta) {
+    throw new DatabaseError("La fecha/hora Desde debe ser anterior a Hasta");
+  }
+};
+
+const ensureNotPast = (fechaHasta: Date) => {
+  if (fechaHasta.getTime() < Date.now()) {
+    throw new DatabaseError("La fecha/hora Hasta no puede estar en el pasado");
+  }
+};
+
+const ensureNotFinished = (fechaHasta: Date, actionLabel: string) => {
+  if (fechaHasta.getTime() < Date.now()) {
+    throw new DatabaseError(`No se puede ${actionLabel} un bloqueo finalizado`);
+  }
+};
+
+const ensureNoOverlappingBloqueo = async (
+  tx: Prisma.TransactionClient,
+  codBarbero: string,
+  fechaDesde: Date,
+  fechaHasta: Date,
+  excludeCodBloqueo?: string,
+) => {
+  const where: Prisma.bloqueos_barberoWhereInput = {
+    codBarbero,
+    fechaHoraDesde: { lte: fechaHasta },
+    fechaHoraHasta: { gte: fechaDesde },
+  };
+
+  if (excludeCodBloqueo) {
+    where.codBloqueo = { not: excludeCodBloqueo };
+  }
+
+  const existing = await tx.bloqueos_barbero.findFirst({ where });
+  if (existing) {
+    throw new DatabaseError(
+      "Ya existe un bloqueo en ese horario para ese barbero",
+    );
+  }
+};
+
+const toTimeString = (time: Date) => {
+  const hours = time.getUTCHours().toString().padStart(2, "0");
+  const minutes = time.getUTCMinutes().toString().padStart(2, "0");
+  const seconds = time.getUTCSeconds().toString().padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+};
+
+const cancelOverlappingTurnos = async (
+  tx: Prisma.TransactionClient,
+  codBarbero: string,
+  fechaDesde: Date,
+  fechaHasta: Date,
+) => {
+  const rangeStart = new Date(fechaDesde);
+  rangeStart.setUTCHours(0, 0, 0, 0);
+  const rangeEnd = new Date(fechaHasta);
+  rangeEnd.setUTCHours(23, 59, 59, 999);
+
+  const turnos = await tx.turno.findMany({
+    where: {
+      codBarbero,
+      estado: "Programado",
+      fechaTurno: {
+        gte: rangeStart,
+        lte: rangeEnd,
+      },
+    },
+    select: {
+      codTurno: true,
+      fechaTurno: true,
+      horaDesde: true,
+      horaHasta: true,
+    },
+  });
+
+  const overlappingTurnos = turnos.filter((turno) => {
+    const datePart = turno.fechaTurno.toISOString().split("T")[0];
+    const start = new Date(`${datePart}T${toTimeString(turno.horaDesde)}.000Z`);
+    const end = new Date(`${datePart}T${toTimeString(turno.horaHasta)}.000Z`);
+    return start < fechaHasta && end > fechaDesde;
+  });
+
+  if (overlappingTurnos.length === 0) return;
+
+  const canceledAt = new Date();
+  await tx.turno.updateMany({
+    where: {
+      codTurno: {
+        in: overlappingTurnos.map((turno) => turno.codTurno),
+      },
+    },
+    data: {
+      estado: "Cancelado",
+      fechaCancelacion: canceledAt,
+    },
+  });
+};
 
 // funciones backend para Categorías
 export const store = async (
@@ -33,28 +135,34 @@ export const store = async (
       validatedData.fechaHoraHasta.replace(" ", "T") + ".000Z",
     );
 
-    const existingUnavailability = await prisma.bloqueos_barbero.findMany({
-      where: {
-        codBarbero: validatedData.codBarbero,
-        fechaHoraDesde: { lte: fechaHasta },
-        fechaHoraHasta: { gte: fechaDesde },
-      },
-    });
+    ensureValidRange(fechaDesde, fechaHasta);
+    ensureNotPast(fechaHasta);
 
-    if (existingUnavailability.length > 0) {
-      throw new DatabaseError(
-        "Ya existe un bloqueo en ese horario para ese barbero",
+    const bloqueo = await prisma.$transaction(async (tx) => {
+      await ensureNoOverlappingBloqueo(
+        tx,
+        validatedData.codBarbero,
+        fechaDesde,
+        fechaHasta,
       );
-    }
 
-    // crear bloqueo usando el modelo correcto de Prisma
-    const bloqueo = await prisma.bloqueos_barbero.create({
-      data: {
-        codBarbero: validatedData.codBarbero,
-        fechaHoraDesde: fechaDesde,
-        fechaHoraHasta: fechaHasta,
-        motivo: validatedData.motivo,
-      },
+      const createdBloqueo = await tx.bloqueos_barbero.create({
+        data: {
+          codBarbero: validatedData.codBarbero,
+          fechaHoraDesde: fechaDesde,
+          fechaHoraHasta: fechaHasta,
+          motivo: validatedData.motivo,
+        },
+      });
+
+      await cancelOverlappingTurnos(
+        tx,
+        validatedData.codBarbero,
+        fechaDesde,
+        fechaHasta,
+      );
+
+      return createdBloqueo;
     });
 
     console.log("Barber unavailability created successfully");
@@ -163,24 +271,46 @@ export const update = async (
       validatedData.fechaHoraHasta.replace(" ", "T") + ".000Z",
     );
 
-    // verificar que el bloqueo existe
-    const existingBloqueo = await prisma.bloqueos_barbero.findUnique({
-      where: { codBloqueo: sanitizedData.codBloqueo },
-    });
+    ensureValidRange(fechaDesde, fechaHasta);
+    ensureNotPast(fechaHasta);
 
-    if (!existingBloqueo) {
-      throw new DatabaseError("Bloqueo no encontrado");
-    }
+    const updatedBloqueo = await prisma.$transaction(async (tx) => {
+      const existingBloqueo = await tx.bloqueos_barbero.findUnique({
+        where: { codBloqueo: sanitizedData.codBloqueo },
+      });
 
-    // actualizar bloqueo
-    const updatedBloqueo = await prisma.bloqueos_barbero.update({
-      where: { codBloqueo: sanitizedData.codBloqueo },
-      data: {
-        codBarbero: validatedData.codBarbero,
-        fechaHoraDesde: fechaDesde,
-        fechaHoraHasta: fechaHasta,
-        motivo: validatedData.motivo,
-      },
+      if (!existingBloqueo) {
+        throw new DatabaseError("Bloqueo no encontrado");
+      }
+
+      ensureNotFinished(existingBloqueo.fechaHoraHasta, "modificar");
+
+      await ensureNoOverlappingBloqueo(
+        tx,
+        validatedData.codBarbero,
+        fechaDesde,
+        fechaHasta,
+        sanitizedData.codBloqueo,
+      );
+
+      const updated = await tx.bloqueos_barbero.update({
+        where: { codBloqueo: sanitizedData.codBloqueo },
+        data: {
+          codBarbero: validatedData.codBarbero,
+          fechaHoraDesde: fechaDesde,
+          fechaHoraHasta: fechaHasta,
+          motivo: validatedData.motivo,
+        },
+      });
+
+      await cancelOverlappingTurnos(
+        tx,
+        validatedData.codBarbero,
+        fechaDesde,
+        fechaHasta,
+      );
+
+      return updated;
     });
 
     console.log("Bloqueo updated successfully");
@@ -230,6 +360,8 @@ export const destroy = async (codBloqueo: string) => {
     if (!existingBloqueo) {
       throw new DatabaseError("Bloqueo no encontrado");
     }
+
+    ensureNotFinished(existingBloqueo.fechaHoraHasta, "eliminar");
 
     // eliminar bloqueo
     const deletedBloqueo = await prisma.bloqueos_barbero.delete({

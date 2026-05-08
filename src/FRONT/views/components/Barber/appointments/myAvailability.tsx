@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../../login/AuthContext";
 import listStyles from "./barberAppointments.module.css";
-import formStyles from "./barberAvailability.module.css";
+import AvailabilityForm from "./AvailabilityForm";
+import type { AvailabilityFormValues } from "./AvailabilityForm";
 
 interface Availability {
   codBloqueo: string;
@@ -47,12 +48,16 @@ const formatTime = (value: string | Date): string => {
   return time;
 };
 
+const isAvailabilityEnded = (item: Availability) =>
+  normalizeDateInput(item.fechaHoraHasta).getTime() < Date.now();
+
 interface MyAvailabilityProps {
   refreshKey?: number;
 }
 
 const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,11 +67,9 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [availabilityToUpdate, setAvailabilityToUpdate] =
     useState<Availability | null>(null);
-  const [editDesdeFecha, setEditDesdeFecha] = useState("");
-  const [editDesdeHora, setEditDesdeHora] = useState("");
-  const [editHastaFecha, setEditHastaFecha] = useState("");
-  const [editHastaHora, setEditHastaHora] = useState("");
-  const [editMotivo, setEditMotivo] = useState("");
+  const [editValues, setEditValues] = useState<AvailabilityFormValues | null>(
+    null,
+  );
 
   useEffect(() => {
     return () => {
@@ -126,7 +129,12 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
     void loadAvailability();
   }, [isAuthenticated, user, refreshKey]);
 
-  const handleDelete = (codBloqueo: string) => {
+  const handleDelete = (item: Availability) => {
+    if (isAvailabilityEnded(item)) {
+      toast.error("No se puede cancelar un bloqueo finalizado");
+      return;
+    }
+
     toast(
       (t) => (
         <div className={listStyles.modalContainer}>
@@ -143,7 +151,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
             <button
               onClick={() => {
                 toast.dismiss(t.id);
-                void confirmedDelete(codBloqueo);
+                void confirmedDelete(item);
               }}
               className={listStyles.buttonConfirm}
             >
@@ -162,7 +170,12 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
     );
   };
 
-  const confirmedDelete = async (codBloqueo: string) => {
+  const confirmedDelete = async (item: Availability) => {
+    if (isAvailabilityEnded(item)) {
+      toast.error("No se puede cancelar un bloqueo finalizado");
+      return;
+    }
+
     if (isSubmitting) return;
     setIsSubmitting(true);
     const toastId = toast.loading("Cancelando bloqueo...");
@@ -172,7 +185,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
     submitControllerRef.current = controller;
 
     try {
-      const response = await fetch(`/availability/${codBloqueo}`, {
+      const response = await fetch(`/availability/${item.codBloqueo}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -185,7 +198,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
       if (response.ok) {
         toast.success("Bloqueo cancelado correctamente", { id: toastId });
         setAvailability((prev) =>
-          prev.filter((item) => item.codBloqueo !== codBloqueo),
+          prev.filter((current) => current.codBloqueo !== item.codBloqueo),
         );
       } else {
         const message =
@@ -207,23 +220,33 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
   };
 
   const handleUpdate = (item: Availability) => {
+    if (isAvailabilityEnded(item)) {
+      toast.error("No se puede modificar un bloqueo finalizado");
+      return;
+    }
+
     const desde = getDateParts(item.fechaHoraDesde);
     const hasta = getDateParts(item.fechaHoraHasta);
 
     setAvailabilityToUpdate(item);
-    setEditDesdeFecha(desde.date);
-    setEditDesdeHora(desde.time);
-    setEditHastaFecha(hasta.date);
-    setEditHastaHora(hasta.time);
-    setEditMotivo(item.motivo || "");
+    setEditValues({
+      desdeFecha: desde.date,
+      desdeHora: desde.time,
+      hastaFecha: hasta.date,
+      hastaHora: hasta.time,
+      motivo: item.motivo || "",
+    });
     setIsUpdateModalOpen(true);
   };
 
-  const handleUpdateSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
+  const handleUpdateSubmit = async (values: AvailabilityFormValues) => {
     if (!availabilityToUpdate) {
       toast.error("No hay bloqueo seleccionado para modificar");
+      return;
+    }
+
+    if (isAvailabilityEnded(availabilityToUpdate)) {
+      toast.error("No se puede modificar un bloqueo finalizado");
       return;
     }
 
@@ -232,45 +255,11 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
       return;
     }
 
-    if (
-      !editDesdeFecha ||
-      !editDesdeHora ||
-      !editHastaFecha ||
-      !editHastaHora
-    ) {
-      toast.error("Completa fecha y hora");
-      return;
-    }
-
-    const motivo = editMotivo.trim();
-    if (!motivo) {
-      toast.error("El motivo es requerido");
-      return;
-    }
-
-    if (motivo.length > 250) {
-      toast.error("El motivo no puede superar 250 caracteres");
-      return;
-    }
-
-    const fechaDesde = new Date(`${editDesdeFecha}T${editDesdeHora}:00Z`);
-    const fechaHasta = new Date(`${editHastaFecha}T${editHastaHora}:00Z`);
-
-    if (isNaN(fechaDesde.getTime()) || isNaN(fechaHasta.getTime())) {
-      toast.error("Fecha u hora invalida");
-      return;
-    }
-
-    if (fechaDesde >= fechaHasta) {
-      toast.error("La fecha/hora Desde debe ser anterior a Hasta");
-      return;
-    }
-
     const payload = {
       codBarbero: user.codUsuario,
-      fechaHoraDesde: `${editDesdeFecha} ${editDesdeHora}:00`,
-      fechaHoraHasta: `${editHastaFecha} ${editHastaHora}:00`,
-      motivo,
+      fechaHoraDesde: `${values.desdeFecha} ${values.desdeHora}:00`,
+      fechaHoraHasta: `${values.hastaFecha} ${values.hastaHora}:00`,
+      motivo: values.motivo,
     };
 
     const toastId = toast.loading("Modificando bloqueo...");
@@ -318,6 +307,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
 
         setIsUpdateModalOpen(false);
         setAvailabilityToUpdate(null);
+        setEditValues(null);
       } else {
         const message =
           data?.message || data?.error || "Error al modificar bloqueo";
@@ -359,46 +349,58 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
             No tienes bloqueos registrados.
           </li>
         ) : (
-          availability.map((item) => (
-            <li key={item.codBloqueo} className={listStyles.appointmentItem}>
-              <div className={listStyles.appointmentDetails}>
-                <div className={listStyles.detailRow}>
-                  <span className={listStyles.detailLabel}>Desde:</span>
-                  <span className={listStyles.detailValue}>
-                    {formatDate(item.fechaHoraDesde)}{" "}
-                    {formatTime(item.fechaHoraDesde)}
-                  </span>
+          availability.map((item) => {
+            const ended = isAvailabilityEnded(item);
+
+            return (
+              <li key={item.codBloqueo} className={listStyles.appointmentItem}>
+                <div className={listStyles.appointmentDetails}>
+                  <div className={listStyles.detailRow}>
+                    <span className={listStyles.detailLabel}>Desde:</span>
+                    <span className={listStyles.detailValue}>
+                      {formatDate(item.fechaHoraDesde)}{" "}
+                      {formatTime(item.fechaHoraDesde)}
+                    </span>
+                  </div>
+                  <div className={listStyles.detailRow}>
+                    <span className={listStyles.detailLabel}>Hasta:</span>
+                    <span className={listStyles.detailValue}>
+                      {formatDate(item.fechaHoraHasta)}{" "}
+                      {formatTime(item.fechaHoraHasta)}
+                    </span>
+                  </div>
+                  <div className={listStyles.detailRow}>
+                    <span className={listStyles.detailLabel}>Motivo:</span>
+                    <span className={listStyles.detailValue}>
+                      {item.motivo}
+                    </span>
+                  </div>
+                  <div className={listStyles.detailRow}>
+                    <span className={listStyles.detailLabel}>Estado:</span>
+                    <span className={listStyles.detailValue}>
+                      {ended ? "Finalizado" : "Activo"}
+                    </span>
+                  </div>
                 </div>
-                <div className={listStyles.detailRow}>
-                  <span className={listStyles.detailLabel}>Hasta:</span>
-                  <span className={listStyles.detailValue}>
-                    {formatDate(item.fechaHoraHasta)}{" "}
-                    {formatTime(item.fechaHoraHasta)}
-                  </span>
+                <div className={listStyles.appointmentActions}>
+                  <button
+                    className={listStyles.deleteButton}
+                    onClick={() => handleDelete(item)}
+                    disabled={isSubmitting || ended}
+                  >
+                    Cancelar bloqueo
+                  </button>
+                  <button
+                    className={listStyles.updateButton}
+                    onClick={() => handleUpdate(item)}
+                    disabled={isSubmitting || ended}
+                  >
+                    Modificar bloqueo
+                  </button>
                 </div>
-                <div className={listStyles.detailRow}>
-                  <span className={listStyles.detailLabel}>Motivo:</span>
-                  <span className={listStyles.detailValue}>{item.motivo}</span>
-                </div>
-              </div>
-              <div className={listStyles.appointmentActions}>
-                <button
-                  className={listStyles.deleteButton}
-                  onClick={() => handleDelete(item.codBloqueo)}
-                  disabled={isSubmitting}
-                >
-                  Cancelar bloqueo
-                </button>
-                <button
-                  className={listStyles.updateButton}
-                  onClick={() => handleUpdate(item)}
-                  disabled={isSubmitting}
-                >
-                  Modificar bloqueo
-                </button>
-              </div>
-            </li>
-          ))
+              </li>
+            );
+          })
         )}
       </ul>
 
@@ -426,113 +428,18 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
                 <br />
                 Motivo: {availabilityToUpdate.motivo}
               </p>
-              <form onSubmit={handleUpdateSubmit}>
-                <fieldset disabled={isSubmitting}>
-                  <div className={formStyles.rangeSection}>
-                    <h4 className={formStyles.sectionTitle}>Desde</h4>
-                    <div className={formStyles.fieldsRow}>
-                      <div className={formStyles.fieldGroup}>
-                        <label
-                          className={formStyles.label}
-                          htmlFor="updateDesdeFecha"
-                        >
-                          Fecha
-                        </label>
-                        <input
-                          id="updateDesdeFecha"
-                          type="date"
-                          className={formStyles.input}
-                          value={editDesdeFecha}
-                          max={editHastaFecha || undefined}
-                          onChange={(e) => setEditDesdeFecha(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className={formStyles.fieldGroup}>
-                        <label
-                          className={formStyles.label}
-                          htmlFor="updateDesdeHora"
-                        >
-                          Hora
-                        </label>
-                        <input
-                          id="updateDesdeHora"
-                          type="time"
-                          className={formStyles.input}
-                          value={editDesdeHora}
-                          onChange={(e) => setEditDesdeHora(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={formStyles.rangeSection}>
-                    <h4 className={formStyles.sectionTitle}>Hasta</h4>
-                    <div className={formStyles.fieldsRow}>
-                      <div className={formStyles.fieldGroup}>
-                        <label
-                          className={formStyles.label}
-                          htmlFor="updateHastaFecha"
-                        >
-                          Fecha
-                        </label>
-                        <input
-                          id="updateHastaFecha"
-                          type="date"
-                          className={formStyles.input}
-                          value={editHastaFecha}
-                          min={editDesdeFecha || undefined}
-                          onChange={(e) => setEditHastaFecha(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className={formStyles.fieldGroup}>
-                        <label
-                          className={formStyles.label}
-                          htmlFor="updateHastaHora"
-                        >
-                          Hora
-                        </label>
-                        <input
-                          id="updateHastaHora"
-                          type="time"
-                          className={formStyles.input}
-                          value={editHastaHora}
-                          onChange={(e) => setEditHastaHora(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <hr className={formStyles.divider} />
-
-                  <div className={formStyles.fieldGroup}>
-                    <label className={formStyles.label} htmlFor="updateMotivo">
-                      Motivo
-                    </label>
-                    <textarea
-                      id="updateMotivo"
-                      className={formStyles.textarea}
-                      value={editMotivo}
-                      onChange={(e) => setEditMotivo(e.target.value)}
-                      required
-                      maxLength={250}
-                    />
-                  </div>
-
-                  <div style={{ marginTop: 12 }}>
-                    <button
-                      type="submit"
-                      className={listStyles.updateButton}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Modificando..." : "Confirmar cambios"}
-                    </button>
-                  </div>
-                </fieldset>
-              </form>
+              <AvailabilityForm
+                initialValues={editValues || undefined}
+                onSubmit={handleUpdateSubmit}
+                submitLabel={
+                  isSubmitting ? "Modificando..." : "Confirmar cambios"
+                }
+                submitClassName={listStyles.updateButton}
+                disabled={isSubmitting}
+                idPrefix="update"
+                confirmTitle="Modificar ausencia"
+                confirmConfirmLabel="Modificar"
+              />
             </div>
           </div>
         </div>
