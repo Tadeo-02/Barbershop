@@ -134,15 +134,15 @@ const ShowBarbers = () => {
       <div className={styles.detailsActionButtons}>
         <Link
           to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}
-          className={`${styles.button} ${styles.buttonPrimary}`}
+          className={`${styles.button} ${styles.buttonSuccess}`}
         >
           Editar Barbero
         </Link>
         <Link
           to="/Admin/BarbersPage"
-          className={`${styles.button} ${styles.buttonSuccess}`}
+          className={`${styles.button} ${styles.buttonPrimary}` }
         >
-          Volver a Lista
+          Volver
         </Link>
       </div>
     </div>

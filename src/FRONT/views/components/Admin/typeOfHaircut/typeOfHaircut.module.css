@@ -117,16 +117,18 @@ h2 {
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 10px;
-  border: none; /* eliminar borde para botones */
+  padding: 10px 0;
+  border: none;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease,
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease,
     box-shadow 0.3s ease;
   text-decoration: none;
-  margin: 10px 0 0 0;
+  margin: 10px 0 0 0; /* Espacio superior para separar de otros elementos */
 }
 
 .createButton {
@@ -183,6 +185,17 @@ h2 {
   min-width: 130px;
 }
 
+
+.detailsActionButtons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+}
+
+
 /* animaciones */
 @keyframes fadeIn {
   from {
@@ -218,6 +231,10 @@ h2 {
     width: auto;
     margin-right: 10px;
     margin-top: 10px;
+    margin-bottom: 0;
+  }
+    .detailsActionButtons .button {
+    width: 240px;
   }
   .createButton {
     width: 240px;
@@ -226,6 +243,7 @@ h2 {
   .indexTipoCortes li .button {
     min-width: 140px;
   }
+  
 }
 
 /* Información del corte */
@@ -288,31 +306,4 @@ h2 {
   border-radius: 8px;
   margin-bottom: 15px;
   border-left: 4px solid #e53e3e;
-}
-
-/* Responsive para móvil */
-@media (max-width: 768px) {
-  .indexTipoCortes li {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .actionButtons {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .actionButtons .button {
-    flex: 1;
-  }
-  /* Error message styling */
-.errorMessage {
-  background-color: #fed7d7;
-  color: #742a2a;
-  padding: 10px 12px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  border-left: 4px solid #e53e3e;
-}
 }

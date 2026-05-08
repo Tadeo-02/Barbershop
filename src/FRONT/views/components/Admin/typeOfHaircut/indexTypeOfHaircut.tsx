@@ -153,12 +153,6 @@ const IndexTypeOfHaircut = () => {
           >
             CREAR TIPO DE CORTE
           </Link>
-          <Link
-            to="/Admin/HomePageAdmin"
-            className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-          >
-            VOLVER
-          </Link>
         </div>
         {tipoCortes.length === 0 ? (
           <div className={styles.emptyState}>

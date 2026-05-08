@@ -184,6 +184,7 @@ const CreateBranches: React.FC = () => {
               </p>
             )}
           </div>
+          <div className={styles.detailsActionButtons}>
           <button
             className={`${styles.button} ${styles.buttonSuccess}`}
             type="submit"
@@ -200,6 +201,7 @@ const CreateBranches: React.FC = () => {
           >
             Volver
           </button>
+          </div>
         </fieldset>
       </form>
     </div>

@@ -294,7 +294,7 @@ const CreateBarbers: React.FC = () => {
             )}
           </div>
 
-          <div className={styles.actionButtons}>
+          <div className={styles.detailsActionButtons}>
             <button
               type="submit"
               disabled={isSubmitting}

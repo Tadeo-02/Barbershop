@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast"; 
 import { CategorySchema  } from "../../../../../BACK/Schemas/categoriesSchema";
@@ -12,6 +12,7 @@ const ShowCategories = () => {
   const { codCategoria } = useParams();
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`/categorias/${codCategoria}`)
@@ -50,6 +51,15 @@ const ShowCategories = () => {
         <div className={styles.categoryDiscounts}>
           <div className={styles.discountItem}>
             <strong>Descuento en Cortes:</strong> {categoria.descuentoCorte}%
+          </div>
+          <div className={styles.createButtonWrapper}>
+            <button
+              type="button"
+              className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
+              onClick={() => navigate("/Admin/CategoriesPage")}
+            >
+              Volver
+            </button>
           </div>
         </div>
       </div>

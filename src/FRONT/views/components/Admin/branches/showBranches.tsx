@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
@@ -11,6 +11,7 @@ type Usuario = z.infer<typeof UserBaseSchemaExport> & { codUsuario?: string };
 
 const ShowBranches = () => {
   const { codSucursal } = useParams();
+  const navigate = useNavigate();
   const [sucursal, setSucursal] = useState<Sucursal | null>(null);
   const [barberos, setBarberos] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +99,16 @@ const ShowBranches = () => {
           </ul>
         )}
       </div>
+      <br />
+      <div className={styles.createButtonWrapper}>
+            <button
+              type="button"
+              className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
+              onClick={() => navigate("/Admin/BranchesPage")}
+            >
+              Volver
+            </button>
+        </div>
     </div>
   );
 };

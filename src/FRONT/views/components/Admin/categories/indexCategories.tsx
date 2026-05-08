@@ -391,12 +391,6 @@ const IndexCategories = () => {
           >
             CREAR CATEGORÍA
           </Link>
-          <Link
-            to="/Admin/HomePageAdmin"
-            className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-          >
-            VOLVER
-          </Link>
         </div>
 
         {categorias.length === 0 ? (
@@ -415,9 +409,6 @@ const IndexCategories = () => {
                   <div className={styles.categoryInfo}>
                     <div className={styles.categoryTitle}>
                       {categoria.nombreCategoria}
-                    </div>
-                    <div className={styles.categoryCode}>
-                      Código: {categoria.codCategoria}
                     </div>
                     <div className={styles.categoryDescription}>
                       {categoria.descCategoria}

@@ -9,11 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const CategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),
   descCategoria: z.string().min(10, "Descripción requerida"),
-  descuentoCorte: z.coerce.number().min(0, "Mínimo 0").max(100, "Máximo 100"),
-  descuentoProducto: z.coerce
-    .number()
-    .min(0, "Mínimo 0")
-    .max(100, "Máximo 100"),
+  descuentoCorte: z.number().min(0, "Mínimo 0").max(100, "Máximo 100"),
+  descuentoProducto: z.number().min(0, "Mínimo 0").max(100, "Máximo 100"),
 });
 
 type CategoryForm = z.infer<typeof CategorySchema>;
@@ -53,8 +50,8 @@ const UpdateCategories: React.FC = () => {
           reset({
             nombreCategoria: data.nombreCategoria || "",
             descCategoria: data.descCategoria || "",
-            descuentoCorte: data.descuentoCorte ?? undefined,
-            descuentoProducto: data.descuentoProducto ?? undefined,
+            descuentoCorte: data.descuentoCorte ?? 0,
+            descuentoProducto: data.descuentoProducto ?? 0,
           });
           toast.dismiss(toastId);
         } else if (response.status === 404) {
@@ -195,9 +192,9 @@ const UpdateCategories: React.FC = () => {
             )}
           </div>
 
-          <div className={styles.buttonGroup}>
+          <div className={styles.detailsActionButtons}>
             <button
-              className={`${styles.button} ${styles.buttonSuccess}`}
+              className={`${styles.button} ${styles.buttonSuccess} ${styles.createButton}`}
               type="submit"
               disabled={isSubmitting}
             >
@@ -206,7 +203,7 @@ const UpdateCategories: React.FC = () => {
             <button
               type="button"
               disabled={isSubmitting}
-              className={`${styles.button} ${styles.buttonPrimary}`}
+              className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
               onClick={() => navigate("/Admin/CategoriesPage")}
             >
               Volver
