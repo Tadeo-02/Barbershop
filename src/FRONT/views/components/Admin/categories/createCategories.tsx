@@ -220,6 +220,14 @@ const CreateCategories: React.FC = () => {
           >
             {isSubmitting ? "Creando..." : "Guardar Categoría"}
           </button>
+          <button
+            type="button"
+            disabled={isSubmitting}
+            className={`${styles.button} ${styles.buttonPrimary}`}
+            onClick={() => navigate("/Admin/CategoriesPage")}
+          >
+            Volver
+          </button>
         </fieldset>
       </form>
     </div>

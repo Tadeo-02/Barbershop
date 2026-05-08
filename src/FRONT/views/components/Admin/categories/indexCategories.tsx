@@ -381,170 +381,187 @@ const IndexCategories = () => {
   };
 
   return (
-      <>
-
-    <div className={styles.indexCategories}>
-      <h2>Gestión de Categorías</h2>
+    <>
+      <div className={styles.indexCategories}>
+        <h2>Gestión de Categorías</h2>
         <div className={styles.createButtonWrapper}>
-        <Link
-          to="createCategories"
-          className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-        >
-          CREAR CATEGORÍA
-        </Link>
-      </div>
-      {categorias.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p>No hay categorías disponibles.</p>
+          <Link
+            to="createCategories"
+            className={`${styles.button} ${styles.buttonSuccess} ${styles.createButton}`}
+          >
+            CREAR CATEGORÍA
+          </Link>
+          <Link
+            to="/Admin/HomePageAdmin"
+            className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
+          >
+            VOLVER
+          </Link>
         </div>
-      ) : (
-        <ul>
-          {categorias.map(
-            (
-              categoria,
-              idx // idx como key backup
-            ) => (
-              <li key={categoria.codCategoria || idx}>
-                {/* MOSTRAR DATOS CATEGORIA */}
-                <div className={styles.categoryInfo}>
-                  <div className={styles.categoryTitle}>
-                    {categoria.nombreCategoria}
-                  </div>
-                  <div className={styles.categoryCode}>
-                    Código: {categoria.codCategoria}
-                  </div>
-                  <div className={styles.categoryDescription}>
-                    {categoria.descCategoria}
-                  </div>
-                </div>
-                <div className={styles.actionButtons}>
-                  <Link
-                    to={`/Admin/CategoriesPage/${categoria.codCategoria}`}
-                    className={`${styles.button} ${styles.buttonPrimary}`}
-                  >
-                    Ver Info
-                  </Link>
-                  <Link
-                    to={`/Admin/CategoriesPage/updateCategories/${categoria.codCategoria}`}
-                    className={`${styles.button} ${styles.buttonPrimary}`}
-                  >
-                    Modificar
-                  </Link>
-                  <button
-                    className={`${styles.button} ${styles.buttonDanger} ${
-                      isProtectedCategory(categoria.nombreCategoria)
-                        ? styles.buttonDisabled
-                        : ""
-                    }`}
-                    aria-disabled={isProtectedCategory(categoria.nombreCategoria)}
-                    onClick={() => {
-                      if (isProtectedCategory(categoria.nombreCategoria)) {
-                        toast.error(
-                          "No se permite eliminar la categoría Inicial",
-                          { duration: 2000 }
-                        );
-                        return;
-                      }
-                      handleDelete(categoria.codCategoria);
-                    }}
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </li>
-            )
-          )}
-        </ul>
-      )}
-    </div>
-    {deleteContext && (
-      <div className={styles.modalOverlay}>
-        <div className={styles.modalCard}>
-          <div className={styles.modalHeader}>
-            <h3>Reasignar clientes</h3>
-            <p>
-              Categoría a eliminar: <strong>{deleteContext.categoria.nombreCategoria}</strong>
-            </p>
+
+        {categorias.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No hay categorías disponibles.</p>
           </div>
-          <div className={styles.modalBody}>
-            <div className={styles.modalHint}>
-              Revisá las estadísticas y elegí si subir o bajar a cada cliente.
-            </div>
-            <div className={styles.modalTable}>
-              <div className={styles.modalRowHeader}>
-                <span>Cliente</span>
-                <span>Turnos</span>
-                <span>Cancelados</span>
-                <span>Decision</span>
-              </div>
-              {deleteContext.clientes.map((cliente) => (
-                <div className={styles.modalRow} key={cliente.codCliente}>
-                  <div>
-                    <div className={styles.modalName}>
-                      {cliente.nombre} {cliente.apellido}
+        ) : (
+          <ul>
+            {categorias.map(
+              (
+                categoria,
+                idx, // idx como key backup
+              ) => (
+                <li key={categoria.codCategoria || idx}>
+                  {/* MOSTRAR DATOS CATEGORIA */}
+                  <div className={styles.categoryInfo}>
+                    <div className={styles.categoryTitle}>
+                      {categoria.nombreCategoria}
                     </div>
-                    <div className={styles.modalMuted}>DNI: {cliente.dni}</div>
+                    <div className={styles.categoryCode}>
+                      Código: {categoria.codCategoria}
+                    </div>
+                    <div className={styles.categoryDescription}>
+                      {categoria.descCategoria}
+                    </div>
                   </div>
-                  <div>{cliente.stats.total}</div>
-                  <div>{cliente.stats.cancelados}</div>
-                  <div>
-                    <select
-                      className={styles.modalSelect}
-                      value={deleteDecisions[cliente.codCliente] || (promoteTarget ? "promote" : "demote")}
-                      onChange={(e) =>
-                        setDeleteDecisions((prev) => ({
-                          ...prev,
-                          [cliente.codCliente]: e.target.value as DeleteAction,
-                        }))
-                      }
+                  <div className={styles.actionButtons}>
+                    <Link
+                      to={`/Admin/CategoriesPage/${categoria.codCategoria}`}
+                      className={`${styles.button} ${styles.buttonPrimary}`}
                     >
-                      {promoteTarget && (
-                        <option value="promote">Subir a {promoteTarget}</option>
+                      Ver Info
+                    </Link>
+                    <Link
+                      to={`/Admin/CategoriesPage/updateCategories/${categoria.codCategoria}`}
+                      className={`${styles.button} ${styles.buttonPrimary}`}
+                    >
+                      Modificar
+                    </Link>
+                    <button
+                      className={`${styles.button} ${styles.buttonDanger} ${
+                        isProtectedCategory(categoria.nombreCategoria)
+                          ? styles.buttonDisabled
+                          : ""
+                      }`}
+                      aria-disabled={isProtectedCategory(
+                        categoria.nombreCategoria,
                       )}
-                      {demoteTarget && (
-                        <option value="demote">Bajar a {demoteTarget}</option>
-                      )}
-                    </select>
+                      onClick={() => {
+                        if (isProtectedCategory(categoria.nombreCategoria)) {
+                          toast.error(
+                            "No se permite eliminar la categoría Inicial",
+                            { duration: 2000 },
+                          );
+                          return;
+                        }
+                        handleDelete(categoria.codCategoria);
+                      }}
+                    >
+                      Eliminar
+                    </button>
                   </div>
+                </li>
+              ),
+            )}
+          </ul>
+        )}
+      </div>
+      {deleteContext && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalCard}>
+            <div className={styles.modalHeader}>
+              <h3>Reasignar clientes</h3>
+              <p>
+                Categoría a eliminar:{" "}
+                <strong>{deleteContext.categoria.nombreCategoria}</strong>
+              </p>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.modalHint}>
+                Revisá las estadísticas y elegí si subir o bajar a cada cliente.
+              </div>
+              <div className={styles.modalTable}>
+                <div className={styles.modalRowHeader}>
+                  <span>Cliente</span>
+                  <span>Turnos</span>
+                  <span>Cancelados</span>
+                  <span>Decision</span>
                 </div>
-              ))}
+                {deleteContext.clientes.map((cliente) => (
+                  <div className={styles.modalRow} key={cliente.codCliente}>
+                    <div>
+                      <div className={styles.modalName}>
+                        {cliente.nombre} {cliente.apellido}
+                      </div>
+                      <div className={styles.modalMuted}>
+                        DNI: {cliente.dni}
+                      </div>
+                    </div>
+                    <div>{cliente.stats.total}</div>
+                    <div>{cliente.stats.cancelados}</div>
+                    <div>
+                      <select
+                        className={styles.modalSelect}
+                        value={
+                          deleteDecisions[cliente.codCliente] ||
+                          (promoteTarget ? "promote" : "demote")
+                        }
+                        onChange={(e) =>
+                          setDeleteDecisions((prev) => ({
+                            ...prev,
+                            [cliente.codCliente]: e.target
+                              .value as DeleteAction,
+                          }))
+                        }
+                      >
+                        {promoteTarget && (
+                          <option value="promote">
+                            Subir a {promoteTarget}
+                          </option>
+                        )}
+                        {demoteTarget && (
+                          <option value="demote">Bajar a {demoteTarget}</option>
+                        )}
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={`${styles.button} ${styles.buttonDanger}`}
+                type="button"
+                disabled={deleteBusy}
+                onClick={async () => {
+                  if (!deleteContext) return;
+                  setDeleteBusy(true);
+                  const perClient = deleteContext.clientes.map((cliente) => ({
+                    codCliente: cliente.codCliente,
+                    decision:
+                      deleteDecisions[cliente.codCliente] ||
+                      (promoteTarget ? "promote" : "demote"),
+                  }));
+                  await confirmedDelete(deleteContext.categoria.codCategoria, {
+                    action: "per_client",
+                    perClient,
+                  });
+                  setDeleteBusy(false);
+                }}
+              >
+                Aplicar decisiones y eliminar
+              </button>
+              <button
+                className={styles.button}
+                type="button"
+                disabled={deleteBusy}
+                onClick={() => setDeleteContext(null)}
+              >
+                Cancelar
+              </button>
             </div>
           </div>
-          <div className={styles.modalFooter}>
-            <button
-              className={`${styles.button} ${styles.buttonDanger}`}
-              type="button"
-              disabled={deleteBusy}
-              onClick={async () => {
-                if (!deleteContext) return;
-                setDeleteBusy(true);
-                const perClient = deleteContext.clientes.map((cliente) => ({
-                  codCliente: cliente.codCliente,
-                  decision:
-                    deleteDecisions[cliente.codCliente] ||
-                    (promoteTarget ? "promote" : "demote"),
-                }));
-                await confirmedDelete(deleteContext.categoria.codCategoria, {
-                  action: "per_client",
-                  perClient,
-                });
-                setDeleteBusy(false);
-              }}
-            >
-              Aplicar decisiones y eliminar
-            </button>
-            <button
-              className={styles.button}
-              type="button"
-              disabled={deleteBusy}
-              onClick={() => setDeleteContext(null)}
-            >
-              Cancelar
-            </button>
-          </div>
         </div>
-      </div>
-    )}
+      )}
     </>
   );
 };
