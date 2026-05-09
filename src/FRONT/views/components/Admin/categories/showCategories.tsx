@@ -13,6 +13,15 @@ const ShowCategories = () => {
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const handleBack = () => {
+  // Si hay un historial previo en el navegador, ir atrás.
+  // Si no, navegar a la lista de categorías como fallback. Esa página no va a funcionar para los clientes, pero al menos no se van a quedar en una página vacía.
+  if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+    navigate(-1);
+  } else {
+    navigate("/Admin/CategoriesPage");
+  }
+};
 
   useEffect(() => {
     fetch(`/categorias/${codCategoria}`)
@@ -56,7 +65,7 @@ const ShowCategories = () => {
             <button
               type="button"
               className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-              onClick={() => navigate("/Admin/CategoriesPage")}
+              onClick={handleBack}
             >
               Volver
             </button>
