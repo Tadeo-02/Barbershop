@@ -527,6 +527,15 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
         : undefined,
     };
 
+    // Normalize CUIL: accept either formatted "XX-XXXXXXXX-X" or 11 digits
+    if (sanitizedData.cuil) {
+      const digits = sanitizedData.cuil.replace(/\D/g, "");
+      if (/^\d{11}$/.test(digits)) {
+        // format as XX-XXXXXXXX-X
+        sanitizedData.cuil = `${digits.slice(0, 2)}-${digits.slice(2, 10)}-${digits.slice(10)}`;
+      }
+    }
+
     const validatedData = UpdateUserSchema.parse({
       dni: sanitizedData.dni,
       nombre: sanitizedData.nombre,

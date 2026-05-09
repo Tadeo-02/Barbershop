@@ -6,18 +6,13 @@ export const PASSWORD_MAX_LENGTH = 128;
 export const PASSWORD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)/;
 export const PASSWORD_PATTERN = `(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*\\W).{${PASSWORD_MIN_LENGTH},${PASSWORD_MAX_LENGTH}}`;
 export const PHONE_REGEX = /^\+?[\d\s()\-]{6,20}$/;
-// Función para validar CUIL
+// Función para validar CUIL (acepta formato con guiones o 11 dígitos sin guiones)
 const validateCUIL = (cuil: string, dni: string): boolean => {
-  // Verificar formato XX-XXXXXXXX-X
-  const cuilRegex = /^\d{2}-\d{8}-\d{1}$/;
-  if (!cuilRegex.test(cuil)) {
-    return false;
-  }
-
-  // Extraer el DNI del CUIL (los 8 dígitos del medio)
-  const dniFromCuil = cuil.substring(3, 11); // posición 3 a 10 (8 dígitos)
-
-  // Verificar que el DNI del CUIL coincida con el DNI proporcionado
+  if (!cuil) return false;
+  const digits = String(cuil).replace(/\D/g, "");
+  if (!/^\d{11}$/.test(digits)) return false;
+  // Extraer los 8 dígitos centrales que corresponden al DNI
+  const dniFromCuil = digits.slice(2, 10);
   return dniFromCuil === dni;
 };
 
@@ -73,21 +68,20 @@ const UserBaseSchema = z.object({
 // Full schema with refinements for validation
 export const UserSchema = UserBaseSchema.refine(
   (data) => {
-    // Validate CUIL format if provided
-    if (data.cuil && !/^\d{2}-\d{8}-\d{1}$/.test(data.cuil)) {
-      return false;
+    if (data.cuil) {
+      const digits = String(data.cuil).replace(/\D/g, "");
+      return /^\d{11}$/.test(digits);
     }
     return true;
   },
   {
-    message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X",
+    message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X o 11 dígitos",
     path: ["cuil"],
   },
 ).refine(
   (data) => {
-    // Si hay CUIL, validar que el DNI coincida
     if (data.cuil) {
-      return validateCUIL(data.cuil, data.dni);
+      return validateCUIL(String(data.cuil), data.dni);
     }
     return true;
   },
@@ -105,19 +99,20 @@ const UserUpdateBaseSchema = UserBaseSchema.extend({
 
 export const UserUpdateSchema = UserUpdateBaseSchema.refine(
   (data) => {
-    if (data.cuil && !/^\d{2}-\d{8}-\d{1}$/.test(data.cuil)) {
-      return false;
+    if (data.cuil) {
+      const digits = String(data.cuil).replace(/\D/g, "");
+      return /^\d{11}$/.test(digits);
     }
     return true;
   },
   {
-    message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X",
+    message: "CUIL inválido. Formato requerido: XX-XXXXXXXX-X o 11 dígitos",
     path: ["cuil"],
   },
 ).refine(
   (data) => {
     if (data.cuil) {
-      return validateCUIL(data.cuil, data.dni);
+      return validateCUIL(String(data.cuil), data.dni);
     }
     return true;
   },
