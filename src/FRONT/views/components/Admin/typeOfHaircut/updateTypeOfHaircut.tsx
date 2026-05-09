@@ -55,11 +55,17 @@ const UpdateTypeOfHaircut: React.FC = () => {
           signal: ctrl.signal,
         });
         if (response.ok) {
-          const data = await response.json();
-          setCorte(data);
+          const raw = await response.json();
+          // map backend response fields to frontend form shape
+          const mapped: TipoCorte = {
+            codCorte: raw.codCorte ?? raw.codCorte,
+            nombre: raw.nombre ?? raw.nombreCorte ?? "",
+            valorBase: raw.valorBase ?? undefined,
+          } as TipoCorte;
+          setCorte(mapped);
           reset({
-            nombre: data.nombre || "",
-            valorBase: data.valorBase ?? undefined,
+            nombre: mapped.nombre,
+            valorBase: mapped.valorBase,
           });
           toast.dismiss(toastId);
         } else if (response.status === 404) {
