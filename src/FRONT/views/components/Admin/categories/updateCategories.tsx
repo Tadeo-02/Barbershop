@@ -82,9 +82,9 @@ const UpdateCategories: React.FC = () => {
 
     const toastId = toast.loading("Actualizando categoría...");
     try {
-      // Use POST with ?_method=PUT for compatibility with method-override backends
-      const res = await fetch(`/categorias/${codCategoria}?_method=PUT`, {
-        method: "POST",
+      // Use PUT to update the category
+      const res = await fetch(`/categorias/${codCategoria}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
         signal: abortRef.current.signal,
@@ -170,27 +170,7 @@ const UpdateCategories: React.FC = () => {
               </div>
             )}
           </div>
-          {/* DESCUENTO PRODUCTO */}
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel} htmlFor="descuentoProducto">
-              Descuento en Productos (%):
-            </label>
-            <input
-              className={styles.formInput}
-              type="number"
-              id="descuentoProducto"
-              min={0}
-              max={100}
-              step={0.01}
-              {...register("descuentoProducto", { valueAsNumber: true })}
-              required
-            />
-            {errors.descuentoProducto && (
-              <div className={styles.errorMessage}>
-                {errors.descuentoProducto.message as string}
-              </div>
-            )}
-          </div>
+
 
           <div className={styles.detailsActionButtons}>
             <button
