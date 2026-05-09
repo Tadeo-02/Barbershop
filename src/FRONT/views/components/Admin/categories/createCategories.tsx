@@ -26,7 +26,7 @@ const CreateCategorySchema = z.object({
 
 type CreateCategoryForm = z.infer<typeof CreateCategorySchema>;
 
-const baseResolver = zodResolver(CreateCategorySchema);
+const baseResolver = zodResolver(CreateCategorySchema) as Resolver<CreateCategoryForm>;
 
 const normalizeMessage = (msg: unknown): string | undefined => {
   if (!msg) return undefined;
@@ -191,27 +191,7 @@ const CreateCategories: React.FC = () => {
               </div>
             )}
           </div>
-          {/* DESCUENTO EN PRODUCTOS */}
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel} htmlFor="descuentoProducto">
-              Descuento en Productos (%):
-            </label>
-            <input
-              className={styles.formInput}
-              type="number"
-              id="descuentoProducto"
-              min={0}
-              max={100}
-              step={0.01}
-              {...register("descuentoProducto", { valueAsNumber: true })}
-              required
-            />
-            {errors.descuentoProducto && (
-              <div className={styles.errorMessage}>
-                {errors.descuentoProducto.message}
-              </div>
-            )}
-          </div>
+
           <div className={styles.detailsActionButtons}>
           <button
             className={`${styles.button} ${styles.buttonSuccess}`}

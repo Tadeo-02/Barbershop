@@ -45,8 +45,10 @@ export const store = async (
       descuentoProducto: Number(descuentoProducto),
     };
 
-    // validacion con zod
-    const validatedData = CategorySchema.parse(sanitizedData);
+    // validacion con zod (omitimos el campo `codCategoria` al crear)
+    const validatedData = CategorySchema.omit({ codCategoria: true }).parse(
+      sanitizedData
+    );
 
     console.log("Creating categoria");
 
@@ -146,8 +148,8 @@ export const update = async (
       descuentoProducto: Number(descuentoProducto),
     };
 
-    // validar (menos codCategoria)
-    const validatedData = CategorySchema.parse({
+    // validar datos (omitimos `codCategoria` al validar payload de actualización)
+    const validatedData = CategorySchema.omit({ codCategoria: true }).parse({
       nombreCategoria: sanitizedData.nombreCategoria,
       descCategoria: sanitizedData.descCategoria,
       descuentoCorte: sanitizedData.descuentoCorte,
