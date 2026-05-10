@@ -14,7 +14,6 @@ import { AutoRedirect } from "./components/Redirect.tsx"; // puede ser que no ha
 import LandingPage from "./components/landingPage.tsx";
 
 // Client
-// import HomePageClient from "./pages/Client/HomePageClient.tsx"; no se usa
 import ProfilePage from "./pages/Client/ProfilePage.tsx";
 import Home from "./components/Client/home/home.tsx";
 
@@ -40,7 +39,6 @@ import BarbersPage from "./pages/Admin/BarbersPage.tsx";
 import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
 import BranchesPage from "./pages/Admin/BranchesPage.tsx";
 import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
-import CancelAppointment from "./components/Client/appointments/cancelAppointment.tsx";
 import ClientsPage from "./pages/Admin/ClientsPage.tsx";
 import RentabilityByBranch from "./pages/Admin/RentabilityByBranch.tsx";
 
@@ -71,11 +69,7 @@ function App() {
               />
               <Route path="/Client/Home" element={<Home />}></Route>
               {/* Rutas del cliente para navegación por sucursales y barberos */}
-              {/*Revisar cuales se van a usar*/}
-              <Route
-                path="/appointments/cancelar/:appointmentId"
-                element={<CancelAppointment />}
-              />
+
               <Route
                 path="/barbers/:codBarbero/appointments"
                 element={<ScheduleByBranch />}
@@ -164,8 +158,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* <Route path="/client" element={<HomePageClient />} /> */}{" "}
-              {/* no se usa */}
+
               <Route path="/client/profile" element={<ProfilePage />} />
               {/* Rutas de administración protegidas */}
               <Route //! ADMIN
