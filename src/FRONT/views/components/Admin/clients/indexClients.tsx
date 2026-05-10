@@ -36,12 +36,8 @@ interface ClienteProfile extends Cliente {
 }
 
 interface Turno {
-  codEstado?: string | null;
-}
-
-interface Estado {
-  codEstado: string;
-  nombreEstado: string;
+  // backend exposes the estado as a string on the turno
+  estado?: string | null;
 }
 
 interface Categoria {
@@ -58,15 +54,24 @@ const getDataArray = <T,>(value: unknown): T[] => {
   return [];
 };
 
-const isEstado = (value: unknown): value is Estado =>
-  isRecord(value) &&
-  typeof value.codEstado === "string" &&
-  typeof value.nombreEstado === "string";
-
 const isCategoria = (value: unknown): value is Categoria =>
   isRecord(value) &&
   typeof value.codCategoria === "string" &&
   typeof value.nombreCategoria === "string";
+
+const formatDateOnly = (d?: string | Date | null): string => {
+  if (!d) return "-";
+  if (typeof d === "string") {
+    // handle ISO or 'YYYY-MM-DD HH:MM:SS' formats
+    if (d.includes("T")) return d.split("T")[0];
+    return d.split(" ")[0];
+  }
+  try {
+    return new Date(d).toISOString().split("T")[0];
+  } catch {
+    return String(d);
+  }
+};
 
 const IndexClients = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -78,7 +83,6 @@ const IndexClients = () => {
   const [appointmentCounts, setAppointmentCounts] = useState<
     Record<string, { total: number; canceled: number }>
   >({});
-  const [statesCache, setStatesCache] = useState<Record<string, Estado>>({});
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [selectedCategoria, setSelectedCategoria] = useState<string>("all");
   const [visibleClients, setVisibleClients] = useState<Cliente[]>([]);
@@ -165,50 +169,8 @@ const IndexClients = () => {
 
         const json = await res.json();
         const turnos = getDataArray<Turno>(json);
-
-        // recopilar codEstado únicos
-        const estadosUnicos = Array.from(
-          new Set(
-            turnos
-              .map((t) => t.codEstado)
-              .filter((v): v is string => Boolean(v)),
-          ),
-        );
-
-        // obtener nombres de estado no cacheados (usar caché local para cómputo inmediato)
-        const toFetchStates = estadosUnicos.filter((e) => !statesCache[e]);
-        const localFetchedStates: Record<string, Estado> = {};
-        await Promise.all(
-          toFetchStates.map(async (cod) => {
-            try {
-              const r = await fetch(`/turnos/state/${cod}`);
-              if (!r.ok) return;
-              const sjson = await r.json();
-              const stateData =
-                isRecord(sjson) && "data" in sjson
-                  ? (sjson as { data?: unknown }).data
-                  : sjson;
-              if (isEstado(stateData)) {
-                localFetchedStates[cod] = stateData;
-              }
-            } catch (err) {
-              console.error("Error fetching state:", err);
-            }
-          }),
-        );
-
-        // usar la caché actual más cualquier estado recién traído para el cálculo
-        const mergedStates = { ...statesCache, ...localFetchedStates };
-
-        const canceled = turnos.filter((t) => {
-          const s = t.codEstado ? mergedStates[t.codEstado] : undefined;
-          return s ? s.nombreEstado === "Cancelado" : false;
-        }).length;
-
-        // actualizar la caché global con lo que se bajó ahora
-        if (Object.keys(localFetchedStates).length > 0) {
-          setStatesCache((prev) => ({ ...prev, ...localFetchedStates }));
-        }
+        const canceled = turnos.filter((t) => t.estado === "Cancelado").length;
+        return { codUsuario: c.codUsuario, total: turnos.length, canceled };
 
         return { codUsuario: c.codUsuario, total: turnos.length, canceled };
       } catch (error) {
@@ -372,13 +334,10 @@ const IndexClients = () => {
                         </p>
                         <p>
                           <strong>Fecha inicio categoría:</strong>{" "}
-                          {profilesCache[cliente.codUsuario].categoriaActual
-                            ?.fechaInicio
-                            ? String(
-                                profilesCache[cliente.codUsuario]
-                                  .categoriaActual?.fechaInicio,
-                              )
-                            : "-"}
+                          {formatDateOnly(
+                            profilesCache[cliente.codUsuario].categoriaActual
+                              ?.fechaInicio,
+                          )}
                         </p>
                       </div>
                     ) : (
@@ -468,13 +427,10 @@ const IndexClients = () => {
                                 </p>
                                 <p>
                                   <strong>Fecha inicio categoría:</strong>{" "}
-                                  {profilesCache[cliente.codUsuario]
-                                    .categoriaActual?.fechaInicio
-                                    ? String(
-                                        profilesCache[cliente.codUsuario]
-                                          .categoriaActual?.fechaInicio,
-                                      )
-                                    : "-"}
+                                  {formatDateOnly(
+                                    profilesCache[cliente.codUsuario]
+                                      .categoriaActual?.fechaInicio,
+                                  )}
                                 </p>
                               </div>
                             ) : (

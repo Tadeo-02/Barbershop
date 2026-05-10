@@ -69,11 +69,11 @@ const UpdateTypeOfHaircut: React.FC = () => {
           });
           toast.dismiss(toastId);
         } else if (response.status === 404) {
-          toast.error("Tipo de corte no encontrado", { id: toastId });
+          toast.error("Tipo de corte no encontrado", { id: toastId,  duration: 2000 });
           navigate("/Admin/HaircutTypesPage");
         } else {
           toast.error("Error al cargar los datos del tipo de corte", {
-            id: toastId,
+            id: toastId,  duration: 2000
           });
         }
       } catch (err: unknown) {
@@ -82,7 +82,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
           return;
         }
         console.error("Error fetching tipo de corte:", err);
-        toast.error("Error de conexión", { id: toastId });
+        toast.error("Error de conexión", { id: toastId, duration: 2000 });
       }
     };
 
@@ -114,7 +114,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
       if (res.ok) {
         toast.success("Tipo de corte actualizado", {
           id: toastId,
-          duration: 2000,
+          duration: 2000
         });
         navigate("/Admin/HaircutTypesPage");
       } else {
