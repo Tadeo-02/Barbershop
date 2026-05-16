@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/login/AuthContext.tsx";
 import styles from "./HomePageBarber.module.css";
 
-interface Appointment {
+interface AppointmentPartial {
   codTurno: string;
   fechaTurno: string;
   horaDesde: string;
@@ -43,7 +43,7 @@ const MONTH_LABELS = [
 const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated, userType, user } = useAuth();
-  const [nextTurno, setNextTurno] = useState<Appointment | null>(null);
+  const [nextTurno, setNextTurno] = useState<AppointmentPartial | null>(null);
   const [loadingNextTurno, setLoadingNextTurno] = useState(false);
   const [hasCheckedNextTurno, setHasCheckedNextTurno] = useState(false);
 
@@ -83,7 +83,7 @@ const Home = () => {
         return res.json();
       })
       .then((data) => {
-        let turnosArray: Appointment[] = [];
+        let turnosArray: AppointmentPartial[] = [];
 
         if (data && data.success && Array.isArray(data.data)) {
           turnosArray = data.data;
@@ -112,7 +112,7 @@ const Home = () => {
             };
           })
           .filter(
-            (item): item is { turno: Appointment; dateTime: Date } =>
+            (item): item is { turno: AppointmentPartial; dateTime: Date } =>
               !!item &&
               item.turno.estado === "Programado" &&
               item.dateTime >= now,

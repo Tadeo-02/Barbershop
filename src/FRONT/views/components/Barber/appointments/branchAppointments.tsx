@@ -6,34 +6,13 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import {
+  AppointmentFull,
+  formatDate,
+  formatTime,
+} from "../../shared/appointments";
 
 // (legacy per-item form state removed — CheckoutForm mantiene su propio estado)
-
-interface Appointment {
-  codTurno: string;
-  codBarbero: string;
-  codCorte?: string;
-  codCliente: string;
-  fechaTurno: string;
-  horaDesde: string;
-  horaHasta: string;
-  precioTurno?: number;
-  metodoPago?: string;
-  estado: string;
-  usuarios_turnos_codBarberoTousuarios?: {
-    codUsuario: string;
-    nombre: string;
-    apellido: string;
-    codSucursal: string;
-  };
-  usuarios_turnos_codClienteTousuarios?: {
-    codUsuario: string;
-    nombre: string;
-    apellido: string;
-    telefono: string;
-    email: string;
-  };
-}
 
 interface Cut {
   codCorte: string;
@@ -481,7 +460,7 @@ const CheckoutForm: React.FC<{
             </div>
           )}
         </div>
-            
+
         <button
           type="button"
           onClick={confirmAndSubmit}
@@ -499,7 +478,7 @@ const CheckoutForm: React.FC<{
 
 const BranchAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  const [turnos, setTurnos] = useState<Appointment[]>([]);
+  const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [allCortes, setAllCortes] = useState<Cut[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
@@ -519,20 +498,6 @@ const BranchAppointments: React.FC = () => {
     const handler = setTimeout(() => setDebouncedSearch(searchQuery), 300);
     return () => clearTimeout(handler);
   }, [searchQuery]);
-
-  // Función para formatear la fecha en formato legible (DD/MM/YYYY)
-  const formatDate = (dateString: string): string => {
-    const [year, month, day] = dateString.split("T")[0].split("-");
-    return `${day}/${month}/${year}`;
-  };
-
-  // Función para extraer solo la hora en formato HH:MM
-  const formatTime = (timeString: string): string => {
-    const date = new Date(timeString);
-    const hours = date.getUTCHours().toString().padStart(2, "0");
-    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
 
   // Función para verificar si el turno ya pasó (fecha + horaHasta < ahora)
   const hasTurnoPassed = (fechaTurno: string, horaHasta: string): boolean => {
@@ -586,7 +551,7 @@ const BranchAppointments: React.FC = () => {
 
       console.log("Turnos data:", data);
 
-      let turnosArray: Appointment[] = [];
+      let turnosArray: AppointmentFull[] = [];
 
       if (data) {
         if (data.success && Array.isArray(data.data)) {
