@@ -3,67 +3,19 @@ import { useAuth } from "../login/AuthContext";
 import barberStyles from "../Client/clientAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-
-interface Appointment {
-  codTurno: string;
-  codBarbero: string;
-  codCorte?: string;
-  codCliente: string;
-  fechaTurno: string;
-  horaDesde: string;
-  horaHasta: string;
-  precioTurno?: number;
-  metodoPago?: string;
-  estado: string;
-  usuarios_turnos_codBarberoTousuarios?: {
-    codUsuario: string;
-    nombre: string;
-    apellido: string;
-    telefono: string;
-    email: string;
-    codSucursal: string | null;
-    sucursales?: {
-      codSucursal: string;
-      nombre: string;
-      calle: string;
-      altura: number;
-    } | null;
-  };
-  usuarios_turnos_codClienteTousuarios?: {
-    codUsuario: string;
-    nombre: string;
-    apellido: string;
-    telefono: string;
-    email: string;
-  };
-  tipos_corte?: {
-    codCorte: string;
-    nombreCorte: string;
-    valorBase: number;
-  } | null;
-}
+import {
+  AppointmentFull,
+  formatDate,
+  formatTime,
+} from "../shared/appointments";
 
 const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  const [turnos, setTurnos] = useState<Appointment[]>([]);
+  const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [dateSort, setDateSort] = useState<string>("asc");
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
-
-  // Función para formatear la fecha en formato legible (DD/MM/YYYY)
-  const formatDate = (dateString: string): string => {
-    const [year, month, day] = dateString.split("T")[0].split("-");
-    return `${day}/${month}/${year}`;
-  };
-
-  // Función para extraer solo la hora en formato HH:MM
-  const formatTime = (timeString: string): string => {
-    const date = new Date(timeString);
-    const hours = date.getUTCHours().toString().padStart(2, "0");
-    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
 
   // Función para obtener la clase CSS según el estado del turno
   const getStatusClass = (estado: string): string => {
@@ -121,7 +73,7 @@ const ClientAppointments: React.FC = () => {
       .then((data) => {
         console.log("Turnos data:", data);
         // El backend devuelve { success: true, data: [...] }
-        let turnosArray: Appointment[] = [];
+        let turnosArray: AppointmentFull[] = [];
 
         if (data.success && Array.isArray(data.data)) {
           turnosArray = data.data;
@@ -252,103 +204,113 @@ const ClientAppointments: React.FC = () => {
           </li>
         ) : (
           [...turnos]
-            .filter((t) => statusFilter === "Todos" || t.estado === statusFilter)
+            .filter(
+              (t) => statusFilter === "Todos" || t.estado === statusFilter,
+            )
             .sort((a, b) => {
               const strA = `${a.fechaTurno.split("T")[0]}T${formatTime(a.horaDesde)}`;
               const strB = `${b.fechaTurno.split("T")[0]}T${formatTime(b.horaDesde)}`;
-              return dateSort === "desc" ? strB.localeCompare(strA) : strA.localeCompare(strB);
+              return dateSort === "desc"
+                ? strB.localeCompare(strA)
+                : strA.localeCompare(strB);
             })
             .map((t) => {
-            const barber = t.usuarios_turnos_codBarberoTousuarios;
-            const branch = barber?.sucursales;
-            const cut = t.tipos_corte;
+              const barber = t.usuarios_turnos_codBarberoTousuarios;
+              const branch = barber?.sucursales;
+              const cut = t.tipos_corte;
 
-            return (
-              <li key={t.codTurno} className={barberStyles.appointmentItem}>
-                <div className={barberStyles.appointmentDetails}>
-                  <div className={barberStyles.detailRow}>
-                    <span className={barberStyles.detailLabel}>Fecha:</span>
-                    <span className={barberStyles.detailValue}>
-                      {formatDate(t.fechaTurno)}
-                    </span>
-                  </div>
-                  <div className={barberStyles.detailRow}>
-                    <span className={barberStyles.detailLabel}>Horario:</span>
-                    <span className={barberStyles.detailValue}>
-                      {formatTime(t.horaDesde)} - {formatTime(t.horaHasta)}
-                    </span>
-                  </div>
-                  {barber && (
+              return (
+                <li key={t.codTurno} className={barberStyles.appointmentItem}>
+                  <div className={barberStyles.appointmentDetails}>
                     <div className={barberStyles.detailRow}>
-                      <span className={barberStyles.detailLabel}>Barbero:</span>
+                      <span className={barberStyles.detailLabel}>Fecha:</span>
                       <span className={barberStyles.detailValue}>
-                        {barber.nombre} {barber.apellido}
+                        {formatDate(t.fechaTurno)}
                       </span>
                     </div>
-                  )}
-                  {branch && (
                     <div className={barberStyles.detailRow}>
-                      <span className={barberStyles.detailLabel}>
-                        Sucursal:
-                      </span>
+                      <span className={barberStyles.detailLabel}>Horario:</span>
                       <span className={barberStyles.detailValue}>
-                        {branch.nombre}
+                        {formatTime(t.horaDesde)} - {formatTime(t.horaHasta)}
                       </span>
                     </div>
-                  )}
-                  {cut?.nombreCorte &&
-                    cut.nombreCorte !== "No especificado" && (
+                    {barber && (
                       <div className={barberStyles.detailRow}>
-                        <span className={barberStyles.detailLabel}>Corte:</span>
+                        <span className={barberStyles.detailLabel}>
+                          Barbero:
+                        </span>
                         <span className={barberStyles.detailValue}>
-                          {cut.nombreCorte}
+                          {barber.nombre} {barber.apellido}
                         </span>
                       </div>
                     )}
-                  {t.precioTurno && t.precioTurno > 0 && (
+                    {branch && (
+                      <div className={barberStyles.detailRow}>
+                        <span className={barberStyles.detailLabel}>
+                          Sucursal:
+                        </span>
+                        <span className={barberStyles.detailValue}>
+                          {branch.nombre}
+                        </span>
+                      </div>
+                    )}
+                    {cut?.nombreCorte &&
+                      cut.nombreCorte !== "No especificado" && (
+                        <div className={barberStyles.detailRow}>
+                          <span className={barberStyles.detailLabel}>
+                            Corte:
+                          </span>
+                          <span className={barberStyles.detailValue}>
+                            {cut.nombreCorte}
+                          </span>
+                        </div>
+                      )}
+                    {t.precioTurno && t.precioTurno > 0 && (
+                      <div className={barberStyles.detailRow}>
+                        <span className={barberStyles.detailLabel}>
+                          Precio:
+                        </span>
+                        <span className={barberStyles.detailValue}>
+                          ${t.precioTurno}
+                        </span>
+                      </div>
+                    )}
                     <div className={barberStyles.detailRow}>
-                      <span className={barberStyles.detailLabel}>Precio:</span>
-                      <span className={barberStyles.detailValue}>
-                        ${t.precioTurno}
+                      <span className={barberStyles.detailLabel}>Estado:</span>
+                      <span
+                        className={`${barberStyles.detailValue} ${
+                          barberStyles.statusBadge
+                        } ${getStatusClass(t.estado)}`}
+                      >
+                        {t.estado}
                       </span>
                     </div>
+                  </div>
+                  {t.estado === "Programado" && (
+                    <div className={barberStyles.appointmentActions}>
+                      <button
+                        className={barberStyles.deleteButton}
+                        onClick={() => handleDelete(t.codTurno)}
+                      >
+                        Cancelar Turno
+                      </button>
+                    </div>
                   )}
-                  <div className={barberStyles.detailRow}>
-                    <span className={barberStyles.detailLabel}>Estado:</span>
-                    <span
-                      className={`${barberStyles.detailValue} ${
-                        barberStyles.statusBadge
-                      } ${getStatusClass(t.estado)}`}
-                    >
-                      {t.estado}
-                    </span>
-                  </div>
-                </div>
-                {t.estado === "Programado" && (
-                  <div className={barberStyles.appointmentActions}>
-                    <button
-                      className={barberStyles.deleteButton}
-                      onClick={() => handleDelete(t.codTurno)}
-                    >
-                      Cancelar Turno
-                    </button>
-                  </div>
-                )}
-                {t.estado === "Cobrado" && (
-                  <div className={barberStyles.appointmentActions}>
-                    <button
-                      className={barberStyles.invoiceButton}
-                      onClick={() =>
-                        navigate(`/client/appointments/recibo/${t.codTurno}`)
-                      }
-                    >
-                      Ver Factura
-                    </button>
-                  </div>
-                )}
-              </li>
-            );
-          })
+                  {t.estado === "Cobrado" && (
+                    <div className={barberStyles.appointmentActions}>
+                      <button
+                        className={barberStyles.invoiceButton}
+                        onClick={() =>
+                          navigate(`/client/appointments/recibo/${t.codTurno}`)
+                        }
+                      >
+                        Ver Factura
+                      </button>
+                    </div>
+                  )}
+                </li>
+              );
+            })
         )}
       </ul>
     </div>

@@ -5,6 +5,13 @@ import { useAuth } from "../../login/AuthContext";
 import listStyles from "./barberAppointments.module.css";
 import AvailabilityForm from "./AvailabilityForm";
 import type { AvailabilityFormValues } from "./AvailabilityForm";
+import {
+  formatDate,
+  formatTime,
+  getDateParts,
+  isAvailabilityEnded,
+  normalizeDateInput,
+} from "../../shared/availabilityDateUtils";
 
 interface Availability {
   codBloqueo: string;
@@ -17,39 +24,6 @@ interface Availability {
 const isAbortError = (error: unknown): boolean =>
   (error instanceof DOMException && error.name === "AbortError") ||
   (error instanceof Error && error.name === "AbortError");
-
-const normalizeDateInput = (value: string | Date): Date => {
-  if (value instanceof Date) return value;
-
-  const trimmed = value.trim();
-  if (trimmed.includes("T")) return new Date(trimmed);
-  if (trimmed.includes(" ")) {
-    return new Date(`${trimmed.replace(" ", "T")}Z`);
-  }
-
-  return new Date(trimmed);
-};
-
-const getDateParts = (value: string | Date) => {
-  const date = normalizeDateInput(value);
-  const [datePart, timePart] = date.toISOString().split("T");
-  const time = timePart.slice(0, 5);
-  return { date: datePart, time };
-};
-
-const formatDate = (value: string | Date): string => {
-  const { date } = getDateParts(value);
-  const [year, month, day] = date.split("-");
-  return `${day}/${month}/${year}`;
-};
-
-const formatTime = (value: string | Date): string => {
-  const { time } = getDateParts(value);
-  return time;
-};
-
-const isAvailabilityEnded = (item: Availability) =>
-  normalizeDateInput(item.fechaHoraHasta).getTime() < Date.now();
 
 interface MyAvailabilityProps {
   refreshKey?: number;
