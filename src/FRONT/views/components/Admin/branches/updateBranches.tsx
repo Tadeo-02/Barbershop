@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast";
@@ -9,15 +9,15 @@ import {
   BranchSchema,
   BranchWithIdSchema,
 } from "../../../../../BACK/Schemas/branchesSchema";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const UpdateBranchSchema = BranchSchema.extend({});
 type UpdateBranchForm = z.infer<typeof UpdateBranchSchema>;
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
 
 const getResponseMessage = (data: unknown): string | undefined => {
   if (!data || typeof data !== "object" || !("message" in data))
@@ -32,7 +32,9 @@ const UpdateBranches: React.FC = () => {
   const { codSucursal } = useParams<{ codSucursal: string }>();
   const navigate = useNavigate();
   const [sucursal, setSucursal] = useState<Sucursal | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const { renew: renewFetchAbort, abort: abortFetchAbort } =
+    useAbortController();
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const {
     register,
@@ -45,12 +47,12 @@ const UpdateBranches: React.FC = () => {
   });
 
   useEffect(() => {
-    const ctrl = new AbortController();
+    const controller = renewFetchAbort();
     const fetchSucursal = async () => {
       const toastId = toast.loading("Cargando datos de la sucursal...");
       try {
         const response = await fetch(`/sucursales/${codSucursal}`, {
-          signal: ctrl.signal,
+          signal: controller.signal,
         });
 
         if (response.ok) {
@@ -82,12 +84,11 @@ const UpdateBranches: React.FC = () => {
     };
 
     fetchSucursal();
-    return () => ctrl.abort();
-  }, [codSucursal, navigate, reset]);
+    return abortFetchAbort;
+  }, [codSucursal, navigate, reset, renewFetchAbort, abortFetchAbort]);
 
   const onSubmit = async (formValues: UpdateBranchForm) => {
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    abortControllerRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Actualizando sucursal...");
 
@@ -101,7 +102,7 @@ const UpdateBranches: React.FC = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-          signal: abortControllerRef.current.signal,
+          signal: controller.signal,
         },
       );
 
@@ -127,21 +128,8 @@ const UpdateBranches: React.FC = () => {
       }
       console.error("🔍 Debug - Submit error:", error);
       toast.error("Error de conexión", { id: toastId });
-    } finally {
-      // clear the controller reference so future requests start fresh
-      abortControllerRef.current = null;
     }
   };
-
-  // cleanup on unmount: abort any inflight submit
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-        abortControllerRef.current = null;
-      }
-    };
-  }, []);
 
   if (!sucursal) {
     return <div className={styles.loadingState}>Cargando sucursal...</div>;

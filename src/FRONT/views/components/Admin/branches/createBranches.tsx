@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
@@ -7,14 +7,14 @@ import { z } from "zod";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast"; //importamos libreria de alertas
 import { BranchSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 const CreateBranchSchema = BranchSchema.extend({});
 
 type CreateBranchFormData = z.infer<typeof CreateBranchSchema>;
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
 
 const getResponseMessage = (data: unknown): string | undefined => {
   if (!data || typeof data !== "object" || !("message" in data))
@@ -30,7 +30,7 @@ const CreateBranches: React.FC = () => {
   {
     /*agregar atributos linkMap e img?*/
   }
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const {
     register,
@@ -44,12 +44,7 @@ const CreateBranches: React.FC = () => {
 
   const onSubmit: SubmitHandler<CreateBranchFormData> = async (data) => {
     // Cancelar request anterior si existe
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Crear nuevo AbortController
-    abortControllerRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Creando Sucursal...");
 
@@ -60,7 +55,7 @@ const CreateBranches: React.FC = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-        signal: abortControllerRef.current!.signal,
+        signal: controller.signal,
       });
 
       // Intentar parsear JSON; si falla, crear mensaje fallback
@@ -104,21 +99,8 @@ const CreateBranches: React.FC = () => {
       // ERROR DE RED u otro
       console.error("Error en handleSubmit:", error);
       toast.error("No se pudo conectar con el servidor", { id: toastId });
-    } finally {
-      // clear the controller reference so future requests start fresh
-      abortControllerRef.current = null;
     }
   };
-
-  // cleanup on unmount: abort any inflight request
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-        abortControllerRef.current = null;
-      }
-    };
-  }, []);
 
   return (
     <div className={styles.formContainer}>
