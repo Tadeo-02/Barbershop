@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../login/AuthContext";
 import styles from "./home.module.css";
 
-interface Appointment {
+interface AppointmentSummary {
   codTurno: string;
   fechaTurno: string;
   horaDesde: string;
@@ -56,7 +56,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [nextTurno, setNextTurno] = useState<Appointment | null>(null);
+  const [nextTurno, setNextTurno] = useState<AppointmentSummary | null>(null);
   const [loadingNextTurno, setLoadingNextTurno] = useState(false);
   const [hasCheckedNextTurno, setHasCheckedNextTurno] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
@@ -207,7 +207,7 @@ const Home = () => {
         return res.json();
       })
       .then((data) => {
-        let turnosArray: Appointment[] = [];
+        let turnosArray: AppointmentSummary[] = [];
         if (data && data.success && Array.isArray(data.data)) {
           turnosArray = data.data;
         } else if (Array.isArray(data)) {
@@ -224,7 +224,7 @@ const Home = () => {
             return dateTime ? { turno, dateTime } : null;
           })
           .filter(
-            (item): item is { turno: Appointment; dateTime: Date } =>
+            (item): item is { turno: AppointmentSummary; dateTime: Date } =>
               !!item &&
               item.turno.estado === "Programado" &&
               item.dateTime >= now,
