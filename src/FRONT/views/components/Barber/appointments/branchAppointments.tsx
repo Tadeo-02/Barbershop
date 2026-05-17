@@ -11,6 +11,10 @@ import {
   formatDate,
   formatTime,
 } from "../../shared/appointments";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 // (legacy per-item form state removed — CheckoutForm mantiene su propio estado)
 
@@ -19,10 +23,6 @@ interface Cut {
   nombreCorte: string;
   valorBase: number;
 }
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
 
 // --- CheckoutForm component: encapsula formulario de cobro con react-hook-form + zod ---
 const CheckoutForm: React.FC<{
@@ -41,6 +41,7 @@ const CheckoutForm: React.FC<{
   } | null>(null);
   const [loadingCategoria, setLoadingCategoria] = useState(true);
   const loadedClientRef = useRef<string | null>(null);
+  const { renew: renewCheckoutAbort } = useAbortController();
 
   // Cargar categoría del cliente (solo una vez por cliente)
   useEffect(() => {
@@ -108,17 +109,12 @@ const CheckoutForm: React.FC<{
       },
     });
 
-  const submitControllerRef = useRef<AbortController | null>(null);
-
   const doSubmit = async (values: CheckoutValues) => {
     if (formState.isSubmitting) return;
 
     const toastId = toast.loading("Finalizando turno...");
 
-    // Abort previous
-    submitControllerRef.current?.abort();
-    const controller = new AbortController();
-    submitControllerRef.current = controller;
+    const controller = renewCheckoutAbort();
 
     try {
       // Enviar el precio base - el backend aplicará el descuento
@@ -255,8 +251,6 @@ const CheckoutForm: React.FC<{
           duration: 2000,
         });
       }
-    } finally {
-      submitControllerRef.current = null;
     }
   };
 
@@ -484,8 +478,11 @@ const BranchAppointments: React.FC = () => {
   const [loadingData, setLoadingData] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const fetchControllerRef = useRef<AbortController | null>(null);
-  const submitControllerRef = useRef<AbortController | null>(null);
+  const { renew: renewTurnosAbort, abort: abortTurnosAbort } =
+    useAbortController();
+  const { renew: renewSubmitAbort } = useAbortController();
+  const { renew: renewCortesAbort, abort: abortCortesAbort } =
+    useAbortController();
 
   const navigate = useNavigate();
   // Client-side search state (search by barber or client name)
@@ -531,9 +528,7 @@ const BranchAppointments: React.FC = () => {
 
   const loadTurnos = async () => {
     if (!user) return;
-    fetchControllerRef.current?.abort();
-    const controller = new AbortController();
-    fetchControllerRef.current = controller;
+    const controller = renewTurnosAbort();
     setLoading(true);
 
     try {
@@ -573,7 +568,6 @@ const BranchAppointments: React.FC = () => {
     } finally {
       setLoading(false);
       setLoadingData(false);
-      fetchControllerRef.current = null;
     }
   };
 
@@ -581,14 +575,12 @@ const BranchAppointments: React.FC = () => {
     if (!authChecked || !isAuthenticated || !user) return;
     void loadTurnos();
 
-    return () => {
-      fetchControllerRef.current?.abort();
-    };
-  }, [authChecked, isAuthenticated, user, navigate]);
+    return abortTurnosAbort;
+  }, [authChecked, isAuthenticated, user, navigate, abortTurnosAbort]);
 
   // Cargar todos los tipos de corte disponibles
   useEffect(() => {
-    const controller = new AbortController();
+    const controller = renewCortesAbort();
     const loadCortes = async () => {
       try {
         const res = await fetch("/tipoCortes", { signal: controller.signal });
@@ -616,8 +608,8 @@ const BranchAppointments: React.FC = () => {
 
     void loadCortes();
 
-    return () => controller.abort();
-  }, []);
+    return abortCortesAbort;
+  }, [renewCortesAbort, abortCortesAbort]);
 
   // Client-side filtered results based on debounced search (barber or client name) and date
   const filteredTurnos = turnos.filter((turno) => {
@@ -774,9 +766,7 @@ const BranchAppointments: React.FC = () => {
     setIsSubmitting(true);
     const toastId = toast.loading("Marcando como No asistido...");
 
-    submitControllerRef.current?.abort();
-    const controller = new AbortController();
-    submitControllerRef.current = controller;
+    const controller = renewSubmitAbort();
 
     try {
       const response = await fetch(`/turnos/${codTurno}/no-show`, {
@@ -819,7 +809,6 @@ const BranchAppointments: React.FC = () => {
       }
     } finally {
       setIsSubmitting(false);
-      submitControllerRef.current = null;
     }
   };
 
