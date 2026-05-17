@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast"; // importar librería de alerts
@@ -6,6 +6,10 @@ import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 const CreateCategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),
@@ -65,13 +69,9 @@ const createCategoryResolver: Resolver<CreateCategoryForm> = async (
   return result;
 };
 
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
-
 const CreateCategories: React.FC = () => {
   const navigate = useNavigate();
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const {
     register,
@@ -88,8 +88,7 @@ const CreateCategories: React.FC = () => {
   });
 
   const onSubmit = async (values: CreateCategoryForm) => {
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    abortControllerRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Creando Categoría...");
     try {
@@ -97,7 +96,7 @@ const CreateCategories: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
-        signal: abortControllerRef.current.signal,
+        signal: controller.signal,
       });
 
       if (res.ok) {
