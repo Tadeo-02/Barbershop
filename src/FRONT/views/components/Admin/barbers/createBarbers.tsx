@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
@@ -7,6 +7,10 @@ import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -22,14 +26,11 @@ const CreateBarberSchema = UserBaseSchemaExport.extend({
 
 type CreateBarberForm = z.infer<typeof CreateBarberSchema>;
 
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
-
 const CreateBarbers: React.FC = () => {
   const navigate = useNavigate();
-
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const { renew: renewSucursalesAbort, abort: abortSucursalesAbort } =
+    useAbortController();
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const {
     register,
@@ -45,10 +46,12 @@ const CreateBarbers: React.FC = () => {
 
   // Cargar sucursales al montar el componente
   useEffect(() => {
-    const ctrl = new AbortController();
+    const controller = renewSucursalesAbort();
     const fetchSucursales = async () => {
       try {
-        const response = await fetch("/sucursales", { signal: ctrl.signal });
+        const response = await fetch("/sucursales", {
+          signal: controller.signal,
+        });
         if (response.ok) {
           const data = await response.json();
           setSucursales(data);
@@ -63,13 +66,12 @@ const CreateBarbers: React.FC = () => {
     };
 
     fetchSucursales();
-    return () => ctrl.abort();
-  }, []);
+    return abortSucursalesAbort;
+  }, [renewSucursalesAbort, abortSucursalesAbort]);
 
   const onSubmit = async (data: CreateBarberForm) => {
     // Cancelar request anterior si existe
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    abortControllerRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Creando Barbero...");
 
@@ -82,7 +84,7 @@ const CreateBarbers: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosParaBackend),
-        signal: abortControllerRef.current.signal,
+        signal: controller.signal,
       });
 
       const responseData = await response.json();

@@ -1,5 +1,5 @@
 //! TERMINAR
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +13,10 @@ import {
   PASSWORD_PATTERN,
 } from "../../lib/passwordConstants.ts";
 import { getPasswordMissing } from "../../lib/passwordRules";
+import {
+  isAbortError,
+  useAbortController,
+} from "../shared/useAbortController";
 
 //! Mejoras FrontEnd
 /*
@@ -51,8 +55,8 @@ type CreateUserFormData = z.infer<typeof CreateUserSchema>;
 //! isSubmitting es una estado de validación de formularios de la libreria react-hook-form para evitar multiples peticiones
 const CreateUser: React.FC = () => {
   const navigate = useNavigate();
-  // AbortController ref para cancelar requests pendientes
-  const abortControllerRef = useRef<AbortController | null>(null);
+  // AbortController para cancelar requests pendientes
+  const { renew: renewSubmitAbort } = useAbortController();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -71,13 +75,7 @@ const CreateUser: React.FC = () => {
   const passwordMissing = getPasswordMissing(passwordValue);
 
   const onSubmit = async (data: CreateUserFormData) => {
-    // Cancelar request anterior si existe
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Crear nuevo AbortController
-    abortControllerRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     // 1. Inicias el Toast
     const toastId = toast.loading("Creando Usuario...");
@@ -93,7 +91,7 @@ const CreateUser: React.FC = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(datosParaBackend),
-        signal: abortControllerRef.current.signal,
+        signal: controller.signal,
       });
 
       // 3. Parseo directo a JSON (más limpio que text + parse)
@@ -120,7 +118,7 @@ const CreateUser: React.FC = () => {
       }
     } catch (error) {
       // Ignorar errores de abort (son intencionales)
-      if (error instanceof Error && error.name === "AbortError") {
+      if (isAbortError(error)) {
         toast.dismiss(toastId);
         console.log("Request cancelado");
         return;

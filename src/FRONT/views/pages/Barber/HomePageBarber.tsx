@@ -3,6 +3,10 @@ import { FaCut, FaRegClock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/login/AuthContext.tsx";
 import styles from "./HomePageBarber.module.css";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../components/shared/useAbortController";
 
 interface AppointmentPartial {
   codTurno: string;
@@ -46,6 +50,8 @@ const Home = () => {
   const [nextTurno, setNextTurno] = useState<AppointmentPartial | null>(null);
   const [loadingNextTurno, setLoadingNextTurno] = useState(false);
   const [hasCheckedNextTurno, setHasCheckedNextTurno] = useState(false);
+  const { renew: renewNextTurnoAbort, abort: abortNextTurnoAbort } =
+    useAbortController();
 
   const greetingName = user?.nombre?.trim();
   const greeting = greetingName ? `Hola, ${greetingName}!` : "Hola!";
@@ -71,7 +77,7 @@ const Home = () => {
       return;
     }
 
-    const controller = new AbortController();
+    const controller = renewNextTurnoAbort();
     setHasCheckedNextTurno(false);
     setLoadingNextTurno(true);
 
@@ -122,7 +128,7 @@ const Home = () => {
         setNextTurno(upcoming[0]?.turno ?? null);
       })
       .catch((error) => {
-        if (error?.name === "AbortError") return;
+        if (isAbortError(error)) return;
         console.error("Error fetching next appointment:", error);
         setNextTurno(null);
       })
@@ -131,8 +137,8 @@ const Home = () => {
         setHasCheckedNextTurno(true);
       });
 
-    return () => controller.abort();
-  }, [user?.codUsuario]);
+    return abortNextTurnoAbort;
+  }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
 
   const formatTime = (timeString: string): string => {
     const date = new Date(timeString);

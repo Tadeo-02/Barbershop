@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
 import { useForm, type Resolver } from "react-hook-form";
@@ -6,12 +6,12 @@ import { z } from "zod";
 import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
 
 const getResponseMessage = (data: unknown): string | undefined => {
   if (!data || typeof data !== "object" || !("message" in data))
@@ -24,7 +24,7 @@ const getResponseMessage = (data: unknown): string | undefined => {
 
 const CreateTypeOfHaircut: React.FC = () => {
   const navigate = useNavigate();
-  const abortRef = useRef<AbortController | null>(null);
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const {
     register,
@@ -42,8 +42,7 @@ const CreateTypeOfHaircut: React.FC = () => {
   });
 
   const onSubmit = async (values: CreateTypeForm) => {
-    if (abortRef.current) abortRef.current.abort();
-    abortRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Creando Tipo de Corte...");
     try {
@@ -51,7 +50,7 @@ const CreateTypeOfHaircut: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
-        signal: abortRef.current.signal,
+        signal: controller.signal,
       });
 
       // parse JSON safely (some responses may not include a JSON body)
@@ -78,21 +77,8 @@ const CreateTypeOfHaircut: React.FC = () => {
       }
       console.error("Error en handleSubmit:", err);
       toast.error("Error de conexión con el servidor", { id: toastId });
-    } finally {
-      // clear the controller reference so future requests start fresh
-      abortRef.current = null;
     }
   };
-
-  // cleanup on unmount: abort any inflight request
-  useEffect(() => {
-    return () => {
-      if (abortRef.current) {
-        abortRef.current.abort();
-        abortRef.current = null;
-      }
-    };
-  }, []);
 
   return (
     <div className={styles.formContainer}>
