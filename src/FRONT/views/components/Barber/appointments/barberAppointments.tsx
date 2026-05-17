@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../login/AuthContext";
 import barberStyles from "./barberAppointments.module.css";
 import toast from "react-hot-toast";
@@ -12,10 +12,10 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -25,8 +25,9 @@ const BarberAppointments: React.FC = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoadingTurnos, setIsLoadingTurnos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const fetchControllerRef = useRef<AbortController | null>(null);
-  const submitControllerRef = useRef<AbortController | null>(null);
+  const { renew: renewFetchAbort, abort: abortFetchAbort } =
+    useAbortController();
+  const { renew: renewSubmitAbort } = useAbortController();
 
   // Zod schema for update payload (basic, mirrors backend expectations)
   const UpdateAppointmentSchema = z.object({
@@ -102,9 +103,7 @@ const BarberAppointments: React.FC = () => {
     }
 
     const loadTurnos = async () => {
-      fetchControllerRef.current?.abort();
-      const controller = new AbortController();
-      fetchControllerRef.current = controller;
+      const controller = renewFetchAbort();
       setIsLoadingTurnos(true);
 
       try {
@@ -144,12 +143,12 @@ const BarberAppointments: React.FC = () => {
         setTurnos([]);
       } finally {
         setIsLoadingTurnos(false);
-        fetchControllerRef.current = null;
       }
     };
 
     void loadTurnos();
-  }, [authChecked, isAuthenticated, user, navigate]);
+    return abortFetchAbort;
+  }, [authChecked, isAuthenticated, user, navigate, renewFetchAbort, abortFetchAbort]);
 
   const handleDelete = async (codTurno: string) => {
     //alert personalizado para confirmacion:
@@ -194,9 +193,7 @@ const BarberAppointments: React.FC = () => {
     const toastId = toast.loading("Cancelando turno...");
 
     // Abort any previous submit
-    submitControllerRef.current?.abort();
-    const controller = new AbortController();
-    submitControllerRef.current = controller;
+    const controller = renewSubmitAbort();
 
     try {
       const response = await fetch(`/turnos/${codTurno}/cancel`, {
@@ -241,7 +238,6 @@ const BarberAppointments: React.FC = () => {
       }
     } finally {
       setIsSubmitting(false);
-      submitControllerRef.current = null;
     }
   };
 
@@ -279,9 +275,7 @@ const BarberAppointments: React.FC = () => {
       .padStart(2, "0")}`;
 
     // Abort any previous submit
-    submitControllerRef.current?.abort();
-    const controller = new AbortController();
-    submitControllerRef.current = controller;
+    const controller = renewSubmitAbort();
 
     try {
       const response = await fetch(`/turnos/${turnoToUpdate.codTurno}/update`, {
@@ -336,8 +330,6 @@ const BarberAppointments: React.FC = () => {
 
       console.error("Error modificando turno:", error);
       toast.error("Error de conexión con el servidor", { id: toastId });
-    } finally {
-      submitControllerRef.current = null;
     }
   };
 
