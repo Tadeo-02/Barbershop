@@ -4,6 +4,10 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../login/AuthContext";
 import styles from "./home.module.css";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 interface AppointmentSummary {
   codTurno: string;
@@ -55,6 +59,10 @@ const MONTH_LABELS = [
 const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { renew: renewNextTurnoAbort, abort: abortNextTurnoAbort } =
+    useAbortController();
+  const { renew: renewLoyaltyAbort, abort: abortLoyaltyAbort } =
+    useAbortController();
 
   const [nextTurno, setNextTurno] = useState<AppointmentSummary | null>(null);
   const [loadingNextTurno, setLoadingNextTurno] = useState(false);
@@ -195,7 +203,7 @@ const Home = () => {
       return;
     }
 
-    const controller = new AbortController();
+    const controller = renewNextTurnoAbort();
     setHasCheckedNextTurno(false);
     setLoadingNextTurno(true);
 
@@ -234,7 +242,7 @@ const Home = () => {
         setNextTurno(upcoming[0]?.turno ?? null);
       })
       .catch((error) => {
-        if (error?.name === "AbortError") return;
+        if (isAbortError(error)) return;
         console.error("Error fetching next appointment:", error);
         setNextTurno(null);
       })
@@ -243,13 +251,13 @@ const Home = () => {
         setHasCheckedNextTurno(true);
       });
 
-    return () => controller.abort();
-  }, [user?.codUsuario]);
+    return abortNextTurnoAbort;
+  }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
 
   useEffect(() => {
     if (!user?.codUsuario) return;
 
-    const controller = new AbortController();
+    const controller = renewLoyaltyAbort();
     setLoadingLoyalty(true);
 
     fetch(`/usuarios/profiles/${user.codUsuario}`, {
@@ -266,7 +274,7 @@ const Home = () => {
         setLoyaltyProgress(profile?.loyaltyProgress ?? null);
       })
       .catch((error) => {
-        if (error?.name === "AbortError") return;
+        if (isAbortError(error)) return;
         console.error("Error fetching loyalty progress:", error);
         setLoyaltyProgress(null);
       })
@@ -274,8 +282,8 @@ const Home = () => {
         setLoadingLoyalty(false);
       });
 
-    return () => controller.abort();
-  }, [user?.codUsuario]);
+    return abortLoyaltyAbort;
+  }, [user?.codUsuario, renewLoyaltyAbort, abortLoyaltyAbort]);
 
   const barber = nextTurno?.usuarios_turnos_codBarberoTousuarios;
   const branch = barber?.sucursales;
