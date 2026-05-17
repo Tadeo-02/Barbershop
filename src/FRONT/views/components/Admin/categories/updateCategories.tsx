@@ -1,10 +1,14 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 const CategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),
@@ -15,14 +19,12 @@ const CategorySchema = z.object({
 
 type CategoryForm = z.infer<typeof CategorySchema>;
 
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
-
 const UpdateCategories: React.FC = () => {
   const { codCategoria } = useParams<{ codCategoria: string }>();
   const navigate = useNavigate();
-  const abortRef = useRef<AbortController | null>(null);
+  const { renew: renewFetchAbort, abort: abortFetchAbort } =
+    useAbortController();
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const {
     register,
@@ -35,13 +37,13 @@ const UpdateCategories: React.FC = () => {
   });
 
   useEffect(() => {
-    const ctrl = new AbortController();
+    const controller = renewFetchAbort();
     const toastId = toast.loading("Cargando datos de la categoría...");
 
     const fetchCategoria = async () => {
       try {
         const response = await fetch(`/categorias/${codCategoria}`, {
-          signal: ctrl.signal,
+          signal: controller.signal,
         });
 
         if (response.ok) {
@@ -73,12 +75,11 @@ const UpdateCategories: React.FC = () => {
     };
 
     fetchCategoria();
-    return () => ctrl.abort();
-  }, [codCategoria, navigate, reset]);
+    return abortFetchAbort;
+  }, [codCategoria, navigate, reset, renewFetchAbort, abortFetchAbort]);
 
   const onSubmit = async (values: CategoryForm) => {
-    if (abortRef.current) abortRef.current.abort();
-    abortRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Actualizando categoría...");
     try {
@@ -87,7 +88,7 @@ const UpdateCategories: React.FC = () => {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
-        signal: abortRef.current.signal,
+        signal: controller.signal,
       });
 
       await res.json();

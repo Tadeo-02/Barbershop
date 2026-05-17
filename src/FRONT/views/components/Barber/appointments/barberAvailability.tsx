@@ -1,25 +1,19 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../login/AuthContext";
 import toast from "react-hot-toast";
 import styles from "./barberAvailability.module.css";
 import AvailabilityForm from "./AvailabilityForm";
 import type { AvailabilityFormValues } from "./AvailabilityForm";
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 const BarberAvailability: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resetKey, setResetKey] = useState(0);
-  const abortRef = useRef<AbortController | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (abortRef.current) abortRef.current.abort();
-    };
-  }, []);
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const handleCreateSubmit = async (values: AvailabilityFormValues) => {
     if (!isAuthenticated || !user || !user.codUsuario) {
@@ -35,8 +29,7 @@ const BarberAvailability: React.FC = () => {
       motivo: values.motivo,
     };
 
-    if (abortRef.current) abortRef.current.abort();
-    abortRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Registrando ausencia...");
     setIsSubmitting(true);
@@ -46,7 +39,7 @@ const BarberAvailability: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        signal: abortRef.current.signal,
+        signal: controller.signal,
       });
 
       const contentType = res.headers.get("content-type") || "";
@@ -77,7 +70,6 @@ const BarberAvailability: React.FC = () => {
       toast.error("Error de conexion", { id: toastId });
     } finally {
       setIsSubmitting(false);
-      abortRef.current = null;
     }
   };
 

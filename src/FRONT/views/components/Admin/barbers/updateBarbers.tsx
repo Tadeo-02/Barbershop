@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
@@ -10,6 +10,10 @@ import {
   UserBaseSchemaExport,
   UserSchema,
 } from "../../../../../BACK/Schemas/usersSchema";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 
@@ -34,10 +38,6 @@ const UpdateBarberSchema = UserBaseSchemaExport.extend({
 
 type UpdateBarberForm = z.infer<typeof UpdateBarberSchema>;
 
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
-
 const UpdateBarber: React.FC = () => {
   const { codUsuario } = useParams<{ codUsuario: string }>();
   const navigate = useNavigate();
@@ -45,8 +45,11 @@ const UpdateBarber: React.FC = () => {
   const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
     Sucursal[]
   >([]);
-
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const { renew: renewSucursalesAbort, abort: abortSucursalesAbort } =
+    useAbortController();
+  const { renew: renewBarberoAbort, abort: abortBarberoAbort } =
+    useAbortController();
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const {
     register,
@@ -59,11 +62,13 @@ const UpdateBarber: React.FC = () => {
   });
 
   useEffect(() => {
-    const ctrl = new AbortController();
+    const controller = renewSucursalesAbort();
     // Cargar sucursales disponibles
     const fetchSucursales = async () => {
       try {
-        const response = await fetch("/sucursales", { signal: ctrl.signal });
+        const response = await fetch("/sucursales", {
+          signal: controller.signal,
+        });
         if (response.ok) {
           const data = await response.json();
           setSucursalesDisponibles(data);
@@ -75,18 +80,17 @@ const UpdateBarber: React.FC = () => {
     };
 
     fetchSucursales();
-    return () => ctrl.abort();
-  }, []);
+    return abortSucursalesAbort;
+  }, [renewSucursalesAbort, abortSucursalesAbort]);
 
   useEffect(() => {
-    const ctrl = new AbortController();
+    const controller = renewBarberoAbort();
     const fetchBarbero = async () => {
       const toastId = toast.loading("Cargando datos del barbero...");
       try {
         const response = await fetch(`/usuarios/${codUsuario}`, {
-          signal: ctrl.signal,
+          signal: controller.signal,
         });
-
         if (response.ok) {
           const data = await response.json();
           console.log("🔍 Debug - Data received from API:", data);
@@ -126,12 +130,11 @@ const UpdateBarber: React.FC = () => {
     };
 
     fetchBarbero();
-    return () => ctrl.abort();
-  }, [codUsuario, navigate, reset]);
+    return abortBarberoAbort;
+  }, [codUsuario, navigate, reset, renewBarberoAbort, abortBarberoAbort]);
 
   const onSubmit = async (formValues: UpdateBarberForm) => {
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    abortControllerRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     // Check if branch is being changed
     const branchChanged = formValues.codSucursal !== barbero?.codSucursal;
@@ -177,7 +180,7 @@ const UpdateBarber: React.FC = () => {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosParaBackend),
-        signal: abortControllerRef.current.signal,
+        signal: controller.signal,
       });
 
       const responseData = await response.json();

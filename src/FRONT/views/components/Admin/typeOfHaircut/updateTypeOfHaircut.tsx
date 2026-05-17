@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
@@ -6,6 +6,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 interface TipoCorte {
   codCorte: string;
@@ -14,10 +18,6 @@ interface TipoCorte {
 }
 
 type TypeForm = z.infer<typeof HaircutSchema>;
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
 
 const getResponseMessage = (data: unknown): string | undefined => {
   if (!data || typeof data !== "object" || !("message" in data))
@@ -32,7 +32,9 @@ const UpdateTypeOfHaircut: React.FC = () => {
   const { codCorte } = useParams<{ codCorte: string }>();
   const navigate = useNavigate();
   const [corte, setCorte] = useState<TipoCorte | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
+  const { renew: renewFetchAbort, abort: abortFetchAbort } =
+    useAbortController();
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const {
     register,
@@ -46,13 +48,13 @@ const UpdateTypeOfHaircut: React.FC = () => {
   });
 
   useEffect(() => {
-    const ctrl = new AbortController();
+    const controller = renewFetchAbort();
     const toastId = toast.loading("Cargando datos del tipo de corte...");
 
     const fetchCorte = async () => {
       try {
         const response = await fetch(`/tipoCortes/${codCorte}`, {
-          signal: ctrl.signal,
+          signal: controller.signal,
         });
         if (response.ok) {
           const raw = await response.json();
@@ -87,12 +89,11 @@ const UpdateTypeOfHaircut: React.FC = () => {
     };
 
     fetchCorte();
-    return () => ctrl.abort();
-  }, [codCorte, navigate, reset]);
+    return abortFetchAbort;
+  }, [codCorte, navigate, reset, renewFetchAbort, abortFetchAbort]);
 
   const onSubmit = async (values: TypeForm) => {
-    if (abortRef.current) abortRef.current.abort();
-    abortRef.current = new AbortController();
+    const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Actualizando tipo de corte...");
     try {
@@ -101,7 +102,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
-        signal: abortRef.current.signal,
+        signal: controller.signal,
       });
 
       let data: unknown = null;
@@ -129,21 +130,8 @@ const UpdateTypeOfHaircut: React.FC = () => {
       }
       console.error("Error modificando Tipo de Corte:", err);
       toast.error("Error de conexión", { id: toastId, duration: 2000 });
-    } finally {
-      // clear controller reference
-      abortRef.current = null;
     }
   };
-
-  // cleanup on unmount: abort any inflight submit
-  useEffect(() => {
-    return () => {
-      if (abortRef.current) {
-        abortRef.current.abort();
-        abortRef.current = null;
-      }
-    };
-  }, []);
 
   if (!corte) {
     return <div className={styles.loadingState}>Cargando tipo de corte...</div>;

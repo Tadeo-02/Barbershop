@@ -3,11 +3,8 @@ import { FaBars } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./login/AuthContext.tsx";
 import styles from "./header.module.css";
+import { isAbortError, useAbortController } from "./shared/useAbortController";
 // import logoBarber from "../../public/images/logoBarber.png";
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
 
 function Header() {
   const [open, setOpen] = useState(false);
@@ -15,6 +12,8 @@ function Header() {
   const navigate = useNavigate();
   const [clientCategory, setClientCategory] = useState<string | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const { renew: renewCategoryAbort, abort: abortCategoryAbort } =
+    useAbortController();
 
   const closeMenu = () => {
     setOpen((prev) => {
@@ -64,7 +63,7 @@ function Header() {
       return;
     }
 
-    const controller = new AbortController();
+    const controller = renewCategoryAbort();
     const loadCategory = async () => {
       try {
         const response = await fetch(`/usuarios/profiles/${user.codUsuario}`, {
@@ -85,8 +84,8 @@ function Header() {
     };
 
     void loadCategory();
-    return () => controller.abort();
-  }, [isAuthenticated, userType, user?.codUsuario]);
+    return abortCategoryAbort;
+  }, [isAuthenticated, userType, user?.codUsuario, renewCategoryAbort, abortCategoryAbort]);
   return (
     <nav>
       <div className={styles.header}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../../login/AuthContext";
@@ -12,6 +12,10 @@ import {
   isAvailabilityEnded,
   normalizeDateInput,
 } from "../../shared/availabilityDateUtils";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../shared/useAbortController";
 
 interface Availability {
   codBloqueo: string;
@@ -20,10 +24,6 @@ interface Availability {
   fechaHoraHasta: string | Date;
   motivo: string;
 }
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
 
 interface MyAvailabilityProps {
   refreshKey?: number;
@@ -35,8 +35,9 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const fetchControllerRef = useRef<AbortController | null>(null);
-  const submitControllerRef = useRef<AbortController | null>(null);
+  const { renew: renewFetchAbort, abort: abortFetchAbort } =
+    useAbortController();
+  const { renew: renewSubmitAbort } = useAbortController();
 
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [availabilityToUpdate, setAvailabilityToUpdate] =
@@ -46,19 +47,10 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
   );
 
   useEffect(() => {
-    return () => {
-      fetchControllerRef.current?.abort();
-      submitControllerRef.current?.abort();
-    };
-  }, []);
-
-  useEffect(() => {
     if (!isAuthenticated || !user?.codUsuario) return;
 
     const loadAvailability = async () => {
-      fetchControllerRef.current?.abort();
-      const controller = new AbortController();
-      fetchControllerRef.current = controller;
+      const controller = renewFetchAbort();
       setIsLoading(true);
 
       try {
@@ -96,12 +88,12 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
         setAvailability([]);
       } finally {
         setIsLoading(false);
-        fetchControllerRef.current = null;
       }
     };
 
     void loadAvailability();
-  }, [isAuthenticated, user, refreshKey]);
+    return abortFetchAbort;
+  }, [isAuthenticated, user, refreshKey, renewFetchAbort, abortFetchAbort]);
 
   const handleDelete = (item: Availability) => {
     if (isAvailabilityEnded(item)) {
@@ -154,9 +146,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
     setIsSubmitting(true);
     const toastId = toast.loading("Cancelando bloqueo...");
 
-    submitControllerRef.current?.abort();
-    const controller = new AbortController();
-    submitControllerRef.current = controller;
+    const controller = renewSubmitAbort();
 
     try {
       const response = await fetch(`/availability/${item.codBloqueo}`, {
@@ -189,7 +179,6 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
       toast.error("Error de conexion", { id: toastId });
     } finally {
       setIsSubmitting(false);
-      submitControllerRef.current = null;
     }
   };
 
@@ -239,9 +228,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
     const toastId = toast.loading("Modificando bloqueo...");
     setIsSubmitting(true);
 
-    submitControllerRef.current?.abort();
-    const controller = new AbortController();
-    submitControllerRef.current = controller;
+    const controller = renewSubmitAbort();
 
     try {
       const response = await fetch(
@@ -297,7 +284,6 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
       toast.error("Error de conexion", { id: toastId });
     } finally {
       setIsSubmitting(false);
-      submitControllerRef.current = null;
     }
   };
 
