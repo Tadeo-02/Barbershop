@@ -4,7 +4,7 @@ import React from "react";
 import {
   AuthProvider,
   useAuth,
-} from "../../src/FRONT/views/components/login/AuthContext.tsx";
+} from "../../src/FRONT/views/components/login/authContext.tsx";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema";
-import { useAuth } from "../login/AuthContext.tsx";
+import { useAuth } from "../login/authContext.tsx";
 
 interface Barbero {
   codUsuario: string;
@@ -79,7 +79,7 @@ const BarbersByBranch = () => {
       "codSucursal from params:",
       codSucursal,
       "- Selecciono el horario:",
-      isHorario
+      isHorario,
     );
 
     if (!codSucursal) {
@@ -98,30 +98,47 @@ const BarbersByBranch = () => {
     console.log("Fetching sucursal from endpoint:", sucursalEndpoint);
 
     // Hacemos las dos peticiones en paralelo
-    Promise.all([
-      fetch(barberosEndpoint),
-      fetch(sucursalEndpoint),
-    ])
+    Promise.all([apiFetch(barberosEndpoint), apiFetch(sucursalEndpoint)])
       .then(async ([resBarberos, resSucursal]) => {
         if (!resBarberos.ok) {
-          throw new Error(`Error barberos ${resBarberos.status}: ${resBarberos.statusText}`);
+          throw new Error(
+            `Error barberos ${resBarberos.status}: ${resBarberos.statusText}`,
+          );
         }
         if (!resSucursal.ok) {
-          throw new Error(`Error sucursal ${resSucursal.status}: ${resSucursal.statusText}`);
+          throw new Error(
+            `Error sucursal ${resSucursal.status}: ${resSucursal.statusText}`,
+          );
         }
 
         const contentTypeBarberos = resBarberos.headers.get("content-type");
-        if (!contentTypeBarberos || !contentTypeBarberos.includes("application/json")) {
+        if (
+          !contentTypeBarberos ||
+          !contentTypeBarberos.includes("application/json")
+        ) {
           const text = await resBarberos.text();
-          console.error("Expected JSON for barberos but received:", text.substring(0, 100));
-          throw new Error("El servidor no devolvió datos JSON válidos para barberos");
+          console.error(
+            "Expected JSON for barberos but received:",
+            text.substring(0, 100),
+          );
+          throw new Error(
+            "El servidor no devolvió datos JSON válidos para barberos",
+          );
         }
 
         const contentTypeSucursal = resSucursal.headers.get("content-type");
-        if (!contentTypeSucursal || !contentTypeSucursal.includes("application/json")) {
+        if (
+          !contentTypeSucursal ||
+          !contentTypeSucursal.includes("application/json")
+        ) {
           const text = await resSucursal.text();
-          console.error("Expected JSON for sucursal but received:", text.substring(0, 100));
-          throw new Error("El servidor no devolvió datos JSON válidos para sucursal");
+          console.error(
+            "Expected JSON for sucursal but received:",
+            text.substring(0, 100),
+          );
+          throw new Error(
+            "El servidor no devolvió datos JSON válidos para sucursal",
+          );
         }
 
         const dataBarberos = await resBarberos.json();
@@ -206,7 +223,7 @@ const BarbersByBranch = () => {
         estado: "Programado",
       });
 
-      const response = await fetch("/turnos", {
+      const response = await apiFetch("/turnos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -251,11 +268,17 @@ const BarbersByBranch = () => {
         navigate("/client/home");
       } else {
         // Verificar si es el error de turno duplicado
-        if (data.message && data.message.includes("ya tiene un turno en ese horario")) {
-          toast.error("Ya tienes un turno reservado en ese horario. Por favor elige otro horario.", {
-            id: toastId,
-            duration: 2000,
-          });
+        if (
+          data.message &&
+          data.message.includes("ya tiene un turno en ese horario")
+        ) {
+          toast.error(
+            "Ya tienes un turno reservado en ese horario. Por favor elige otro horario.",
+            {
+              id: toastId,
+              duration: 2000,
+            },
+          );
         } else {
           toast.error(data.message || "Error al reservar turno", {
             id: toastId,

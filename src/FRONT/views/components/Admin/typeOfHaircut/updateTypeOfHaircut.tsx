@@ -53,7 +53,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
 
     const fetchCorte = async () => {
       try {
-        const response = await fetch(`/tipoCortes/${codCorte}`, {
+        const response = await apiFetch(`/tipoCortes/${codCorte}`, {
           signal: controller.signal,
         });
         if (response.ok) {
@@ -71,11 +71,15 @@ const UpdateTypeOfHaircut: React.FC = () => {
           });
           toast.dismiss(toastId);
         } else if (response.status === 404) {
-          toast.error("Tipo de corte no encontrado", { id: toastId,  duration: 2000 });
+          toast.error("Tipo de corte no encontrado", {
+            id: toastId,
+            duration: 2000,
+          });
           navigate("/Admin/HaircutTypesPage");
         } else {
           toast.error("Error al cargar los datos del tipo de corte", {
-            id: toastId,  duration: 2000
+            id: toastId,
+            duration: 2000,
           });
         }
       } catch (err: unknown) {
@@ -98,7 +102,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
     const toastId = toast.loading("Actualizando tipo de corte...");
     try {
       // Use POST with ?_method=PUT for method-override compatibility
-      const res = await fetch(`/tipoCortes/${codCorte}?_method=PUT`, {
+      const res = await apiFetch(`/tipoCortes/${codCorte}?_method=PUT`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -115,7 +119,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
       if (res.ok) {
         toast.success("Tipo de corte actualizado", {
           id: toastId,
-          duration: 2000
+          duration: 2000,
         });
         navigate("/Admin/HaircutTypesPage");
       } else {

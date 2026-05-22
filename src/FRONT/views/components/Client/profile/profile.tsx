@@ -1,4 +1,4 @@
-import { useAuth } from "../../login/AuthContext";
+import { useAuth } from "../../login/authContext";
 import { useEffect, useState } from "react";
 import styles from "./profile.module.css";
 import toast from "react-hot-toast";
@@ -42,7 +42,9 @@ const MyProfile = () => {
           user.codUsuario,
         );
 
-        const response = await fetch(`/usuarios/profiles/${user.codUsuario}`);
+        const response = await apiFetch(
+          `/usuarios/profiles/${user.codUsuario}`,
+        );
 
         console.log("🔥 PROFILE DEBUG - Response status:", response.status);
         console.log("🔥 PROFILE DEBUG - Response ok:", response.ok);
@@ -218,7 +220,7 @@ const SecurityQuestionForm: React.FC<{
     }
     setLoading(true);
     try {
-      const res = await fetch(`/usuarios/${codUsuario}/security-question`, {
+      const res = await apiFetch(`/usuarios/${codUsuario}/security-question`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

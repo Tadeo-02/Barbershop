@@ -310,7 +310,7 @@ Open DevTools Console (F12) and paste:
 // Test rate limiting
 async function testRateLimit() {
   for (let i = 1; i <= 6; i++) {
-    const response = await fetch("/login", {
+    const response = await apiFetch("/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

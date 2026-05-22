@@ -24,11 +24,11 @@ const ShowBranches = () => {
     setLoadingBarberos(true);
 
     // Obtener sucursal y barberos en paralelo
-    const fetchSucursal = fetch(`/sucursales/${codSucursal}`).then((res) =>
+    const fetchSucursal = apiFetch(`/sucursales/${codSucursal}`).then((res) =>
       res.json(),
     );
-    const fetchUsuarios = fetch(`/usuarios/branch/${codSucursal}`).then((res) =>
-      res.json(),
+    const fetchUsuarios = apiFetch(`/usuarios/branch/${codSucursal}`).then(
+      (res) => res.json(),
     );
 
     Promise.all([fetchSucursal, fetchUsuarios])
@@ -101,14 +101,14 @@ const ShowBranches = () => {
       </div>
       <br />
       <div className={styles.createButtonWrapper}>
-            <button
-              type="button"
-              className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
-              onClick={() => navigate("/Admin/BranchesPage")}
-            >
-              Volver
-            </button>
-        </div>
+        <button
+          type="button"
+          className={`${styles.button} ${styles.buttonPrimary} ${styles.createButton}`}
+          onClick={() => navigate("/Admin/BranchesPage")}
+        >
+          Volver
+        </button>
+      </div>
     </div>
   );
 };

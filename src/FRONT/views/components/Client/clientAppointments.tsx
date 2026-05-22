@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../login/AuthContext";
+import { useAuth } from "../login/authContext";
 import barberStyles from "../Client/clientAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -60,7 +60,7 @@ const ClientAppointments: React.FC = () => {
       return;
     }
 
-    fetch(`/turnos/user/${user.codUsuario}`)
+    apiFetch(`/turnos/user/${user.codUsuario}`)
       .then(async (res) => {
         console.log("Response status:", res.status);
         console.log("Response headers:", res.headers.get("content-type"));
@@ -131,7 +131,7 @@ const ClientAppointments: React.FC = () => {
     const toastId = toast.loading("Cancelando turno...");
 
     try {
-      const response = await fetch(`/turnos/${codTurno}/cancel`, {
+      const response = await apiFetch(`/turnos/${codTurno}/cancel`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

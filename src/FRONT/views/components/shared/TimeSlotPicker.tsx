@@ -38,10 +38,10 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 }) => {
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(
-    initialDate || getTomorrowDate()
+    initialDate || getTomorrowDate(),
   );
   const [fechaTurno, setFechaTurno] = useState<string>(
-    (initialDate || getTomorrowDate()).toISOString().split("T")[0]
+    (initialDate || getTomorrowDate()).toISOString().split("T")[0],
   );
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,7 +74,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 
     console.log("Llamando a endpoint:", endpoint);
 
-    fetch(endpoint)
+    apiFetch(endpoint)
       .then(async (res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -94,7 +94,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 
         if (response.success && Array.isArray(response.data)) {
           horariosData = response.data.filter(
-            (item: Horario) => item && item.hora
+            (item: Horario) => item && item.hora,
           );
         } else if (Array.isArray(response)) {
           horariosData = response.filter((item: Horario) => item && item.hora);

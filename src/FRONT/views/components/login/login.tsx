@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./login.module.css";
 import { PASSWORD_MAX_LENGTH } from "../../lib/passwordConstants.ts";
 import { Link } from "react-router-dom";
-import { useAuth } from "./AuthContext.tsx";
+import { useAuth } from "./authContext.tsx";
 import { useUserRedirect } from "../Redirect.tsx";
 import toast from "react-hot-toast";
 
@@ -38,14 +38,11 @@ function Login() {
         console.log("✅ Login successful, server response:", data);
 
         // usar el contexto para manejar el login
-        if (data.user) {
-          console.log("User data received:", data.user);
-          console.log("User cuil:", data.user.cuil);
-
-          login(data.user);
-
-          // gancho de redirección
+       // login.tsx — solo cambia esto dentro de handleSubmit
+        if (data.user && data.token) {            // verificar que llegó el token
+          login(data.user, data.token);           // <-- antes: login(data.user)
           redirectUser(data.user, data.message || "Login exitoso");
+        }
         } else {
           console.log("No user data in response");
           toast.error("Datos de usuario no encontrados");

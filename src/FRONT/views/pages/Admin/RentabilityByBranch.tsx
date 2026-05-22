@@ -47,9 +47,9 @@ const RentabilityByBranch = () => {
       setLoading(true);
       try {
         const [turnosRes, barberosRes, sucursalesRes] = await Promise.all([
-          fetch("/turnos"),
-          fetch("/usuarios?type=barber"),
-          fetch("/sucursales"),
+          apiFetch("/turnos"),
+          apiFetch("/usuarios?type=barber"),
+          apiFetch("/sucursales"),
         ]);
 
         const parseJsonOrThrow = async (res: Response, name = "resource") => {

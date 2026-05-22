@@ -27,7 +27,6 @@ import { BranchWithIdSchema } from "../../../BACK/Schemas/branchesSchema";
     reduce superficie de errores, elimina problemas de concurrencia y no requiere locks de frontend.
 */
 
-
 // Infer the TypeScript type from the schema
 //! Validacion frontend con schema zod
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
@@ -40,7 +39,9 @@ const InfoSection: React.FC = () => {
     const fetchData = async () => {
       try {
         // Cargar sucursales
-        const [sucursalesResponse] = await Promise.all([fetch("/sucursales")]);
+        const [sucursalesResponse] = await Promise.all([
+          apiFetch("/sucursales"),
+        ]);
 
         if (sucursalesResponse.ok) {
           const sucursalesData = await sucursalesResponse.json();
@@ -53,7 +54,7 @@ const InfoSection: React.FC = () => {
           const validatedSucursales: Sucursal[] = [];
           for (const sucursal of list) {
             try {
-              const validated = BranchWithIdSchema.parse(sucursal); 
+              const validated = BranchWithIdSchema.parse(sucursal);
               validatedSucursales.push(validated);
             } catch (validationError) {
               console.error(

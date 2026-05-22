@@ -8,7 +8,7 @@ import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
-import { AuthProvider } from "./components/login/AuthContext.tsx";
+import { AuthProvider } from "./components/login/authContext.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { AutoRedirect } from "./components/Redirect.tsx"; // puede ser que no haga falta
 import LandingPage from "./components/landingPage.tsx";

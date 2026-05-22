@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema";
-import { useAuth } from "../login/AuthContext.tsx";
+import { useAuth } from "../login/authContext.tsx";
 import TimeSlotPicker from "../shared/TimeSlotPicker";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
@@ -69,7 +69,7 @@ const ScheduleByBranch = () => {
     // Si tenemos codSucursal en params, pedimos también la sucursal (no bloqueante)
     if (codSucursal) {
       const sucursalEndpoint = `/sucursales/${codSucursal}`;
-      fetch(sucursalEndpoint)
+      apiFetch(sucursalEndpoint)
         .then(async (res) => {
           if (!res.ok) {
             throw new Error(`Error sucursal ${res.status}: ${res.statusText}`);
@@ -79,10 +79,10 @@ const ScheduleByBranch = () => {
             const text = await res.text();
             console.error(
               "Expected JSON for sucursal but received:",
-              text.substring(0, 100)
+              text.substring(0, 100),
             );
             throw new Error(
-              "El servidor no devolvió datos JSON válidos para sucursal"
+              "El servidor no devolvió datos JSON válidos para sucursal",
             );
           }
           return res.json();
@@ -101,7 +101,7 @@ const ScheduleByBranch = () => {
     // Si hay un barbero seleccionado (codBarbero en params), traemos su info (no bloqueante)
     if (codBarbero) {
       const barberoEndpoint = `/usuarios/profiles/${codBarbero}`;
-      fetch(barberoEndpoint)
+      apiFetch(barberoEndpoint)
         .then(async (res) => {
           if (!res.ok) {
             throw new Error(`Error barbero ${res.status}: ${res.statusText}`);
@@ -111,10 +111,10 @@ const ScheduleByBranch = () => {
             const text = await res.text();
             console.error(
               "Expected JSON for barbero but received:",
-              text.substring(0, 200)
+              text.substring(0, 200),
             );
             throw new Error(
-              "El servidor no devolvió datos JSON válidos para barbero"
+              "El servidor no devolvió datos JSON válidos para barbero",
             );
           }
           return res.json();
@@ -128,11 +128,11 @@ const ScheduleByBranch = () => {
           try {
             if (bObj && bObj.codSucursal) {
               const sucursalEndpointFromBarber = `/sucursales/${bObj.codSucursal}`;
-              fetch(sucursalEndpointFromBarber)
+              apiFetch(sucursalEndpointFromBarber)
                 .then(async (res) => {
                   if (!res.ok) {
                     throw new Error(
-                      `Error sucursal ${res.status}: ${res.statusText}`
+                      `Error sucursal ${res.status}: ${res.statusText}`,
                     );
                   }
                   const contentType = res.headers.get("content-type");
@@ -143,10 +143,10 @@ const ScheduleByBranch = () => {
                     const text = await res.text();
                     console.error(
                       "Expected JSON for sucursal but received:",
-                      text.substring(0, 100)
+                      text.substring(0, 100),
                     );
                     throw new Error(
-                      "El servidor no devolvió datos JSON válidos para sucursal"
+                      "El servidor no devolvió datos JSON válidos para sucursal",
                     );
                   }
                   return res.json();
@@ -161,7 +161,7 @@ const ScheduleByBranch = () => {
                 .catch((err) => {
                   console.error(
                     "Error al obtener sucursal desde barbero:",
-                    err
+                    err,
                   );
                 });
             }
@@ -184,7 +184,7 @@ const ScheduleByBranch = () => {
 
   const handleNavigateToBarbers = () => {
     navigate(
-      `/branches/${codigo}/schedule/${selectedFechaTurno}/${selectedHorario}/barbers`
+      `/branches/${codigo}/schedule/${selectedFechaTurno}/${selectedHorario}/barbers`,
     );
   };
 
@@ -223,7 +223,7 @@ const ScheduleByBranch = () => {
         estado: "Programado",
       });
 
-      const response = await fetch("/turnos", {
+      const response = await apiFetch("/turnos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -267,11 +267,17 @@ const ScheduleByBranch = () => {
         navigate("/client/home");
       } else {
         // Verificar si es el error de turno duplicado
-        if (data.message && data.message.includes("ya tiene un turno en ese horario")) {
-          toast.error("Ya tienes un turno reservado en ese horario. Por favor elige otro horario.", {
-            id: toastId,
-            duration: 2000,
-          });
+        if (
+          data.message &&
+          data.message.includes("ya tiene un turno en ese horario")
+        ) {
+          toast.error(
+            "Ya tienes un turno reservado en ese horario. Por favor elige otro horario.",
+            {
+              id: toastId,
+              duration: 2000,
+            },
+          );
         } else {
           toast.error(data.message || "Error al reservar turno", {
             id: toastId,

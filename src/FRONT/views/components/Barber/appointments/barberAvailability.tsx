@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../../login/AuthContext";
+import { useAuth } from "../../login/authContext";
 import toast from "react-hot-toast";
 import styles from "./barberAvailability.module.css";
 import AvailabilityForm from "./AvailabilityForm";
@@ -35,7 +35,7 @@ const BarberAvailability: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/availability", {
+      const res = await apiFetch("/availability", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

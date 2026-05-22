@@ -15,7 +15,7 @@ const IndexTypeOfHaircut = () => {
 
   useEffect(() => {
     // llama al backend para obtener los tipos de corte
-    fetch("/tipoCortes")
+    apiFetch("/tipoCortes")
       .then((res) => res.json())
       .then((data) => {
         setTipoCortes(data); // data debe ser un array de tipoCortes
@@ -114,7 +114,7 @@ const IndexTypeOfHaircut = () => {
           minWidth: "350px", // botones mas anchos
           padding: "24px",
         },
-      }
+      },
     );
   };
 
@@ -122,23 +122,35 @@ const IndexTypeOfHaircut = () => {
     const toastId = toast.loading("Eliminando tipo de corte...");
 
     try {
-      const response = await fetch(`/tipoCortes/${codCorte}`, {
+      const response = await apiFetch(`/tipoCortes/${codCorte}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        toast.success("Tipo de corte eliminado correctamente", { id: toastId, duration: 2000 });
+        toast.success("Tipo de corte eliminado correctamente", {
+          id: toastId,
+          duration: 2000,
+        });
         setTipoCortes(
-          tipoCortes.filter((corte) => corte.codCorte !== codCorte)
+          tipoCortes.filter((corte) => corte.codCorte !== codCorte),
         );
       } else if (response.status === 404) {
-        toast.error("Tipo de corte no encontrado", { id: toastId, duration: 2000 });
+        toast.error("Tipo de corte no encontrado", {
+          id: toastId,
+          duration: 2000,
+        });
       } else {
-        toast.error("Error al borrar el tipo de corte", { id: toastId, duration: 2000 });
+        toast.error("Error al borrar el tipo de corte", {
+          id: toastId,
+          duration: 2000,
+        });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
+      toast.error("Error de conexión con el servidor", {
+        id: toastId,
+        duration: 2000,
+      });
     }
   };
 

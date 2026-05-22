@@ -39,7 +39,7 @@ const ReceiptViewer: React.FC = () => {
     const fetchData = async () => {
       try {
         // 1. Obtener datos de facturación desde la DB
-        const metaResponse = await fetch(
+        const metaResponse = await apiFetch(
           `/facturacion/datos-turno/${codTurno}`,
         );
         if (!metaResponse.ok) {
@@ -53,7 +53,7 @@ const ReceiptViewer: React.FC = () => {
         setBillingData(metaJson.data);
 
         // 2. Obtener el PDF
-        const pdfResponse = await fetch(`/facturacion/recibo/${codTurno}`);
+        const pdfResponse = await apiFetch(`/facturacion/recibo/${codTurno}`);
         if (!pdfResponse.ok) {
           const errorData = await pdfResponse.json().catch(() => null);
           throw new Error(

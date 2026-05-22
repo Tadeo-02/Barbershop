@@ -20,7 +20,7 @@ const ShowBarbers = () => {
     const fetchData = async () => {
       try {
         // Primero obtenemos los datos del barbero
-        const barberoResponse = await fetch(`/usuarios/${codUsuario}`);
+        const barberoResponse = await apiFetch(`/usuarios/${codUsuario}`);
 
         if (barberoResponse.ok) {
           const barberoData = await barberoResponse.json();
@@ -28,8 +28,8 @@ const ShowBarbers = () => {
 
           // Luego obtenemos los datos de la sucursal del barbero
           if (barberoData.codSucursal) {
-            const sucursalResponse = await fetch(
-              `/sucursales/${barberoData.codSucursal}`
+            const sucursalResponse = await apiFetch(
+              `/sucursales/${barberoData.codSucursal}`,
             );
 
             if (sucursalResponse.ok) {
@@ -140,7 +140,7 @@ const ShowBarbers = () => {
         </Link>
         <Link
           to="/Admin/BarbersPage"
-          className={`${styles.button} ${styles.buttonPrimary}` }
+          className={`${styles.button} ${styles.buttonPrimary}`}
         >
           Volver
         </Link>

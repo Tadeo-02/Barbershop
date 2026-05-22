@@ -46,7 +46,7 @@ const CreateTypeOfHaircut: React.FC = () => {
 
     const toastId = toast.loading("Creando Tipo de Corte...");
     try {
-      const res = await fetch("/tipoCortes", {
+      const res = await apiFetch("/tipoCortes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -124,21 +124,21 @@ const CreateTypeOfHaircut: React.FC = () => {
             )}
           </div>
           <div className={styles.detailsActionButtons}>
-          <button
-            className={`${styles.button} ${styles.buttonSuccess}`}
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Creando..." : "Guardar Tipo de Corte"}
-          </button>
-          <button
-            type="button"
-            disabled={isSubmitting}
-            className={`${styles.button} ${styles.buttonPrimary}`}
-            onClick={() => navigate("/Admin/HaircutTypesPage")}
-          >
-            Volver
-          </button>
+            <button
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creando..." : "Guardar Tipo de Corte"}
+            </button>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              className={`${styles.button} ${styles.buttonPrimary}`}
+              onClick={() => navigate("/Admin/HaircutTypesPage")}
+            >
+              Volver
+            </button>
           </div>
         </fieldset>
       </form>

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./categories.module.css";
-import toast from "react-hot-toast"
-import { CategorySchema  } from "../../../../../BACK/Schemas/categoriesSchema";
+import toast from "react-hot-toast";
+import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
 import {
   CATEGORY_RANK,
   PROTECTED_CATEGORY_NAMES,
@@ -38,21 +38,23 @@ interface DeleteContext {
 const IndexCategories = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true); // loading
-  const [deleteContext, setDeleteContext] = useState<DeleteContext | null>(null);
-  const [deleteDecisions, setDeleteDecisions] = useState<Record<string, DeleteAction>>({});
+  const [deleteContext, setDeleteContext] = useState<DeleteContext | null>(
+    null,
+  );
+  const [deleteDecisions, setDeleteDecisions] = useState<
+    Record<string, DeleteAction>
+  >({});
   const [deleteBusy, setDeleteBusy] = useState(false);
 
   const isProtectedCategory = (name: string) =>
     PROTECTED_CATEGORY_NAMES.some(
       (protectedName) =>
-        protectedName.toLowerCase() === name.trim().toLowerCase()
+        protectedName.toLowerCase() === name.trim().toLowerCase(),
     );
 
   const getCategoryIndex = (name: string) => {
     const normalized = name.trim().toLowerCase();
-    return CATEGORY_RANK.findIndex(
-      (cat) => cat.toLowerCase() === normalized
-    );
+    return CATEGORY_RANK.findIndex((cat) => cat.toLowerCase() === normalized);
   };
 
   const getPromoteTarget = (name: string) => {
@@ -77,7 +79,7 @@ const IndexCategories = () => {
 
   useEffect(() => {
     // llama al backend para obtener las categorias
-    fetch("/categorias")
+    apiFetch("/categorias")
       .then((res) => res.json())
       .then((data) => {
         setCategorias(data); // data debe ser un array de categorias
@@ -85,7 +87,7 @@ const IndexCategories = () => {
       })
       .catch((error) => {
         console.error("Error al obtener categorias:", error);
-        toast.error("Error al cargar las categorías", { duration: 2000 }); 
+        toast.error("Error al cargar las categorías", { duration: 2000 });
       })
       .finally(() => {
         setLoading(false); // cortar loading
@@ -98,7 +100,7 @@ const IndexCategories = () => {
   }
 
   const fetchDeleteContext = async (codCategoria: string) => {
-    const response = await fetch(`/categorias/${codCategoria}/clients`);
+    const response = await apiFetch(`/categorias/${codCategoria}/clients`);
     if (!response.ok) {
       const text = await response.text().catch(() => "");
       throw new Error(text || `HTTP ${response.status}`);
@@ -207,16 +209,20 @@ const IndexCategories = () => {
           minWidth: "350px",
           padding: "24px",
         },
-      }
+      },
     );
   };
 
   const showDeleteOptions = (context: DeleteContext) => {
-    const promoteTargetName = getPromoteTarget(context.categoria.nombreCategoria);
+    const promoteTargetName = getPromoteTarget(
+      context.categoria.nombreCategoria,
+    );
     const demoteTargetName = getDemoteTarget(context.categoria.nombreCategoria);
 
     if (!promoteTargetName && !demoteTargetName) {
-      toast.error("La categoría no tiene un ranking valido", { duration: 2000 });
+      toast.error("La categoría no tiene un ranking valido", {
+        duration: 2000,
+      });
       return;
     }
 
@@ -290,8 +296,9 @@ const IndexCategories = () => {
             <button
               onClick={() => {
                 toast.dismiss(t.id);
-                const defaultDecision: DeleteAction =
-                  promoteTargetName ? "promote" : "demote";
+                const defaultDecision: DeleteAction = promoteTargetName
+                  ? "promote"
+                  : "demote";
                 const initialDecisions: Record<string, DeleteAction> = {};
                 context.clientes.forEach((cliente) => {
                   initialDecisions[cliente.codCliente] = defaultDecision;
@@ -336,19 +343,22 @@ const IndexCategories = () => {
           minWidth: "380px",
           padding: "20px",
         },
-      }
+      },
     );
   };
 
   const confirmedDelete = async (
     codCategoria: string,
-    payload?: { action: string; perClient?: Array<{ codCliente: string; decision: DeleteAction }> }
+    payload?: {
+      action: string;
+      perClient?: Array<{ codCliente: string; decision: DeleteAction }>;
+    },
   ) => {
     // Mostrar toast de carga y guardar el id para poder actualizarlo
     const toastId = toast.loading("Eliminando categoría...");
 
     try {
-      const response = await fetch(`/categorias/${codCategoria}`, {
+      const response = await apiFetch(`/categorias/${codCategoria}`, {
         method: "DELETE",
         headers: payload ? { "Content-Type": "application/json" } : undefined,
         body: payload ? JSON.stringify(payload) : undefined,
@@ -365,7 +375,7 @@ const IndexCategories = () => {
 
         // ✅ Actualizar la lista removiendo el eliminado (usar functional update para evitar closures stale)
         setCategorias((prev) =>
-          prev.filter((categoria) => categoria.codCategoria !== codCategoria)
+          prev.filter((categoria) => categoria.codCategoria !== codCategoria),
         );
         setDeleteContext(null);
       } else if (response.status === 404) {
@@ -376,7 +386,10 @@ const IndexCategories = () => {
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
+      toast.error("Error de conexión con el servidor", {
+        id: toastId,
+        duration: 2000,
+      });
     }
   };
 

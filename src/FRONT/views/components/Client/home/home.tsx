@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { FaCut, FaRegCalendarAlt, FaRegClock } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../login/AuthContext";
+import { useAuth } from "../../login/authContext";
 import styles from "./home.module.css";
 import {
   isAbortError,
@@ -122,7 +122,7 @@ const Home = () => {
     const toastId = toast.loading("Cancelando turno...");
 
     try {
-      const response = await fetch(`/turnos/${codTurno}/cancel`, {
+      const response = await apiFetch(`/turnos/${codTurno}/cancel`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -207,7 +207,7 @@ const Home = () => {
     setHasCheckedNextTurno(false);
     setLoadingNextTurno(true);
 
-    fetch(`/turnos/user/${user.codUsuario}`, { signal: controller.signal })
+    apiFetch(`/turnos/user/${user.codUsuario}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -260,7 +260,7 @@ const Home = () => {
     const controller = renewLoyaltyAbort();
     setLoadingLoyalty(true);
 
-    fetch(`/usuarios/profiles/${user.codUsuario}`, {
+    apiFetch(`/usuarios/profiles/${user.codUsuario}`, {
       signal: controller.signal,
     })
       .then(async (res) => {
