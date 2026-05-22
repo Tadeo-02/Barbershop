@@ -49,7 +49,7 @@ const CreateBranches: React.FC = () => {
     const toastId = toast.loading("Creando Sucursal...");
 
     try {
-      const response = await fetch("/sucursales", {
+      const response = await apiFetch("/sucursales", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,22 +167,22 @@ const CreateBranches: React.FC = () => {
             )}
           </div>
           <div className={styles.detailsActionButtons}>
-          <button
-            className={`${styles.button} ${styles.buttonSuccess}`}
-            type="submit"
-            disabled={isSubmitting}
-            aria-disabled={isSubmitting}
-          >
-            {isSubmitting ? "Creando..." : "Guardar Sucursal"}
-          </button>
-          <button
-            type="button"
-            disabled={isSubmitting}
-            className={`${styles.button} ${styles.buttonPrimary}`}
-            onClick={() => navigate("/Admin/BranchesPage")}
-          >
-            Volver
-          </button>
+            <button
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              type="submit"
+              disabled={isSubmitting}
+              aria-disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creando..." : "Guardar Sucursal"}
+            </button>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              className={`${styles.button} ${styles.buttonPrimary}`}
+              onClick={() => navigate("/Admin/BranchesPage")}
+            >
+              Volver
+            </button>
           </div>
         </fieldset>
       </form>

@@ -90,7 +90,7 @@ const IndexClients = () => {
   useEffect(() => {
     const fetchClientes = async () => {
       try {
-        const response = await fetch(`/usuarios?type=client`);
+        const response = await apiFetch(`/usuarios?type=client`);
         if (!response.ok) {
           const text = await response.text().catch(() => "");
           console.error("/usuarios error body:", text);
@@ -125,7 +125,7 @@ const IndexClients = () => {
       // evitar volver a buscar si ya está en caché
       if (profilesCache[codUsuario]) return profilesCache[codUsuario];
 
-      const res = await fetch(`/usuarios/profiles/${codUsuario}`);
+      const res = await apiFetch(`/usuarios/profiles/${codUsuario}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
 
@@ -161,7 +161,7 @@ const IndexClients = () => {
     // limitar a evitar demasiadas peticiones simultáneas (pero por simplicidad usamos Promise.all)
     const promises = clients.map(async (c) => {
       try {
-        const res = await fetch(`/turnos/user/${c.codUsuario}`);
+        const res = await apiFetch(`/turnos/user/${c.codUsuario}`);
         if (!res.ok) {
           // tratar como 0
           return { codUsuario: c.codUsuario, total: 0, canceled: 0 };
@@ -192,7 +192,7 @@ const IndexClients = () => {
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const res = await fetch(`/categorias`);
+        const res = await apiFetch(`/categorias`);
         if (!res.ok) {
           const text = await res.text().catch(() => "");
           console.error("/categorias error body:", text);

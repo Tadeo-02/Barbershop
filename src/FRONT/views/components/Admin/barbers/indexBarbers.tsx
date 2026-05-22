@@ -20,7 +20,7 @@ const IndexBarbers = () => {
     if (!contentType.includes("application/json")) {
       const text = await response.text();
       throw new Error(
-        `Unexpected response (${response.status} ${response.statusText}): ${text.slice(0, 200)}`
+        `Unexpected response (${response.status} ${response.statusText}): ${text.slice(0, 200)}`,
       );
     }
     return response.json();
@@ -31,8 +31,8 @@ const IndexBarbers = () => {
       try {
         // Cargar barberos y sucursales en paralelo
         const [barberosResponse, sucursalesResponse] = await Promise.all([
-          fetch("/usuarios?type=barber"),
-          fetch("/sucursales"),
+          apiFetch("/usuarios?type=barber"),
+          apiFetch("/sucursales"),
         ]);
 
         if (barberosResponse.ok) {
@@ -45,8 +45,14 @@ const IndexBarbers = () => {
             setBarberos(parsed.data);
             console.log("Barberos recibidos:", parsed.data);
           } else {
-            console.error("Barberos invalidos - Schema validation error:", parsed.error);
-            console.error("Error details:", JSON.stringify(parsed.error, null, 2));
+            console.error(
+              "Barberos invalidos - Schema validation error:",
+              parsed.error,
+            );
+            console.error(
+              "Error details:",
+              JSON.stringify(parsed.error, null, 2),
+            );
             toast.error("Datos de barberos inválidos");
             setBarberos([]);
           }
@@ -57,7 +63,8 @@ const IndexBarbers = () => {
         if (sucursalesResponse.ok) {
           const sucursalesData = await sucursalesResponse.json();
           // Validar sucursales con el schema importado
-          const parsedSuc = BranchWithIdSchema.array().safeParse(sucursalesData);
+          const parsedSuc =
+            BranchWithIdSchema.array().safeParse(sucursalesData);
           if (parsedSuc.success) {
             // Convertir array a objeto para búsqueda rápida
             const sucursalesMap = parsedSuc.data.reduce(
@@ -65,7 +72,7 @@ const IndexBarbers = () => {
                 if (sucursal.codSucursal) acc[sucursal.codSucursal] = sucursal;
                 return acc;
               },
-              {}
+              {},
             );
             setSucursales(sucursalesMap);
             console.log("Sucursales recibidas:", parsedSuc.data);
@@ -102,9 +109,11 @@ const IndexBarbers = () => {
   const handleDelete = async (codUsuario: string) => {
     // Check for pending appointments before showing confirmation dialog
     try {
-      const response = await fetch(`/turnos/pending/barber/${codUsuario}`);
+      const response = await apiFetch(`/turnos/pending/barber/${codUsuario}`);
       if (!response.ok) {
-        throw new Error(`Failed to check pending appointments: ${response.status}`);
+        throw new Error(
+          `Failed to check pending appointments: ${response.status}`,
+        );
       }
 
       const payload = await parseJsonResponse(response);
@@ -113,7 +122,7 @@ const IndexBarbers = () => {
       if (pendingAppointments && pendingAppointments.length > 0) {
         toast.error(
           `No se puede dar de baja al barbero. Tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
-          { duration: 2000 }
+          { duration: 2000 },
         );
         return;
       }
@@ -202,7 +211,7 @@ const IndexBarbers = () => {
           minWidth: "350px", // botones mas anchos
           padding: "24px",
         },
-      }
+      },
     );
   };
 
@@ -210,28 +219,37 @@ const IndexBarbers = () => {
     const toastId = toast.loading("Dando de baja barbero...");
 
     try {
-      const response = await fetch(`/usuarios/${codUsuario}/deactivate`, {
+      const response = await apiFetch(`/usuarios/${codUsuario}/deactivate`, {
         method: "PATCH",
       });
 
       if (response.ok) {
-        toast.success("Barbero dado de baja correctamente", { id: toastId, duration: 2000 });
+        toast.success("Barbero dado de baja correctamente", {
+          id: toastId,
+          duration: 2000,
+        });
         // Actualizar el estado del barbero a inactivo en lugar de eliminarlo de la lista
         setBarberos(
           barberos.map((barbero) =>
             barbero.codUsuario === codUsuario
               ? { ...barbero, activo: false }
-              : barbero
-          )
+              : barbero,
+          ),
         );
       } else if (response.status === 404) {
         toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
       } else {
-        toast.error("Error al dar de baja el barbero", { id: toastId, duration: 2000 });
+        toast.error("Error al dar de baja el barbero", {
+          id: toastId,
+          duration: 2000,
+        });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
+      toast.error("Error de conexión con el servidor", {
+        id: toastId,
+        duration: 2000,
+      });
     }
   };
 
@@ -314,7 +332,7 @@ const IndexBarbers = () => {
           minWidth: "350px",
           padding: "24px",
         },
-      }
+      },
     );
   };
 
@@ -322,29 +340,38 @@ const IndexBarbers = () => {
     const toastId = toast.loading("Reactivando barbero...");
 
     try {
-      const response = await fetch(`/usuarios/${codUsuario}/reactivate`, {
+      const response = await apiFetch(`/usuarios/${codUsuario}/reactivate`, {
         method: "PATCH",
       });
 
       if (response.ok) {
-        toast.success("Barbero reactivado correctamente", { id: toastId, duration: 2000 });
+        toast.success("Barbero reactivado correctamente", {
+          id: toastId,
+          duration: 2000,
+        });
         // Actualizar el estado del barbero a activo
         setBarberos(
           barberos.map((barbero) =>
             barbero.codUsuario === codUsuario
               ? { ...barbero, activo: true }
-              : barbero
-          )
+              : barbero,
+          ),
         );
       } else if (response.status === 404) {
         toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || "Error al reactivar el barbero", { id: toastId, duration: 2000 });
+        toast.error(errorData.message || "Error al reactivar el barbero", {
+          id: toastId,
+          duration: 2000,
+        });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
+      toast.error("Error de conexión con el servidor", {
+        id: toastId,
+        duration: 2000,
+      });
     }
   };
 
@@ -359,7 +386,7 @@ const IndexBarbers = () => {
           >
             CREAR BARBERO
           </Link>
-        </div>  
+        </div>
         {barberos.length === 0 ? (
           <div className={styles.emptyState}>
             <p>No hay barberos disponibles.</p>

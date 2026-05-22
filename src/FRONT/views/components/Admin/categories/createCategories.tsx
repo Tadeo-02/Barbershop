@@ -30,7 +30,9 @@ const CreateCategorySchema = z.object({
 
 type CreateCategoryForm = z.infer<typeof CreateCategorySchema>;
 
-const baseResolver = zodResolver(CreateCategorySchema) as Resolver<CreateCategoryForm>;
+const baseResolver = zodResolver(
+  CreateCategorySchema,
+) as Resolver<CreateCategoryForm>;
 
 const normalizeMessage = (msg: unknown): string | undefined => {
   if (!msg) return undefined;
@@ -92,7 +94,7 @@ const CreateCategories: React.FC = () => {
 
     const toastId = toast.loading("Creando Categoría...");
     try {
-      const res = await fetch("/categorias", {
+      const res = await apiFetch("/categorias", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -192,22 +194,22 @@ const CreateCategories: React.FC = () => {
           </div>
 
           <div className={styles.detailsActionButtons}>
-          <button
-            className={`${styles.button} ${styles.buttonSuccess}`}
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Creando..." : "Guardar Categoría"}
-          </button>
-          <button
-            type="button"
-            disabled={isSubmitting}
-            className={`${styles.button} ${styles.buttonPrimary}`}
-            onClick={() => navigate("/Admin/CategoriesPage")}
-          >
-            Volver
-          </button>
-        </div>
+            <button
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creando..." : "Guardar Categoría"}
+            </button>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              className={`${styles.button} ${styles.buttonPrimary}`}
+              onClick={() => navigate("/Admin/CategoriesPage")}
+            >
+              Volver
+            </button>
+          </div>
         </fieldset>
       </form>
     </div>

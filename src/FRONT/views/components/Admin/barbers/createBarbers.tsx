@@ -49,7 +49,7 @@ const CreateBarbers: React.FC = () => {
     const controller = renewSucursalesAbort();
     const fetchSucursales = async () => {
       try {
-        const response = await fetch("/sucursales", {
+        const response = await apiFetch("/sucursales", {
           signal: controller.signal,
         });
         if (response.ok) {
@@ -80,7 +80,7 @@ const CreateBarbers: React.FC = () => {
     const { confirmarContraseña: _, ...datosParaBackend } = data;
 
     try {
-      const response = await fetch("/usuarios", {
+      const response = await apiFetch("/usuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosParaBackend),

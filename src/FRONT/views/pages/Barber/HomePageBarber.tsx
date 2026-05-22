@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaCut, FaRegClock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../components/login/AuthContext.tsx";
+import { useAuth } from "../../components/login/authContext.tsx";
 import styles from "./HomePageBarber.module.css";
 import {
   isAbortError,
@@ -81,7 +81,7 @@ const Home = () => {
     setHasCheckedNextTurno(false);
     setLoadingNextTurno(true);
 
-    fetch(`/turnos/user/${user.codUsuario}`, { signal: controller.signal })
+    apiFetch(`/turnos/user/${user.codUsuario}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);

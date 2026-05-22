@@ -51,7 +51,7 @@ const UpdateBranches: React.FC = () => {
     const fetchSucursal = async () => {
       const toastId = toast.loading("Cargando datos de la sucursal...");
       try {
-        const response = await fetch(`/sucursales/${codSucursal}`, {
+        const response = await apiFetch(`/sucursales/${codSucursal}`, {
           signal: controller.signal,
         });
 
@@ -96,7 +96,7 @@ const UpdateBranches: React.FC = () => {
       const payload = { ...formValues };
 
       // Use POST with ?_method=PUT for compatibility with method-override backends
-      const response = await fetch(
+      const response = await apiFetch(
         `/sucursales/${sucursal?.codSucursal}?_method=PUT`,
         {
           method: "POST",

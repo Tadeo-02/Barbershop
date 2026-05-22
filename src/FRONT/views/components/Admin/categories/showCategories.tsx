@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
-import toast from "react-hot-toast"; 
-import { CategorySchema  } from "../../../../../BACK/Schemas/categoriesSchema";
+import toast from "react-hot-toast";
+import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
 import type { z } from "zod";
 
 // Inferir tipo desde el schema existente en BACK y mapear a los nombres que usa el frontend
@@ -14,17 +14,21 @@ const ShowCategories = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const handleBack = () => {
-  // Si hay un historial previo en el navegador, ir atrás.
-  // Si no, navegar a la lista de categorías como fallback. Esa página no va a funcionar para los clientes, pero al menos no se van a quedar en una página vacía.
-  if (typeof window !== "undefined" && window.history && window.history.length > 1) {
-    navigate(-1);
-  } else {
-    navigate("/Admin/CategoriesPage");
-  }
-};
+    // Si hay un historial previo en el navegador, ir atrás.
+    // Si no, navegar a la lista de categorías como fallback. Esa página no va a funcionar para los clientes, pero al menos no se van a quedar en una página vacía.
+    if (
+      typeof window !== "undefined" &&
+      window.history &&
+      window.history.length > 1
+    ) {
+      navigate(-1);
+    } else {
+      navigate("/Admin/CategoriesPage");
+    }
+  };
 
   useEffect(() => {
-    fetch(`/categorias/${codCategoria}`)
+    apiFetch(`/categorias/${codCategoria}`)
       .then((res) => res.json())
       .then((data) => setCategoria(data))
       .catch((err) => {
@@ -36,7 +40,6 @@ const ShowCategories = () => {
       });
   }, [codCategoria]);
 
-  
   if (loading) {
     return <div className={styles.loadingState}>Cargando categoría...</div>;
   }

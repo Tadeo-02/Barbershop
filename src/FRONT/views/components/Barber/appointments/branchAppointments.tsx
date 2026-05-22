@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from "../../login/AuthContext";
+import { useAuth } from "../../login/authContext";
 import styles from "./branchAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -53,7 +53,7 @@ const CheckoutForm: React.FC<{
 
     const loadClientCategory = async () => {
       try {
-        const res = await fetch(`/usuarios/profiles/${codCliente}`);
+        const res = await apiFetch(`/usuarios/profiles/${codCliente}`);
         if (res.ok) {
           const responseData = await res.json();
           const userData = responseData.data || responseData;
@@ -124,7 +124,7 @@ const CheckoutForm: React.FC<{
         metodoPago: values.metodoPago,
       };
 
-      const response = await fetch(`/turnos/${codTurno}/checkout`, {
+      const response = await apiFetch(`/turnos/${codTurno}/checkout`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -533,7 +533,7 @@ const BranchAppointments: React.FC = () => {
 
     try {
       const endpoint = `/turnos/branch/${user.codSucursal}`;
-      const res = await fetch(endpoint, { signal: controller.signal });
+      const res = await apiFetch(endpoint, { signal: controller.signal });
 
       console.log("Response status:", res.status);
       console.log("Response headers:", res.headers.get("content-type"));
@@ -583,7 +583,9 @@ const BranchAppointments: React.FC = () => {
     const controller = renewCortesAbort();
     const loadCortes = async () => {
       try {
-        const res = await fetch("/tipoCortes", { signal: controller.signal });
+        const res = await apiFetch("/tipoCortes", {
+          signal: controller.signal,
+        });
         console.log("Response status cortes:", res.status);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -646,7 +648,7 @@ const BranchAppointments: React.FC = () => {
     const toastId = toast.loading("Generando factura ARCA...");
 
     try {
-      const response = await fetch("/facturacion/facturar-turno", {
+      const response = await apiFetch("/facturacion/facturar-turno", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ codTurno }),
@@ -769,7 +771,7 @@ const BranchAppointments: React.FC = () => {
     const controller = renewSubmitAbort();
 
     try {
-      const response = await fetch(`/turnos/${codTurno}/no-show`, {
+      const response = await apiFetch(`/turnos/${codTurno}/no-show`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

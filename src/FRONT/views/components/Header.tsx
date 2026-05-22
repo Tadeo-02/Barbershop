@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "./login/AuthContext.tsx";
+import { useAuth } from "./login/authContext.tsx";
 import styles from "./header.module.css";
 import { isAbortError, useAbortController } from "./shared/useAbortController";
 // import logoBarber from "../../public/images/logoBarber.png";
@@ -66,9 +66,12 @@ function Header() {
     const controller = renewCategoryAbort();
     const loadCategory = async () => {
       try {
-        const response = await fetch(`/usuarios/profiles/${user.codUsuario}`, {
-          signal: controller.signal,
-        });
+        const response = await apiFetch(
+          `/usuarios/profiles/${user.codUsuario}`,
+          {
+            signal: controller.signal,
+          },
+        );
         if (!response.ok) {
           setClientCategory("Sin categoría");
           return;
@@ -85,7 +88,13 @@ function Header() {
 
     void loadCategory();
     return abortCategoryAbort;
-  }, [isAuthenticated, userType, user?.codUsuario, renewCategoryAbort, abortCategoryAbort]);
+  }, [
+    isAuthenticated,
+    userType,
+    user?.codUsuario,
+    renewCategoryAbort,
+    abortCategoryAbort,
+  ]);
   return (
     <nav>
       <div className={styles.header}>
@@ -325,9 +334,9 @@ function Header() {
       {open && (
         <div
           className={styles.overlay}
-            onClick={closeMenu}
+          onClick={closeMenu}
           onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") closeMenu();
+            if (e.key === "Enter" || e.key === " ") closeMenu();
           }}
           role="button"
           tabIndex={0}

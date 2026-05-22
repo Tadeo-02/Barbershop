@@ -42,7 +42,7 @@ const UpdateCategories: React.FC = () => {
 
     const fetchCategoria = async () => {
       try {
-        const response = await fetch(`/categorias/${codCategoria}`, {
+        const response = await apiFetch(`/categorias/${codCategoria}`, {
           signal: controller.signal,
         });
 
@@ -84,7 +84,7 @@ const UpdateCategories: React.FC = () => {
     const toastId = toast.loading("Actualizando categoría...");
     try {
       // Use PUT to update the category
-      const res = await fetch(`/categorias/${codCategoria}`, {
+      const res = await apiFetch(`/categorias/${codCategoria}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -171,7 +171,6 @@ const UpdateCategories: React.FC = () => {
               </div>
             )}
           </div>
-
 
           <div className={styles.detailsActionButtons}>
             <button

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../login/AuthContext";
+import { useAuth } from "../../login/authContext";
 import barberStyles from "./barberAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -107,7 +107,7 @@ const BarberAppointments: React.FC = () => {
       setIsLoadingTurnos(true);
 
       try {
-        const res = await fetch(`/turnos/user/${user.codUsuario}`, {
+        const res = await apiFetch(`/turnos/user/${user.codUsuario}`, {
           signal: controller.signal,
         });
 
@@ -148,7 +148,14 @@ const BarberAppointments: React.FC = () => {
 
     void loadTurnos();
     return abortFetchAbort;
-  }, [authChecked, isAuthenticated, user, navigate, renewFetchAbort, abortFetchAbort]);
+  }, [
+    authChecked,
+    isAuthenticated,
+    user,
+    navigate,
+    renewFetchAbort,
+    abortFetchAbort,
+  ]);
 
   const handleDelete = async (codTurno: string) => {
     //alert personalizado para confirmacion:
@@ -196,7 +203,7 @@ const BarberAppointments: React.FC = () => {
     const controller = renewSubmitAbort();
 
     try {
-      const response = await fetch(`/turnos/${codTurno}/cancel`, {
+      const response = await apiFetch(`/turnos/${codTurno}/cancel`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -278,18 +285,21 @@ const BarberAppointments: React.FC = () => {
     const controller = renewSubmitAbort();
 
     try {
-      const response = await fetch(`/turnos/${turnoToUpdate.codTurno}/update`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await apiFetch(
+        `/turnos/${turnoToUpdate.codTurno}/update`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fechaTurno: data.fechaTurno,
+            horaDesde: data.horaDesde,
+            horaHasta: horaHasta,
+          }),
+          signal: controller.signal,
         },
-        body: JSON.stringify({
-          fechaTurno: data.fechaTurno,
-          horaDesde: data.horaDesde,
-          horaHasta: horaHasta,
-        }),
-        signal: controller.signal,
-      });
+      );
 
       if (response.ok) {
         await response.json().catch(() => null);

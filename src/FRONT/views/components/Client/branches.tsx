@@ -16,7 +16,7 @@ const IndexBranches = () => {
   const [loading, setLoading] = useState(true); // loading inicial
 
   useEffect(() => {
-    fetch("/sucursales")
+    apiFetch("/sucursales")
       .then((res) => res.json())
       .then((data) => {
         setBranches(data); // data debe ser un array de sucursales

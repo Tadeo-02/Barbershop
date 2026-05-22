@@ -13,10 +13,7 @@ import {
   PASSWORD_PATTERN,
 } from "../../lib/passwordConstants.ts";
 import { getPasswordMissing } from "../../lib/passwordRules";
-import {
-  isAbortError,
-  useAbortController,
-} from "../shared/useAbortController";
+import { isAbortError, useAbortController } from "../shared/useAbortController";
 
 //! Mejoras FrontEnd
 /*
@@ -85,7 +82,7 @@ const CreateUser: React.FC = () => {
     const { confirmarContraseña: _, ...datosParaBackend } = data;
 
     try {
-      const response = await fetch("/usuarios", {
+      const response = await apiFetch("/usuarios", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

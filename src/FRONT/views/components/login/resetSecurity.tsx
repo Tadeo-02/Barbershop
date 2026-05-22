@@ -28,7 +28,7 @@ const ResetSecurity: React.FC = () => {
       return;
     }
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/usuarios/security-question/${encodeURIComponent(cleanEmail)}`,
       );
       const data = await res.json();
@@ -57,7 +57,7 @@ const ResetSecurity: React.FC = () => {
       return;
     }
     try {
-      const res = await fetch(`/usuarios/verify-security-answer`, {
+      const res = await apiFetch(`/usuarios/verify-security-answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -96,7 +96,7 @@ const ResetSecurity: React.FC = () => {
       return;
     }
     try {
-      const res = await fetch(`/usuarios/reset-password`, {
+      const res = await apiFetch(`/usuarios/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

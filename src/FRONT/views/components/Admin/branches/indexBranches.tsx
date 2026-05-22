@@ -16,7 +16,7 @@ const IndexBranches = () => {
     // const toastId = toast.loading("Cargando sucursales...");
 
     // Llama al backend para obtener las sucursales
-    fetch("/sucursales/all")
+    apiFetch("/sucursales/all")
       .then((res) => res.json())
       .then((data) => {
         setSucursales(data); // data debe ser un array de sucursales
@@ -40,16 +40,18 @@ const IndexBranches = () => {
       prevSucursales.map((sucursal) =>
         sucursal.codSucursal === codSucursal
           ? { ...sucursal, activo }
-          : sucursal
-      )
+          : sucursal,
+      ),
     );
   };
 
   const handleDelete = async (codSucursal: string) => {
     try {
-      const response = await fetch(`/turnos/pending/branch/${codSucursal}`);
+      const response = await apiFetch(`/turnos/pending/branch/${codSucursal}`);
       if (!response.ok) {
-        throw new Error(`Failed to check pending appointments: ${response.status}`);
+        throw new Error(
+          `Failed to check pending appointments: ${response.status}`,
+        );
       }
 
       const payload = await response.json();
@@ -58,7 +60,7 @@ const IndexBranches = () => {
       if (pendingAppointments.length > 0) {
         toast.error(
           `No se puede dar de baja la sucursal. Tiene ${pendingAppointments.length} turno(s) pendiente(s).`,
-          { duration: 4000 }
+          { duration: 4000 },
         );
         return;
       }
@@ -98,12 +100,12 @@ const IndexBranches = () => {
                 background: "#e53e3e",
                 color: "white",
                 border: "none",
-                padding: "12px 24px", 
+                padding: "12px 24px",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "16px", 
+                fontSize: "16px",
                 fontWeight: "600",
-                minWidth: "120px", 
+                minWidth: "120px",
                 transition: "all 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -121,12 +123,12 @@ const IndexBranches = () => {
                 background: "#718096",
                 color: "white",
                 border: "none",
-                padding: "12px 24px", 
+                padding: "12px 24px",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "16px", 
+                fontSize: "16px",
                 fontWeight: "600",
-                minWidth: "120px", 
+                minWidth: "120px",
                 transition: "all 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -147,7 +149,7 @@ const IndexBranches = () => {
           minWidth: "350px", // botones mas anchos
           padding: "24px",
         },
-      }
+      },
     );
   };
 
@@ -155,22 +157,31 @@ const IndexBranches = () => {
     const toastId = toast.loading("Dando de baja sucursal...");
 
     try {
-      const response = await fetch(`/sucursales/${codSucursal}/deactivate`, {
+      const response = await apiFetch(`/sucursales/${codSucursal}/deactivate`, {
         method: "PATCH",
       });
 
       if (response.ok) {
-        toast.success("Sucursal dada de baja correctamente", { id: toastId, duration: 2000});
+        toast.success("Sucursal dada de baja correctamente", {
+          id: toastId,
+          duration: 2000,
+        });
         updateBranchStatus(codSucursal, false);
       } else if (response.status === 404) {
         toast.error("Sucursal no encontrada", { id: toastId, duration: 2000 });
       } else {
         const errorData = await response.json().catch(() => null);
-        toast.error(errorData?.message || "Error al dar de baja la sucursal", { id: toastId, duration: 2000 });
+        toast.error(errorData?.message || "Error al dar de baja la sucursal", {
+          id: toastId,
+          duration: 2000,
+        });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
+      toast.error("Error de conexión con el servidor", {
+        id: toastId,
+        duration: 2000,
+      });
     }
   };
 
@@ -178,21 +189,30 @@ const IndexBranches = () => {
     const toastId = toast.loading("Reactivando sucursal...");
 
     try {
-      const response = await fetch(`/sucursales/${codSucursal}/reactivate`, {
+      const response = await apiFetch(`/sucursales/${codSucursal}/reactivate`, {
         method: "PATCH",
       });
 
       if (response.ok) {
-        toast.success("Sucursal reactivada correctamente", { id: toastId, duration: 2000 });
+        toast.success("Sucursal reactivada correctamente", {
+          id: toastId,
+          duration: 2000,
+        });
         updateBranchStatus(codSucursal, true);
       } else if (response.status === 404) {
         toast.error("Sucursal no encontrada", { id: toastId, duration: 2000 });
       } else {
-        toast.error("Error al reactivar la sucursal", { id: toastId, duration: 2000 });
+        toast.error("Error al reactivar la sucursal", {
+          id: toastId,
+          duration: 2000,
+        });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId, duration: 2000 });
+      toast.error("Error de conexión con el servidor", {
+        id: toastId,
+        duration: 2000,
+      });
     }
   };
 

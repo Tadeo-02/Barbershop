@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useAuth } from "../../login/AuthContext";
+import { useAuth } from "../../login/authContext";
 import listStyles from "./barberAppointments.module.css";
 import AvailabilityForm from "./AvailabilityForm";
 import type { AvailabilityFormValues } from "./AvailabilityForm";
@@ -54,7 +54,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
       setIsLoading(true);
 
       try {
-        const res = await fetch("/availability", {
+        const res = await apiFetch("/availability", {
           signal: controller.signal,
         });
 
@@ -149,7 +149,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
     const controller = renewSubmitAbort();
 
     try {
-      const response = await fetch(`/availability/${item.codBloqueo}`, {
+      const response = await apiFetch(`/availability/${item.codBloqueo}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -231,7 +231,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
     const controller = renewSubmitAbort();
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/availability/${availabilityToUpdate.codBloqueo}`,
         {
           method: "PUT",

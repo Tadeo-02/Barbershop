@@ -66,7 +66,7 @@ const UpdateBarber: React.FC = () => {
     // Cargar sucursales disponibles
     const fetchSucursales = async () => {
       try {
-        const response = await fetch("/sucursales", {
+        const response = await apiFetch("/sucursales", {
           signal: controller.signal,
         });
         if (response.ok) {
@@ -88,7 +88,7 @@ const UpdateBarber: React.FC = () => {
     const fetchBarbero = async () => {
       const toastId = toast.loading("Cargando datos del barbero...");
       try {
-        const response = await fetch(`/usuarios/${codUsuario}`, {
+        const response = await apiFetch(`/usuarios/${codUsuario}`, {
           signal: controller.signal,
         });
         if (response.ok) {
@@ -142,7 +142,7 @@ const UpdateBarber: React.FC = () => {
     if (branchChanged) {
       // Check for pending appointments before allowing branch change
       try {
-        const response = await fetch(`/turnos/pending/barber/${codUsuario}`);
+        const response = await apiFetch(`/turnos/pending/barber/${codUsuario}`);
         if (!response.ok) {
           throw new Error(
             `Failed to check pending appointments: ${response.status}`,
@@ -176,7 +176,7 @@ const UpdateBarber: React.FC = () => {
 
     try {
       // Use PUT method with the correct update endpoint
-      const response = await fetch(`/usuarios/${barbero?.codUsuario}`, {
+      const response = await apiFetch(`/usuarios/${barbero?.codUsuario}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosParaBackend),
