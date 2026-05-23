@@ -3,7 +3,7 @@ import styles from "./barbersByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema";
+import { BranchWithIdSchema } from "../../../../BACK/schemas/branchesSchema.ts";
 import { useAuth } from "../login/authContext.tsx";
 
 interface Barbero {

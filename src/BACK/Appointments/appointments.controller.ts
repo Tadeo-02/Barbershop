@@ -1,22 +1,20 @@
-import * as model from "./Appointments";
+import * as model from "./appointments";
 import { BaseController } from "../base/base.controller"; // importamos las reques, responde y dataBaseError de la base
 import { Request, Response } from "express";
 import {
   AppointmentOutputSchema,
   AvailableSlotSchema,
-} from "../Schemas/appointmentsSchema";
+} from "../schemas/appointmentsSchema";
 import { sanitizeOutput } from "../middleware/zodValidation";
 // creamos la clase barberController para enviar y manejar el base
 type AppointmentEntity = NonNullable<
   Awaited<ReturnType<typeof model.findById>>
 >;
 type AppointmentCreateArgs = Parameters<typeof model.store>;
-type AppointmentUpdateArgs = Parameters<typeof model.update> extends [
-  string,
-  ...infer Rest
-]
-  ? Rest
-  : never;
+type AppointmentUpdateArgs =
+  Parameters<typeof model.update> extends [string, ...infer Rest]
+    ? Rest
+    : never;
 
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
@@ -63,10 +61,7 @@ export const findByAvailableDate = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al buscar horas disponibles",
-      ),
+      message: getErrorMessage(error, "Error al buscar horas disponibles"),
     });
   }
 };
@@ -129,10 +124,7 @@ export const findByUserId = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al buscar turno del cliente",
-      ),
+      message: getErrorMessage(error, "Error al buscar turno del cliente"),
     });
   }
 };
@@ -162,10 +154,7 @@ export const findByBranchId = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al buscar turnos de la sucursal",
-      ),
+      message: getErrorMessage(error, "Error al buscar turnos de la sucursal"),
     });
   }
 };
@@ -195,11 +184,10 @@ export const findPendingByBranchId = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message:
-        getErrorMessage(
-          error,
-          "Error al buscar turnos pendientes de la sucursal",
-        ),
+      message: getErrorMessage(
+        error,
+        "Error al buscar turnos pendientes de la sucursal",
+      ),
     });
   }
 };
@@ -265,10 +253,7 @@ export const checkoutAppointment = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al realizar checkout del turno",
-      ),
+      message: getErrorMessage(error, "Error al realizar checkout del turno"),
     });
   }
 };
@@ -334,10 +319,7 @@ export const markAsNoShow = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al marcar turno como No asistido",
-      ),
+      message: getErrorMessage(error, "Error al marcar turno como No asistido"),
     });
   }
 };

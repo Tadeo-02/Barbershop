@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast";
-import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
+import { CategorySchema } from "../../../../../BACK/schemas/categoriesSchema.ts";
 import {
   CATEGORY_RANK,
   PROTECTED_CATEGORY_NAMES,
-} from "../../../../../BACK/Admin/categories/Categories.ts";
+} from "../../../../../BACK/admin/categories/categories.ts";
 import type { z } from "zod";
 
 // Inferir tipo desde el schema existente en BACK y mapear a los nombres que usa el frontend

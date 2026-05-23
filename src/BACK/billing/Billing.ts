@@ -1,4 +1,4 @@
-import { prisma, DatabaseError } from "../base/Base";
+import { prisma, DatabaseError } from "../base/base";
 import {
   getAfip,
   AFIP_PUNTO_VENTA,
@@ -11,7 +11,7 @@ import {
 import type {
   CreateVoucherInput,
   VoucherResponse,
-} from "../Schemas/billingSchema";
+} from "../schemas/billingSchema";
 
 type AfipCatalogItem = Record<string, unknown>;
 type AfipVoucherInfo = Record<string, unknown>;

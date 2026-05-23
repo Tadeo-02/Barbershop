@@ -1,4 +1,4 @@
-import MyProfile from "../../components/Client/profile/profile";
+import MyProfile from "../../components/client/profile/profile";
 
 function ProfilePage() {
   return <MyProfile />;

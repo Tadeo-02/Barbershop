@@ -3,7 +3,7 @@ import {
   UserSchema,
   BarberResponseSchema,
   PASSWORD_REGEX,
-} from "../../src/BACK/Schemas/usersSchema.ts";
+} from "../../src/BACK/schemas/usersSchema.ts";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

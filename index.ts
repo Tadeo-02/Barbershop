@@ -13,18 +13,18 @@ import {
 } from "./src/BACK/middleware/securityMonitor";
 
 // Import CommonJS routers
-import categoriesRouter from "./src/BACK/Admin/categories/categories.router";
-import branchesRouter from "./src/BACK/Admin/branches/branches.router";
+import categoriesRouter from "./src/BACK/admin/categories/categories.router";
+import branchesRouter from "./src/BACK/admin/branches/branches.router";
 import usersRouter from "./src/BACK/users/users.router";
-import appointmentsRouter from "./src/BACK/Appointments/appointments.router";
+import appointmentsRouter from "./src/BACK/appointments/appointments.router";
 import { login } from "./src/BACK/users/users.controller";
 // console.log("🔍 Categories router:", categoriesRouter);
 // console.log("🔍 Branches router:", branchesRouter);
 // console.log("🔍 Users router:", usersRouter);
 
-import typeOfHaircutRouter from "./src/BACK/Admin/typeOfHaircut/typeOfHaircut.router";
+import typeOfHaircutRouter from "./src/BACK/admin/typeOfHaircut/typeOfHaircut.router";
 import billingRouter from "./src/BACK/billing/billing.router";
-import availabilityRouter from "./src/BACK/Availability/availability.router";
+import availabilityRouter from "./src/BACK/availability/availability.router";
 
 // console.log("🔍 Categories router:", categoriesRouter);
 // console.log("🔍 TypeOfHaircut router:", typeOfHaircutRouter);

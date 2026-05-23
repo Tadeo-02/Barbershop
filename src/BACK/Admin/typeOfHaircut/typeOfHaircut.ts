@@ -1,10 +1,7 @@
-import { prisma, DatabaseError, sanitizeInput } from "../../base/Base"; // importamos todo desde Base
+import { prisma, DatabaseError, sanitizeInput } from "../../base/base"; // importamos todo desde Base
 import { z } from "zod";
 
-// schema de validación con Zod (más robusto que las funciones manuales)
 const TypeOfHaircutSchema = z.object({
-  // codCorte: z
-  //   .string().uuid("ID de barbero inválido"),
   nombreCorte: z
     .string()
     .min(1, "Nombre de corte es requerido")
@@ -14,7 +11,7 @@ const TypeOfHaircutSchema = z.object({
     .min(1, "Precio es requerido")
     .regex(
       /^\d+(\.\d{1,2})?$/,
-      "Precio inválido. Formato numérico con hasta 2 decimales"
+      "Precio inválido. Formato numérico con hasta 2 decimales",
     ),
 });
 
@@ -45,7 +42,7 @@ export const store = async (nombreCorte: string, valorBase: string) => {
   } catch (error) {
     console.error(
       "Error creating tipo de corte:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     //manejo de errores de validacion
     if (error instanceof z.ZodError) {
@@ -70,7 +67,7 @@ export const findAll = async () => {
   } catch (error) {
     console.error(
       "Error fetching tipos de corte:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al obtener lista de tipos de corte");
   }
@@ -93,7 +90,7 @@ export const findById = async (codTipoCorte: string) => {
 
     console.error(
       "Error finding tipo de corte:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar tipo de corte");
   }
@@ -102,7 +99,7 @@ export const findById = async (codTipoCorte: string) => {
 export const update = async (
   codCorte: string,
   nombreCorte: string,
-  valorBase: string
+  valorBase: string,
 ) => {
   try {
     // sanitizar datos
@@ -140,7 +137,7 @@ export const update = async (
   } catch (error) {
     console.error(
       "Error updating tipo de corte:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // manejo de errores de validacion
@@ -181,7 +178,7 @@ export const destroy = async (codCorte: string) => {
   } catch (error) {
     console.error(
       "Error deleting tipo de corte:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     if (error instanceof DatabaseError) {

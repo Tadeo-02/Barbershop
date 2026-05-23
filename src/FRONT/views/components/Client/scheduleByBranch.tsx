@@ -3,9 +3,9 @@ import styles from "./scheduleByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema";
+import { BranchWithIdSchema } from "../../../../BACK/schemas/branchesSchema.ts";
 import { useAuth } from "../login/authContext.tsx";
-import TimeSlotPicker from "../shared/TimeSlotPicker";
+import TimeSlotPicker from "../shared/TimeSlotPicker.tsx";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 

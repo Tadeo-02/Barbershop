@@ -1,20 +1,18 @@
-import * as model from "./Categories";
+import * as model from "./categories";
 import { BaseController } from "../../base/base.controller"; // improtamos al base controller
 import type { Request, Response } from "express";
 import {
   CategoryClientsResponseSchema,
   CategoryResponseSchema,
-} from "../../Schemas/categoriesSchema";
+} from "../../schemas/categoriesSchema";
 import { sanitizeOutput } from "../../middleware/zodValidation";
 // creamos el modelo de controlador de categorias
 type CategoryEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type CategoryCreateArgs = Parameters<typeof model.store>;
-type CategoryUpdateArgs = Parameters<typeof model.update> extends [
-  string,
-  ...infer Rest
-]
-  ? Rest
-  : never;
+type CategoryUpdateArgs =
+  Parameters<typeof model.update> extends [string, ...infer Rest]
+    ? Rest
+    : never;
 
 class CategoriesController extends BaseController<
   CategoryEntity,
@@ -79,8 +77,7 @@ class CategoriesController extends BaseController<
 }
 //creamos la instancia del controlador de categorias
 const categoriesController = new CategoriesController();
-console.log("Categories controller store:", typeof categoriesController.store);
-console.log("Categories model:", typeof model.store);
+
 export const {
   create,
   store,

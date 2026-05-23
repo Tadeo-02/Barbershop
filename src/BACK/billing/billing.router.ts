@@ -10,7 +10,7 @@ import { z } from "zod";
 import {
   BillAppointmentSchema,
   CreateVoucherSchema,
-} from "../Schemas/billingSchema";
+} from "../schemas/billingSchema";
 
 const router: Router = Router();
 

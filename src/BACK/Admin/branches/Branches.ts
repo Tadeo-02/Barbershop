@@ -1,21 +1,6 @@
-import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
+import { prisma, DatabaseError, sanitizeInput } from "../../base/base";
 import { z } from "zod";
-import {BranchSchema} from "../../Schemas/branchesSchema";
-
-// const BranchSchema = z.object({
-//   nombre: z
-//     .string()
-//     .min(2, "Nombre debe tener al menos 2 caracteres")
-//     .max(100, "Nombre no puede tener más de 100 caracteres"),
-//   calle: z
-//     .string()
-//     .min(2, "Calle debe tener al menos 2 caracteres")
-//     .max(100, "Calle no puede tener más de 100 caracteres"),
-//   altura: z
-//     .number()
-//     .min(1, "Altura debe ser mayor a 0")
-//     .max(10000, "Altura no puede ser mayor a 10000"),
-// });
+import { BranchSchema } from "../../schemas/branchesSchema";
 
 // funciones backend para Sucursales
 export const store = async (nombre: string, calle: string, altura: number) => {
@@ -208,7 +193,7 @@ export const destroy = async (codSucursal: string) => {
 
     if (pendingCount > 0) {
       throw new DatabaseError(
-        `No se puede desactivar: hay ${pendingCount} turno(s) pendiente(s)`
+        `No se puede desactivar: hay ${pendingCount} turno(s) pendiente(s)`,
       );
     }
 

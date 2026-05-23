@@ -4,12 +4,12 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { BranchWithIdSchema } from "../../../../../BACK/schemas/branchesSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   UserBaseSchemaExport,
   UserSchema,
-} from "../../../../../BACK/Schemas/usersSchema";
+} from "../../../../../BACK/schemas/usersSchema";
 import {
   isAbortError,
   useAbortController,

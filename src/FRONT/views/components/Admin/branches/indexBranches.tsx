@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { BranchWithIdSchema } from "../../../../../BACK/schemas/branchesSchema";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 

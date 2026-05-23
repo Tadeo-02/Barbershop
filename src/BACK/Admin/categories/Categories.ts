@@ -1,40 +1,24 @@
-import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
+import { prisma, DatabaseError, sanitizeInput } from "../../base/base";
 import { z } from "zod";
-import { CategorySchema } from "../../Schemas/categoriesSchema";
+import { CategorySchema } from "../../schemas/categoriesSchema";
 
 type CategoryDirection = "promote" | "demote";
 type DeleteCategoryAction = "promote_all" | "demote_all" | "per_client";
 
-export const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
+export const CATEGORY_RANK = [
+  "Vetado",
+  "Inicial",
+  "Medium",
+  "Premium",
+] as const;
 export const PROTECTED_CATEGORY_NAMES = ["Inicial"] as const;
-
-
-// const CategoriaSchema = z.object({
-//   nombreCategoria: z
-//     .string()
-//     .min(2, "Nombre de categoría debe tener al menos 2 caracteres")
-//     .max(50, "Nombre de categoría no puede tener más de 50 caracteres")
-//     .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Nombre solo puede contener letras"),
-//   descCategoria: z
-//     .string()
-//     .min(10, "Descripción debe tener al menos 10 caracteres")
-//     .max(250, "Descripción no puede tener más de 250 caracteres"),
-//   descuentoCorte: z
-//     .number()
-//     .min(0, "Descuento de corte debe ser mayor o igual a 0")
-//     .max(100, "Descuento de corte no puede ser mayor a 100%"),
-//   descuentoProducto: z
-//     .number()
-//     .min(0, "Descuento de producto debe ser mayor o igual a 0")
-//     .max(100, "Descuento de producto no puede ser mayor a 100%"),
-// });
 
 // funciones backend para Categorías
 export const store = async (
   nombreCategoria: string,
   descCategoria: string,
   descuentoCorte: number,
-  descuentoProducto: number
+  descuentoProducto: number,
 ) => {
   try {
     // sanitizar de inputs
@@ -47,7 +31,7 @@ export const store = async (
 
     // validacion con zod (omitimos el campo `codCategoria` al crear)
     const validatedData = CategorySchema.omit({ codCategoria: true }).parse(
-      sanitizedData
+      sanitizedData,
     );
 
     console.log("Creating categoria");
@@ -67,7 +51,7 @@ export const store = async (
   } catch (error) {
     console.error(
       "Error creating categoria:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     //  de errores de validación
@@ -80,7 +64,7 @@ export const store = async (
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; message: string };
 
-      if (prismaError.code === "P2002") { 
+      if (prismaError.code === "P2002") {
         throw new DatabaseError("Ya existe una categoría con ese nombre");
       }
     }
@@ -102,7 +86,7 @@ export const findAll = async () => {
   } catch (error) {
     console.error(
       "Error fetching categorias:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al obtener lista de categorías");
   }
@@ -125,7 +109,7 @@ export const findById = async (codCategoria: string) => {
 
     console.error(
       "Error finding categoria:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar categoría");
   }
@@ -136,7 +120,7 @@ export const update = async (
   nombreCategoria: string,
   descCategoria: string,
   descuentoCorte: number,
-  descuentoProducto: number
+  descuentoProducto: number,
 ) => {
   try {
     // sanitizar datos
@@ -166,7 +150,7 @@ export const update = async (
     }
 
     // actualizar categoría
-    const updatedCategoria = await prisma.categoria.update({ 
+    const updatedCategoria = await prisma.categoria.update({
       where: { codCategoria: sanitizedData.codCategoria },
       data: {
         nombreCategoria: validatedData.nombreCategoria,
@@ -181,7 +165,7 @@ export const update = async (
   } catch (error) {
     console.error(
       "Error updating categoria:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // Manejo de errores de validación
@@ -228,7 +212,7 @@ export const destroy = async (codCategoria: string) => {
       PROTECTED_CATEGORY_NAMES.some(
         (name) =>
           name.toLowerCase() ===
-          existingCategoria.nombreCategoria.trim().toLowerCase()
+          existingCategoria.nombreCategoria.trim().toLowerCase(),
       )
     ) {
       throw new DatabaseError("No se puede eliminar la categoría Inicial");
@@ -244,7 +228,7 @@ export const destroy = async (codCategoria: string) => {
   } catch (error) {
     console.error(
       "Error deleting categoria:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     // manejo de errores de DB
@@ -257,7 +241,7 @@ export const destroy = async (codCategoria: string) => {
 
       if (prismaError.code === "P2003") {
         throw new DatabaseError(
-          "No se puede eliminar: la categoría está siendo utilizada"
+          "No se puede eliminar: la categoría está siendo utilizada",
         );
       }
     }
@@ -272,23 +256,20 @@ export const destroy = async (codCategoria: string) => {
 
 const getCategoryIndex = (nombreCategoria: string) => {
   const normalized = nombreCategoria.trim().toLowerCase();
-  return CATEGORY_RANK.findIndex(
-    (name) => name.toLowerCase() === normalized
-  );
+  return CATEGORY_RANK.findIndex((name) => name.toLowerCase() === normalized);
 };
 
 const getAdjacentCategoryName = (
   nombreCategoria: string,
-  direction: CategoryDirection
+  direction: CategoryDirection,
 ) => {
   const currentIndex = getCategoryIndex(nombreCategoria);
   if (currentIndex === -1) {
     return null;
   }
 
-  const targetIndex = direction === "promote"
-    ? currentIndex + 1
-    : currentIndex - 1;
+  const targetIndex =
+    direction === "promote" ? currentIndex + 1 : currentIndex - 1;
 
   return CATEGORY_RANK[targetIndex] || null;
 };
@@ -317,9 +298,7 @@ const getCurrentClientsByCategory = async (codCategoria: string) => {
     },
   });
 
-  return currentEntries.filter(
-    (entry) => entry.codCategoria === codCategoria
-  );
+  return currentEntries.filter((entry) => entry.codCategoria === codCategoria);
 };
 
 export const listClientsForCategory = async (codCategoria: string) => {
@@ -335,7 +314,7 @@ export const listClientsForCategory = async (codCategoria: string) => {
     }
 
     const currentClients = await getCurrentClientsByCategory(
-      sanitizedCodCategoria
+      sanitizedCodCategoria,
     );
     const clientIds = currentClients.map((entry) => entry.codCliente);
 
@@ -358,11 +337,9 @@ export const listClientsForCategory = async (codCategoria: string) => {
         },
       });
 
-      totals.forEach((row) =>
-        totalsMap.set(row.codCliente, row._count._all)
-      );
+      totals.forEach((row) => totalsMap.set(row.codCliente, row._count._all));
       canceled.forEach((row) =>
-        canceledMap.set(row.codCliente, row._count._all)
+        canceledMap.set(row.codCliente, row._count._all),
       );
     }
 
@@ -387,7 +364,7 @@ export const listClientsForCategory = async (codCategoria: string) => {
 
     console.error(
       "Error listing clients for category:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al obtener clientes de la categoría");
   }
@@ -396,7 +373,7 @@ export const listClientsForCategory = async (codCategoria: string) => {
 export const destroyWithClientReassignment = async (
   codCategoria: string,
   action?: DeleteCategoryAction,
-  perClient?: Array<{ codCliente: string; decision: CategoryDirection }>
+  perClient?: Array<{ codCliente: string; decision: CategoryDirection }>,
 ) => {
   try {
     const sanitizedCodCategoria = sanitizeInput(codCategoria);
@@ -411,19 +388,19 @@ export const destroyWithClientReassignment = async (
     if (
       PROTECTED_CATEGORY_NAMES.some(
         (name) =>
-          name.toLowerCase() === categoria.nombreCategoria.trim().toLowerCase()
+          name.toLowerCase() === categoria.nombreCategoria.trim().toLowerCase(),
       )
     ) {
       throw new DatabaseError("No se puede eliminar la categoría Inicial");
     }
 
     const currentClients = await getCurrentClientsByCategory(
-      sanitizedCodCategoria
+      sanitizedCodCategoria,
     );
 
     if (currentClients.length > 0 && !action) {
       throw new DatabaseError(
-        "Se requiere una acción para reasignar los clientes"
+        "Se requiere una acción para reasignar los clientes",
       );
     }
 
@@ -446,7 +423,7 @@ export const destroyWithClientReassignment = async (
       } else if (action === "per_client") {
         if (!perClient || perClient.length === 0) {
           throw new DatabaseError(
-            "Se requieren decisiones por cliente para continuar"
+            "Se requieren decisiones por cliente para continuar",
           );
         }
 
@@ -456,13 +433,11 @@ export const destroyWithClientReassignment = async (
       }
 
       const missingDecisions = currentClients.filter(
-        (entry) => !decisionsMap.has(entry.codCliente)
+        (entry) => !decisionsMap.has(entry.codCliente),
       );
 
       if (missingDecisions.length > 0) {
-        throw new DatabaseError(
-          "Faltan decisiones para algunos clientes"
-        );
+        throw new DatabaseError("Faltan decisiones para algunos clientes");
       }
 
       const targetNames = new Set<string>();
@@ -474,14 +449,14 @@ export const destroyWithClientReassignment = async (
 
         const targetName = getAdjacentCategoryName(
           categoria.nombreCategoria,
-          decision
+          decision,
         );
 
         if (!targetName) {
           throw new DatabaseError(
             `No se puede ${
               decision === "promote" ? "subir" : "bajar"
-            } la categoría ${categoria.nombreCategoria}`
+            } la categoría ${categoria.nombreCategoria}`,
           );
         }
 
@@ -495,14 +470,14 @@ export const destroyWithClientReassignment = async (
       });
 
       const targetMap = new Map(
-        targetCategories.map((cat) => [cat.nombreCategoria, cat.codCategoria])
+        targetCategories.map((cat) => [cat.nombreCategoria, cat.codCategoria]),
       );
 
       for (const [codCliente, targetName] of clientTargets.entries()) {
         const targetId = targetMap.get(targetName);
         if (!targetId) {
           throw new DatabaseError(
-            `No se encontro la categoria destino ${targetName}`
+            `No se encontro la categoria destino ${targetName}`,
           );
         }
 
@@ -537,7 +512,7 @@ export const destroyWithClientReassignment = async (
   } catch (error) {
     console.error(
       "Error deleting categoria with reassignment:",
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
 
     if (error instanceof DatabaseError) {

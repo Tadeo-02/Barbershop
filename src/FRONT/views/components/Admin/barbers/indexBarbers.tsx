@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
-import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
+import { BranchWithIdSchema } from "../../../../../BACK/schemas/branchesSchema";
+import { BarberResponseSchema } from "../../../../../BACK/schemas/usersSchema";
 
 // Usamos el schema exportado desde el backend como single source of truth
 type Barbero = z.infer<typeof BarberResponseSchema>;

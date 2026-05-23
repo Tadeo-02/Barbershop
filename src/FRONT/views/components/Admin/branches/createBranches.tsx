@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast"; //importamos libreria de alertas
-import { BranchSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { BranchSchema } from "../../../../../BACK/schemas/branchesSchema";
 import {
   isAbortError,
   useAbortController,
