@@ -6,7 +6,7 @@ import styles from "./HomePageBarber.module.css";
 import {
   isAbortError,
   useAbortController,
-} from "../../components/shared/useAbortController";
+} from "../../components/shared/useAbortController.ts";
 
 interface AppointmentPartial {
   codTurno: string;

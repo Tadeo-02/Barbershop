@@ -11,7 +11,7 @@ import {
 } from "../middleware/deduplication";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
-import { AvailabilitySchema } from "../Schemas/availabilitySchema";
+import { AvailabilitySchema } from "../schemas/availabilitySchema";
 
 const router: Router = Router();
 

@@ -1,46 +1,46 @@
 // import { useState } from "react";
 import "./App.css";
 // Componentes Generales
-import Login from "./components/login/login.tsx";
-import CreateUser from "./components/login/createUser.tsx";
-import ResetSecurity from "./components/login/resetSecurity.tsx";
+import Login from "./components/user/login.tsx";
+import CreateUser from "./components/user/createUser.tsx";
+import ResetSecurity from "./components/user/resetSecurity.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
-import { AuthProvider } from "./components/login/authContext.tsx";
+import { AuthProvider } from "./components/user/AuthContext.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { AutoRedirect } from "./components/Redirect.tsx"; // puede ser que no haga falta
 import LandingPage from "./components/landingPage.tsx";
 
 // Client
-import ProfilePage from "./pages/Client/ProfilePage.tsx";
-import Home from "./components/Client/home/home.tsx";
+import ProfilePage from "./pages/client/ProfilePage.tsx";
+import Home from "./components/client/home/home.tsx";
 
-import Branches from "./components/Client/branches.tsx";
-import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
-import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
-import ClientAppointments from "./components/Client/clientAppointments.tsx";
-import ReceiptViewer from "./components/Client/appointments/receiptViewer.tsx";
-import ShowCategories from "./components/Admin/categories/showCategories.tsx";
+import Branches from "./components/client/branches.tsx";
+import BarbersByBranch from "./components/client/barbersByBranch.tsx";
+import ScheduleByBranch from "./components/client/scheduleByBranch.tsx";
+import ClientAppointments from "./components/client/clientAppointments.tsx";
+import ReceiptViewer from "./components/client/appointments/receiptViewer.tsx";
+import ShowCategories from "./components/admin/categories/showCategories.tsx";
 
 // Barber
-import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
+import HomePageBarber from "./pages/barber/HomePageBarber.tsx";
 // import HomeBarber from "./components/Barber/home/home.tsx";
-import BarberAppointments from "./components/Barber/appointments/barberAppointments.tsx";
-import BranchAppointments from "./components/Barber/appointments/branchAppointments.tsx";
-import BarberReceiptViewer from "./components/Barber/appointments/receiptViewer.tsx";
-import BarberAvailability from "./components/Barber/appointments/barberAvailability.tsx";
-import MyAvailability from "./components/Barber/appointments/myAvailability.tsx";
+import BarberAppointments from "./components/barber/appointments/barberAppointments.tsx";
+import BranchAppointments from "./components/barber/appointments/branchAppointments.tsx";
+import BarberReceiptViewer from "./components/barber/appointments/receiptViewer.tsx";
+import BarberAvailability from "./components/barber/appointments/barberAvailability.tsx";
+import MyAvailability from "./components/barber/appointments/myAvailability.tsx";
 
 // Admin
-import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
-import BarbersPage from "./pages/Admin/BarbersPage.tsx";
-import CategoriesPage from "./pages/Admin/CategoriesPage.tsx";
-import BranchesPage from "./pages/Admin/BranchesPage.tsx";
-import HairCutTypesPage from "./pages/Admin/HaircutTypesPage.tsx";
-import ClientsPage from "./pages/Admin/ClientsPage.tsx";
-import RentabilityByBranch from "./pages/Admin/RentabilityByBranch.tsx";
+import HomePageAdmin from "./pages/admin/HomePageAdmin.tsx";
+import BarbersPage from "./pages/admin/BarbersPage.tsx";
+import CategoriesPage from "./pages/admin/CategoriesPage.tsx";
+import BranchesPage from "./pages/admin/BranchesPage.tsx";
+import HairCutTypesPage from "./pages/admin/HaircutTypesPage.tsx";
+import ClientsPage from "./pages/admin/ClientsPage.tsx";
+import RentabilityByBranch from "./pages/admin/RentabilityByBranch.tsx";
 
 function App() {
   return (

@@ -15,7 +15,7 @@ import {
 } from "../middleware/deduplication";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
-import { UserSchema, UserUpdateSchema } from "../Schemas/usersSchema";
+import { UserSchema, UserUpdateSchema } from "../schemas/usersSchema";
 
 const router: Router = Router();
 
@@ -127,23 +127,23 @@ router.get(
   userLimiter,
   validateRequest({ params: codUsuarioParamSchema }),
   async (req, res) => {
-  try {
-    const { codUsuario } = req.params;
+    try {
+      const { codUsuario } = req.params;
 
-    const userWithCategory = await findByIdWithCategory(codUsuario);
+      const userWithCategory = await findByIdWithCategory(codUsuario);
 
-    res.json({
-      success: true,
-      data: userWithCategory,
-    });
-  } catch (error) {
-    console.error("Error getting user profile with category:", error);
-    res.status(500).json({
-      success: false,
-      message:
-        error instanceof Error ? error.message : "Error interno del servidor",
-    });
-  }
+      res.json({
+        success: true,
+        data: userWithCategory,
+      });
+    } catch (error) {
+      console.error("Error getting user profile with category:", error);
+      res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Error interno del servidor",
+      });
+    }
   },
 );
 
@@ -184,7 +184,10 @@ const baseRouter = createRouter(controller, {
     read: [validateRequest({ params: optionalUserParamSchema })],
     create: [validateRequest({ body: UserSchema })],
     update: [
-      validateRequest({ params: codUsuarioParamSchema, body: UserUpdateSchema }),
+      validateRequest({
+        params: codUsuarioParamSchema,
+        body: UserUpdateSchema,
+      }),
     ],
     delete: [validateRequest({ params: codUsuarioParamSchema })],
   },

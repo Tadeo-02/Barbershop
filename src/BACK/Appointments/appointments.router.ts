@@ -9,9 +9,11 @@ import {
   strictDeduplication,
   standardDeduplication,
 } from "../middleware/deduplication";
+import {authMiddleware} from "../middleware/authMiddleware";
+import {roleMiddleware} from "../middleware/roleMiddleware";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
-import { AppointmentSchema } from "../Schemas/appointmentsSchema";
+import { AppointmentSchema } from "../schemas/appointmentsSchema";
 
 const router: Router = Router();
 
@@ -44,6 +46,8 @@ const updateAppointmentBodySchema = z.object({
 // Uses user-based rate limiting for authenticated users
 router.post(
   "/",
+  //agregado de JWT
+  authMiddleware,
   userModificationLimiter,
   strictDeduplication,
   validateRequest({ body: AppointmentSchema.omit({ codTurno: true }) }),

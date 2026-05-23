@@ -1,16 +1,14 @@
-import * as model from "./Branches";
+import * as model from "./branches";
 import type { Request, Response } from "express";
-import { BranchResponseSchema } from "../../Schemas/branchesSchema";
+import { BranchResponseSchema } from "../../schemas/branchesSchema";
 import { BaseController } from "../../base/base.controller"; // improtamos al base controller
 // creamos el modelo de controlador de sucursales
 type BranchEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type BranchCreateArgs = Parameters<typeof model.store>;
-type BranchUpdateArgs = Parameters<typeof model.update> extends [
-  string,
-  ...infer Rest
-]
-  ? Rest
-  : never;
+type BranchUpdateArgs =
+  Parameters<typeof model.update> extends [string, ...infer Rest]
+    ? Rest
+    : never;
 
 class BranchesController extends BaseController<
   BranchEntity,
@@ -48,8 +46,7 @@ class BranchesController extends BaseController<
 }
 //creamos la instancia del controlador de sucursales
 const branchesController = new BranchesController();
-console.log("Branches controller store:", typeof branchesController.store);
-console.log("Branches model:", typeof model.store);
+
 export const { create, store, index, show, edit, update, destroy } =
   branchesController;
 export const deactivate = branchesController.destroy.bind(branchesController);

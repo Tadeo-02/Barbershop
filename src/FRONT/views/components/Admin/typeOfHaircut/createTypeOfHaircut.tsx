@@ -3,7 +3,7 @@ import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
 import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
-import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
+import { HaircutSchema } from "../../../../../BACK/schemas/typeOfHaircutSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import {

@@ -1,4 +1,4 @@
-import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
+import { prisma, DatabaseError, sanitizeInput } from "../base/base";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { hashPassword, comparePassword } from "../users/bcrypt";
@@ -6,7 +6,7 @@ import {
   LoginSchema,
   UserSchema,
   UserBaseSchemaExport,
-} from "../Schemas/usersSchema";
+} from "../schemas/usersSchema";
 import {
   getDiscountCycle,
   turnsUntilNextDiscount as calcTurnsUntilNextDiscount,
@@ -189,19 +189,19 @@ export const store = async (
       cuilValue = validatedData.cuil.replace(/[-\s]/g, "");
     }
     // Crear usuario (mapeando contraseña -> contrase_a, sin transacción para evitar errores de transacción en dev)
-  const createData: Prisma.usuariosUncheckedCreateInput = {
-        dni: validatedData.dni,
-        cuil: cuilValue, // Los usuarios normales no tienen CUIL !
-        nombre: validatedData.nombre,
-        apellido: validatedData.apellido,
-        telefono: validatedData.telefono,
-        email: validatedData.email,
-        contrase_a: hashedPassword,
-        codSucursal: codSucursal || null,
-        preguntaSeguridad:
-          validatedData.preguntaSeguridad || preguntaSeguridad || null,
-        respuestaSeguridad: hashedRespuestaSeguridad || null,
-      };
+    const createData: Prisma.usuariosUncheckedCreateInput = {
+      dni: validatedData.dni,
+      cuil: cuilValue, // Los usuarios normales no tienen CUIL !
+      nombre: validatedData.nombre,
+      apellido: validatedData.apellido,
+      telefono: validatedData.telefono,
+      email: validatedData.email,
+      contrase_a: hashedPassword,
+      codSucursal: codSucursal || null,
+      preguntaSeguridad:
+        validatedData.preguntaSeguridad || preguntaSeguridad || null,
+      respuestaSeguridad: hashedRespuestaSeguridad || null,
+    };
 
     const usuario = await prisma.usuarios.create({
       data: createData,
@@ -601,7 +601,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       }
     }
     // preparo los datos obligatorios para la actualizacion
-  const updateData: Prisma.usuariosUncheckedUpdateInput = {
+    const updateData: Prisma.usuariosUncheckedUpdateInput = {
       //! Criminal
       dni: validatedData.dni,
       nombre: validatedData.nombre,

@@ -1,7 +1,7 @@
-import { prisma, DatabaseError, sanitizeInput } from "../base/Base"; // importamos todo desde Base
+import { prisma, DatabaseError, sanitizeInput } from "../base/base"; // importamos todo desde Base
 import { z } from "zod";
-import { AppointmentSchema } from "../Schemas/appointmentsSchema";
-import { billAppointment } from "../billing/Billing";
+import { AppointmentSchema } from "../schemas/appointmentsSchema";
+import { billAppointment } from "../billing/billing";
 import { getDiscountCycle, applyDiscountIfEligible } from "../lib/discount";
 
 // Umbrales configurables (pueden ser sobreescritos por env vars durante pruebas)

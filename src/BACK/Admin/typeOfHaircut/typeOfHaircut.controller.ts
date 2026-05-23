@@ -1,15 +1,13 @@
 import * as model from "./typeOfHaircut";
 import { BaseController } from "../../base/base.controller"; // importamos las reques, responde y dataBaseError de la base
-import { HaircutResponseSchema } from "../../Schemas/typeOfHaircutSchema";
+import { HaircutResponseSchema } from "../../schemas/typeOfHaircutSchema";
 // creamos la clase barberController para enviar y manejar el base
 type HaircutEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type HaircutCreateArgs = Parameters<typeof model.store>;
-type HaircutUpdateArgs = Parameters<typeof model.update> extends [
-  string,
-  ...infer Rest
-]
-  ? Rest
-  : never;
+type HaircutUpdateArgs =
+  Parameters<typeof model.update> extends [string, ...infer Rest]
+    ? Rest
+    : never;
 
 class TypeOfHaircutController extends BaseController<
   HaircutEntity,
