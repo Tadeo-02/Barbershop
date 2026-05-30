@@ -3,11 +3,8 @@ import { useAuth } from "../user/AuthContext";
 import barberStyles from "../Client/clientAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import {
-  AppointmentFull,
-  formatDate,
-  formatTime,
-} from "../shared/appointments";
+import type { AppointmentFull } from "../shared/appointments";
+import { formatDate, formatTime } from "../shared/appointments";
 
 const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();

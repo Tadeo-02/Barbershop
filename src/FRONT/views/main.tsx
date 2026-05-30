@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.js";
+import App from "./App";
 import { applyZodErrorMap } from "./lib/zodErrorMap";
 
 applyZodErrorMap();
@@ -14,5 +14,5 @@ if (rootElement) {
     </StrictMode>
   );
 } else {
-  throw new Error('Root element not found');
+  throw new Error("Root element not found");
 }

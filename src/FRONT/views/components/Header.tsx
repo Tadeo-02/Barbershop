@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./user/AuthContext.tsx";
 import styles from "./header.module.css";
 import { isAbortError, useAbortController } from "./shared/useAbortController";
+import { apiFetch } from "../lib/apiFetch";
 // import logoBarber from "../../public/images/logoBarber.png";
 
 function Header() {

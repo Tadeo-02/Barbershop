@@ -3,6 +3,7 @@ import styles from "./infoSection.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../BACK/schemas/branchesSchema";
+import { apiFetch } from "../lib/apiFetch";
 
 /*
 1) Schema Zod (BranchWithIdSchema); validación del contrato de datos entre backend y frontend,
