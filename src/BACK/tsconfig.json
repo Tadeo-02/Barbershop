@@ -18,6 +18,6 @@
     "types": ["node"],
     "typeRoots": ["./types", "../../node_modules/@types"]
   },
-  "include": ["**/*.ts", "../FRONT/views/lib/apiFetch.ts"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

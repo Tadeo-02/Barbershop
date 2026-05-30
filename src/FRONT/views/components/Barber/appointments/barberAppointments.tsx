@@ -4,11 +4,8 @@ import barberStyles from "./barberAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import TimeSlotPicker from "../../shared/TimeSlotPicker";
-import {
-  AppointmentFull,
-  formatDate,
-  formatTime,
-} from "../../shared/appointments";
+import type { AppointmentFull } from "../../shared/appointments";
+import { formatDate, formatTime } from "../../shared/appointments";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
