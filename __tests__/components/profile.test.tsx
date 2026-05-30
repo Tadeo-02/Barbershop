@@ -15,7 +15,7 @@ vi.mock("react-hot-toast", () => ({
 
 // We mock the AuthContext module so tests can control the returned user.
 const mockUseAuth = vi.fn();
-vi.mock("../../src/FRONT/views/components/login/AuthContext.tsx", () => ({
+vi.mock("../../src/FRONT/views/components/user/AuthContext.tsx", () => ({
   useAuth: () => mockUseAuth(),
 }));
 

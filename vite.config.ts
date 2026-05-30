@@ -2,6 +2,11 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@lib": "/src/FRONT/views/lib",
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",

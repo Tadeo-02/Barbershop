@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../../login/authContext";
+import { useAuth } from "../../user/AuthContext";
 import toast from "react-hot-toast";
 import styles from "./barberAvailability.module.css";
 import AvailabilityForm from "./AvailabilityForm";

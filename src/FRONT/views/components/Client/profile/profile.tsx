@@ -1,4 +1,4 @@
-import { useAuth } from "../../login/authContext";
+import { useAuth } from "../../user/AuthContext";
 import { useEffect, useState } from "react";
 import styles from "./profile.module.css";
 import toast from "react-hot-toast";

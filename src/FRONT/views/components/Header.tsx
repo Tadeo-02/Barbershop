@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "./login/authContext.tsx";
+import { useAuth } from "./user/AuthContext.tsx";
 import styles from "./header.module.css";
 import { isAbortError, useAbortController } from "./shared/useAbortController";
 // import logoBarber from "../../public/images/logoBarber.png";

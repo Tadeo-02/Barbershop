@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../login/authContext";
+import { useAuth } from "../user/AuthContext";
 import barberStyles from "../Client/clientAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
