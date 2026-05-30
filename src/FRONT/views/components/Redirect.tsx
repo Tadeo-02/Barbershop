@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "./login/authContext";
+import { useAuth } from "./user/AuthContext";
 import React from "react";
 import "./Redirect.module.css";
 import toast from "react-hot-toast";

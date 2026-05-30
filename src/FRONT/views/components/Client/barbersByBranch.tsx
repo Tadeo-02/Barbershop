@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../BACK/schemas/branchesSchema.ts";
-import { useAuth } from "../login/authContext.tsx";
+import { useAuth } from "../user/AuthContext.tsx";
 
 interface Barbero {
   codUsuario: string;

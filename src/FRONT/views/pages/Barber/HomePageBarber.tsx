@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaCut, FaRegClock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../components/login/authContext.tsx";
+import { useAuth } from "../../components/user/AuthContext.tsx";
 import styles from "./HomePageBarber.module.css";
 import {
   isAbortError,

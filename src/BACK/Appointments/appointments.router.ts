@@ -9,14 +9,15 @@ import {
   strictDeduplication,
   standardDeduplication,
 } from "../middleware/deduplication";
-import {authMiddleware} from "../middleware/authMiddleware";
-import {roleMiddleware} from "../middleware/roleMiddleware";
+import { authMiddleware } from "../middleware/authMiddleware";
+import { requireRole } from "../middleware/roleMiddleware";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
 import { AppointmentSchema } from "../schemas/appointmentsSchema";
 
 const router: Router = Router();
 
+// — schemas igual que antes, sin cambios —
 const codTurnoParamSchema = z.object({ codTurno: z.string().min(1) });
 const optionalTurnoParamSchema = z.object({
   codTurno: z.string().optional(),
@@ -42,31 +43,42 @@ const updateAppointmentBodySchema = z.object({
   horaHasta: z.string().min(1),
 });
 
-// Apply strict deduplication and rate limiting to appointment creation to prevent double-booking
-// Uses user-based rate limiting for authenticated users
+// ─── CREAR TURNO ────────────────────────────────────────────────────────────
+// Solo clientes crean turnos (no tiene sentido que un barbero se saque turno)
 router.post(
   "/",
-  //agregado de JWT
   authMiddleware,
+  requireRole("client", "admin"), // admin puede crear en nombre de un cliente
   userModificationLimiter,
   strictDeduplication,
   validateRequest({ body: AppointmentSchema.omit({ codTurno: true }) }),
   controller.store,
 );
 
-// Create base router for other CRUD operations
+// ─── BASE ROUTER (CRUD genérico) ─────────────────────────────────────────────
+// El index/show del baseRouter no se usa en producción para appointments
+// (se usan las rutas específicas de abajo), pero se protegen igual
 const baseRouter = createRouter(controller, {
   create: "/create",
   idParam: "codTurno",
   updatePath: "/update",
   middleware: {
-    read: [userLimiter, validateRequest({ params: optionalTurnoParamSchema })],
+    read: [
+      authMiddleware,
+      requireRole("barber", "admin"), // solo staff ve el listado genérico
+      userLimiter,
+      validateRequest({ params: optionalTurnoParamSchema }),
+    ],
     create: [
+      authMiddleware,
+      requireRole("client", "admin"),
       userModificationLimiter,
       strictDeduplication,
       validateRequest({ body: AppointmentSchema.omit({ codTurno: true }) }),
     ],
     update: [
+      authMiddleware,
+      requireRole("barber", "admin"),
       userModificationLimiter,
       standardDeduplication,
       validateRequest({
@@ -75,6 +87,8 @@ const baseRouter = createRouter(controller, {
       }),
     ],
     delete: [
+      authMiddleware,
+      requireRole("admin"), // solo admin puede eliminar físicamente
       userModificationLimiter,
       standardDeduplication,
       validateRequest({ params: codTurnoParamSchema }),
@@ -82,58 +96,84 @@ const baseRouter = createRouter(controller, {
   },
 });
 
-// Merge base routes
 router.use(baseRouter);
 
-// Rutas adicionales específicas para appointments
-// Read operations - standard user limiting
+// ─── CONSULTAS DE DISPONIBILIDAD ─────────────────────────────────────────────
+// Pública con rate limit: cualquiera necesita ver horarios disponibles
+// (incluso antes de loguearse para decidir si sacar turno)
 router.get(
   "/available/:fechaTurno/:codSucursal",
   userLimiter,
   validateRequest({ params: availableParamsSchema }),
   controller.findByAvailableDate,
 );
-router.get(
-  "/barber/:codBarbero/:fechaTurno",
-  userLimiter,
-  validateRequest({ params: barberParamsSchema }),
-  controller.findByBarberId,
-);
+
+// ─── CONSULTAS DEL CLIENTE ───────────────────────────────────────────────────
+// Un cliente solo puede ver SUS turnos — la validación de ownership va en el controller
 router.get(
   "/user/:codUsuario",
+  authMiddleware,
+  requireRole("client", "admin"),
   userLimiter,
   validateRequest({ params: userParamsSchema }),
   controller.findByUserId,
 );
+
+// ─── CONSULTAS DEL BARBERO ───────────────────────────────────────────────────
 router.get(
-  "/branch/:codSucursal",
+  "/barber/:codBarbero/:fechaTurno",
+  authMiddleware,
+  requireRole("barber", "admin"),
   userLimiter,
-  validateRequest({ params: branchParamsSchema }),
-  controller.findByBranchId,
+  validateRequest({ params: barberParamsSchema }),
+  controller.findByBarberId,
 );
+
 router.get(
   "/pending/barber/:codBarbero",
+  authMiddleware,
+  requireRole("barber", "admin"),
   userLimiter,
   validateRequest({ params: z.object({ codBarbero: z.string().min(1) }) }),
   controller.findPendingByBarberId,
 );
+
+// ─── CONSULTAS DE SUCURSAL (STAFF) ───────────────────────────────────────────
+router.get(
+  "/branch/:codSucursal",
+  authMiddleware,
+  requireRole("barber", "admin"),
+  userLimiter,
+  validateRequest({ params: branchParamsSchema }),
+  controller.findByBranchId,
+);
+
 router.get(
   "/pending/branch/:codSucursal",
+  authMiddleware,
+  requireRole("barber", "admin"),
   userLimiter,
   validateRequest({ params: branchParamsSchema }),
   controller.findPendingByBranchId,
 );
 
-// Modification operations - user modification limiting
+// ─── MODIFICACIONES DE ESTADO ────────────────────────────────────────────────
+// Cancelar: cliente cancela el suyo, barbero/admin pueden cancelar cualquiera
 router.put(
   "/:codTurno/cancel",
+  authMiddleware,
+  requireRole("client", "barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
   validateRequest({ params: codTurnoParamSchema }),
   controller.cancelAppointment,
 );
+
+// Checkout: solo el barbero que atendió o admin cierran el turno con pago
 router.put(
   "/:codTurno/checkout",
+  authMiddleware,
+  requireRole("barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
   validateRequest({
@@ -142,8 +182,12 @@ router.put(
   }),
   controller.checkoutAppointment,
 );
+
+// Reprogramar: cliente puede mover su turno, barbero/admin también
 router.put(
   "/:codTurno/update",
+  authMiddleware,
+  requireRole("client", "barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
   validateRequest({
@@ -152,8 +196,12 @@ router.put(
   }),
   controller.updateAppointment,
 );
+
+// No-show: solo el barbero o admin marcan inasistencia
 router.put(
   "/:codTurno/no-show",
+  authMiddleware,
+  requireRole("barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
   validateRequest({ params: codTurnoParamSchema }),

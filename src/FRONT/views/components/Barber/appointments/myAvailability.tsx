@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useAuth } from "../../login/authContext";
+import { useAuth } from "../../user/AuthContext";
 import listStyles from "./barberAppointments.module.css";
 import AvailabilityForm from "./AvailabilityForm";
 import type { AvailabilityFormValues } from "./AvailabilityForm";
@@ -16,6 +16,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { apiFetch } from "../../../lib/apiFetch";
 
 interface Availability {
   codBloqueo: string;
