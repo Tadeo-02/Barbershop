@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./receiptViewer.module.css";
 import toast from "react-hot-toast";
+import { apiFetch } from "../../../lib/apiFetch";
 
 interface BillingData {
   codTurno: string;

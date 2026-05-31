@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
+import { apiFetch } from "../../../lib/apiFetch";
 
 interface TipoCorte {
   codCorte: string;

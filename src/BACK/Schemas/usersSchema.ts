@@ -5,7 +5,7 @@ export const PASSWORD_MIN_LENGTH = 10;
 export const PASSWORD_MAX_LENGTH = 128;
 export const PASSWORD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)/;
 export const PASSWORD_PATTERN = `(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*\\W).{${PASSWORD_MIN_LENGTH},${PASSWORD_MAX_LENGTH}}`;
-export const PHONE_REGEX = /^\+?[\d\s()\-]{6,20}$/;
+export const PHONE_REGEX = /^\+?[\d\s()-]{6,20}$/;
 // Función para validar CUIL (acepta formato con guiones o 11 dígitos sin guiones)
 const validateCUIL = (cuil: string, dni: string): boolean => {
   if (!cuil) return false;

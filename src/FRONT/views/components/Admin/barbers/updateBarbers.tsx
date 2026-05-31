@@ -14,6 +14,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { apiFetch } from "../../../lib/apiFetch";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 

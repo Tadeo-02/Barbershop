@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
+import { apiFetch } from "../../lib/apiFetch";
 // import toast from "react-hot-toast";
 interface Branch {
   codSucursal: string;

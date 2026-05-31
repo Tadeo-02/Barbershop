@@ -22,6 +22,20 @@ const baseUser = {
   email: "juan@example.com",
 };
 
+const makeToken = (rol: "client" | "barber" | "admin") => {
+  const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+  const payload = btoa(
+    JSON.stringify({
+      codUsuario: baseUser.codUsuario,
+      codSucursal: null,
+      rol,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    }),
+  );
+
+  return `${header}.${payload}.signature`;
+};
+
 beforeEach(() => {
   localStorage.clear();
 });
@@ -40,6 +54,7 @@ describe("AuthProvider — initial state", () => {
     const storedUser = { ...baseUser };
     localStorage.setItem("user", JSON.stringify(storedUser));
     localStorage.setItem("userType", "client");
+    localStorage.setItem("token", makeToken("client"));
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -60,19 +75,24 @@ describe("AuthProvider — initial state", () => {
 describe("AuthProvider — login userType derivation", () => {
   it('assigns "client" when cuil is null', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login({ ...baseUser, cuil: null }));
+    act(() => result.current.login({ ...baseUser, cuil: null }, makeToken("client")));
     expect(result.current.userType).toBe("client");
   });
 
   it('assigns "admin" when cuil is "1"', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login({ ...baseUser, cuil: "1" }));
+    act(() => result.current.login({ ...baseUser, cuil: "1" }, makeToken("admin")));
     expect(result.current.userType).toBe("admin");
   });
 
   it('assigns "barber" when cuil is a real CUIL string (not "1")', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login({ ...baseUser, cuil: "20-12345678-5" }));
+    act(() =>
+      result.current.login(
+        { ...baseUser, cuil: "20-12345678-5" },
+        makeToken("barber"),
+      ),
+    );
     expect(result.current.userType).toBe("barber");
   });
 });
@@ -82,23 +102,29 @@ describe("AuthProvider — login userType derivation", () => {
 describe("AuthProvider — login side effects", () => {
   it("sets the user in state and marks isAuthenticated", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login(baseUser));
+    act(() => result.current.login(baseUser, makeToken("client")));
     expect(result.current.user).toMatchObject(baseUser);
     expect(result.current.isAuthenticated).toBe(true);
   });
 
   it("persists user and userType to localStorage", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login(baseUser));
+    const token = makeToken("client");
+    act(() => result.current.login(baseUser, token));
 
     expect(JSON.parse(localStorage.getItem("user")!)).toMatchObject(baseUser);
     expect(localStorage.getItem("userType")).toBe("client");
+    expect(localStorage.getItem("token")).toBe(token);
   });
 
   it("overwrites a previous session when login is called again", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login({ ...baseUser, cuil: "1" })); // admin
-    act(() => result.current.login({ ...baseUser, cuil: null })); // client
+    act(() =>
+      result.current.login({ ...baseUser, cuil: "1" }, makeToken("admin")),
+    );
+    act(() =>
+      result.current.login({ ...baseUser, cuil: null }, makeToken("client")),
+    );
 
     expect(result.current.userType).toBe("client");
     expect(localStorage.getItem("userType")).toBe("client");
@@ -110,7 +136,7 @@ describe("AuthProvider — login side effects", () => {
 describe("AuthProvider — logout", () => {
   it("clears user and userType from state", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login(baseUser));
+    act(() => result.current.login(baseUser, makeToken("client")));
     act(() => result.current.logout());
 
     expect(result.current.user).toBeNull();
@@ -120,11 +146,12 @@ describe("AuthProvider — logout", () => {
 
   it("removes user and userType from localStorage", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login(baseUser));
+    act(() => result.current.login(baseUser, makeToken("client")));
     act(() => result.current.logout());
 
     expect(localStorage.getItem("user")).toBeNull();
     expect(localStorage.getItem("userType")).toBeNull();
+    expect(localStorage.getItem("token")).toBeNull();
   });
 });
 

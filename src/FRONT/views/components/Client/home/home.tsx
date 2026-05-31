@@ -8,6 +8,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { apiFetch } from "../../../lib/apiFetch";
 
 interface AppointmentSummary {
   codTurno: string;

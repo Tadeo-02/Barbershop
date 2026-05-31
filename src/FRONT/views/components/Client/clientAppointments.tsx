@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import type { AppointmentFull } from "../shared/appointments";
 import { formatDate, formatTime } from "../shared/appointments";
+import { apiFetch } from "../../lib/apiFetch.ts";
 
 const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();

@@ -8,15 +8,6 @@ interface JwtPayload {
   rol: "admin" | "barber" | "client";
 }
 
-// Extiende el tipo de Request para que TypeScript conozca req.user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JwtPayload;
-    }
-  }
-}
-
 export function authMiddleware(
   req: Request,
   res: Response,

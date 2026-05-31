@@ -7,6 +7,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../components/shared/useAbortController.ts";
+import { apiFetch } from "../../lib/apiFetch";
 
 interface AppointmentPartial {
   codTurno: string;

@@ -1,13 +1,15 @@
-import { Role } from "@prisma/client";
+type JwtRole = "admin" | "barber" | "client";
 
 declare global {
   namespace Express {
     interface Request {
       user?: {
-        userId: string;
-        role: Role;
-        branchId: string;
+        codUsuario: string;
+        codSucursal: string | null;
+        rol: JwtRole;
       };
     }
   }
 }
+
+export {};

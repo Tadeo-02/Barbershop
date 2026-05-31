@@ -4,6 +4,7 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { CategorySchema } from "../../../../../BACK/schemas/categoriesSchema";
 import type { z } from "zod";
+import { apiFetch } from "../../../lib/apiFetch";
 
 // Inferir tipo desde el schema existente en BACK y mapear a los nombres que usa el frontend
 type Categoria = z.infer<typeof CategorySchema>;

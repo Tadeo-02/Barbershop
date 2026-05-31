@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../../user/AuthContext";
 import listStyles from "./barberAppointments.module.css";
@@ -32,7 +31,6 @@ interface MyAvailabilityProps {
 
 const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
   const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

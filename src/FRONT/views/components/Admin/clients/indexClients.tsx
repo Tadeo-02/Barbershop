@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./indexClients.module.css";
 import toast from "react-hot-toast";
+import { apiFetch } from "../../../lib/apiFetch";
 
 //mantenemos una interfaz local de Cliente que refleja lo que esperamos del backend, y otra ClienteProfile
 //  que extiende a Cliente con los detalles adicionales del perfil.

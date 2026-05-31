@@ -9,6 +9,8 @@ import {
   strictDeduplication,
   standardDeduplication,
 } from "../../middleware/deduplication";
+import { authMiddleware } from "../../middleware/authMiddleware";
+import { requireRole } from "../../middleware/roleMiddleware";
 
 const router: Router = createRouter(controller, {
   create: "/create",
@@ -16,9 +18,24 @@ const router: Router = createRouter(controller, {
   updatePath: "/update",
   middleware: {
     read: [userLimiter],
-    create: [userModificationLimiter, strictDeduplication],
-    update: [userModificationLimiter, standardDeduplication],
-    delete: [userModificationLimiter, standardDeduplication],
+    create: [
+      authMiddleware,
+      requireRole("admin"),
+      userModificationLimiter,
+      strictDeduplication,
+    ],
+    update: [
+      authMiddleware,
+      requireRole("admin"),
+      userModificationLimiter,
+      standardDeduplication,
+    ],
+    delete: [
+      authMiddleware,
+      requireRole("admin"),
+      userModificationLimiter,
+      standardDeduplication,
+    ],
   },
 });
 

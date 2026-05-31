@@ -1,9 +1,11 @@
 import * as model from "./Users";
 import { BaseController } from "../base/base.controller";
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { sanitizeOutput } from "../middleware/zodValidation";
 import {
   BarberResponseSchema,
+  type UserResponse,
   UserResponseSchema,
 } from "../schemas/usersSchema";
 
@@ -181,20 +183,12 @@ class UsersController extends BaseController<
 
   async login(req: Request, res: Response): Promise<void> {
     try {
-      console.log("Login request received");
-      console.log("Request body:", req.body);
-
       const { email, contraseña, correo, clave } = req.body;
-
-      console.log("Extracted fields:", { email, contraseña, correo, clave });
 
       const userEmail = email || correo;
       const userPassword = contraseña || clave;
 
-      console.log("Final values:", { userEmail, userPassword });
-
       if (!userEmail || !userPassword) {
-        console.log("Missing credentials");
         res.status(400).json({
           message: "Email y contraseña son requeridos",
         });
@@ -202,11 +196,33 @@ class UsersController extends BaseController<
       }
 
       const usuario = await model.validateLogin(userEmail, userPassword);
-      const safeUser = sanitizeOutput(UserResponseSchema, usuario);
+      const safeUser = sanitizeOutput<UserResponse>(UserResponseSchema, usuario);
+      const jwtSecret = process.env.JWT_SECRET;
+
+      if (!jwtSecret) {
+        res.status(500).json({
+          message: "JWT_SECRET no configurado",
+        });
+        return;
+      }
+
+      const rol: "admin" | "barber" | "client" =
+        safeUser.cuil === "1" ? "admin" : safeUser.cuil ? "barber" : "client";
+
+      const token = jwt.sign(
+        {
+          codUsuario: safeUser.codUsuario,
+          codSucursal: safeUser.codSucursal ?? null,
+          rol,
+        },
+        jwtSecret,
+        { expiresIn: "8h" },
+      );
 
       res.status(200).json({
         message: "Login exitoso",
         user: safeUser,
+        token,
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -331,13 +347,6 @@ export const getSecurityQuestion = async (req: Request, res: Response) => {
 export const updateSecurityQuestion = async (req: Request, res: Response) => {
   try {
     const { codUsuario } = req.params;
-    const headerUser = req.header("x-user-id");
-    console.log(
-      "updateSecurityQuestion called for:",
-      codUsuario,
-      "headerUser:",
-      headerUser,
-    );
 
     if (!codUsuario) {
       res
@@ -346,8 +355,7 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
       return;
     }
 
-    // Simple protection: require header x-user-id to match param codUsuario
-    if (!headerUser || headerUser !== codUsuario) {
+    if (req.user?.rol !== "admin" && req.user?.codUsuario !== codUsuario) {
       res.status(401).json({ success: false, message: "No autorizado" });
       return;
     }
