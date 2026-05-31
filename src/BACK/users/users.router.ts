@@ -1,7 +1,7 @@
 import * as controller from "./users.controller";
 import createRouter from "../base/base.router";
 import { findByIdWithCategory } from "./Users";
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import {
   authLimiter,
   sensitiveLimiter,
@@ -16,6 +16,8 @@ import {
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
 import { UserSchema, UserUpdateSchema } from "../schemas/usersSchema";
+import { authMiddleware } from "../middleware/authMiddleware";
+import { requireRole } from "../middleware/roleMiddleware";
 
 const router: Router = Router();
 
@@ -58,6 +60,22 @@ const resetPasswordSchema = z.object({
   nuevaContraseña: z.string().min(1),
 });
 
+const requireAdminForStaffUser: RequestHandler = (req, res, next) => {
+  if (!req.body?.cuil && !req.body?.codSucursal) {
+    next();
+    return;
+  }
+
+  authMiddleware(req, res, (authError?: unknown) => {
+    if (authError) {
+      next(authError);
+      return;
+    }
+
+    requireRole("admin")(req, res, next);
+  });
+};
+
 // ========================================
 // NON-AUTHENTICATED ROUTES (IP-based limiting)
 // ========================================
@@ -98,6 +116,7 @@ router.post(
 router.post(
   "/",
   authLimiter,
+  requireAdminForStaffUser,
   strictDeduplication,
   validateRequest({ body: UserSchema }),
   controller.store,
@@ -124,11 +143,21 @@ router.get(
 // User profile - standard user limiting
 router.get(
   "/profiles/:codUsuario",
+  authMiddleware,
+  requireRole("client", "barber", "admin"),
   userLimiter,
   validateRequest({ params: codUsuarioParamSchema }),
   async (req, res) => {
     try {
       const { codUsuario } = req.params;
+
+      if (req.user?.rol === "client" && req.user.codUsuario !== codUsuario) {
+        res.status(403).json({
+          success: false,
+          message: "Acceso denegado",
+        });
+        return;
+      }
 
       const userWithCategory = await findByIdWithCategory(codUsuario);
 
@@ -150,6 +179,8 @@ router.get(
 // Account modification operations - user modification limiting
 router.patch(
   "/:codUsuario/deactivate",
+  authMiddleware,
+  requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
   validateRequest({ params: codUsuarioParamSchema }),
@@ -157,6 +188,8 @@ router.patch(
 );
 router.patch(
   "/:codUsuario/reactivate",
+  authMiddleware,
+  requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
   validateRequest({ params: codUsuarioParamSchema }),
@@ -166,6 +199,8 @@ router.patch(
 // Security question update - sensitive operation for authenticated users
 router.patch(
   "/:codUsuario/security-question",
+  authMiddleware,
+  requireRole("client", "barber", "admin"),
   userSensitiveLimiter,
   strictDeduplication,
   validateRequest({
@@ -181,15 +216,25 @@ const baseRouter = createRouter(controller, {
   idParam: "codUsuario",
   updatePath: "/update",
   middleware: {
-    read: [validateRequest({ params: optionalUserParamSchema })],
+    read: [
+      authMiddleware,
+      requireRole("admin"),
+      validateRequest({ params: optionalUserParamSchema }),
+    ],
     create: [validateRequest({ body: UserSchema })],
     update: [
+      authMiddleware,
+      requireRole("admin"),
       validateRequest({
         params: codUsuarioParamSchema,
         body: UserUpdateSchema,
       }),
     ],
-    delete: [validateRequest({ params: codUsuarioParamSchema })],
+    delete: [
+      authMiddleware,
+      requireRole("admin"),
+      validateRequest({ params: codUsuarioParamSchema }),
+    ],
   },
 });
 

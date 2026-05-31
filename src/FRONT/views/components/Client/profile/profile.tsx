@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "./profile.module.css";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { apiFetch } from "../../../lib/apiFetch";
 
 //! ADAPTAR A MOBILE
 interface CategoriaActual {

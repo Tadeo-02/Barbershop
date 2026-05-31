@@ -7,6 +7,7 @@ import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_PATTERN,
 } from "../../lib/passwordConstants.ts";
+import { apiFetch } from "../../lib/apiFetch";
 import { getPasswordMissing } from "../../lib/passwordRules";
 
 const ResetSecurity: React.FC = () => {

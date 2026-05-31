@@ -10,6 +10,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { apiFetch } from "../../../lib/apiFetch";
 
 const CreateCategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),

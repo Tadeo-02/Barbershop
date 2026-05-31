@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/schemas/branchesSchema";
 import { BarberResponseSchema } from "../../../../../BACK/schemas/usersSchema";
+import { apiFetch } from "../../../lib/apiFetch";
 
 // Usamos el schema exportado desde el backend como single source of truth
 type Barbero = z.infer<typeof BarberResponseSchema>;

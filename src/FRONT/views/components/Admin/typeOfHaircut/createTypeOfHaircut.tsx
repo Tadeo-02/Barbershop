@@ -10,6 +10,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { apiFetch } from "../../../lib/apiFetch";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;
 

@@ -1,5 +1,4 @@
 import PDFDocument from "pdfkit";
-import { AFIP_PUNTO_VENTA } from "../afipConfig";
 import {
     formatAfipDate,
     formatCuit,

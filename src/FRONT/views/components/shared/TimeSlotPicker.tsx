@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from "./TimeSlotPicker.module.css";
+import { apiFetch } from "../../lib/apiFetch.ts";
 
 interface Horario {
   hora: string;
@@ -191,7 +192,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 
   const { manana, tarde, noche } = groupHorariosByPeriod();
 
-  const isWeekday = (date) => {
+  const isWeekday = (date: Date) => {
     return date.getDay() >= 1 && date.getDay() <= 6;
   };
 

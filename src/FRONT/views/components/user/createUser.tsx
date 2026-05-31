@@ -14,17 +14,7 @@ import {
 } from "../../lib/passwordConstants.ts";
 import { getPasswordMissing } from "../../lib/passwordRules";
 import { isAbortError, useAbortController } from "../shared/useAbortController";
-
-//! Mejoras FrontEnd
-/*
-1) formState: { isSubmitting }; es el mejor lock disponible de frontEnd
-2) <form onSubmit={handleSubmit(onSubmit)}>; prevención de errores
-3) aborController; resuelve problemas como request colgadas, multiples envios consecutivos, request tardías,
-hace que el backend procese menos 'basura' y mantiene un estado coherente
-4) fieldset disabled={isSubmitting}; bloquea inputs mientras se manda el form (no es seguro ya que es UX)
-5) if (error.name === "AbortError") return; manejo de errores
-6) Schema zod; aporta prevención de errores y a mantener la integridad de datos desde el front
-*/
+import { apiFetch } from "../../lib/apiFetch.ts";
 
 //! Utilizamos el Schema de la librería Zod para validar campos
 // Extend schema for form with password confirmation

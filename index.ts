@@ -11,6 +11,8 @@ import {
   securityMonitor,
   getSecurityEventsHandler,
 } from "./src/BACK/middleware/securityMonitor";
+import { authMiddleware } from "./src/BACK/middleware/authMiddleware";
+import { requireRole } from "./src/BACK/middleware/roleMiddleware";
 
 // Import CommonJS routers
 import categoriesRouter from "./src/BACK/admin/categories/categories.router";
@@ -97,8 +99,12 @@ app.get("/", (_req, res) => {
   res.send("Server is running! Barbershop backend is up.");
 });
 
-// Admin route to view security events (should be protected with auth in production)
-app.get("/admin/security-events", getSecurityEventsHandler);
+app.get(
+  "/admin/security-events",
+  authMiddleware,
+  requireRole("admin"),
+  getSecurityEventsHandler,
+);
 
 // Error handling middleware
 app.use(

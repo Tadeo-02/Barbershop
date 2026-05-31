@@ -13,6 +13,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { apiFetch } from "../../../lib/apiFetch.ts";
 
 const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -51,7 +52,6 @@ const BarberAppointments: React.FC = () => {
   const [turnoToUpdate, setTurnoToUpdate] = useState<AppointmentFull | null>(
     null,
   );
-  const [selectedUpdateDate, setSelectedUpdateDate] = useState<string>("");
   const [selectedUpdateTime, setSelectedUpdateTime] = useState<string>("");
 
   const navigate = useNavigate();
@@ -245,15 +245,13 @@ const BarberAppointments: React.FC = () => {
     }
   };
 
-  const handleUpdate = (turno: Appointment) => {
+  const handleUpdate = (turno: AppointmentFull) => {
     setTurnoToUpdate(turno);
-    setSelectedUpdateDate("");
     setSelectedUpdateTime("");
     setIsUpdateModalOpen(true);
   };
 
   const handleTimeSlotSelect = (fecha: string, hora: string) => {
-    setSelectedUpdateDate(fecha);
     setSelectedUpdateTime(hora);
     // keep form values in sync so handleSubmit has validated data
     setValue("fechaTurno", fecha, { shouldValidate: true });

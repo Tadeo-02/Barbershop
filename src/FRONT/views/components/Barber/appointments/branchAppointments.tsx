@@ -12,6 +12,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { apiFetch } from "../../../lib/apiFetch.ts";
 
 // (legacy per-item form state removed — CheckoutForm mantiene su propio estado)
 
@@ -131,7 +132,6 @@ const CheckoutForm: React.FC<{
       if (response.ok) {
         const resData = await response.json().catch(() => null);
         const facturacion = resData?.data?.facturacion;
-        const facturacionError = resData?.data?.facturacionError;
         if (facturacion?.CAE && facturacion?.voucher_number) {
           toast.success("Turno cobrado y facturado", {
             id: toastId,

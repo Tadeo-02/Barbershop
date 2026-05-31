@@ -8,6 +8,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { apiFetch } from "../../../lib/apiFetch.ts";
 
 const BarberAvailability: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
