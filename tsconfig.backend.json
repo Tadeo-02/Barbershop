@@ -19,5 +19,8 @@
     "types": ["node"]
   },
   "include": ["index.ts", "src/BACK/**/*"],
-  "exclude": ["node_modules", "dist", "src/FRONT/**/*"]
+  "exclude": ["node_modules", "dist", "src/FRONT/**/*"],
+  "ts-node": {
+    "files": true
+  }
 }

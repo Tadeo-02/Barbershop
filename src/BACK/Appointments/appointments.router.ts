@@ -123,7 +123,7 @@ router.get(
 router.get(
   "/barber/:codBarbero/:fechaTurno",
   authMiddleware,
-  requireRole("barber", "admin"),
+  requireRole("client", "barber", "admin"),
   userLimiter,
   validateRequest({ params: barberParamsSchema }),
   controller.findByBarberId,

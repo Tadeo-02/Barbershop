@@ -151,15 +151,18 @@ router.get(
     try {
       const { codUsuario } = req.params;
 
-      if (req.user?.rol === "client" && req.user.codUsuario !== codUsuario) {
-        res.status(403).json({
-          success: false,
-          message: "Acceso denegado",
-        });
-        return;
-      }
-
       const userWithCategory = await findByIdWithCategory(codUsuario);
+
+      if (req.user?.rol === "client" && req.user.codUsuario !== codUsuario) {
+        const isBarber = userWithCategory.cuil !== null && userWithCategory.cuil !== "1";
+        if (!isBarber) {
+          res.status(403).json({
+            success: false,
+            message: "Acceso denegado",
+          });
+          return;
+        }
+      }
 
       res.json({
         success: true,
