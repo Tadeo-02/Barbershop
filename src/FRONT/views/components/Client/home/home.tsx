@@ -9,6 +9,10 @@ import {
   useAbortController,
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
+import {
+  getTurnoDateTime,
+  unwrapAppointments,
+} from "../../shared/appointments";
 
 interface AppointmentSummary {
   codTurno: string;
@@ -226,10 +230,7 @@ const Home = () => {
         const now = new Date();
         const upcoming = turnosArray
           .map((turno) => {
-            const dateTime = buildTurnoDateTime(
-              turno.fechaTurno,
-              turno.horaDesde,
-            );
+            const dateTime = getTurnoDateTime(turno);
             return dateTime ? { turno, dateTime } : null;
           })
           .filter(
@@ -247,21 +248,13 @@ const Home = () => {
         console.error("Error fetching next appointment:", error);
         setNextTurno(null);
       })
-      .finally(() => {
-        setLoadingNextTurno(false);
-        setHasCheckedNextTurno(true);
-      });
-
-    return abortNextTurnoAbort;
-  }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
+          .then((data) => {
+            const turnosArray = unwrapAppointments<AppointmentSummary>(data);
 
   useEffect(() => {
     if (!user?.codUsuario) return;
 
-    const controller = renewLoyaltyAbort();
-    setLoadingLoyalty(true);
-
-    apiFetch(`/usuarios/profiles/${user.codUsuario}`, {
+                const dateTime = getTurnoDateTime(turno);
       signal: controller.signal,
     })
       .then(async (res) => {

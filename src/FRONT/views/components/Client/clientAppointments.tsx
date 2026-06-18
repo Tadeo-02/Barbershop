@@ -4,14 +4,19 @@ import barberStyles from "../Client/clientAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import type { AppointmentFull } from "../shared/appointments";
-import { formatDate, formatTime } from "../shared/appointments";
+import {
+  formatDate,
+  formatTime,
+  sortTurnosByDateTime,
+  unwrapAppointments,
+} from "../shared/appointments";
 import { apiFetch } from "../../lib/apiFetch.ts";
 
 const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
-  const [dateSort, setDateSort] = useState<string>("asc");
+  const [dateSort, setDateSort] = useState<"asc" | "desc">("asc");
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
@@ -70,14 +75,7 @@ const ClientAppointments: React.FC = () => {
       })
       .then((data) => {
         console.log("Turnos data:", data);
-        // El backend devuelve { success: true, data: [...] }
-        let turnosArray: AppointmentFull[] = [];
-
-        if (data.success && Array.isArray(data.data)) {
-          turnosArray = data.data;
-        } else if (Array.isArray(data)) {
-          turnosArray = data;
-        }
+        const turnosArray = unwrapAppointments<AppointmentFull>(data);
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
@@ -189,7 +187,9 @@ const ClientAppointments: React.FC = () => {
         <select
           className={barberStyles.filterSelect}
           value={dateSort}
-          onChange={(e) => setDateSort(e.target.value)}
+          onChange={(e) =>
+            setDateSort(e.target.value as "asc" | "desc")
+          }
         >
           <option value="desc">Lejanos primero</option>
           <option value="asc">Próximos primero</option>
@@ -205,13 +205,7 @@ const ClientAppointments: React.FC = () => {
             .filter(
               (t) => statusFilter === "Todos" || t.estado === statusFilter,
             )
-            .sort((a, b) => {
-              const strA = `${a.fechaTurno.split("T")[0]}T${formatTime(a.horaDesde)}`;
-              const strB = `${b.fechaTurno.split("T")[0]}T${formatTime(b.horaDesde)}`;
-              return dateSort === "desc"
-                ? strB.localeCompare(strA)
-                : strA.localeCompare(strB);
-            })
+            .sort((a, b) => sortTurnosByDateTime(a, b, dateSort))
             .map((t) => {
               const barber = t.usuarios_turnos_codBarberoTousuarios;
               const branch = barber?.sucursales;
