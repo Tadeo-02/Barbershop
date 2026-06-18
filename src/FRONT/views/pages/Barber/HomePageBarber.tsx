@@ -8,6 +8,10 @@ import {
   useAbortController,
 } from "../../components/shared/useAbortController.ts";
 import { apiFetch } from "../../lib/apiFetch";
+import {
+  getTurnoDateTime,
+  unwrapAppointments,
+} from "../../components/shared/appointments";
 
 interface AppointmentPartial {
   codTurno: string;
@@ -90,33 +94,13 @@ const Home = () => {
         return res.json();
       })
       .then((data) => {
-        let turnosArray: AppointmentPartial[] = [];
-
-        if (data && data.success && Array.isArray(data.data)) {
-          turnosArray = data.data;
-        } else if (Array.isArray(data)) {
-          turnosArray = data;
-        }
+        const turnosArray = unwrapAppointments<AppointmentPartial>(data);
 
         const now = new Date();
         const upcoming = turnosArray
           .map((turno) => {
-            const datePart = turno.fechaTurno.split("T")[0];
-            const [year, month, day] = datePart
-              .split("-")
-              .map((value) => Number(value));
-            const startTime = new Date(turno.horaDesde);
-
-            if (!year || !month || !day || Number.isNaN(startTime.getTime())) {
-              return null;
-            }
-
-            const hours = startTime.getUTCHours();
-            const minutes = startTime.getUTCMinutes();
-            return {
-              turno,
-              dateTime: new Date(year, month - 1, day, hours, minutes, 0, 0),
-            };
+            const dateTime = getTurnoDateTime(turno);
+            return dateTime ? { turno, dateTime } : null;
           })
           .filter(
             (item): item is { turno: AppointmentPartial; dateTime: Date } =>

@@ -5,7 +5,12 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import TimeSlotPicker from "../../shared/TimeSlotPicker";
 import type { AppointmentFull } from "../../shared/appointments";
-import { formatDate, formatTime } from "../../shared/appointments";
+import {
+  formatDate,
+  formatTime,
+  sortTurnosByDateTime,
+  unwrapAppointments,
+} from "../../shared/appointments";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,7 +24,7 @@ const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
-  const [dateSort, setDateSort] = useState<string>("desc");
+  const [dateSort, setDateSort] = useState<"asc" | "desc">("desc");
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoadingTurnos, setIsLoadingTurnos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,16 +123,7 @@ const BarberAppointments: React.FC = () => {
         const data = await res.json().catch(() => null);
 
         console.log("Turnos data:", data);
-        // El backend puede devolver { success: true, data: [...] } o directamente un array
-        let turnosArray: AppointmentFull[] = [];
-
-        if (data) {
-          if (data.success && Array.isArray(data.data)) {
-            turnosArray = data.data;
-          } else if (Array.isArray(data)) {
-            turnosArray = data;
-          }
-        }
+        const turnosArray = unwrapAppointments<AppointmentFull>(data);
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
@@ -357,7 +353,9 @@ const BarberAppointments: React.FC = () => {
         <select
           className={barberStyles.filterSelect}
           value={dateSort}
-          onChange={(e) => setDateSort(e.target.value)}
+          onChange={(e) =>
+            setDateSort(e.target.value as "asc" | "desc")
+          }
         >
           <option value="desc">Lejanos primero</option>
           <option value="asc">Próximos primero</option>
@@ -375,13 +373,7 @@ const BarberAppointments: React.FC = () => {
             .filter(
               (t) => statusFilter === "Todos" || t.estado === statusFilter,
             )
-            .sort((a, b) => {
-              const strA = `${a.fechaTurno.split("T")[0]}T${formatTime(a.horaDesde)}`;
-              const strB = `${b.fechaTurno.split("T")[0]}T${formatTime(b.horaDesde)}`;
-              return dateSort === "desc"
-                ? strB.localeCompare(strA)
-                : strA.localeCompare(strB);
-            })
+            .sort((a, b) => sortTurnosByDateTime(a, b, dateSort))
             .map((t) => {
               const client = t.usuarios_turnos_codClienteTousuarios;
               const barber = t.usuarios_turnos_codBarberoTousuarios;
