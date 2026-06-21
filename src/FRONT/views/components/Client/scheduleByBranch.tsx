@@ -6,7 +6,8 @@ import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../BACK/schemas/branchesSchema.ts";
 import { useAuth } from "../user/AuthContext.tsx";
 import TimeSlotPicker from "../shared/TimeSlotPicker.tsx";
-import { apiFetch } from "../../lib/apiFetch.ts";
+import { apiFetchJson } from "../../lib/apiFetch.ts";
+import { ApiError } from "../../lib/apiResponse.ts";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -70,28 +71,10 @@ const ScheduleByBranch = () => {
     // Si tenemos codSucursal en params, pedimos también la sucursal (no bloqueante)
     if (codSucursal) {
       const sucursalEndpoint = `/sucursales/${codSucursal}`;
-      apiFetch(sucursalEndpoint)
-        .then(async (res) => {
-          if (!res.ok) {
-            throw new Error(`Error sucursal ${res.status}: ${res.statusText}`);
-          }
-          const contentType = res.headers.get("content-type");
-          if (!contentType || !contentType.includes("application/json")) {
-            const text = await res.text();
-            console.error(
-              "Expected JSON for sucursal but received:",
-              text.substring(0, 100),
-            );
-            throw new Error(
-              "El servidor no devolvió datos JSON válidos para sucursal",
-            );
-          }
-          return res.json();
-        })
+      apiFetchJson<Sucursal | Sucursal[]>(sucursalEndpoint)
         .then((data) => {
-          const suc = data.data || data;
-          const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
-          setSucursal(sucObj);
+          const sucObj = Array.isArray(data) ? data[0] || null : data || null;
+          setSucursal(sucObj as Sucursal | null);
         })
         .catch((err) => {
           console.error("Error al obtener sucursal:", err);
@@ -102,62 +85,21 @@ const ScheduleByBranch = () => {
     // Si hay un barbero seleccionado (codBarbero en params), traemos su info (no bloqueante)
     if (codBarbero) {
       const barberoEndpoint = `/usuarios/profiles/${codBarbero}`;
-      apiFetch(barberoEndpoint)
-        .then(async (res) => {
-          if (!res.ok) {
-            throw new Error(`Error barbero ${res.status}: ${res.statusText}`);
-          }
-          const contentType = res.headers.get("content-type");
-          if (!contentType || !contentType.includes("application/json")) {
-            const text = await res.text();
-            console.error(
-              "Expected JSON for barbero but received:",
-              text.substring(0, 200),
-            );
-            throw new Error(
-              "El servidor no devolvió datos JSON válidos para barbero",
-            );
-          }
-          return res.json();
-        })
+      apiFetchJson<Barbero | Barbero[]>(barberoEndpoint)
         .then((data) => {
-          const b = data.data || data;
-          const bObj = Array.isArray(b) ? b[0] || null : b || null;
-          setBarberoInfo(bObj);
+          const bObj = Array.isArray(data) ? data[0] || null : data || null;
+          setBarberoInfo(bObj as Barbero | null);
 
           // Si el barbero trae codSucursal y aún no tenemos la sucursal, pedirla para mostrar ambos datos
           try {
             if (bObj && bObj.codSucursal) {
               const sucursalEndpointFromBarber = `/sucursales/${bObj.codSucursal}`;
-              apiFetch(sucursalEndpointFromBarber)
-                .then(async (res) => {
-                  if (!res.ok) {
-                    throw new Error(
-                      `Error sucursal ${res.status}: ${res.statusText}`,
-                    );
-                  }
-                  const contentType = res.headers.get("content-type");
-                  if (
-                    !contentType ||
-                    !contentType.includes("application/json")
-                  ) {
-                    const text = await res.text();
-                    console.error(
-                      "Expected JSON for sucursal but received:",
-                      text.substring(0, 100),
-                    );
-                    throw new Error(
-                      "El servidor no devolvió datos JSON válidos para sucursal",
-                    );
-                  }
-                  return res.json();
-                })
+              apiFetchJson<Sucursal | Sucursal[]>(sucursalEndpointFromBarber)
                 .then((sdata) => {
-                  const suc = sdata.data || sdata;
-                  const sucObj = Array.isArray(suc)
-                    ? suc[0] || null
-                    : suc || null;
-                  setSucursal(sucObj);
+                  const sucObj = Array.isArray(sdata)
+                    ? sdata[0] || null
+                    : sdata || null;
+                  setSucursal(sucObj as Sucursal | null);
                 })
                 .catch((err) => {
                   console.error(
@@ -224,7 +166,7 @@ const ScheduleByBranch = () => {
         estado: "Programado",
       });
 
-      const response = await apiFetch("/turnos", {
+      await apiFetchJson<{ codTurno: string }>("/turnos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -238,56 +180,28 @@ const ScheduleByBranch = () => {
           estado: "Programado",
         }),
       });
+      toast.success("Turno reservado exitosamente", {
+        id: toastId,
+      });
 
-      console.log("Response status:", response.status);
+      navigate("/client/home");
+    } catch (error: unknown) {
+      const message = ApiError.isApiError(error)
+        ? error.message
+        : "Error de conexión con el servidor";
+      const duplicateMessage = message.includes("ya tiene un turno en ese horario");
 
-      const text = await response.text();
-      console.log("Respuesta cruda del backend:", text);
-
-      if (!text) {
-        toast.error("Respuesta vacía del servidor", { id: toastId });
-        return;
-      }
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-        toast.error("Error al procesar respuesta del servidor", {
-          id: toastId,
-        });
-        return;
-      }
-
-      if (response.ok) {
-        toast.success("Turno reservado exitosamente", {
-          id: toastId,
-        });
-
-        navigate("/client/home");
-      } else {
-        // Verificar si es el error de turno duplicado
-        if (
-          data.message &&
-          data.message.includes("ya tiene un turno en ese horario")
-        ) {
-          toast.error(
-            "Ya tienes un turno reservado en ese horario. Por favor elige otro horario.",
-            {
-              id: toastId,
-              duration: 2000,
-            },
-          );
-        } else {
-          toast.error(data.message || "Error al reservar turno", {
+      if (duplicateMessage) {
+        toast.error(
+          "Ya tienes un turno reservado en ese horario. Por favor elige otro horario.",
+          {
             id: toastId,
-          });
-        }
+            duration: 2000,
+          },
+        );
+      } else {
+        toast.error(message, { id: toastId });
       }
-    } catch (error) {
-      console.error("Error en handleSubmit:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 

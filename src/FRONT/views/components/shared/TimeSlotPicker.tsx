@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from "./TimeSlotPicker.module.css";
-import { apiFetch } from "../../lib/apiFetch.ts";
+import { apiFetchJson } from "../../lib/apiFetch.ts";
 
 interface Horario {
   hora: string;
@@ -75,36 +75,11 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 
     console.log("Llamando a endpoint:", endpoint);
 
-    apiFetch(endpoint)
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
+    apiFetchJson<Horario[]>(endpoint)
+      .then((horariosData) => {
+        const list = horariosData.filter((item) => item && item.hora);
 
-        const contentType = res.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          const text = await res.text();
-          console.error("Expected JSON but received:", text.substring(0, 100));
-          throw new Error("El servidor no devolvió datos JSON válidos");
-        }
-
-        return res.json();
-      })
-      .then((response) => {
-        let horariosData: Horario[] = [];
-
-        if (response.success && Array.isArray(response.data)) {
-          horariosData = response.data.filter(
-            (item: Horario) => item && item.hora,
-          );
-        } else if (Array.isArray(response)) {
-          horariosData = response.filter((item: Horario) => item && item.hora);
-        } else {
-          console.error("Unexpected response format:", response);
-          horariosData = [];
-        }
-
-        setHorarios(horariosData);
+        setHorarios(list);
         setLoading(false);
         setLoadingHorarios(false);
       })

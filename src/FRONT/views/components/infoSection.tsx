@@ -3,7 +3,7 @@ import styles from "./infoSection.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../BACK/schemas/branchesSchema";
-import { apiFetch } from "../lib/apiFetch";
+import { apiFetchJson } from "../lib/apiFetch";
 
 /*
 1) Schema Zod (BranchWithIdSchema); validación del contrato de datos entre backend y frontend,
@@ -40,38 +40,27 @@ const InfoSection: React.FC = () => {
     const fetchData = async () => {
       try {
         // Cargar sucursales
-        const [sucursalesResponse] = await Promise.all([
-          apiFetch("/sucursales"),
-        ]);
+        const list = await apiFetchJson<Sucursal[]>("/sucursales");
 
-        if (sucursalesResponse.ok) {
-          const sucursalesData = await sucursalesResponse.json();
-          const list = Array.isArray(sucursalesData)
-            ? sucursalesData
-            : sucursalesData?.data || [];
-
-          // Validate each sucursal against the schema
-          //! Parsing es otra validacion frontend de la libreria zod
-          const validatedSucursales: Sucursal[] = [];
-          for (const sucursal of list) {
-            try {
-              const validated = BranchWithIdSchema.parse(sucursal);
-              validatedSucursales.push(validated);
-            } catch (validationError) {
-              console.error(
-                "Invalid sucursal data:",
-                sucursal,
-                validationError,
-              );
-              // Skip invalid entries but don't fail the entire operation
-            }
+        // Validate each sucursal against the schema
+        //! Parsing es otra validacion frontend de la libreria zod
+        const validatedSucursales: Sucursal[] = [];
+        for (const sucursal of list) {
+          try {
+            const validated = BranchWithIdSchema.parse(sucursal);
+            validatedSucursales.push(validated);
+          } catch (validationError) {
+            console.error(
+              "Invalid sucursal data:",
+              sucursal,
+              validationError,
+            );
+            // Skip invalid entries but don't fail the entire operation
           }
-
-          setSucursales(validatedSucursales);
-          console.log("Sucursales recibidas:", validatedSucursales);
-        } else {
-          toast.error("Error al cargar las sucursales");
         }
+
+        setSucursales(validatedSucursales);
+        console.log("Sucursales recibidas:", validatedSucursales);
       } catch (error) {
         console.error("Error al obtener datos:", error);
         toast.error("Error al cargar los datos");

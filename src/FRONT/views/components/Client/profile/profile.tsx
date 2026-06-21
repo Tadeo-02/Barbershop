@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "./profile.module.css";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
-import { apiFetch } from "../../../lib/apiFetch";
+import { apiFetchJson } from "../../../lib/apiFetch";
 
 //! ADAPTAR A MOBILE
 interface CategoriaActual {
@@ -43,56 +43,12 @@ const MyProfile = () => {
           user.codUsuario,
         );
 
-        const response = await apiFetch(
+        const profileData = await apiFetchJson<UserProfile>(
           `/usuarios/profiles/${user.codUsuario}`,
         );
 
-        console.log("🔥 PROFILE DEBUG - Response status:", response.status);
-        console.log("🔥 PROFILE DEBUG - Response ok:", response.ok);
-
-        if (!response.ok) {
-          console.warn(
-            "🔥 PROFILE DEBUG - Response not ok, using fallback data",
-          );
-          setProfile({ ...user, categoriaActual: null });
-          return;
-        }
-
-        const data = await response.json();
-        console.log("🔥 PROFILE DEBUG - Raw response data:", data);
-
-        if (data.success && data.data) {
-          console.log(
-            "🔥 PROFILE DEBUG - Setting profile with data.data:",
-            data.data,
-          );
-          console.log(
-            "🔥 PROFILE DEBUG - categoriaActual in data.data:",
-            data.data.categoriaActual,
-          );
-          setProfile(data.data);
-        } else {
-          console.log(
-            "🔥 PROFILE DEBUG - No success/data structure, checking raw data:",
-            data,
-          );
-          if (data && typeof data === "object") {
-            console.log(
-              "🔥 PROFILE DEBUG - Setting profile with raw data:",
-              data,
-            );
-            console.log(
-              "🔥 PROFILE DEBUG - categoriaActual in raw data:",
-              data.categoriaActual,
-            );
-            setProfile(data);
-          } else {
-            console.warn(
-              "🔥 PROFILE DEBUG - No profile data received, using fallback",
-            );
-            setProfile({ ...user, categoriaActual: null });
-          }
-        }
+        console.log("🔥 PROFILE DEBUG - Raw response data:", profileData);
+        setProfile(profileData);
       } catch (error) {
         console.error("🔥 PROFILE DEBUG - Error al obtener el perfil:", error);
         setProfile({ ...user, categoriaActual: null });
@@ -221,7 +177,9 @@ const SecurityQuestionForm: React.FC<{
     }
     setLoading(true);
     try {
-      const res = await apiFetch(`/usuarios/${codUsuario}/security-question`, {
+      await apiFetchJson<{ codUsuario: string }>(
+        `/usuarios/${codUsuario}/security-question`,
+        {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -231,14 +189,10 @@ const SecurityQuestionForm: React.FC<{
           preguntaSeguridad: cleanPregunta,
           respuestaSeguridad: cleanRespuesta,
         }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(data.message || "Pregunta actualizada");
-        setRespuesta("");
-      } else {
-        toast.error(data.message || "Error al actualizar");
-      }
+        },
+      );
+      toast.success("Pregunta actualizada");
+      setRespuesta("");
     } catch (err) {
       console.error(err);
       toast.error("Error de conexión");

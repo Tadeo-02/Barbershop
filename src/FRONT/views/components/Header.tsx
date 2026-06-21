@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./user/AuthContext.tsx";
 import styles from "./header.module.css";
 import { isAbortError, useAbortController } from "./shared/useAbortController";
-import { apiFetch } from "../lib/apiFetch";
+import { apiFetchJson } from "../lib/apiFetch";
 // import logoBarber from "../../public/images/logoBarber.png";
 
 function Header() {
@@ -67,18 +67,14 @@ function Header() {
     const controller = renewCategoryAbort();
     const loadCategory = async () => {
       try {
-        const response = await apiFetch(
+        const profile = await apiFetchJson<{
+          categoriaActual?: { nombreCategoria?: string | null } | null;
+        }>(
           `/usuarios/profiles/${user.codUsuario}`,
           {
             signal: controller.signal,
           },
         );
-        if (!response.ok) {
-          setClientCategory("Sin categoría");
-          return;
-        }
-        const data = await response.json().catch(() => null);
-        const profile = data?.success && data.data ? data.data : data;
         const category = profile?.categoriaActual?.nombreCategoria;
         setClientCategory(category || "Sin categoría");
       } catch (error: unknown) {
