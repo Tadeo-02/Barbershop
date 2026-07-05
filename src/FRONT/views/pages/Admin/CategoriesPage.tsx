@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import ShowCategories from "../../components/admin/categories/showCategories.tsx";
-import IndexCategories from "../../components/admin/categories/indexCategories.tsx";
-import UpdateCategories from "../../components/admin/categories/updateCategories.tsx";
-import CreateCategories from "../../components/admin/categories/createCategories.tsx";
+import ShowCategories from "../../components/Admin/categories/showCategories.tsx";
+import IndexCategories from "../../components/Admin/categories/indexCategories.tsx";
+import UpdateCategories from "../../components/Admin/categories/updateCategories.tsx";
+import CreateCategories from "../../components/Admin/categories/createCategories.tsx";
 
 function CategoriesPage() {
   return (

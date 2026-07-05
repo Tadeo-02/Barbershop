@@ -1,4 +1,4 @@
-import { prisma, DatabaseError, sanitizeInput } from "../../base/base"; // importamos todo desde Base
+import { prisma, DatabaseError, sanitizeInput } from "../../base/Base"; // importamos todo desde Base
 import { z } from "zod";
 
 const TypeOfHaircutSchema = z.object({

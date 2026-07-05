@@ -1,10 +1,10 @@
-import * as model from "./categories";
+import * as model from "./Categories";
 import { BaseController } from "../../base/base.controller"; // improtamos al base controller
 import type { Request, Response } from "express";
 import {
   CategoryClientsResponseSchema,
   CategoryResponseSchema,
-} from "../../schemas/categoriesSchema";
+} from "../../Schemas/categoriesSchema";
 import { sanitizeOutput } from "../../middleware/zodValidation";
 // creamos el modelo de controlador de categorias
 type CategoryEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;

@@ -15,7 +15,7 @@ import {
 } from "../middleware/deduplication";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
-import { UserSchema, UserUpdateSchema } from "../schemas/usersSchema";
+import { UserSchema, UserUpdateSchema } from "../Schemas/usersSchema";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { requireRole } from "../middleware/roleMiddleware";
 
@@ -154,7 +154,8 @@ router.get(
       const userWithCategory = await findByIdWithCategory(codUsuario);
 
       if (req.user?.rol === "client" && req.user.codUsuario !== codUsuario) {
-        const isBarber = userWithCategory.cuil !== null && userWithCategory.cuil !== "1";
+        const isBarber =
+          userWithCategory.cuil !== null && userWithCategory.cuil !== "1";
         if (!isBarber) {
           res.status(403).json({
             success: false,

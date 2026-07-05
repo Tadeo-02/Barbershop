@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import { DatabaseError } from "./base";
+import { DatabaseError } from "./Base";
 import { sanitizeOutput } from "../middleware/zodValidation";
 // manejo universal de los distintos datos que llegan del front
 export abstract class BaseController<

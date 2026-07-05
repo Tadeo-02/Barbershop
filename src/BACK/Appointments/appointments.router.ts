@@ -13,11 +13,11 @@ import { authMiddleware } from "../middleware/authMiddleware";
 import { requireRole } from "../middleware/roleMiddleware";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
-import { AppointmentSchema } from "../schemas/appointmentsSchema";
+import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 
 const router: Router = Router();
 
-// — schemas igual que antes, sin cambios —
+// — Schemas igual que antes, sin cambios —
 const codTurnoParamSchema = z.object({ codTurno: z.string().min(1) });
 const optionalTurnoParamSchema = z.object({
   codTurno: z.string().optional(),

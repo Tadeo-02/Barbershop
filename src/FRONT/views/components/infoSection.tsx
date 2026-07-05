@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import styles from "./infoSection.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../BACK/schemas/branchesSchema";
+import { BranchWithIdSchema } from "../../../BACK/Schemas/branchesSchema";
 import { apiFetch } from "../lib/apiFetch";
 
 /*

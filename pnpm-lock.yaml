@@ -59,6 +59,9 @@ importers:
       playwright:
         specifier: ^1.59.1
         version: 1.59.1
+      pnpm:
+        specifier: ^11.10.0
+        version: 11.10.0
       prisma:
         specifier: ^6.15.0
         version: 6.16.3(typescript@5.8.3)
@@ -2126,6 +2129,11 @@ packages:
 
   png-js@1.0.0:
     resolution: {integrity: sha512-k+YsbhpA9e+EFfKjTCH3VW6aoKlyNYI6NYdTfDL4CIvFnvsuO84ttonmZE7rc+v23SLTH8XX+5w/Ak9v0xGY4g==}
+
+  pnpm@11.10.0:
+    resolution: {integrity: sha512-C3+LmAYAMZBMAX46QesYehbUDuuCm5XE+MsDaBdh/Eq1PdIZEVubRH9NzhoFohR2RGHn03AzkqnzL5URzoyGyA==}
+    engines: {node: '>=22.13'}
+    hasBin: true
 
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
@@ -4591,6 +4599,8 @@ snapshots:
       fsevents: 2.3.2
 
   png-js@1.0.0: {}
+
+  pnpm@11.10.0: {}
 
   postcss-value-parser@4.2.0: {}
 

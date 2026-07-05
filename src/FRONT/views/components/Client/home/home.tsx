@@ -181,25 +181,6 @@ const Home = () => {
     };
   };
 
-  const buildTurnoDateTime = (
-    fechaTurno: string,
-    horaDesde: string,
-  ): Date | null => {
-    const datePart = fechaTurno.split("T")[0];
-    const [year, month, day] = datePart
-      .split("-")
-      .map((value) => Number(value));
-    const hora = new Date(horaDesde);
-
-    if (!year || !month || !day || Number.isNaN(hora.getTime())) {
-      return null;
-    }
-
-    const hours = hora.getUTCHours();
-    const minutes = hora.getUTCMinutes();
-    return new Date(year, month - 1, day, hours, minutes, 0, 0);
-  };
-
   useEffect(() => {
     if (!user?.codUsuario) {
       setNextTurno(null);
@@ -220,12 +201,7 @@ const Home = () => {
         return res.json();
       })
       .then((data) => {
-        let turnosArray: AppointmentSummary[] = [];
-        if (data && data.success && Array.isArray(data.data)) {
-          turnosArray = data.data;
-        } else if (Array.isArray(data)) {
-          turnosArray = data;
-        }
+        const turnosArray = unwrapAppointments<AppointmentSummary>(data);
 
         const now = new Date();
         const upcoming = turnosArray
@@ -248,13 +224,25 @@ const Home = () => {
         console.error("Error fetching next appointment:", error);
         setNextTurno(null);
       })
-          .then((data) => {
-            const turnosArray = unwrapAppointments<AppointmentSummary>(data);
+      .finally(() => {
+        setLoadingNextTurno(false);
+        setHasCheckedNextTurno(true);
+      });
+
+    return abortNextTurnoAbort;
+  }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
 
   useEffect(() => {
-    if (!user?.codUsuario) return;
+    if (!user?.codUsuario) {
+      setLoyaltyProgress(null);
+      setLoadingLoyalty(false);
+      return;
+    }
 
-                const dateTime = getTurnoDateTime(turno);
+    const controller = renewLoyaltyAbort();
+    setLoadingLoyalty(true);
+
+    apiFetch(`/usuarios/profiles/${user.codUsuario}`, {
       signal: controller.signal,
     })
       .then(async (res) => {

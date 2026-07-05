@@ -10,7 +10,7 @@ import { z } from "zod";
 import {
   BillAppointmentSchema,
   CreateVoucherSchema,
-} from "../schemas/billingSchema";
+} from "../Schemas/billingSchema";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { requireRole } from "../middleware/roleMiddleware";
 

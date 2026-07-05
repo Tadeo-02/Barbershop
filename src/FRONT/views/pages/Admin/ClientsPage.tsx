@@ -1,4 +1,4 @@
-import IndexClients from "../../components/admin/clients/indexClients.tsx";
+import IndexClients from "../../components/Admin/clients/indexClients.tsx";
 
 function ClientsPage() {
   return (

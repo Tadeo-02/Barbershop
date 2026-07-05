@@ -7,7 +7,7 @@ import {
   BarberResponseSchema,
   type UserResponse,
   UserResponseSchema,
-} from "../schemas/usersSchema";
+} from "../Schemas/usersSchema";
 
 type UserEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type UserCreateArgs = Parameters<typeof model.store>;
@@ -196,7 +196,10 @@ class UsersController extends BaseController<
       }
 
       const usuario = await model.validateLogin(userEmail, userPassword);
-      const safeUser = sanitizeOutput<UserResponse>(UserResponseSchema, usuario);
+      const safeUser = sanitizeOutput<UserResponse>(
+        UserResponseSchema,
+        usuario,
+      );
       const jwtSecret = process.env.JWT_SECRET;
 
       if (!jwtSecret) {
@@ -362,12 +365,10 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
 
     const { preguntaSeguridad, respuestaSeguridad } = req.body;
     if (!preguntaSeguridad || !respuestaSeguridad) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          message: "Pregunta y respuesta son requeridas",
-        });
+      res.status(400).json({
+        success: false,
+        message: "Pregunta y respuesta son requeridas",
+      });
       return;
     }
 
@@ -378,13 +379,11 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
       respuestaSeguridad,
     );
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Pregunta de seguridad actualizada",
-        data: { codUsuario: updated.codUsuario },
-      });
+    res.status(200).json({
+      success: true,
+      message: "Pregunta de seguridad actualizada",
+      data: { codUsuario: updated.codUsuario },
+    });
   } catch (error: unknown) {
     console.error("Error updating security question:", error);
     res.status(500).json({
@@ -453,12 +452,10 @@ export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { email, respuestaSeguridad, nuevaContraseña } = req.body;
     if (!email || !respuestaSeguridad || !nuevaContraseña) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          message: "Email, respuesta y nueva contraseña son requeridos",
-        });
+      res.status(400).json({
+        success: false,
+        message: "Email, respuesta y nueva contraseña son requeridos",
+      });
       return;
     }
 

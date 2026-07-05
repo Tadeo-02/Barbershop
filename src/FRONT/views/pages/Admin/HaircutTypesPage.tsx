@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
-import IndexTypeOfHaircut from "../../components/admin/typeOfHaircut/indexTypeOfHaircut.tsx";
-import CreateTypeOfHaircut from "../../components/admin/typeOfHaircut/createTypeOfHaircut.tsx";
-import UpdateTypeOfHaircut from "../../components/admin/typeOfHaircut/updateTypeOfHaircut.tsx";
+import IndexTypeOfHaircut from "../../components/Admin/typeOfHaircut/indexTypeOfHaircut.tsx";
+import CreateTypeOfHaircut from "../../components/Admin/typeOfHaircut/createTypeOfHaircut.tsx";
+import UpdateTypeOfHaircut from "../../components/Admin/typeOfHaircut/updateTypeOfHaircut.tsx";
 
 function HairCutTypesPage() {
   return (

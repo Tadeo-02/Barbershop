@@ -3,8 +3,8 @@ import styles from "./HomePageAdmin.module.css";
 import localStyles from "./RentabilityByBranch.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../BACK/schemas/branchesSchema";
-import { UserSchema } from "../../../../BACK/schemas/usersSchema";
+import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema";
+import { UserSchema } from "../../../../BACK/Schemas/usersSchema";
 import { apiFetch } from "../../lib/apiFetch";
 
 interface Turno {

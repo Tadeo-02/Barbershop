@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
-import * as model from "./billing";
+import * as model from "./Billing";
 import {
   CreateVoucherSchema,
   BillAppointmentSchema,
-} from "../schemas/billingSchema";
+} from "../Schemas/billingSchema";
 import { AFIP_PUNTO_VENTA, VOUCHER_TYPES } from "./afipConfig";
-import { prisma } from "../base/base";
+import { prisma } from "../base/Base";
 import {
   gatherInvoiceData,
   generateInvoicePdf,

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   AppointmentSchema,
   AppointmentResponseSchema,
-} from "../../src/BACK/schemas/appointmentsSchema.ts";
+} from "../../src/BACK/Schemas/appointmentsSchema.ts";
 
 const messages = (result: ReturnType<typeof AppointmentSchema.safeParse>) =>
   result.success ? [] : result.error.issues.map((i) => i.message);

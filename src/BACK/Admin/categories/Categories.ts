@@ -1,6 +1,6 @@
-import { prisma, DatabaseError, sanitizeInput } from "../../base/base";
+import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
-import { CategorySchema } from "../../schemas/categoriesSchema";
+import { CategorySchema } from "../../Schemas/categoriesSchema";
 
 type CategoryDirection = "promote" | "demote";
 type DeleteCategoryAction = "promote_all" | "demote_all" | "per_client";

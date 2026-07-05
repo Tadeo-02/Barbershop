@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/schemas/branchesSchema";
-import { UserBaseSchemaExport } from "../../../../../BACK/schemas/usersSchema";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast";
-import { CategorySchema } from "../../../../../BACK/schemas/categoriesSchema.ts";
+import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema.ts";
 import type { z } from "zod";
 import { apiFetch } from "../../../lib/apiFetch";
 

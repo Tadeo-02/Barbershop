@@ -1,4 +1,4 @@
-import { prisma, DatabaseError, sanitizeInput } from "../base/base";
+import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { hashPassword, comparePassword } from "../users/bcrypt";
@@ -6,7 +6,7 @@ import {
   LoginSchema,
   UserSchema,
   UserBaseSchemaExport,
-} from "../schemas/usersSchema";
+} from "../Schemas/usersSchema";
 import {
   getDiscountCycle,
   turnsUntilNextDiscount as calcTurnsUntilNextDiscount,

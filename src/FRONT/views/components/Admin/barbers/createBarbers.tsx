@@ -4,9 +4,9 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/schemas/branchesSchema";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserBaseSchemaExport } from "../../../../../BACK/schemas/usersSchema";
+import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
 import {
   isAbortError,
   useAbortController,

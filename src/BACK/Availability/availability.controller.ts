@@ -1,6 +1,6 @@
-import * as model from "./availability";
+import * as model from "./Availability";
 import { BaseController } from "../base/base.controller"; // importamos las reques, responde y dataBaseError de la base
-import { AvailabilityResponseSchema } from "../schemas/availabilitySchema";
+import { AvailabilityResponseSchema } from "../Schemas/availabilitySchema";
 
 // creamos la clase availabilityController para enviar y manejar el base
 type AvailabilityEntity = NonNullable<

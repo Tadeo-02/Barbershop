@@ -1,6 +1,6 @@
-import { prisma, DatabaseError, sanitizeInput } from "../../base/base";
+import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
-import { BranchSchema } from "../../schemas/branchesSchema";
+import { BranchSchema } from "../../Schemas/branchesSchema";
 
 // funciones backend para Sucursales
 export const store = async (nombre: string, calle: string, altura: number) => {

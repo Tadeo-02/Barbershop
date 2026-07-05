@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import IndexBranches from "../../components/admin/branches/indexBranches.tsx";
-import ShowBranches from "../../components/admin/branches/showBranches.tsx";
-import CreateBranches from "../../components/admin/branches/createBranches.tsx";
-import UpdateBranches from "../../components/admin/branches/updateBranches.tsx";
+import IndexBranches from "../../components/Admin/branches/indexBranches.tsx";
+import ShowBranches from "../../components/Admin/branches/showBranches.tsx";
+import CreateBranches from "../../components/Admin/branches/createBranches.tsx";
+import UpdateBranches from "../../components/Admin/branches/updateBranches.tsx";
 
 function BranchesPage() {
   return (

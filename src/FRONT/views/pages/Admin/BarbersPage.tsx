@@ -1,8 +1,8 @@
-import IndexBarbers from "../../components/admin/barbers/indexBarbers.tsx";
+import IndexBarbers from "../../components/Admin/barbers/indexBarbers.tsx";
 import { Routes, Route } from "react-router-dom";
-import ShowBarbers from "../../components/admin/barbers/showBarbers.tsx";
-import CreateBarbers from "../../components/admin/barbers/createBarbers.tsx";
-import UpdateBarbers from "../../components/admin/barbers/updateBarbers.tsx";
+import ShowBarbers from "../../components/Admin/barbers/showBarbers.tsx";
+import CreateBarbers from "../../components/Admin/barbers/createBarbers.tsx";
+import UpdateBarbers from "../../components/Admin/barbers/updateBarbers.tsx";
 //importamos los modulos y los navegamos con router dentro de la pagina
 
 function BarbersPage() {

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import styles from "./login.module.css";
 import toast from "react-hot-toast";
-import { UserBaseSchemaExport } from "../../../../BACK/schemas/usersSchema.ts";
+import { UserBaseSchemaExport } from "../../../../BACK/Schemas/usersSchema.ts";
 import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,

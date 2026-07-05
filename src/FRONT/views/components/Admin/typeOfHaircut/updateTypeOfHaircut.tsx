@@ -4,7 +4,7 @@ import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { HaircutSchema } from "../../../../../BACK/schemas/typeOfHaircutSchema";
+import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   isAbortError,

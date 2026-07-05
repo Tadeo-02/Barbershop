@@ -1,6 +1,6 @@
-﻿import { prisma, DatabaseError } from "../base/base";
+﻿import { prisma, DatabaseError } from "../base/Base";
 import { AFIP_PUNTO_VENTA, VOUCHER_TYPES } from "./afipConfig";
-import { getVoucherInfo } from "./billing";
+import { getVoucherInfo } from "./Billing";
 import {
   InvoicePdfData,
   generateInvoicePdf,

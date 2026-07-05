@@ -3,7 +3,7 @@ import styles from "./scheduleByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../BACK/schemas/branchesSchema.ts";
+import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema.ts";
 import { useAuth } from "../user/AuthContext.tsx";
 import TimeSlotPicker from "../shared/TimeSlotPicker.tsx";
 import { apiFetch } from "../../lib/apiFetch.ts";

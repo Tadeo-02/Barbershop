@@ -3,8 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/schemas/branchesSchema";
-import { UserSchema } from "../../../../../BACK/schemas/usersSchema";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { UserSchema } from "../../../../../BACK/Schemas/usersSchema";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };

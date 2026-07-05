@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   BranchSchema,
   BranchWithIdSchema,
-} from "../../../../../BACK/schemas/branchesSchema";
+} from "../../../../../BACK/Schemas/branchesSchema";
 import {
   isAbortError,
   useAbortController,

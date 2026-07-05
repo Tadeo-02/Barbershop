@@ -1,6 +1,6 @@
-import * as model from "./branches";
+import * as model from "./Branches";
 import type { Request, Response } from "express";
-import { BranchResponseSchema } from "../../schemas/branchesSchema";
+import { BranchResponseSchema } from "../../Schemas/branchesSchema";
 import { BaseController } from "../../base/base.controller"; // improtamos al base controller
 // creamos el modelo de controlador de sucursales
 type BranchEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;

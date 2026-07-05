@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
-import { prisma, DatabaseError, sanitizeInput } from "../base/base";
+import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
-import { AvailabilitySchema } from "../schemas/availabilitySchema";
+import { AvailabilitySchema } from "../Schemas/availabilitySchema";
 
 const ensureValidRange = (fechaDesde: Date, fechaHasta: Date) => {
   if (fechaDesde >= fechaHasta) {
