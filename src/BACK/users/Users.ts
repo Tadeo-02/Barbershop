@@ -290,11 +290,83 @@ export const findAll = async (userType?: "client" | "barber") => {
   try {
     console.log(`Fetching all ${userType} with Prisma`);
 
+    if (userType === "client") {
+      const usuarios = await prisma.usuarios.findMany({
+        where: { cuil: null, activo: true },
+        orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
+        include: {
+          categoria_vigente: {
+            orderBy: { ultimaFechaInicio: "desc" },
+            take: 1,
+            include: {
+              categorias: true,
+            },
+          },
+        },
+      });
+
+      const clientIds = usuarios.map((usuario) => usuario.codUsuario);
+      const [totalCounts, canceledCounts] =
+        clientIds.length > 0
+          ? await Promise.all([
+              prisma.turno.groupBy({
+                by: ["codCliente"],
+                where: {
+                  codCliente: { in: clientIds },
+                },
+                _count: {
+                  _all: true,
+                },
+              }),
+              prisma.turno.groupBy({
+                by: ["codCliente"],
+                where: {
+                  codCliente: { in: clientIds },
+                  estado: "Cancelado",
+                },
+                _count: {
+                  _all: true,
+                },
+              }),
+            ])
+          : [[], []];
+
+      const totalCountsMap = new Map(
+        totalCounts.map((row) => [row.codCliente, row._count._all]),
+      );
+      const canceledCountsMap = new Map(
+        canceledCounts.map((row) => [row.codCliente, row._count._all]),
+      );
+
+      const usuariosConResumen = usuarios.map((usuario) => {
+        const categoriaActual = usuario.categoria_vigente[0];
+
+        return {
+          ...usuario,
+          categoriaActual: categoriaActual
+            ? {
+                codCategoria: categoriaActual.codCategoria,
+                nombreCategoria: categoriaActual.categorias.nombreCategoria,
+                descCategoria: categoriaActual.categorias.descCategoria,
+                descuentoCorte: categoriaActual.categorias.descuentoCorte,
+                descuentoProducto: categoriaActual.categorias.descuentoProducto,
+                fechaInicio: categoriaActual.ultimaFechaInicio,
+              }
+            : null,
+          appointmentCounts: {
+            total: totalCountsMap.get(usuario.codUsuario) ?? 0,
+            canceled: canceledCountsMap.get(usuario.codUsuario) ?? 0,
+          },
+          categoria_vigente: undefined,
+        };
+      });
+
+      console.log(`Retrieved ${usuariosConResumen.length} ${userType}`);
+      return usuariosConResumen;
+    }
+
     let whereCondition = {};
     switch (userType) {
-      case "client":
-        whereCondition = { cuil: null, activo: true }; // Solo usuarios sin CUIL (clientes)
-        break;
       case "barber":
         // Mostrar todos los barberos (activos e inactivos) para que el admin pueda verlos
         whereCondition = {

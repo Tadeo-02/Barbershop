@@ -23,9 +23,6 @@ interface Cliente {
   email?: string | null;
   cuil?: string | null;
   codSucursal?: string | null;
-}
-
-interface ClienteProfile extends Cliente {
   categoriaActual?: {
     codCategoria: string;
     nombreCategoria: string;
@@ -34,12 +31,13 @@ interface ClienteProfile extends Cliente {
     descuentoProducto?: number;
     fechaInicio?: string | Date;
   } | null;
+  appointmentCounts?: {
+    total: number;
+    canceled: number;
+  };
 }
 
-interface Turno {
-  // backend exposes the estado as a string on the turno
-  estado?: string | null;
-}
+type ClienteProfile = Cliente;
 
 interface Categoria {
   codCategoria: string;
@@ -81,9 +79,6 @@ const IndexClients = () => {
   const [profilesCache, setProfilesCache] = useState<
     Record<string, ClienteProfile>
   >({});
-  const [appointmentCounts, setAppointmentCounts] = useState<
-    Record<string, { total: number; canceled: number }>
-  >({});
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [selectedCategoria, setSelectedCategoria] = useState<string>("all");
   const [visibleClients, setVisibleClients] = useState<Cliente[]>([]);
@@ -102,13 +97,11 @@ const IndexClients = () => {
 
         setClientes(clientesData);
         setVisibleClients(clientesData);
-        if (clientesData.length > 0) {
-          try {
-            fetchCountsForClients(clientesData);
-          } catch (err) {
-            console.error("Error fetching appointment counts:", err);
-          }
-        }
+        setProfilesCache(
+          Object.fromEntries(
+            clientesData.map((cliente) => [cliente.codUsuario, cliente]),
+          ),
+        );
       } catch (error) {
         console.error("Error fetching clients:", error);
         toast.error("Error al cargar los clientes");
@@ -155,40 +148,6 @@ const IndexClients = () => {
     setExpandedClient(codUsuario);
   };
 
-  // obtiene los contadores de turnos (total y cancelados) para una lista de clientes
-  const fetchCountsForClients = async (clients: Cliente[]) => {
-    if (!Array.isArray(clients) || clients.length === 0) return;
-
-    // limitar a evitar demasiadas peticiones simultáneas (pero por simplicidad usamos Promise.all)
-    const promises = clients.map(async (c) => {
-      try {
-        const res = await apiFetch(`/turnos/user/${c.codUsuario}`);
-        if (!res.ok) {
-          // tratar como 0
-          return { codUsuario: c.codUsuario, total: 0, canceled: 0 };
-        }
-
-        const json = await res.json();
-        const turnos = getDataArray<Turno>(json);
-        const canceled = turnos.filter((t) => t.estado === "Cancelado").length;
-        return { codUsuario: c.codUsuario, total: turnos.length, canceled };
-
-        return { codUsuario: c.codUsuario, total: turnos.length, canceled };
-      } catch (error) {
-        console.error("Error fetching turnos for client", c.codUsuario, error);
-        return { codUsuario: c.codUsuario, total: 0, canceled: 0 };
-      }
-    });
-
-    const results = await Promise.all(promises);
-    const map: Record<string, { total: number; canceled: number }> = {};
-    results.forEach((r) => {
-      if (r && r.codUsuario)
-        map[r.codUsuario] = { total: r.total, canceled: r.canceled };
-    });
-    setAppointmentCounts((prev) => ({ ...prev, ...map }));
-  };
-
   // fetch categories para el filtrado
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -218,14 +177,8 @@ const IndexClients = () => {
         return;
       }
 
-      const needFetch = clientes.filter((c) => !profilesCache[c.codUsuario]);
-
-      try {
-        await Promise.all(needFetch.map((c) => fetchProfile(c.codUsuario)));
-      } catch (error) {}
-
       const filtered = clientes.filter((c) => {
-        const prof = profilesCache[c.codUsuario];
+        const prof = profilesCache[c.codUsuario] ?? c;
         return prof?.categoriaActual?.codCategoria === selectedCategoria;
       });
 
@@ -233,17 +186,7 @@ const IndexClients = () => {
     };
 
     applyFilter();
-  }, [selectedCategoria, clientes]);
-
-  // Si visibleClients cambia y hay clientes sin conteo, obtenerlos
-  useEffect(() => {
-    const missing = visibleClients.filter(
-      (c) => appointmentCounts[c.codUsuario] === undefined,
-    );
-    if (missing.length > 0) {
-      fetchCountsForClients(missing);
-    }
-  }, [visibleClients]);
+  }, [selectedCategoria, clientes, profilesCache]);
 
   if (loading)
     return <div className={styles.loading}>Cargando clientes...</div>;
@@ -289,9 +232,9 @@ const IndexClients = () => {
                     </div>
                     <div className={styles.smallMuted}>
                       Turnos:{" "}
-                      {appointmentCounts[cliente.codUsuario]?.total ?? 0}{" "}
+                      {cliente.appointmentCounts?.total ?? 0}{" "}
                       &nbsp;(Cancel.:{" "}
-                      {appointmentCounts[cliente.codUsuario]?.canceled ?? 0})
+                      {cliente.appointmentCounts?.canceled ?? 0})
                     </div>
                   </div>
                   <div className={styles.actions}>
@@ -375,8 +318,8 @@ const IndexClients = () => {
                     <tr>
                       <td>{cliente.dni}</td>
                       <td>
-                        {appointmentCounts[cliente.codUsuario]?.total ?? 0} (
-                        {appointmentCounts[cliente.codUsuario]?.canceled ?? 0})
+                        {cliente.appointmentCounts?.total ?? 0} (
+                        {cliente.appointmentCounts?.canceled ?? 0})
                       </td>
                       <td>
                         {cliente.nombre} {cliente.apellido}

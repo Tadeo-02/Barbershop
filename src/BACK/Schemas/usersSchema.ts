@@ -165,6 +165,11 @@ const CategorySummarySchema = CategorySchema.pick({
 
 const LoyaltyProgressSchema = z.object({}).passthrough();
 
+const AppointmentCountsSchema = z.object({
+  total: z.number(),
+  canceled: z.number(),
+});
+
 export const UserResponseSchema = UserBaseSchemaExport.omit({
   contraseña: true,
   preguntaSeguridad: true,
@@ -178,6 +183,7 @@ export const UserResponseSchema = UserBaseSchemaExport.omit({
     .optional()
     .transform((val) => Boolean(val)),
   categoriaActual: CategorySummarySchema.nullable().optional(),
+  appointmentCounts: AppointmentCountsSchema.optional(),
   loyaltyProgress: LoyaltyProgressSchema.nullable().optional(),
 });
 
