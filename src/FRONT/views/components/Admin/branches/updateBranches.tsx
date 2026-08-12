@@ -13,21 +13,13 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const UpdateBranchSchema = BranchSchema.extend({});
 type UpdateBranchForm = z.infer<typeof UpdateBranchSchema>;
-
-const getResponseMessage = (data: unknown): string | undefined => {
-  if (!data || typeof data !== "object" || !("message" in data))
-    return undefined;
-  const message = (data as { message?: unknown }).message;
-  if (typeof message === "string") return message;
-  if (message != null) return String(message);
-  return undefined;
-};
 
 const UpdateBranches: React.FC = () => {
   const { codSucursal } = useParams<{ codSucursal: string }>();
@@ -107,19 +99,15 @@ const UpdateBranches: React.FC = () => {
         },
       );
 
-      // safe parse JSON (some responses may not include a JSON body)
-      let data: unknown = null;
-      try {
-        data = await response.json();
-      } catch (parseErr) {
-        // ignore parse errors; data remains null
-      }
+      const data = await readJsonSafely(response);
 
       if (response.ok) {
         toast.success("Sucursal actualizada exitosamente", { id: toastId });
         navigate("/Admin/BranchesPage");
       } else {
-        const msg = getResponseMessage(data) ?? "Error al actualizar sucursal";
+        const msg =
+          getResponseMessage(data, "Error al actualizar sucursal") ??
+          "Error al actualizar sucursal";
         toast.error(msg, { id: toastId });
       }
     } catch (error: unknown) {

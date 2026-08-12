@@ -10,18 +10,10 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;
-
-const getResponseMessage = (data: unknown): string | undefined => {
-  if (!data || typeof data !== "object" || !("message" in data))
-    return undefined;
-  const message = (data as { message?: unknown }).message;
-  if (typeof message === "string") return message;
-  if (message != null) return String(message);
-  return undefined;
-};
 
 const CreateTypeOfHaircut: React.FC = () => {
   const navigate = useNavigate();
@@ -54,21 +46,16 @@ const CreateTypeOfHaircut: React.FC = () => {
         signal: controller.signal,
       });
 
-      // parse JSON safely (some responses may not include a JSON body)
-      let data: unknown = null;
-      try {
-        data = await res.json();
-      } catch (parseErr) {
-        // ignore parse errors; data stays null
-      }
+      const data = await readJsonSafely(res);
 
       if (res.ok) {
         toast.success("Tipo de corte creado exitosamente", { id: toastId });
         reset();
         setTimeout(() => navigate("/Admin/HaircutTypesPage"), 600);
       } else {
-        // if server returned JSON with message, show it; otherwise show generic
-        const msg = getResponseMessage(data) ?? "Error al crear tipo de corte";
+        const msg =
+          getResponseMessage(data, "Error al crear tipo de corte") ??
+          "Error al crear tipo de corte";
         toast.error(msg, { id: toastId });
       }
     } catch (err: unknown) {
