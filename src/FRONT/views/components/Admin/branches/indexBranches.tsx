@@ -4,6 +4,7 @@ import styles from "./branches.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { showConfirmActionToast } from "../shared/confirmActionToast";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
@@ -71,87 +72,12 @@ const IndexBranches = () => {
       return;
     }
 
-    //alert personalizado para confirmacion:
-    toast(
-      (t) => (
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-              fontWeight: "600",
-            }}
-          >
-            ¿Estás seguro de que querés dar de baja esta sucursal?
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                confirmedDelete(codSucursal);
-              }}
-              style={{
-                background: "#e53e3e",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#c53030";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#e53e3e";
-              }}
-            >
-              Dar de baja
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              style={{
-                background: "#718096",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#4a5568";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#718096";
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        style: {
-          minWidth: "350px", // botones mas anchos
-          padding: "24px",
-        },
-      },
-    );
+    showConfirmActionToast({
+      title: "¿Estás seguro de que querés dar de baja esta sucursal?",
+      confirmLabel: "Dar de baja",
+      confirmColor: "danger",
+      onConfirm: () => confirmedDelete(codSucursal),
+    });
   };
 
   const confirmedDelete = async (codSucursal: string) => {

@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
+import { showConfirmActionToast } from "../shared/confirmActionToast";
 import { apiFetch } from "../../../lib/apiFetch";
 
 // Usamos el schema exportado desde el backend como single source of truth
@@ -133,87 +134,12 @@ const IndexBarbers = () => {
       return;
     }
 
-    //alert personalizado para confirmacion:
-    toast(
-      (t) => (
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-              fontWeight: "600",
-            }}
-          >
-            ¿Estás seguro de que querés dar de baja este barbero?
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                confirmedDelete(codUsuario);
-              }}
-              style={{
-                background: "#e53e3e",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#c53030";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#e53e3e";
-              }}
-            >
-              Dar de baja
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              style={{
-                background: "#718096",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#4a5568";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#718096";
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        style: {
-          minWidth: "350px", // botones mas anchos
-          padding: "24px",
-        },
-      },
-    );
+    showConfirmActionToast({
+      title: "¿Estás seguro de que querés dar de baja este barbero?",
+      confirmLabel: "Dar de baja",
+      confirmColor: "danger",
+      onConfirm: () => confirmedDelete(codUsuario),
+    });
   };
 
   const confirmedDelete = async (codUsuario: string) => {
@@ -255,86 +181,12 @@ const IndexBarbers = () => {
   };
 
   const handleReactivate = async (codUsuario: string) => {
-    toast(
-      (t) => (
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-              fontWeight: "600",
-            }}
-          >
-            ¿Estás seguro de que querés reactivar este barbero?
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                confirmedReactivate(codUsuario);
-              }}
-              style={{
-                background: "#10b981",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#059669";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#10b981";
-              }}
-            >
-              Reactivar
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              style={{
-                background: "#718096",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#4a5568";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#718096";
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        style: {
-          minWidth: "350px",
-          padding: "24px",
-        },
-      },
-    );
+    showConfirmActionToast({
+      title: "¿Estás seguro de que querés reactivar este barbero?",
+      confirmLabel: "Reactivar",
+      confirmColor: "success",
+      onConfirm: () => confirmedReactivate(codUsuario),
+    });
   };
 
   const confirmedReactivate = async (codUsuario: string) => {
