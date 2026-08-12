@@ -6,6 +6,7 @@ import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
 import { showConfirmActionToast } from "../shared/confirmActionToast";
+import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
 // Usamos el schema exportado desde el backend como single source of truth
@@ -16,17 +17,6 @@ const IndexBarbers = () => {
   const [barberos, setBarberos] = useState<Barbero[]>([]);
   const [loading, setLoading] = useState(true);
   const [sucursales, setSucursales] = useState<{ [key: string]: Sucursal }>({});
-
-  const parseJsonResponse = async (response: Response) => {
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      const text = await response.text();
-      throw new Error(
-        `Unexpected response (${response.status} ${response.statusText}): ${text.slice(0, 200)}`,
-      );
-    }
-    return response.json();
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -111,19 +101,14 @@ const IndexBarbers = () => {
   const handleDelete = async (codUsuario: string) => {
     // Check for pending appointments before showing confirmation dialog
     try {
-      const response = await apiFetch(`/turnos/pending/barber/${codUsuario}`);
-      if (!response.ok) {
-        throw new Error(
-          `Failed to check pending appointments: ${response.status}`,
-        );
-      }
+      const pendingCount = await fetchPendingAppointmentsCount(
+        "barber",
+        codUsuario,
+      );
 
-      const payload = await parseJsonResponse(response);
-      const pendingAppointments = payload?.data ?? [];
-
-      if (pendingAppointments && pendingAppointments.length > 0) {
+      if (pendingCount > 0) {
         toast.error(
-          `No se puede dar de baja al barbero. Tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
+          `No se puede dar de baja al barbero. Tiene ${pendingCount} turno(s) vigente(s) sin atender.`,
           { duration: 2000 },
         );
         return;

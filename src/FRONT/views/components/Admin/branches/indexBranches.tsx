@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { showConfirmActionToast } from "../shared/confirmActionToast";
+import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
@@ -49,19 +50,14 @@ const IndexBranches = () => {
 
   const handleDelete = async (codSucursal: string) => {
     try {
-      const response = await apiFetch(`/turnos/pending/branch/${codSucursal}`);
-      if (!response.ok) {
-        throw new Error(
-          `Failed to check pending appointments: ${response.status}`,
-        );
-      }
+      const pendingCount = await fetchPendingAppointmentsCount(
+        "branch",
+        codSucursal,
+      );
 
-      const payload = await response.json();
-      const pendingAppointments = payload?.data ?? [];
-
-      if (pendingAppointments.length > 0) {
+      if (pendingCount > 0) {
         toast.error(
-          `No se puede dar de baja la sucursal. Tiene ${pendingAppointments.length} turno(s) pendiente(s).`,
+          `No se puede dar de baja la sucursal. Tiene ${pendingCount} turno(s) pendiente(s).`,
           { duration: 4000 },
         );
         return;
