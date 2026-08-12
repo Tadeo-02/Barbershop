@@ -12,7 +12,12 @@ import {
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 
-const CreateCategorySchema = CategorySchema.extend({});
+const CreateCategorySchema = CategorySchema.pick({
+  nombreCategoria: true,
+  descCategoria: true,
+  descuentoCorte: true,
+  descuentoProducto: true,
+});
 
 type CreateCategoryForm = z.infer<typeof CreateCategorySchema>;
 

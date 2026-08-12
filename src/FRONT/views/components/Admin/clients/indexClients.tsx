@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./indexClients.module.css";
 import toast from "react-hot-toast";
+import { readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 //mantenemos una interfaz local de Cliente que refleja lo que esperamos del backend, y otra ClienteProfile
@@ -88,7 +89,8 @@ const IndexClients = () => {
       try {
         const response = await apiFetch(`/usuarios?type=client`);
         if (!response.ok) {
-          const text = await response.text().catch(() => "");
+          const errorData = await readJsonSafely(response);
+          const text = JSON.stringify(errorData ?? {});
           console.error("/usuarios error body:", text);
           throw new Error(`HTTP ${response.status} - ${text}`);
         }
@@ -154,7 +156,8 @@ const IndexClients = () => {
       try {
         const res = await apiFetch(`/categorias`);
         if (!res.ok) {
-          const text = await res.text().catch(() => "");
+          const errorData = await readJsonSafely(res);
+          const text = JSON.stringify(errorData ?? {});
           console.error("/categorias error body:", text);
           throw new Error(`HTTP ${res.status} - ${text}`);
         }

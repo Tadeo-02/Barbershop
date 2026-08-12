@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
+import { showConfirmActionToast } from "../shared/confirmActionToast";
+import { changeEntityStatus } from "../shared/entityStatus";
 import { apiFetch } from "../../../lib/apiFetch";
 
 interface TipoCorte {
@@ -15,19 +17,20 @@ const IndexTypeOfHaircut = () => {
   const [loading, setLoading] = useState(true); // loading inicial
 
   useEffect(() => {
-    // llama al backend para obtener los tipos de corte
-    apiFetch("/tipoCortes")
-      .then((res) => res.json())
-      .then((data) => {
-        setTipoCortes(data); // data debe ser un array de tipoCortes
+    const fetchTipoCortes = async () => {
+      try {
+        const res = await apiFetch("/tipoCortes");
+        const data = await res.json();
+        setTipoCortes(data);
         console.log("Tipos de corte recibidos:", data);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error al obtener tipos de corte:", error);
-      })
-      .finally(() => {
-        setLoading(false); // Termina el loading
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTipoCortes();
   }, []);
 
   // loading state
@@ -36,123 +39,28 @@ const IndexTypeOfHaircut = () => {
   }
 
   const handleDelete = async (codCorte: string) => {
-    //alert personalizado para confirmacion:
-    toast(
-      (t) => (
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-              fontWeight: "600",
-            }}
-          >
-            ¿Estás seguro de que querés borrar este tipo de corte?
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                confirmedDelete(codCorte);
-              }}
-              style={{
-                background: "#e53e3e",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#c53030";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#e53e3e";
-              }}
-            >
-              Eliminar
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              style={{
-                background: "#718096",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#4a5568";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#718096";
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        style: {
-          minWidth: "350px", // botones mas anchos
-          padding: "24px",
-        },
-      },
-    );
+    showConfirmActionToast({
+      title: "¿Estás seguro de que querés borrar este tipo de corte?",
+      confirmLabel: "Eliminar",
+      confirmColor: "danger",
+      onConfirm: () => confirmedDelete(codCorte),
+    });
   };
 
   const confirmedDelete = async (codCorte: string) => {
-    const toastId = toast.loading("Eliminando tipo de corte...");
-
-    try {
-      const response = await apiFetch(`/tipoCortes/${codCorte}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        toast.success("Tipo de corte eliminado correctamente", {
-          id: toastId,
-          duration: 2000,
-        });
-        setTipoCortes(
-          tipoCortes.filter((corte) => corte.codCorte !== codCorte),
+    await changeEntityStatus({
+      endpoint: `/tipoCortes/${codCorte}`,
+      method: "DELETE",
+      loadingMessage: "Eliminando tipo de corte...",
+      successMessage: "Tipo de corte eliminado correctamente",
+      notFoundMessage: "Tipo de corte no encontrado",
+      genericErrorMessage: "Error al borrar el tipo de corte",
+      onSuccess: () => {
+        setTipoCortes((prev) =>
+          prev.filter((corte) => corte.codCorte !== codCorte),
         );
-      } else if (response.status === 404) {
-        toast.error("Tipo de corte no encontrado", {
-          id: toastId,
-          duration: 2000,
-        });
-      } else {
-        toast.error("Error al borrar el tipo de corte", {
-          id: toastId,
-          duration: 2000,
-        });
-      }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
-    }
+      },
+    });
   };
 
   return (

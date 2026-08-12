@@ -24,16 +24,18 @@ const ShowBranches = () => {
     setLoading(true);
     setLoadingBarberos(true);
 
-    // Obtener sucursal y barberos en paralelo
-    const fetchSucursal = apiFetch(`/sucursales/${codSucursal}`).then((res) =>
-      res.json(),
-    );
-    const fetchUsuarios = apiFetch(`/usuarios/branch/${codSucursal}`).then(
-      (res) => res.json(),
-    );
+    const fetchData = async () => {
+      try {
+        const [sucursalRes, usuariosRes] = await Promise.all([
+          apiFetch(`/sucursales/${codSucursal}`),
+          apiFetch(`/usuarios/branch/${codSucursal}`),
+        ]);
 
-    Promise.all([fetchSucursal, fetchUsuarios])
-      .then(([sucursalData, usuariosResp]) => {
+        const [sucursalData, usuariosResp] = await Promise.all([
+          sucursalRes.json(),
+          usuariosRes.json(),
+        ]);
+
         // la ruta de sucursales devuelve directamente la entidad
         setSucursal(sucursalData);
 
@@ -48,15 +50,16 @@ const ShowBranches = () => {
         );
 
         setBarberos(soloBarberos);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error al obtener datos de sucursal o barberos:", err);
         toast.error("Error al cargar los datos de la sucursal o barberos");
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
         setLoadingBarberos(false);
-      });
+      }
+    };
+
+    fetchData();
   }, [codSucursal]);
 
   if (loading) {
