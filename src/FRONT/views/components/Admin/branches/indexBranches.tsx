@@ -4,6 +4,7 @@ import styles from "./branches.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
+import { changeEntityStatus } from "../shared/entityStatus";
 import { showConfirmActionToast } from "../shared/confirmActionToast";
 import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
@@ -15,23 +16,20 @@ const IndexBranches = () => {
   const [loading, setLoading] = useState(true); // loading inicial
 
   useEffect(() => {
-    //alert de loading para carga inicial
-    // const toastId = toast.loading("Cargando sucursales...");
-
-    // Llama al backend para obtener las sucursales
-    apiFetch("/sucursales/all")
-      .then((res) => res.json())
-      .then((data) => {
-        setSucursales(data); // data debe ser un array de sucursales
+    const fetchSucursales = async () => {
+      try {
+        const res = await apiFetch("/sucursales/all");
+        const data = await res.json();
+        setSucursales(data);
         console.log("Sucursales recibidos:", data);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error al obtener sucursales:", error);
-        // toast.error("Error al cargar las sucursales", { id: toastId });
-      })
-      .finally(() => {
-        setLoading(false); // Termina el loading
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSucursales();
   }, []);
   // loading state
   if (loading) {
@@ -77,66 +75,25 @@ const IndexBranches = () => {
   };
 
   const confirmedDelete = async (codSucursal: string) => {
-    const toastId = toast.loading("Dando de baja sucursal...");
-
-    try {
-      const response = await apiFetch(`/sucursales/${codSucursal}/deactivate`, {
-        method: "PATCH",
-      });
-
-      if (response.ok) {
-        toast.success("Sucursal dada de baja correctamente", {
-          id: toastId,
-          duration: 2000,
-        });
-        updateBranchStatus(codSucursal, false);
-      } else if (response.status === 404) {
-        toast.error("Sucursal no encontrada", { id: toastId, duration: 2000 });
-      } else {
-        const errorData = await response.json().catch(() => null);
-        toast.error(errorData?.message || "Error al dar de baja la sucursal", {
-          id: toastId,
-          duration: 2000,
-        });
-      }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
-    }
+    await changeEntityStatus({
+      endpoint: `/sucursales/${codSucursal}/deactivate`,
+      loadingMessage: "Dando de baja sucursal...",
+      successMessage: "Sucursal dada de baja correctamente",
+      notFoundMessage: "Sucursal no encontrada",
+      genericErrorMessage: "Error al dar de baja la sucursal",
+      onSuccess: () => updateBranchStatus(codSucursal, false),
+    });
   };
 
   const handleReactivate = async (codSucursal: string) => {
-    const toastId = toast.loading("Reactivando sucursal...");
-
-    try {
-      const response = await apiFetch(`/sucursales/${codSucursal}/reactivate`, {
-        method: "PATCH",
-      });
-
-      if (response.ok) {
-        toast.success("Sucursal reactivada correctamente", {
-          id: toastId,
-          duration: 2000,
-        });
-        updateBranchStatus(codSucursal, true);
-      } else if (response.status === 404) {
-        toast.error("Sucursal no encontrada", { id: toastId, duration: 2000 });
-      } else {
-        toast.error("Error al reactivar la sucursal", {
-          id: toastId,
-          duration: 2000,
-        });
-      }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
-    }
+    await changeEntityStatus({
+      endpoint: `/sucursales/${codSucursal}/reactivate`,
+      loadingMessage: "Reactivando sucursal...",
+      successMessage: "Sucursal reactivada correctamente",
+      notFoundMessage: "Sucursal no encontrada",
+      genericErrorMessage: "Error al reactivar la sucursal",
+      onSuccess: () => updateBranchStatus(codSucursal, true),
+    });
   };
 
   return (

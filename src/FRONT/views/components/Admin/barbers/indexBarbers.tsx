@@ -6,6 +6,7 @@ import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
 import { showConfirmActionToast } from "../shared/confirmActionToast";
+import { changeEntityStatus } from "../shared/entityStatus";
 import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
@@ -128,41 +129,22 @@ const IndexBarbers = () => {
   };
 
   const confirmedDelete = async (codUsuario: string) => {
-    const toastId = toast.loading("Dando de baja barbero...");
-
-    try {
-      const response = await apiFetch(`/usuarios/${codUsuario}/deactivate`, {
-        method: "PATCH",
-      });
-
-      if (response.ok) {
-        toast.success("Barbero dado de baja correctamente", {
-          id: toastId,
-          duration: 2000,
-        });
-        // Actualizar el estado del barbero a inactivo en lugar de eliminarlo de la lista
-        setBarberos(
-          barberos.map((barbero) =>
+    await changeEntityStatus({
+      endpoint: `/usuarios/${codUsuario}/deactivate`,
+      loadingMessage: "Dando de baja barbero...",
+      successMessage: "Barbero dado de baja correctamente",
+      notFoundMessage: "Barbero no encontrado",
+      genericErrorMessage: "Error al dar de baja el barbero",
+      onSuccess: () => {
+        setBarberos((prev) =>
+          prev.map((barbero) =>
             barbero.codUsuario === codUsuario
               ? { ...barbero, activo: false }
               : barbero,
           ),
         );
-      } else if (response.status === 404) {
-        toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
-      } else {
-        toast.error("Error al dar de baja el barbero", {
-          id: toastId,
-          duration: 2000,
-        });
-      }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
-    }
+      },
+    });
   };
 
   const handleReactivate = async (codUsuario: string) => {
@@ -175,42 +157,22 @@ const IndexBarbers = () => {
   };
 
   const confirmedReactivate = async (codUsuario: string) => {
-    const toastId = toast.loading("Reactivando barbero...");
-
-    try {
-      const response = await apiFetch(`/usuarios/${codUsuario}/reactivate`, {
-        method: "PATCH",
-      });
-
-      if (response.ok) {
-        toast.success("Barbero reactivado correctamente", {
-          id: toastId,
-          duration: 2000,
-        });
-        // Actualizar el estado del barbero a activo
-        setBarberos(
-          barberos.map((barbero) =>
+    await changeEntityStatus({
+      endpoint: `/usuarios/${codUsuario}/reactivate`,
+      loadingMessage: "Reactivando barbero...",
+      successMessage: "Barbero reactivado correctamente",
+      notFoundMessage: "Barbero no encontrado",
+      genericErrorMessage: "Error al reactivar el barbero",
+      onSuccess: () => {
+        setBarberos((prev) =>
+          prev.map((barbero) =>
             barbero.codUsuario === codUsuario
               ? { ...barbero, activo: true }
               : barbero,
           ),
         );
-      } else if (response.status === 404) {
-        toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Error al reactivar el barbero", {
-          id: toastId,
-          duration: 2000,
-        });
-      }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
-    }
+      },
+    });
   };
 
   return (
