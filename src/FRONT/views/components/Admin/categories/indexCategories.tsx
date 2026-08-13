@@ -4,6 +4,9 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema.ts";
 import type { z } from "zod";
+import { showConfirmActionToast } from "../shared/confirmActionToast";
+import { changeEntityStatus } from "../shared/entityStatus";
+import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
@@ -78,20 +81,21 @@ const IndexCategories = () => {
   }, [deleteContext]);
 
   useEffect(() => {
-    // llama al backend para obtener las categorias
-    apiFetch("/categorias")
-      .then((res) => res.json())
-      .then((data) => {
-        setCategorias(data); // data debe ser un array de categorias
+    const fetchCategorias = async () => {
+      try {
+        const res = await apiFetch("/categorias");
+        const data = await res.json();
+        setCategorias(data);
         console.log("Categorías existentes:", data);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error al obtener categorias:", error);
         toast.error("Error al cargar las categorías", { duration: 2000 });
-      })
-      .finally(() => {
-        setLoading(false); // cortar loading
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategorias();
   }, []);
 
   // loading state
@@ -102,8 +106,9 @@ const IndexCategories = () => {
   const fetchDeleteContext = async (codCategoria: string) => {
     const response = await apiFetch(`/categorias/${codCategoria}/clients`);
     if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      throw new Error(text || `HTTP ${response.status}`);
+      const errorData = await readJsonSafely(response);
+      const message = getResponseMessage(errorData, `HTTP ${response.status}`);
+      throw new Error(message || `HTTP ${response.status}`);
     }
     const json = await response.json();
     return (json && json.data) || json;
@@ -131,86 +136,12 @@ const IndexCategories = () => {
   };
 
   const showSimpleDeleteConfirm = (codCategoria: string) => {
-    toast(
-      (t) => (
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-              fontWeight: "600",
-            }}
-          >
-            ¿Estás seguro de que querés borrar esta categoría?
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                confirmedDelete(codCategoria);
-              }}
-              style={{
-                background: "#e53e3e",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#c53030";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#e53e3e";
-              }}
-            >
-              Eliminar
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              style={{
-                background: "#718096",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#4a5568";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#718096";
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        style: {
-          minWidth: "350px",
-          padding: "24px",
-        },
-      },
-    );
+    showConfirmActionToast({
+      title: "¿Estás seguro de que querés borrar esta categoría?",
+      confirmLabel: "Eliminar",
+      confirmColor: "danger",
+      onConfirm: () => confirmedDelete(codCategoria),
+    });
   };
 
   const showDeleteOptions = (context: DeleteContext) => {
@@ -354,43 +285,23 @@ const IndexCategories = () => {
       perClient?: Array<{ codCliente: string; decision: DeleteAction }>;
     },
   ) => {
-    // Mostrar toast de carga y guardar el id para poder actualizarlo
-    const toastId = toast.loading("Eliminando categoría...");
-
-    try {
-      const response = await apiFetch(`/categorias/${codCategoria}`, {
-        method: "DELETE",
-        headers: payload ? { "Content-Type": "application/json" } : undefined,
-        body: payload ? JSON.stringify(payload) : undefined,
-      });
-
-      const responseBody = await response.json().catch(() => null);
-
-      if (response.ok) {
-        // Reemplazar el toast de carga por uno de éxito que se cierre automáticamente
-        toast.success("Categoría eliminada correctamente", {
-          id: toastId,
-          duration: 2000,
-        });
-
-        // ✅ Actualizar la lista removiendo el eliminado (usar functional update para evitar closures stale)
+    await changeEntityStatus({
+      endpoint: `/categorias/${codCategoria}`,
+      method: "DELETE",
+      headers: payload ? { "Content-Type": "application/json" } : undefined,
+      body: payload ? JSON.stringify(payload) : undefined,
+      loadingMessage: "Eliminando categoría...",
+      successMessage: "Categoría eliminada correctamente",
+      notFoundMessage: "Categoría no encontrada",
+      genericErrorMessage: "Error al borrar la categoría",
+      duration: 2500,
+      onSuccess: () => {
         setCategorias((prev) =>
           prev.filter((categoria) => categoria.codCategoria !== codCategoria),
         );
         setDeleteContext(null);
-      } else if (response.status === 404) {
-        toast.error("Categoría no encontrada", { id: toastId, duration: 2000 });
-      } else {
-        const message = responseBody?.message || "Error al borrar la categoría";
-        toast.error(message, { id: toastId, duration: 2500 });
-      }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
-    }
+      },
+    });
   };
 
   return (

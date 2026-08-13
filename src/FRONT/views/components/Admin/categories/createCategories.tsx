@@ -3,74 +3,23 @@ import { useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast"; // importar librería de alerts
 import { useForm } from "react-hook-form";
-import type { Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
 import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 
-const CreateCategorySchema = z.object({
-  nombreCategoria: z.string().min(1, "Nombre requerido"),
-  descCategoria: z
-    .string()
-    .min(10, "Descripción requerida. Mínimo 10 caracteres."),
-  descuentoCorte: z.coerce
-    .number()
-    .refine((v) => !Number.isNaN(v), { message: "Ingrese un número." })
-    .min(0, "Mínimo 0")
-    .max(100, "Máximo 100"),
-  descuentoProducto: z.coerce
-    .number()
-    .refine((v) => !Number.isNaN(v), { message: "Ingrese un número." })
-    .min(0, "Mínimo 0")
-    .max(100, "Máximo 100"),
+const CreateCategorySchema = CategorySchema.pick({
+  nombreCategoria: true,
+  descCategoria: true,
+  descuentoCorte: true,
+  descuentoProducto: true,
 });
 
 type CreateCategoryForm = z.infer<typeof CreateCategorySchema>;
-
-const baseResolver = zodResolver(
-  CreateCategorySchema,
-) as Resolver<CreateCategoryForm>;
-
-const normalizeMessage = (msg: unknown): string | undefined => {
-  if (!msg) return undefined;
-  const s = String(msg).toLowerCase();
-  if (
-    s.includes("invalid input") ||
-    s.includes("received nan") ||
-    s.includes("expected number")
-  ) {
-    return "Ingrese un número válido";
-  }
-  return String(msg);
-};
-
-const createCategoryResolver: Resolver<CreateCategoryForm> = async (
-  values,
-  context,
-  options,
-) => {
-  const result = await baseResolver(values, context, options);
-
-  if (result.errors) {
-    const errors = result.errors;
-    for (const key of Object.keys(errors)) {
-      const err = errors[key as keyof typeof errors];
-      if (!err || typeof err !== "object" || !("message" in err)) continue;
-      const normalized = normalizeMessage(
-        (err as { message?: unknown }).message,
-      );
-      if (normalized) {
-        (err as { message?: unknown }).message = normalized;
-      }
-    }
-  }
-
-  return result;
-};
 
 const CreateCategories: React.FC = () => {
   const navigate = useNavigate();
@@ -82,7 +31,7 @@ const CreateCategories: React.FC = () => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateCategoryForm>({
-    resolver: createCategoryResolver,
+    resolver: zodResolver(CreateCategorySchema),
     mode: "onBlur",
     defaultValues: {
       descuentoCorte: 0,

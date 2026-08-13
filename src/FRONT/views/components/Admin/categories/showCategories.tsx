@@ -29,16 +29,20 @@ const ShowCategories = () => {
   };
 
   useEffect(() => {
-    apiFetch(`/categorias/${codCategoria}`)
-      .then((res) => res.json())
-      .then((data) => setCategoria(data))
-      .catch((err) => {
+    const fetchCategoria = async () => {
+      try {
+        const res = await apiFetch(`/categorias/${codCategoria}`);
+        const data = await res.json();
+        setCategoria(data);
+      } catch (err) {
         console.error("Error al obtener la categoría:", err);
         toast.error("Error al cargar los datos de la categoría");
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchCategoria();
   }, [codCategoria]);
 
   if (loading) {

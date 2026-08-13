@@ -5,6 +5,9 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
+import { showConfirmActionToast } from "../shared/confirmActionToast";
+import { changeEntityStatus } from "../shared/entityStatus";
+import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
 // Usamos el schema exportado desde el backend como single source of truth
@@ -15,17 +18,6 @@ const IndexBarbers = () => {
   const [barberos, setBarberos] = useState<Barbero[]>([]);
   const [loading, setLoading] = useState(true);
   const [sucursales, setSucursales] = useState<{ [key: string]: Sucursal }>({});
-
-  const parseJsonResponse = async (response: Response) => {
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      const text = await response.text();
-      throw new Error(
-        `Unexpected response (${response.status} ${response.statusText}): ${text.slice(0, 200)}`,
-      );
-    }
-    return response.json();
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,19 +102,14 @@ const IndexBarbers = () => {
   const handleDelete = async (codUsuario: string) => {
     // Check for pending appointments before showing confirmation dialog
     try {
-      const response = await apiFetch(`/turnos/pending/barber/${codUsuario}`);
-      if (!response.ok) {
-        throw new Error(
-          `Failed to check pending appointments: ${response.status}`,
-        );
-      }
+      const pendingCount = await fetchPendingAppointmentsCount(
+        "barber",
+        codUsuario,
+      );
 
-      const payload = await parseJsonResponse(response);
-      const pendingAppointments = payload?.data ?? [];
-
-      if (pendingAppointments && pendingAppointments.length > 0) {
+      if (pendingCount > 0) {
         toast.error(
-          `No se puede dar de baja al barbero. Tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
+          `No se puede dar de baja al barbero. Tiene ${pendingCount} turno(s) vigente(s) sin atender.`,
           { duration: 2000 },
         );
         return;
@@ -133,247 +120,59 @@ const IndexBarbers = () => {
       return;
     }
 
-    //alert personalizado para confirmacion:
-    toast(
-      (t) => (
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-              fontWeight: "600",
-            }}
-          >
-            ¿Estás seguro de que querés dar de baja este barbero?
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                confirmedDelete(codUsuario);
-              }}
-              style={{
-                background: "#e53e3e",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#c53030";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#e53e3e";
-              }}
-            >
-              Dar de baja
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              style={{
-                background: "#718096",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#4a5568";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#718096";
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        style: {
-          minWidth: "350px", // botones mas anchos
-          padding: "24px",
-        },
-      },
-    );
+    showConfirmActionToast({
+      title: "¿Estás seguro de que querés dar de baja este barbero?",
+      confirmLabel: "Dar de baja",
+      confirmColor: "danger",
+      onConfirm: () => confirmedDelete(codUsuario),
+    });
   };
 
   const confirmedDelete = async (codUsuario: string) => {
-    const toastId = toast.loading("Dando de baja barbero...");
-
-    try {
-      const response = await apiFetch(`/usuarios/${codUsuario}/deactivate`, {
-        method: "PATCH",
-      });
-
-      if (response.ok) {
-        toast.success("Barbero dado de baja correctamente", {
-          id: toastId,
-          duration: 2000,
-        });
-        // Actualizar el estado del barbero a inactivo en lugar de eliminarlo de la lista
-        setBarberos(
-          barberos.map((barbero) =>
+    await changeEntityStatus({
+      endpoint: `/usuarios/${codUsuario}/deactivate`,
+      loadingMessage: "Dando de baja barbero...",
+      successMessage: "Barbero dado de baja correctamente",
+      notFoundMessage: "Barbero no encontrado",
+      genericErrorMessage: "Error al dar de baja el barbero",
+      onSuccess: () => {
+        setBarberos((prev) =>
+          prev.map((barbero) =>
             barbero.codUsuario === codUsuario
               ? { ...barbero, activo: false }
               : barbero,
           ),
         );
-      } else if (response.status === 404) {
-        toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
-      } else {
-        toast.error("Error al dar de baja el barbero", {
-          id: toastId,
-          duration: 2000,
-        });
-      }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
-    }
+      },
+    });
   };
 
   const handleReactivate = async (codUsuario: string) => {
-    toast(
-      (t) => (
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-              fontWeight: "600",
-            }}
-          >
-            ¿Estás seguro de que querés reactivar este barbero?
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                confirmedReactivate(codUsuario);
-              }}
-              style={{
-                background: "#10b981",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#059669";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#10b981";
-              }}
-            >
-              Reactivar
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              style={{
-                background: "#718096",
-                color: "white",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                minWidth: "120px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#4a5568";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#718096";
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        style: {
-          minWidth: "350px",
-          padding: "24px",
-        },
-      },
-    );
+    showConfirmActionToast({
+      title: "¿Estás seguro de que querés reactivar este barbero?",
+      confirmLabel: "Reactivar",
+      confirmColor: "success",
+      onConfirm: () => confirmedReactivate(codUsuario),
+    });
   };
 
   const confirmedReactivate = async (codUsuario: string) => {
-    const toastId = toast.loading("Reactivando barbero...");
-
-    try {
-      const response = await apiFetch(`/usuarios/${codUsuario}/reactivate`, {
-        method: "PATCH",
-      });
-
-      if (response.ok) {
-        toast.success("Barbero reactivado correctamente", {
-          id: toastId,
-          duration: 2000,
-        });
-        // Actualizar el estado del barbero a activo
-        setBarberos(
-          barberos.map((barbero) =>
+    await changeEntityStatus({
+      endpoint: `/usuarios/${codUsuario}/reactivate`,
+      loadingMessage: "Reactivando barbero...",
+      successMessage: "Barbero reactivado correctamente",
+      notFoundMessage: "Barbero no encontrado",
+      genericErrorMessage: "Error al reactivar el barbero",
+      onSuccess: () => {
+        setBarberos((prev) =>
+          prev.map((barbero) =>
             barbero.codUsuario === codUsuario
               ? { ...barbero, activo: true }
               : barbero,
           ),
         );
-      } else if (response.status === 404) {
-        toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Error al reactivar el barbero", {
-          id: toastId,
-          duration: 2000,
-        });
-      }
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
-    }
+      },
+    });
   };
 
   return (

@@ -10,6 +10,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 interface TipoCorte {
@@ -19,15 +20,6 @@ interface TipoCorte {
 }
 
 type TypeForm = z.infer<typeof HaircutSchema>;
-
-const getResponseMessage = (data: unknown): string | undefined => {
-  if (!data || typeof data !== "object" || !("message" in data))
-    return undefined;
-  const message = (data as { message?: unknown }).message;
-  if (typeof message === "string") return message;
-  if (message != null) return String(message);
-  return undefined;
-};
 
 const UpdateTypeOfHaircut: React.FC = () => {
   const { codCorte } = useParams<{ codCorte: string }>();
@@ -110,12 +102,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
         signal: controller.signal,
       });
 
-      let data: unknown = null;
-      try {
-        data = await res.json();
-      } catch (parseErr) {
-        // ignore parse errors
-      }
+      const data = await readJsonSafely(res);
 
       if (res.ok) {
         toast.success("Tipo de corte actualizado", {
@@ -125,7 +112,8 @@ const UpdateTypeOfHaircut: React.FC = () => {
         navigate("/Admin/HaircutTypesPage");
       } else {
         const msg =
-          getResponseMessage(data) ?? "Error al actualizar tipo de corte";
+          getResponseMessage(data, "Error al actualizar tipo de corte") ??
+          "Error al actualizar tipo de corte";
         toast.error(msg, { id: toastId, duration: 2000 });
       }
     } catch (err: unknown) {

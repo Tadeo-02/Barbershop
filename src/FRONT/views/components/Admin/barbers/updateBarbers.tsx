@@ -14,6 +14,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
@@ -143,18 +144,14 @@ const UpdateBarber: React.FC = () => {
     if (branchChanged) {
       // Check for pending appointments before allowing branch change
       try {
-        const response = await apiFetch(`/turnos/pending/barber/${codUsuario}`);
-        if (!response.ok) {
-          throw new Error(
-            `Failed to check pending appointments: ${response.status}`,
-          );
-        }
+        const pendingCount = await fetchPendingAppointmentsCount(
+          "barber",
+          codUsuario,
+        );
 
-        const { data: pendingAppointments } = await response.json();
-
-        if (pendingAppointments && pendingAppointments.length > 0) {
+        if (pendingCount > 0) {
           toast.error(
-            `No se puede cambiar de sucursal. El barbero tiene ${pendingAppointments.length} turno(s) vigente(s) sin atender.`,
+            `No se puede cambiar de sucursal. El barbero tiene ${pendingCount} turno(s) vigente(s) sin atender.`,
             { duration: 2000 },
           );
           return;

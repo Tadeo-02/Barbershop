@@ -11,20 +11,12 @@ import {
   isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 const CreateBranchSchema = BranchSchema.extend({});
 
 type CreateBranchFormData = z.infer<typeof CreateBranchSchema>;
-
-const getResponseMessage = (data: unknown): string | undefined => {
-  if (!data || typeof data !== "object" || !("message" in data))
-    return undefined;
-  const message = (data as { message?: unknown }).message;
-  if (typeof message === "string") return message;
-  if (message != null) return String(message);
-  return undefined;
-};
 
 const CreateBranches: React.FC = () => {
   const navigate = useNavigate();
@@ -59,17 +51,10 @@ const CreateBranches: React.FC = () => {
         signal: controller.signal,
       });
 
-      // Intentar parsear JSON; si falla, crear mensaje fallback
-      let responseData: unknown = { message: response.statusText };
-      try {
-        responseData = await response.json();
-      } catch (parseErr) {
-        // leave responseData as fallback
-        // console.warn("No JSON en la respuesta:", parseErr);
-      }
-
+      const responseData = await readJsonSafely(response);
       const responseMessage =
-        getResponseMessage(responseData) ?? response.statusText;
+        getResponseMessage(responseData, response.statusText) ??
+        "Error al crear sucursal";
 
       if (response.ok) {
         // ÉXITO
