@@ -10,13 +10,11 @@ import {
   UserBaseSchemaExport,
   UserSchema,
 } from "../../../../../BACK/Schemas/usersSchema";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 
@@ -94,7 +92,9 @@ const UpdateBarber: React.FC = () => {
           setSucursalesDisponibles(data);
         }
       } catch (error: unknown) {
-        if (isAbortError(error)) return;
+        if (handleAbortOrConnectionError(error, undefined, "Error de conexión")) {
+          return;
+        }
         console.error("Error fetching sucursales:", error);
       }
     };
@@ -140,12 +140,10 @@ const UpdateBarber: React.FC = () => {
           });
         }
       } catch (error: unknown) {
-        if (isAbortError(error)) {
-          toast.dismiss(toastId);
+        if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
           return;
         }
         console.error("🔍 Debug - Fetch error:", error);
-        toast.error("Error de conexión", { id: toastId, duration: 2000 });
       }
     };
 
@@ -215,12 +213,10 @@ const UpdateBarber: React.FC = () => {
         });
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
         return;
       }
       console.error("🔍 Debug - Submit error:", error);
-      toast.error("Error de conexión", { id: toastId, duration: 2000 });
     }
   };
 

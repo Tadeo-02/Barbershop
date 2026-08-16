@@ -7,11 +7,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
 import {
-  isAbortError,
   useAbortController,
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const CreateCategorySchema = CategorySchema.pick({
   nombreCategoria: true,
@@ -83,12 +83,10 @@ const CreateCategories: React.FC = () => {
         });
       }
     } catch (err: unknown) {
-      if (isAbortError(err)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(err, toastId, "Error de conexión con el servidor")) {
         return;
       }
       console.error("Error en handleSubmit:", err);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 

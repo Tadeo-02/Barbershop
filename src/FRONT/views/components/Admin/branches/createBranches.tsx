@@ -7,13 +7,11 @@ import { z } from "zod";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast"; //importamos libreria de alertas
 import { BranchSchema } from "../../../../../BACK/Schemas/branchesSchema";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const CreateBranchSchema = BranchSchema.extend({});
 
@@ -94,15 +92,10 @@ const CreateBranches: React.FC = () => {
         });
       }
     } catch (error: unknown) {
-      // Ignorar errores de abort (son intencionales)
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
-        // console.log("Request cancelado");
+      if (handleAbortOrConnectionError(error, toastId, "No se pudo conectar con el servidor")) {
         return;
       }
-      // ERROR DE RED u otro
       console.error("Error en handleSubmit:", error);
-      toast.error("No se pudo conectar con el servidor", { id: toastId });
     }
   };
 

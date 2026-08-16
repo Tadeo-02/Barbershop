@@ -6,6 +6,11 @@ import {
   AvailableSlotSchema,
 } from "../Schemas/appointmentsSchema";
 import { sanitizeOutput } from "../middleware/zodValidation";
+import {
+  createDataResponse,
+  createErrorResponse,
+  createValidationErrorResponse,
+} from "../lib/backendResponse";
 // creamos la clase barberController para enviar y manejar el base
 type AppointmentEntity = NonNullable<
   Awaited<ReturnType<typeof model.findById>>
@@ -18,6 +23,15 @@ type AppointmentUpdateArgs =
 
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
+
+const validationError = (message: string) =>
+  createValidationErrorResponse(message);
+
+const successData = <T>(data: T, message?: string) =>
+  createDataResponse(data, message);
+
+const serverError = (message: string) =>
+  createErrorResponse(message, "server_error");
 
 class AppointmentsController extends BaseController<
   AppointmentEntity,
@@ -41,10 +55,9 @@ export const findByAvailableDate = async (
     const { fechaTurno, codSucursal } = req.params;
 
     if (!fechaTurno || !codSucursal) {
-      res.status(400).json({
-        success: false,
-        message: "fechaTurno y codSucursal son requeridos",
-      });
+      res.status(400).json(
+        validationError("fechaTurno y codSucursal son requeridos"),
+      );
       return;
     }
 
@@ -54,15 +67,11 @@ export const findByAvailableDate = async (
     );
     const safeHoras = sanitizeOutput(AvailableSlotSchema, horasDisponibles);
 
-    res.status(200).json({
-      success: true,
-      data: safeHoras,
-    });
+    res.status(200).json(successData(safeHoras));
   } catch (error: unknown) {
-    res.status(500).json({
-      success: false,
-      message: getErrorMessage(error, "Error al buscar horas disponibles"),
-    });
+    res.status(500).json(
+      serverError(getErrorMessage(error, "Error al buscar horas disponibles")),
+    );
   }
 };
 
@@ -74,28 +83,22 @@ export const findByBarberId = async (
     const { codBarbero, fechaTurno } = req.params;
 
     if (!codBarbero || !fechaTurno) {
-      res.status(400).json({
-        success: false,
-        message: "codBarbero y fechaTurno son requeridos",
-      });
+      res.status(400).json(
+        validationError("codBarbero y fechaTurno son requeridos"),
+      );
       return;
     }
 
     const horasDisponibles = await model.findByBarberId(codBarbero, fechaTurno);
     const safeHoras = sanitizeOutput(AvailableSlotSchema, horasDisponibles);
 
-    res.status(200).json({
-      success: true,
-      data: safeHoras,
-    });
+    res.status(200).json(successData(safeHoras));
   } catch (error: unknown) {
-    res.status(500).json({
-      success: false,
-      message: getErrorMessage(
-        error,
-        "Error al buscar horas disponibles del barbero",
+    res.status(500).json(
+      serverError(
+        getErrorMessage(error, "Error al buscar horas disponibles del barbero"),
       ),
-    });
+    );
   }
 };
 
@@ -107,25 +110,18 @@ export const findByUserId = async (
     const { codUsuario } = req.params;
 
     if (!codUsuario) {
-      res.status(400).json({
-        success: false,
-        message: "codUsuario es requerido",
-      });
+      res.status(400).json(validationError("codUsuario es requerido"));
       return;
     }
 
     const turno = await model.findByUserId(codUsuario);
     const safeTurno = sanitizeOutput(AppointmentOutputSchema, turno);
 
-    res.status(200).json({
-      success: true,
-      data: safeTurno,
-    });
+    res.status(200).json(successData(safeTurno));
   } catch (error: unknown) {
-    res.status(500).json({
-      success: false,
-      message: getErrorMessage(error, "Error al buscar turno del cliente"),
-    });
+    res.status(500).json(
+      serverError(getErrorMessage(error, "Error al buscar turno del cliente")),
+    );
   }
 };
 
@@ -147,15 +143,11 @@ export const findByBranchId = async (
     const turnos = await model.findByBranchId(codSucursal);
     const safeTurnos = sanitizeOutput(AppointmentOutputSchema, turnos);
 
-    res.status(200).json({
-      success: true,
-      data: safeTurnos,
-    });
+    res.status(200).json(successData(safeTurnos));
   } catch (error: unknown) {
-    res.status(500).json({
-      success: false,
-      message: getErrorMessage(error, "Error al buscar turnos de la sucursal"),
-    });
+    res.status(500).json(
+      serverError(getErrorMessage(error, "Error al buscar turnos de la sucursal")),
+    );
   }
 };
 
@@ -167,28 +159,20 @@ export const findPendingByBranchId = async (
     const { codSucursal } = req.params;
 
     if (!codSucursal) {
-      res.status(400).json({
-        success: false,
-        message: "codSucursal es requerido",
-      });
+      res.status(400).json(validationError("codSucursal es requerido"));
       return;
     }
 
     const turnos = await model.findPendingByBranchId(codSucursal);
     const safeTurnos = sanitizeOutput(AppointmentOutputSchema, turnos);
 
-    res.status(200).json({
-      success: true,
-      data: safeTurnos,
-    });
+    res.status(200).json(successData(safeTurnos));
   } catch (error: unknown) {
-    res.status(500).json({
-      success: false,
-      message: getErrorMessage(
-        error,
-        "Error al buscar turnos pendientes de la sucursal",
+    res.status(500).json(
+      serverError(
+        getErrorMessage(error, "Error al buscar turnos pendientes de la sucursal"),
       ),
-    });
+    );
   }
 };
 

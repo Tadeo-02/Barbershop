@@ -11,6 +11,8 @@ import {
   unwrapAppointments,
 } from "../shared/appointments";
 import { apiFetch } from "../../lib/apiFetch.ts";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import { ensureAuthenticatedUser } from "../../lib/authUtils";
 
 const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -44,9 +46,11 @@ const ClientAppointments: React.FC = () => {
     const timer = setTimeout(() => {
       setAuthChecked(true);
 
-      if (!isAuthenticated || !user || !user.codUsuario) {
-        toast.error("Debes iniciar sesión para ver tus turnos");
-        navigate("/login");
+      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+        message: "Debes iniciar sesión para ver tus turnos",
+        redirectTo: "/login",
+      })) {
+        return;
       }
     }, 100);
 
@@ -59,7 +63,7 @@ const ClientAppointments: React.FC = () => {
     if (!authChecked) return;
 
     // Si no está autenticado, no hacer fetch
-    if (!isAuthenticated || !user || !user.codUsuario) {
+    if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {})) {
       return;
     }
 
@@ -160,11 +164,10 @@ const ClientAppointments: React.FC = () => {
         });
       }
     } catch (error) {
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
+        return;
+      }
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
     }
   };
 

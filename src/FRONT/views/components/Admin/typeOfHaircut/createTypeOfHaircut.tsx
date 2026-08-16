@@ -6,13 +6,11 @@ import { z } from "zod";
 import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;
 
@@ -71,12 +69,10 @@ const CreateTypeOfHaircut: React.FC = () => {
         toast.error(msg, { id: toastId });
       }
     } catch (err: unknown) {
-      if (isAbortError(err)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(err, toastId, "Error de conexión con el servidor")) {
         return;
       }
       console.error("Error en handleSubmit:", err);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 

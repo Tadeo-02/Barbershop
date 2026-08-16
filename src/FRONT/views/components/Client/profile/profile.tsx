@@ -4,6 +4,7 @@ import styles from "./profile.module.css";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../../lib/apiFetch";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 //! ADAPTAR A MOBILE
 interface CategoriaActual {
@@ -240,8 +241,10 @@ const SecurityQuestionForm: React.FC<{
         toast.error(data.message || "Error al actualizar");
       }
     } catch (err) {
+      if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
+        return;
+      }
       console.error(err);
-      toast.error("Error de conexión");
     } finally {
       setLoading(false);
     }

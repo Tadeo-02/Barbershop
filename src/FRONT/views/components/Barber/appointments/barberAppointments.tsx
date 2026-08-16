@@ -14,11 +14,9 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -85,9 +83,12 @@ const BarberAppointments: React.FC = () => {
     const timer = setTimeout(() => {
       setAuthChecked(true);
 
-      if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
-        toast.error("Debes iniciar sesión como barbero para ver tus turnos");
-        navigate("/login");
+      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+        message: "Debes iniciar sesión como barbero para ver tus turnos",
+        redirectTo: "/login",
+        requireSucursal: true,
+      })) {
+        return;
       }
     }, 100);
 
@@ -100,7 +101,9 @@ const BarberAppointments: React.FC = () => {
     if (!authChecked) return;
 
     // Si no está autenticado o no tiene codSucursal (no es barbero), no hacer fetch
-    if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
+    if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+      requireSucursal: true,
+    })) {
       return;
     }
 
@@ -128,7 +131,7 @@ const BarberAppointments: React.FC = () => {
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
       } catch (error: unknown) {
-        if (isAbortError(error)) {
+        if (handleAbortOrConnectionError(error, undefined, "Error de conexión con el servidor")) {
           console.log("Fetch aborted for turnos");
           return;
         }
@@ -228,14 +231,11 @@ const BarberAppointments: React.FC = () => {
         });
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        // request was intentionally aborted
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
         console.log("Cancel request aborted");
-      } else {
-        console.error("Error en la solicitud:", error);
-        toast.error("Error de conexión con el servidor", { id: toastId });
+        return;
       }
+      console.error("Error en la solicitud:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -323,14 +323,12 @@ const BarberAppointments: React.FC = () => {
         });
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
         console.log("Update request aborted");
-        return; // early return for aborted requests
+        return;
       }
 
       console.error("Error modificando turno:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 

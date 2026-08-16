@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
 import { useUserRedirect } from "../useUserRedirect.ts";
 import toast from "react-hot-toast";
+import { handleAbortOrConnectionError } from "../lib/toastUtils";
+import { parseBackendResponse } from "../lib/backendResponse";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -21,39 +23,33 @@ function Login() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, contraseña }),
       });
-      const text = await response.text();
-      let data;
-      if (text) {
-        try {
-          data = JSON.parse(text);
-        } catch {
-          toast.error("Respuesta inválida del servidor");
-          return;
-        }
-      } else {
-        toast.error("El servidor no devolvió respuesta.");
+      const parsed = await parseBackendResponse<{ user?: unknown; token?: string; message?: string }>(response);
+
+      if (!parsed.ok && parsed.message) {
+        toast.error(parsed.message);
         return;
       }
-      if (response.ok) {
-        console.log("✅ Login successful, server response:", data);
 
-        // usar el contexto para manejar el login
-        // login.tsx — solo cambia esto dentro de handleSubmit
+      if (response.ok) {
+        console.log("✅ Login successful, server response:", parsed.raw);
+
+        const data = parsed.data ?? {};
         if (data.user && data.token) {
-          // verificar que llegó el token
-          login(data.user, data.token); // <-- antes: login(data.user)
+          login(data.user, data.token);
           redirectUser(data.user, data.message || "Login exitoso");
         } else {
           console.log("No user data in response");
           toast.error("Datos de usuario no encontrados");
         }
       } else {
-        console.log("Login failed, server response:", data);
-        toast.error(data?.message || "Error de login");
+        console.log("Login failed, server response:", parsed.raw);
+        toast.error(parsed.message || "Error de login");
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Error de conexión");
+      if (handleAbortOrConnectionError(error, undefined, "Error de conexión")) {
+        return;
+      }
     }
   };
 

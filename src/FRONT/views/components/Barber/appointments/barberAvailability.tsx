@@ -4,11 +4,9 @@ import toast from "react-hot-toast";
 import styles from "./barberAvailability.module.css";
 import AvailabilityForm from "./AvailabilityForm";
 import type { AvailabilityFormValues } from "./AvailabilityForm";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const BarberAvailability: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -57,8 +55,7 @@ const BarberAvailability: React.FC = () => {
         toast.error(message, { id: toastId });
       }
     } catch (err: unknown) {
-      if (isAbortError(err)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
         return;
       }
 
@@ -67,8 +64,6 @@ const BarberAvailability: React.FC = () => {
       } else {
         console.error("Error registrando ausencia:", err);
       }
-
-      toast.error("Error de conexion", { id: toastId });
     } finally {
       setIsSubmitting(false);
     }

@@ -6,6 +6,8 @@ import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema.ts";
 import { useAuth } from "../user/AuthContext.tsx";
 import { apiFetch } from "../../lib/apiFetch.ts";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import { ensureAuthenticatedUser } from "../../lib/authUtils";
 
 interface Barbero {
   codUsuario: string;
@@ -192,9 +194,10 @@ const BarbersByBranch = () => {
     e.preventDefault();
 
     // Validar autenticación
-    if (!isAuthenticated || !user || !user.codUsuario) {
-      toast.error("Debes iniciar sesión para reservar un turno");
-      navigate("/login");
+    if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+      message: "Debes iniciar sesión para reservar un turno",
+      redirectTo: "/login",
+    })) {
       return;
     }
 
@@ -241,22 +244,11 @@ const BarbersByBranch = () => {
 
       console.log("Response status:", response.status);
 
-      const text = await response.text();
-      console.log("Respuesta cruda del backend:", text);
+      const parsed = await parseBackendResponse<{ message?: string }>(response);
+      console.log("Respuesta cruda del backend:", parsed.raw);
 
-      if (!text) {
-        toast.error("Respuesta vacía del servidor", { id: toastId });
-        return;
-      }
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-        toast.error("Error al procesar respuesta del servidor", {
-          id: toastId,
-        });
+      if (!parsed.ok && parsed.message) {
+        toast.error(parsed.message, { id: toastId });
         return;
       }
 
@@ -270,8 +262,8 @@ const BarbersByBranch = () => {
       } else {
         // Verificar si es el error de turno duplicado
         if (
-          data.message &&
-          data.message.includes("ya tiene un turno en ese horario")
+          parsed.message &&
+          parsed.message.includes("ya tiene un turno en ese horario")
         ) {
           toast.error(
             "Ya tienes un turno reservado en ese horario. Por favor elige otro horario.",
@@ -281,14 +273,16 @@ const BarbersByBranch = () => {
             },
           );
         } else {
-          toast.error(data.message || "Error al reservar turno", {
+          toast.error(parsed.message || "Error al reservar turno", {
             id: toastId,
           });
         }
       }
     } catch (error) {
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
+        return;
+      }
       console.error("Error en handleSubmit:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 

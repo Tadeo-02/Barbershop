@@ -9,6 +9,7 @@ import {
 } from "../../lib/passwordConstants.ts";
 import { apiFetch } from "../../lib/apiFetch";
 import { getPasswordMissing } from "../../lib/passwordRules";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 
 const ResetSecurity: React.FC = () => {
   const [step, setStep] = useState<"email" | "answer" | "password">("email");
@@ -44,8 +45,10 @@ const ResetSecurity: React.FC = () => {
         toast.error(data.message || "Error al obtener la pregunta");
       }
     } catch (err) {
+      if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
+        return;
+      }
       console.error(err);
-      toast.error("Error de conexión");
     }
   };
 
@@ -74,8 +77,10 @@ const ResetSecurity: React.FC = () => {
         toast.error(data?.message || "Error al verificar la respuesta");
       }
     } catch (err) {
+      if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
+        return;
+      }
       console.error(err);
-      toast.error("Error de conexión");
     }
   };
 
@@ -114,8 +119,10 @@ const ResetSecurity: React.FC = () => {
         toast.error(data?.message || "Error al actualizar");
       }
     } catch (err) {
+      if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
+        return;
+      }
       console.error(err);
-      toast.error("Error de conexión");
     }
   };
 

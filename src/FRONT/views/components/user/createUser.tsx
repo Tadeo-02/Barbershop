@@ -13,9 +13,10 @@ import {
   PASSWORD_PATTERN,
 } from "../../lib/passwordConstants.ts";
 import { getPasswordMissing } from "../../lib/passwordRules";
-import { isAbortError, useAbortController } from "../shared/useAbortController";
+import { useAbortController } from "../shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch.ts";
 import { normalizeFormErrors } from "../../lib/formErrorUtils";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 
 //! Utilizamos el Schema de la librería Zod para validar campos
 // Extend schema for form with password confirmation
@@ -118,15 +119,10 @@ const CreateUser: React.FC = () => {
         });
       }
     } catch (error) {
-      // Ignorar errores de abort (son intencionales)
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
-        console.log("Request cancelado");
+      if (handleAbortOrConnectionError(error, toastId, "No se pudo conectar con el servidor")) {
         return;
       }
-      // ERROR DE RED
       console.error("Error en handleSubmit:", error);
-      toast.error("No se pudo conectar con el servidor", { id: toastId });
     }
   };
 

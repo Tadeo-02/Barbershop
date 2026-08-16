@@ -5,12 +5,10 @@ import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const CategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),
@@ -80,12 +78,10 @@ const UpdateCategories: React.FC = () => {
           });
         }
       } catch (err: unknown) {
-        if (isAbortError(err)) {
-          toast.dismiss(toastId);
+        if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
           return;
         }
         console.error("Error fetching categoria:", err);
-        toast.error("Error de conexión", { id: toastId });
       }
     };
 
@@ -114,12 +110,10 @@ const UpdateCategories: React.FC = () => {
         toast.error("Error al actualizar categoría", { id: toastId });
       }
     } catch (err: unknown) {
-      if (isAbortError(err)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
         return;
       }
       console.error("Error updating categoria:", err);
-      toast.error("Error de conexión", { id: toastId });
     }
   };
 

@@ -6,13 +6,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 interface TipoCorte {
   codCorte: string;
@@ -90,12 +88,10 @@ const UpdateTypeOfHaircut: React.FC = () => {
           });
         }
       } catch (err: unknown) {
-        if (isAbortError(err)) {
-          toast.dismiss(toastId);
+        if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
           return;
         }
         console.error("Error fetching tipo de corte:", err);
-        toast.error("Error de conexión", { id: toastId, duration: 2000 });
       }
     };
 
@@ -131,12 +127,10 @@ const UpdateTypeOfHaircut: React.FC = () => {
         toast.error(msg, { id: toastId, duration: 2000 });
       }
     } catch (err: unknown) {
-      if (isAbortError(err)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
         return;
       }
       console.error("Error modificando Tipo de Corte:", err);
-      toast.error("Error de conexión", { id: toastId, duration: 2000 });
     }
   };
 

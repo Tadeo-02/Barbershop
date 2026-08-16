@@ -7,12 +7,10 @@ import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -78,9 +76,10 @@ const CreateBarbers: React.FC = () => {
           toast.error("Error al cargar las sucursales");
         }
       } catch (error: unknown) {
-        if (isAbortError(error)) return;
+        if (handleAbortOrConnectionError(error, undefined, "Error de conexión al cargar sucursales")) {
+          return;
+        }
         console.error("Error fetching sucursales:", error);
-        toast.error("Error de conexión al cargar sucursales");
       }
     };
 
@@ -124,12 +123,10 @@ const CreateBarbers: React.FC = () => {
         });
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
         return;
       }
       console.error("Error en onSubmit:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 

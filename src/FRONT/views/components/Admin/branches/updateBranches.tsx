@@ -9,13 +9,11 @@ import {
   BranchSchema,
   BranchWithIdSchema,
 } from "../../../../../BACK/Schemas/branchesSchema";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -85,12 +83,10 @@ const UpdateBranches: React.FC = () => {
           });
         }
       } catch (error: unknown) {
-        if (isAbortError(error)) {
-          toast.dismiss(toastId);
+        if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
           return;
         }
         console.error("🔍 Debug - Fetch error:", error);
-        toast.error("Error de conexión", { id: toastId });
       }
     };
 
@@ -129,12 +125,10 @@ const UpdateBranches: React.FC = () => {
         toast.error(msg, { id: toastId });
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
         return;
       }
       console.error("🔍 Debug - Submit error:", error);
-      toast.error("Error de conexión", { id: toastId });
     }
   };
 

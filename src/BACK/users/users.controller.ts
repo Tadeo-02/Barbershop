@@ -8,6 +8,14 @@ import {
   type UserResponse,
   UserResponseSchema,
 } from "../Schemas/usersSchema";
+import {
+  createDataResponse,
+  createErrorResponse,
+  createValidationErrorResponse,
+  createUnauthorizedResponse,
+  createForbiddenResponse,
+  createNotFoundResponse,
+} from "../lib/backendResponse";
 
 type UserEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type UserCreateArgs = Parameters<typeof model.store>;
@@ -106,9 +114,11 @@ class UsersController extends BaseController<
       } = req.body;
 
       if (cuil && !codSucursal) {
-        res.status(400).json({
-          message: "Los barberos deben tener una sucursal asignada",
-        });
+        res.status(400).json(
+          createValidationErrorResponse(
+            "Los barberos deben tener una sucursal asignada",
+          ),
+        );
         return;
       }
 
@@ -189,9 +199,9 @@ class UsersController extends BaseController<
       const userPassword = contraseña || clave;
 
       if (!userEmail || !userPassword) {
-        res.status(400).json({
-          message: "Email y contraseña son requeridos",
-        });
+        res.status(400).json(
+          createValidationErrorResponse("Email y contraseña son requeridos"),
+        );
         return;
       }
 
@@ -203,9 +213,9 @@ class UsersController extends BaseController<
       const jwtSecret = process.env.JWT_SECRET;
 
       if (!jwtSecret) {
-        res.status(500).json({
-          message: "JWT_SECRET no configurado",
-        });
+        res.status(500).json(
+          createErrorResponse("JWT_SECRET no configurado", "server_error"),
+        );
         return;
       }
 
@@ -222,11 +232,15 @@ class UsersController extends BaseController<
         { expiresIn: "8h" },
       );
 
-      res.status(200).json({
-        message: "Login exitoso",
-        user: safeUser,
-        token,
-      });
+      res.status(200).json(
+        createDataResponse(
+          {
+            user: safeUser,
+            token,
+          },
+          "Login exitoso",
+        ),
+      );
     } catch (error) {
       console.error("Login error:", error);
 
@@ -234,9 +248,12 @@ class UsersController extends BaseController<
 
       const statusCode = errorMessage.includes("incorrectos") ? 401 : 500;
 
-      res.status(statusCode).json({
-        message: errorMessage,
-      });
+      res.status(statusCode).json(
+        createErrorResponse(
+          errorMessage,
+          statusCode === 401 ? "unauthorized" : "server_error",
+        ),
+      );
     }
   }
 }
@@ -251,10 +268,7 @@ export const findByBranchId = async (
     const { codSucursal } = req.params;
 
     if (!codSucursal) {
-      res.status(400).json({
-        success: false,
-        message: "codSucursal es requerido",
-      });
+      res.status(400).json(createValidationErrorResponse("codSucursal es requerido"));
       return;
     }
 
@@ -282,10 +296,11 @@ export const findBySchedule = async (
     const { codSucursal, fechaTurno, horaDesde } = req.params;
 
     if (!codSucursal || !fechaTurno || !horaDesde) {
-      res.status(400).json({
-        success: false,
-        message: "codSucursal, fechaTurno y horaDesde son requeridos",
-      });
+      res.status(400).json(
+        createValidationErrorResponse(
+          "codSucursal, fechaTurno y horaDesde son requeridos",
+        ),
+      );
       return;
     }
 
@@ -326,7 +341,7 @@ export const getSecurityQuestion = async (req: Request, res: Response) => {
     const { email } = req.params;
     console.log("getSecurityQuestion called. Param email:", email);
     if (!email) {
-      res.status(400).json({ success: false, message: "Email es requerido" });
+      res.status(400).json(createValidationErrorResponse("Email es requerido"));
       return;
     }
     const pregunta = await model.getSecurityQuestionByEmail(email);
@@ -352,23 +367,20 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
     const { codUsuario } = req.params;
 
     if (!codUsuario) {
-      res
-        .status(400)
-        .json({ success: false, message: "codUsuario es requerido" });
+      res.status(400).json(createValidationErrorResponse("codUsuario es requerido"));
       return;
     }
 
     if (req.user?.rol !== "admin" && req.user?.codUsuario !== codUsuario) {
-      res.status(401).json({ success: false, message: "No autorizado" });
+      res.status(401).json(createUnauthorizedResponse("No autorizado"));
       return;
     }
 
     const { preguntaSeguridad, respuestaSeguridad } = req.body;
     if (!preguntaSeguridad || !respuestaSeguridad) {
-      res.status(400).json({
-        success: false,
-        message: "Pregunta y respuesta son requeridas",
-      });
+      res.status(400).json(
+        createValidationErrorResponse("Pregunta y respuesta son requeridas"),
+      );
       return;
     }
 
@@ -379,11 +391,12 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
       respuestaSeguridad,
     );
 
-    res.status(200).json({
-      success: true,
-      message: "Pregunta de seguridad actualizada",
-      data: { codUsuario: updated.codUsuario },
-    });
+    res.status(200).json(
+      createDataResponse(
+        { codUsuario: updated.codUsuario },
+        "Pregunta de seguridad actualizada",
+      ),
+    );
   } catch (error: unknown) {
     console.error("Error updating security question:", error);
     res.status(500).json({
@@ -399,17 +412,17 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
     console.log("verifySecurityAnswer endpoint called. Body:", req.body);
     const { email, respuestaSeguridad, nuevaContraseña } = req.body;
     if (!email || !respuestaSeguridad) {
-      res
-        .status(400)
-        .json({ success: false, message: "Email y respuesta son requeridos" });
+      res.status(400).json(
+        createValidationErrorResponse("Email y respuesta son requeridos"),
+      );
       return;
     }
 
     if (!nuevaContraseña) {
       await model.verifySecurityAnswerOnly(email, respuestaSeguridad);
-      res
-        .status(200)
-        .json({ success: true, message: "Respuesta verificada correctamente" });
+      res.status(200).json(
+        createDataResponse(null, "Respuesta verificada correctamente"),
+      );
       return;
     }
 
@@ -452,10 +465,11 @@ export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { email, respuestaSeguridad, nuevaContraseña } = req.body;
     if (!email || !respuestaSeguridad || !nuevaContraseña) {
-      res.status(400).json({
-        success: false,
-        message: "Email, respuesta y nueva contraseña son requeridos",
-      });
+      res.status(400).json(
+        createValidationErrorResponse(
+          "Email, respuesta y nueva contraseña son requeridos",
+        ),
+      );
       return;
     }
 

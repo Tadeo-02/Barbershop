@@ -4,11 +4,9 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../user/AuthContext";
 import styles from "./home.module.css";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../shared/useAbortController";
+import { useAbortController } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import {
   getTurnoDateTime,
   unwrapAppointments,
@@ -151,11 +149,10 @@ const Home = () => {
         });
       }
     } catch (error) {
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
+        return;
+      }
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
     } finally {
       setIsCancelling(false);
     }

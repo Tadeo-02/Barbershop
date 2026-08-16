@@ -238,16 +238,11 @@ const CheckoutForm: React.FC<{
         });
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión al finalizar el turno")) {
         console.log("Checkout request aborted");
-      } else {
-        console.error("Fetch error:", error);
-        toast.error("Error de red al finalizar el turno", {
-          id: toastId,
-          duration: 2000,
-        });
+        return;
       }
+      console.error("Fetch error:", error);
     }
   };
 
@@ -514,9 +509,12 @@ const BranchAppointments: React.FC = () => {
     const timer = setTimeout(() => {
       setAuthChecked(true);
 
-      if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
-        toast.error("Debes iniciar sesión como barbero para ver los turnos");
-        navigate("/login");
+      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+        message: "Debes iniciar sesión como barbero para ver los turnos",
+        redirectTo: "/login",
+        requireSucursal: true,
+      })) {
+        return;
       }
     }, 100);
 
@@ -797,15 +795,11 @@ const BranchAppointments: React.FC = () => {
         );
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión al marcar turno como No asistido")) {
         console.log("No-show request aborted");
-      } else {
-        console.error("Fetch error:", error);
-        toast.error("Error de red al marcar turno como No asistido", {
-          id: toastId,
-        });
+        return;
       }
+      console.error("Fetch error:", error);
     } finally {
       setIsSubmitting(false);
     }
