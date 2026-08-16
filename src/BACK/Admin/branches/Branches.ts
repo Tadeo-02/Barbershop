@@ -1,6 +1,10 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 import { BranchSchema } from "../../Schemas/branchesSchema";
+import {
+  assertNoPendingAppointments,
+  PendingAppointmentsError,
+} from "../../lib/barberBusinessRules";
 
 // funciones backend para Sucursales
 export const store = async (nombre: string, calle: string, altura: number) => {
@@ -191,10 +195,16 @@ export const destroy = async (codSucursal: string) => {
       },
     });
 
-    if (pendingCount > 0) {
-      throw new DatabaseError(
+    try {
+      assertNoPendingAppointments(
+        pendingCount,
         `No se puede desactivar: hay ${pendingCount} turno(s) pendiente(s)`,
       );
+    } catch (error) {
+      if (error instanceof PendingAppointmentsError) {
+        throw new DatabaseError(error.message);
+      }
+      throw error;
     }
 
     const deletedBranch = await prisma.sucursales.update({

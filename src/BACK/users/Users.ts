@@ -12,7 +12,10 @@ import {
   turnsUntilNextDiscount as calcTurnsUntilNextDiscount,
   isThisTurnEligible,
 } from "../lib/discount";
-import { assertNoPendingAppointments } from "../lib/barberBusinessRules";
+import {
+  assertNoPendingAppointments,
+  PendingAppointmentsError,
+} from "../lib/barberBusinessRules";
 
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
   process.env.INITIAL_TO_MEDIUM_DAYS || "30",
@@ -667,10 +670,17 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
         },
       });
 
-      assertNoPendingAppointments(
-        pendingCount,
-        "No se puede cambiar de sucursal. Tiene turnos pendientes",
-      );
+      try {
+        assertNoPendingAppointments(
+          pendingCount,
+          "No se puede cambiar de sucursal. Tiene turnos pendientes",
+        );
+      } catch (error) {
+        if (error instanceof PendingAppointmentsError) {
+          throw new DatabaseError(error.message);
+        }
+        throw error;
+      }
     }
     // preparo los datos obligatorios para la actualizacion
     const updateData: Prisma.usuariosUncheckedUpdateInput = {
@@ -763,10 +773,17 @@ export const destroy = async (codUsuario: string) => {
         },
       });
 
-      assertNoPendingAppointments(
-        pendingCount,
-        "No se puede dar de baja al barbero. Tiene turnos pendientes",
-      );
+      try {
+        assertNoPendingAppointments(
+          pendingCount,
+          "No se puede dar de baja al barbero. Tiene turnos pendientes",
+        );
+      } catch (error) {
+        if (error instanceof PendingAppointmentsError) {
+          throw new DatabaseError(error.message);
+        }
+        throw error;
+      }
     }
 
     // Baja lógica del usuario
