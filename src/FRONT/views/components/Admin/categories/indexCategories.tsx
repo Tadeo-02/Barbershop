@@ -169,7 +169,7 @@ const IndexCategories = () => {
           >
             Esta categoría tiene {context.clientes.length} clientes.
           </p>
-          <p style={{ margin: "0 0 16px 0", color: "#4a5568" }}>
+          <p style={{ margin: "0 0 16px 0", color: "var(--color-gray-450)" }}>
             ¿Qué querés hacer con ellos?
           </p>
           <div
@@ -189,7 +189,7 @@ const IndexCategories = () => {
                   });
                 }}
                 style={{
-                  background: "#2f855a",
+                  background: "var(--color-success-mid)",
                   color: "white",
                   border: "none",
                   padding: "10px 16px",
@@ -211,7 +211,7 @@ const IndexCategories = () => {
                   });
                 }}
                 style={{
-                  background: "#b83280",
+                  background: "var(--color-accent-pink)",
                   color: "white",
                   border: "none",
                   padding: "10px 16px",
@@ -238,7 +238,7 @@ const IndexCategories = () => {
                 setDeleteContext(context);
               }}
               style={{
-                background: "#2b6cb0",
+                background: "var(--color-primary)",
                 color: "white",
                 border: "none",
                 padding: "10px 16px",
@@ -253,7 +253,7 @@ const IndexCategories = () => {
             <button
               onClick={() => toast.dismiss(t.id)}
               style={{
-                background: "#718096",
+                background: "var(--color-gray-400)",
                 color: "white",
                 border: "none",
                 padding: "10px 16px",

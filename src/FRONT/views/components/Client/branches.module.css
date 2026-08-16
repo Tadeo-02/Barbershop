@@ -5,13 +5,13 @@
   gap: 0.8rem;
   margin-top: 0.9rem;
   padding-top: 0.9rem;
-  border-top: 1px solid #d7e1ee;
+  border-top: 1px solid var(--color-surface-light-7);
 }
 
 .inlineOptionsTitle {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-gray-700);
 }
 
 .inlineOptionButtons {
@@ -29,11 +29,11 @@
   font-size: 1rem;
   border-radius: 10px;
   border: none;
-  background-color: #2b6cb0;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 6px 15px rgba(43, 108, 176, 0.4);
+  box-shadow: 0 6px 15px rgba(var(--color-primary-rgb), 0.4);
   transition:
     background 0.2s,
     transform 0.2s,
@@ -44,11 +44,11 @@
 
 .branchesContainer {
   max-width: 100%;
-  margin: 20px 0;
+  margin: var(--space-5) 0;
   padding: 15px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px var(--shadow-sm);
   animation: fadeIn 0.5s ease-out;
   display: flex;
   flex-direction: column;
@@ -62,10 +62,10 @@
 }
 
 .branchItem {
-  background-color: #f0f4f8;
-  border: 1px solid #e2e8f0;
+  background-color: var(--color-surface-light-1);
+  border: 1px solid var(--color-gray-100);
   border-radius: 8px;
-  padding: 12px;
+  padding: var(--space-3);
   margin-bottom: 10px;
   display: flex;
   flex-direction: column;
@@ -78,10 +78,10 @@
 .branchItem:hover {
   transform: translateY(-6px) scale(1.03);
   box-shadow:
-    0 12px 32px rgba(43, 108, 176, 0.18),
-    0 2px 8px rgba(0, 0, 0, 0.08);
-  background-color: #e3eafc;
-  border-color: #2b6cb0;
+    0 12px 32px rgba(var(--color-primary-rgb), 0.18),
+    0 2px 8px var(--shadow-sm);
+  background-color: var(--color-surface-light-3);
+  border-color: var(--color-primary);
 }
 
 /* When an element was recently deselected, disable hover to prevent
@@ -89,8 +89,8 @@
 .branchItem:not(.branchItemSelected):hover {
   transform: none;
   box-shadow: none;
-  background-color: #f0f4f8;
-  border: 1px solid #e2e8f0;
+  background-color: var(--color-surface-light-1);
+  border: 1px solid var(--color-gray-100);
   cursor: default;
 }
 
@@ -98,10 +98,10 @@
 .branchItemSelected {
   transform: translateY(-6px) scale(1.03);
   box-shadow:
-    0 12px 32px rgba(43, 108, 176, 0.18),
-    0 2px 8px rgba(0, 0, 0, 0.08);
-  background-color: #e3eafc;
-  border-color: #2b6cb0;
+    0 12px 32px rgba(var(--color-primary-rgb), 0.18),
+    0 2px 8px var(--shadow-sm);
+  background-color: var(--color-surface-light-3);
+  border-color: var(--color-primary);
 }
 
 /* Animations/transitions for state entry and exit */
@@ -117,12 +117,12 @@
 .branchName {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--color-gray-700);
 }
 
 .branchAddress {
   font-size: 0.95rem;
-  color: #718096;
+  color: var(--color-gray-400);
   font-weight: 500;
 }
 
@@ -149,16 +149,16 @@
   .optionButton {
     padding: 1.2rem 3rem;
     font-size: 1.25rem;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
   }
   .branchesContainer {
     max-width: 800px;
-    margin: 40px auto;
-    padding: 30px;
+    margin: var(--space-8) auto;
+    padding: var(--space-7);
   }
   .branchItem {
-    padding: 20px;
-    gap: 8px;
+    padding: var(--space-5);
+    gap: var(--space-2);
     margin-bottom: 15px;
   }
   .branchName {

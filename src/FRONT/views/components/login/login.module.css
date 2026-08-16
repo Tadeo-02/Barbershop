@@ -85,8 +85,8 @@
 }
 
 .inputIcon {
-  width: 20px;
-  height: 20px;
+  width: var(--space-5);
+  height: var(--space-5);
   display: block;
 }
 .form input[type="email"]:focus,
@@ -101,7 +101,7 @@
   margin: var(--space-4) auto;
   text-align: center;
   border: 2px solid var(--color-accent-green);
-  padding: var(--space-3) 32px;
+  padding: var(--space-3) var(--space-8);
   outline: none;
   color: var(--color-white);
   border-radius: var(--radius-lg);
@@ -121,7 +121,7 @@
   margin: var(--space-4) auto;
   text-align: center;
   border: 2px solid var(--color-black);
-  padding: var(--space-3) 32px;
+  padding: var(--space-3) var(--space-8);
   outline: none;
   transition: var(--transition-fast);
   cursor: pointer;
@@ -181,13 +181,13 @@
   font-size: var(--font-size-md);
 }
 
-/* DESKTOP */
+/* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
   .form {
     padding: 0;
   }
   .formLong {
-    padding: 32px 10px 56px;
+    padding: var(--space-7) 10px 56px;
   }
   .form h1 {
     font-size: var(--font-size-3xl);

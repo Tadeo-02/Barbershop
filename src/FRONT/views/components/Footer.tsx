@@ -7,7 +7,7 @@ function Footer() {
   //   right: 0,
   //   bottom: 0,
   //   height: "4rem",
-  //   backgroundColor: "#1f2937",
+  //   backgroundColor: "var(--color-gray-800)",
   //   color: "white",
   //   paddingTop: "1rem",
   //   paddingBottom: "1rem",

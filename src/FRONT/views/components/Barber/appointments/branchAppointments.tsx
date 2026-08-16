@@ -176,7 +176,7 @@ const CheckoutForm: React.FC<{
                 padding: "24px",
                 borderRadius: "12px",
                 boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-                background: "#ffffff",
+                background: "var(--color-white)",
               },
             },
           );
@@ -186,7 +186,7 @@ const CheckoutForm: React.FC<{
               <div className={styles.modalContainer}>
                 <p className={styles.modalTitle}>Turno cobrado con éxito</p>
                 {/* <p className={styles.modalDescription}>
-                  <span style={{ color: "#e67e22" }}>
+                  <span style={{ color: "var(--color-warning-alt)" }}>
                     Factura pendiente
                     {facturacionError ? `: ${facturacionError}` : ""}
                   </span>
@@ -220,7 +220,7 @@ const CheckoutForm: React.FC<{
                 padding: "24px",
                 borderRadius: "12px",
                 boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-                background: "#ffffff",
+                background: "var(--color-white)",
               },
             },
           );
@@ -293,7 +293,7 @@ const CheckoutForm: React.FC<{
           padding: "24px",
           borderRadius: "12px",
           boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-          background: "#ffffff",
+          background: "var(--color-white)",
         },
       },
     );
@@ -376,7 +376,7 @@ const CheckoutForm: React.FC<{
                   </div>
                   <div
                     className={styles.priceLine}
-                    style={{ color: "#e74c3c" }}
+                    style={{ color: "var(--color-danger-alt)" }}
                   >
                     <span className={styles.priceLabel}>Descuento:</span>
                     <span className={styles.priceValue}>
@@ -386,7 +386,7 @@ const CheckoutForm: React.FC<{
                   <div
                     className={styles.priceLine}
                     style={{
-                      borderTop: "2px solid #bdc3c7",
+                      borderTop: "2px solid var(--color-gray-150)",
                       paddingTop: "8px",
                     }}
                   >
@@ -398,7 +398,7 @@ const CheckoutForm: React.FC<{
                     </span>
                     <span
                       className={styles.priceValue}
-                      style={{ fontWeight: "bold", color: "#27ae60" }}
+                      style={{ fontWeight: "bold", color: "var(--color-success-alt)" }}
                     >
                       ${precioFinal.toFixed(2)}
                     </span>
@@ -423,7 +423,7 @@ const CheckoutForm: React.FC<{
             min="0"
             value={precioFinal.toFixed(2)}
             readOnly
-            style={{ backgroundColor: "#ecf0f1", cursor: "not-allowed" }}
+            style={{ backgroundColor: "var(--color-surface-light-23)", cursor: "not-allowed" }}
           />
         </div>
 
@@ -692,7 +692,7 @@ const BranchAppointments: React.FC = () => {
               padding: "24px",
               borderRadius: "12px",
               boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-              background: "#ffffff",
+              background: "var(--color-white)",
             },
           },
         );
@@ -751,7 +751,7 @@ const BranchAppointments: React.FC = () => {
           padding: "24px",
           borderRadius: "12px",
           boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-          background: "#ffffff",
+          background: "var(--color-white)",
         },
       },
     );
