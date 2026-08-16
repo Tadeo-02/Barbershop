@@ -68,13 +68,13 @@ export const AutoRedirect = () => {
                 cx="0"
                 cy="0"
                 r="18"
-                stroke="#e6e6e6"
+                stroke="var(--color-surface-light-25)"
                 strokeWidth="6"
                 fill="none"
               />
               <path
                 d="M18 0 A18 18 0 0 1 0 18"
-                stroke="#333"
+                stroke="var(--color-gray-600)"
                 strokeWidth="6"
                 strokeLinecap="round"
                 fill="none"

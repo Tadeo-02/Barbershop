@@ -1,7 +1,7 @@
 body {
   font-family: "Inter", sans-serif;
-  background-color: #f8f8f8;
-  color: #333;
+  background-color: var(--color-surface-light-18);
+  color: var(--color-gray-600);
   margin: 0;
   padding: 10px;
   line-height: 1.6;
@@ -45,12 +45,12 @@ body {
   margin: 0;
   font-size: 2.15rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .welcomeSubtitle {
   margin: 0.35rem 0 0;
-  color: #6b7280;
+  color: var(--color-gray-300);
   font-size: 0.98rem;
 }
 
@@ -68,16 +68,16 @@ body {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .turnoCard {
   width: 100%;
   padding: 1rem;
   border-radius: 16px;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  background: linear-gradient(180deg, var(--color-gray-25) 0%, var(--color-white) 100%);
+  border: 1px solid var(--color-gray-200);
+  box-shadow: 0 10px 22px rgba(var(--color-slate-rgb), 0.06);
 }
 
 .turnoCardContent {
@@ -95,9 +95,9 @@ body {
   min-width: 72px;
   padding: 0.7rem 0.5rem;
   border-radius: 14px;
-  background: #2b6cb0;
-  color: #ffffff;
-  box-shadow: 0 10px 18px rgba(43, 108, 176, 0.22);
+  background: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 10px 18px rgba(var(--color-primary-rgb), 0.22);
 }
 
 .turnoDateMonth {
@@ -129,12 +129,12 @@ body {
 
 .turnoInfoIcon {
   flex-shrink: 0;
-  color: #2b6cb0;
+  color: var(--color-primary);
 }
 
 .turnoInfoText {
   font-size: 0.98rem;
-  color: #374151;
+  color: var(--color-gray-750);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -144,7 +144,7 @@ body {
 .cardEmpty {
   margin: 0;
   padding: 0.45rem 0;
-  color: #6b7280;
+  color: var(--color-gray-300);
   font-size: 0.98rem;
   text-align: center;
 }
@@ -180,19 +180,19 @@ body {
     transform 0.2s ease,
     box-shadow 0.3s ease;
   text-decoration: none;
-  background-color: #2b6cb0;
-  color: #ffffff;
-  box-shadow: 0 6px 15px rgba(43, 108, 176, 0.4);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 6px 15px rgba(var(--color-primary-rgb), 0.4);
 }
 
 .optionButton:hover:not(:disabled) {
-  background-color: #2c5282;
+  background-color: var(--color-blue-dark);
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(43, 108, 176, 0.5);
+  box-shadow: 0 8px 20px rgba(var(--color-primary-rgb), 0.5);
 }
 
 .optionButton:disabled {
-  background: #aaa;
+  background: var(--color-gray-45);
   cursor: not-allowed;
 }
 
@@ -210,9 +210,9 @@ body {
 /* DESKTOP: ajustes para pantallas grandes */
 @media (min-width: 769px) {
   .homeContainer {
-    margin: 40px auto;
+    margin: var(--space-8) auto;
     max-width: 800px;
-    padding: 24px 0;
+    padding: var(--space-6) 0;
   }
   .welcomeHeader {
     flex-direction: row;
@@ -229,12 +229,12 @@ body {
     padding: 1.2rem;
   }
   .optionsContainer {
-    gap: 20px;
+    gap: var(--space-5);
     width: 100%;
-    margin-top: 30px;
+    margin-top: var(--space-7);
     flex-direction: column;     /* En desktop se ponen uno al lado del otro */
     justify-content: center; /* ESTO centra el grupo de botones horizontalmente */
-    margin-top: 20px;
+    margin-top: var(--space-5);
   }
   .optionButton {
     width: 500px;

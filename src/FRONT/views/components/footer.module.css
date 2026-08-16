@@ -1,6 +1,6 @@
 .footer {
-  background-color: #1f2937;
-  color: white;
+  background-color: var(--color-gray-800);
+  color: var(--color-white);
   text-align: center;
   height: 3rem;
   display: flex;
@@ -20,6 +20,6 @@
   .footer {
     height: 4rem;
     font-size: 1.1rem;
-    padding: 0 30px;
+    padding: 0 var(--space-7);
   }
 }

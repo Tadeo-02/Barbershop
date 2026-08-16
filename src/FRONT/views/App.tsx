@@ -231,8 +231,8 @@ function App() {
             toastOptions={{
               duration: 4000,
               style: {
-                background: "#363636",
-                color: "#fff",
+                background: "var(--color-gray-20)",
+                color: "var(--color-white)",
                 fontSize: "18px",
                 fontWeight: "500",
                 padding: "20px 30px",
@@ -244,13 +244,13 @@ function App() {
               success: {
                 duration: 2000,
                 style: {
-                  background: "#38a169",
+                  background: "var(--color-success)",
                 },
               },
               error: {
                 duration: 1500,
                 style: {
-                  background: "#e53e3e",
+                  background: "var(--color-danger-bright)",
                 },
               },
             }}

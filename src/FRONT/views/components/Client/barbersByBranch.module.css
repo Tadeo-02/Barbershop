@@ -1,10 +1,10 @@
 .barbersContainer {
     max-width: 100%;
-    margin: 20px 0;
+    margin: var(--space-5) 0;
     padding: 15px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    background-color: var(--color-white);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px var(--shadow-sm);
     animation: fadeIn 0.5s ease-out;
     display: flex;
     flex-direction: column;
@@ -14,12 +14,12 @@
 .branchInfo {
     width: 100%;
     text-align: center;
-    background: #f0f4f8;
-    border: 1px solid rgba(43, 108, 176, 0.08);
-    padding: 12px 16px;
+    background: var(--color-surface-light-1);
+    border: 1px solid rgba(var(--color-primary-rgb), 0.08);
+    padding: var(--space-3) var(--space-4);
     border-radius: 10px;
     margin-bottom: 14px;
-    box-shadow: 0 6px 18px rgba(43, 108, 176, 0.04);
+    box-shadow: 0 6px 18px rgba(var(--color-primary-rgb), 0.04);
 }
 
 .infoRow {
@@ -35,14 +35,14 @@
 .branchInfo h3 {
     margin: 0;
     font-size: 1.05rem;
-    color: #1f2937;
+    color: var(--color-gray-800);
     font-weight: 800;
 }
 
 .branchInfo p {
     margin: 6px 0 0 0;
     font-size: 0.9rem;
-    color: #475569;
+    color: var(--color-gray-250);
 }
 
 .barberList {
@@ -52,10 +52,10 @@
 }
 
 .barberItem {
-    background-color: #f0f4f8;
-    border: 1px solid #e2e8f0;
+    background-color: var(--color-surface-light-1);
+    border: 1px solid var(--color-gray-100);
     border-radius: 8px;
-    padding: 12px;
+    padding: var(--space-3);
     margin-bottom: 10px;
     display: flex;
     flex-direction: column;
@@ -65,35 +65,35 @@
 
 .barberItem:hover {
     transform: translateY(-6px) scale(1.03);
-    box-shadow: 0 12px 32px rgba(43, 108, 176, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
-    background-color: #e3eafc;
-    border-color: #2b6cb0;
+    box-shadow: 0 12px 32px rgba(var(--color-primary-rgb), 0.18), 0 2px 8px var(--shadow-sm);
+    background-color: var(--color-surface-light-3);
+    border-color: var(--color-primary);
 }
 
 .selected {
     transform: translateY(-6px) scale(1.03);
-    box-shadow: 0 12px 32px rgba(43, 108, 176, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
-    background-color: #e3eafc;
-    border-color: #2b6cb0;
+    box-shadow: 0 12px 32px rgba(var(--color-primary-rgb), 0.18), 0 2px 8px var(--shadow-sm);
+    background-color: var(--color-surface-light-3);
+    border-color: var(--color-primary);
 }
 
 .barberItem:not(.selected):hover {
     transform: none;
     box-shadow: none;
-    background-color: #f0f4f8;
-    border: 1px solid #e2e8f0;
+    background-color: var(--color-surface-light-1);
+    border: 1px solid var(--color-gray-100);
     cursor: default;
 }
 
 .barberName {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-gray-700);
 }
 
 .barberPhone {
     font-size: 0.9rem;
-    color: #4a5568;
+    color: var(--color-gray-450);
 }
 
 .inlineActions {
@@ -102,7 +102,7 @@
     gap: 0.7rem;
     margin-top: 0.9rem;
     padding-top: 0.9rem;
-    border-top: 1px solid #d7e1ee;
+    border-top: 1px solid var(--color-surface-light-7);
 }
 
 .inlineButton {
@@ -111,16 +111,16 @@
 
 .emptyState {
     text-align: center;
-    padding: 30px;
-    color: #718096;
+    padding: var(--space-7);
+    color: var(--color-gray-400);
     font-size: 1rem;
 }
 
 @media (min-width: 769px) {
     .barbersContainer {
         max-width: 800px;
-        margin: 40px auto;
-        padding: 30px;
+        margin: var(--space-8) auto;
+        padding: var(--space-7);
     }
 
     .cardsRow {
@@ -135,13 +135,13 @@
     }
 
     .barberItem {
-        padding: 20px;
-        gap: 8px;
+        padding: var(--space-5);
+        gap: var(--space-2);
         margin-bottom: 15px;
     }
 
     .barberName {
-        padding: 40px;
+        padding: var(--space-8);
         font-size: 1.1rem;
     }
 
@@ -173,25 +173,25 @@
     font-size: 1rem;
     border-radius: 10px;
     border: none;
-    background-color: #2b6cb0;
-    color: #fff;
+    background-color: var(--color-primary);
+    color: var(--color-white);
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 6px 15px rgba(43, 108, 176, 0.4);
+    box-shadow: 0 6px 15px rgba(var(--color-primary-rgb), 0.4);
     transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
     letter-spacing: 0.5px;
     outline: none;
 }
 
 .backButton:hover:not(:disabled) {
-    background: #0056b3;
+    background: var(--color-blue-bright-2);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--color-blue-bright-rgb), 0.3);
 }
 
 .backButton:disabled {
-    background: #ccc;
-    color: #666;
+    background: var(--color-gray-60);
+    color: var(--color-gray-500);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;

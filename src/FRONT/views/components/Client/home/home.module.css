@@ -1,7 +1,7 @@
 body {
   font-family: "Inter", sans-serif;
-  background-color: #f8f8f8;
-  color: #333;
+  background-color: var(--color-surface-light-18);
+  color: var(--color-gray-600);
   margin: 0;
   padding: 10px;
   line-height: 1.6;
@@ -11,23 +11,23 @@ body {
 
 .homeContainer {
   max-width: 1000px;
-  margin: 20px auto;
-  padding: 16px;
+  margin: var(--space-5) auto;
+  padding: var(--space-4);
   display: grid;
-  gap: 24px;
+  gap: var(--space-6);
   animation: fadeIn 0.5s ease-out;
 }
 
 .welcomeSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .welcomeHeader {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: flex-start;
 }
 
@@ -47,7 +47,7 @@ body {
 
 .welcomeSubtitle {
   margin: 0;
-  color: #8a8a8a;
+  color: var(--color-gray-40);
 }
 
 .primaryButton {
@@ -67,15 +67,15 @@ body {
     transform 0.2s ease,
     box-shadow 0.3s ease;
   text-decoration: none;
-  background-color: #2b6cb0;
-  color: #ffffff;
-  box-shadow: 0 6px 15px rgba(43, 108, 176, 0.4);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 6px 15px rgba(var(--color-primary-rgb), 0.4);
 }
 
 .primaryButton:hover:not(:disabled) {
-  background-color: #2c5282;
+  background-color: var(--color-blue-dark);
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(43, 108, 176, 0.5);
+  box-shadow: 0 8px 20px rgba(var(--color-primary-rgb), 0.5);
 }
 
 .buttonIcon {
@@ -84,33 +84,33 @@ body {
 
 .nextTurnoSection {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .sectionTitleLight {
   margin: 0;
   font-size: 1.25rem;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .sectionTitle {
   margin: 0;
   font-size: 1.25rem;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .linkButton {
-  background: #e6f0ff;
-  border: 1px solid #c8dcff;
-  color: #2b6cb0;
-  border-radius: 999px;
+  background: var(--color-surface-light-8);
+  border: 1px solid var(--color-surface-light-13);
+  color: var(--color-primary);
+  border-radius: var(--radius-full);
   padding: 0.4rem 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -120,19 +120,19 @@ body {
 }
 
 .linkButton:hover {
-  background: #d7e7ff;
+  background: var(--color-surface-light-12);
   transform: translateY(-1px);
 }
 
 .turnoCard {
-  background-color: #f0f4f8;
-  border: 1px solid #e2e8f0;
+  background-color: var(--color-surface-light-1);
+  border: 1px solid var(--color-gray-100);
   border-radius: 8px;
-  padding: 16px;
+  padding: var(--space-4);
   margin-bottom: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -140,13 +140,13 @@ body {
 
 .turnoCard:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 15px rgba(var(--shadow-color), 0.05);
 }
 
 .turnoCardContent {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: center;
 }
 
@@ -154,14 +154,14 @@ body {
   width: 88px;
   min-width: 88px;
   height: 88px;
-  border-radius: 12px;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-100);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 12px rgba(var(--color-slate-rgb), 0.06);
 }
 
 .turnoDateMonth {
@@ -169,13 +169,13 @@ body {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #718096;
+  color: var(--color-gray-400);
 }
 
 .turnoDateDay {
   font-size: 1.9rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-gray-800);
   line-height: 1;
 }
 
@@ -190,55 +190,55 @@ body {
 .turnoInfoRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: 0.95rem;
-  color: #2d3748;
+  color: var(--color-gray-700);
 }
 
 .turnoInfoLabel {
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-gray-450);
   min-width: 80px;
 }
 
 .turnoInfoIcon {
   font-size: 1rem;
-  color: #2b6cb0;
+  color: var(--color-primary);
 }
 
 .turnoInfoText {
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-gray-700);
 }
 
 .turnoRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: 0.95rem;
 }
 
 .turnoLabel {
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-gray-450);
   min-width: 100px;
 }
 
 .turnoValue {
-  color: #2d3748;
+  color: var(--color-gray-700);
 }
 
 .cardEmpty {
   margin: 0;
-  color: #6b7280;
+  color: var(--color-gray-300);
 }
 
 .turnoActions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 4px;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
   width: 100%;
   align-items: flex-end;
 }
@@ -247,7 +247,7 @@ body {
   width: 100%;
   padding: 10px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -256,7 +256,7 @@ body {
 }
 
 .turnoButton:disabled {
-  background-color: #cbd5e0;
+  background-color: var(--color-gray-150);
   cursor: not-allowed;
   opacity: 0.7;
   transform: none;
@@ -264,16 +264,16 @@ body {
 
 .turnoButtonSubtle {
   background-color: transparent;
-  color: #718096;
-  border: 1px solid #c53030;
-  padding: 8px 14px;
+  color: var(--color-gray-400);
+  border: 1px solid var(--color-danger);
+  padding: var(--space-2) 14px;
   font-size: 0.9rem;
 }
 
 .turnoButtonSubtle:hover:not(:disabled) {
-  background-color: #fff5f5;
-  border-color: #fed7d7;
-  color: #c53030;
+  background-color: var(--color-danger-bg-2);
+  border-color: var(--color-danger-bg);
+  color: var(--color-danger);
   transform: translateY(-1px);
 }
 
@@ -282,176 +282,176 @@ body {
 }
 
 .modalTitle {
-  margin: 0 0 16px 0;
-  font-size: 18px;
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--font-size-lg);
   font-weight: 600;
 }
 
 .modalButtons {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   justify-content: center;
   align-items: center;
 }
 
 .buttonCancel {
-  background: #718096;
-  color: white;
+  background: var(--color-gray-400);
+  color: var(--color-white);
   border: none;
-  padding: 12px 24px;
+  padding: var(--space-3) var(--space-6);
   border-radius: 8px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   min-width: 120px;
   transition: all 0.2s ease;
 }
 
 .buttonCancel:hover {
-  background: #4a5568;
+  background: var(--color-gray-450);
 }
 
 .buttonConfirm {
-  background: #e53e3e;
-  color: white;
+  background: var(--color-danger-bright);
+  color: var(--color-white);
   border: none;
-  padding: 12px 24px;
+  padding: var(--space-3) var(--space-6);
   border-radius: 8px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   min-width: 120px;
   transition: all 0.2s ease;
 }
 
 .buttonConfirm:hover {
-  background: #c53030;
+  background: var(--color-danger);
 }
 
 .loyaltySection {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .badge {
-  background-color: #e6f0ff;
-  color: #2b6cb0;
+  background-color: var(--color-surface-light-8);
+  color: var(--color-primary);
   font-weight: 600;
   padding: 0.3rem 0.8rem;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-size: 0.85rem;
 }
 
 .loyaltyCard {
-  margin-top: 12px;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #e2e8f0;
+  margin-top: var(--space-3);
+  background-color: var(--color-gray-25);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  border: 1px solid var(--color-gray-100);
 }
 
 .loyaltyDiscount {
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-2) 0;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .loyaltyRemaining {
   margin: 0;
-  color: #4a5568;
+  color: var(--color-gray-450);
   font-size: 0.95rem;
 }
 
 .discountProgress {
-  margin-top: 12px;
-  padding: 12px;
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-100);
+  box-shadow: 0 6px 16px rgba(var(--color-slate-rgb), 0.08);
 }
 
 .progressInfo {
   display: flex;
   justify-content: space-between;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .progressBar {
   margin: 10px 0 6px 0;
   height: 14px;
-  background: linear-gradient(90deg, #e2e8f0, #edf2f7);
-  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-gray-100), var(--color-surface-light-22));
+  border-radius: var(--radius-full);
   overflow: hidden;
-  box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.12);
+  box-shadow: inset 0 1px 4px rgba(var(--color-slate-rgb), 0.12);
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #2b6cb0, #38b2ac);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-success-bright-2));
   width: 0;
   transition: width 0.35s ease;
-  box-shadow: 0 4px 10px rgba(43, 108, 176, 0.35);
+  box-shadow: 0 4px 10px rgba(var(--color-primary-rgb), 0.35);
 }
 
 .discountContent {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .discountTurns {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .discountTurnsCount {
-  color: #000000;
+  color: var(--color-black);
   font-size: 1.4rem;
 }
 
 .discountDescription {
   margin: 0;
-  color: #6b7280;
+  color: var(--color-gray-300);
   font-size: 0.95rem;
 }
 
 .progressPercentage {
-  margin: 8px 0 0 0;
+  margin: var(--space-2) 0 0 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #2b6cb0;
+  color: var(--color-primary);
 }
 
 .progressBar {
-  margin-top: 16px;
+  margin-top: var(--space-4);
   height: 14px;
-  background: linear-gradient(90deg, #e2e8f0, #edf2f7);
-  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-gray-100), var(--color-surface-light-22));
+  border-radius: var(--radius-full);
   overflow: hidden;
-  box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.12);
+  box-shadow: inset 0 1px 4px rgba(var(--color-slate-rgb), 0.12);
 }
 
 .progressMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--color-gray-350);
 }
 
 .loyaltyHint {
   margin: 10px 0 0;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--color-gray-250);
 }
 
 .loyaltyMessage {
   margin: 0;
-  color: #475569;
+  color: var(--color-gray-250);
 }
 
 @keyframes fadeIn {
@@ -469,7 +469,7 @@ body {
 @media (min-width: 769px) {
   .homeContainer {
     margin: 50px auto;
-    padding: 24px;
+    padding: var(--space-6);
     gap: 32px;
   }
   .welcomeTitle {
@@ -488,6 +488,6 @@ body {
   }
   .turnoButton {
     width: auto;
-    padding: 8px 18px;
+    padding: var(--space-2) 18px;
   }
 }

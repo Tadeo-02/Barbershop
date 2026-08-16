@@ -24,8 +24,8 @@ const CONFIRM_COLORS: Record<
   "danger" | "success",
   { base: string; hover: string }
 > = {
-  danger: { base: "#e53e3e", hover: "#c53030" },
-  success: { base: "#10b981", hover: "#059669" },
+  danger: { base: "var(--color-danger-bright)", hover: "var(--color-danger)" },
+  success: { base: "var(--color-success-alt-5)", hover: "var(--color-success-alt-4)" },
 };
 
 export const showConfirmActionToast = ({
@@ -74,12 +74,12 @@ export const showConfirmActionToast = ({
           </button>
           <button
             onClick={() => toast.dismiss(t.id)}
-            style={{ ...BASE_BUTTON_STYLE, background: "#718096" }}
+            style={{ ...BASE_BUTTON_STYLE, background: "var(--color-gray-400)" }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#4a5568";
+              e.currentTarget.style.background = "var(--color-gray-450)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "#718096";
+              e.currentTarget.style.background = "var(--color-gray-400)";
             }}
           >
             {cancelLabel}

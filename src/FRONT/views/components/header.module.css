@@ -13,8 +13,8 @@
   left: 0;
   right: 0;
   height: 3.5rem; 
-  background-color: #1f2937; /* bg-gray-800 */
-  color: white;
+  background-color: var(--color-gray-800); /* bg-gray-800 */
+  color: var(--color-white);
   padding: 0.45rem 2rem 0.45rem 1.27rem;
   display: flex;
   align-items: center;
@@ -34,7 +34,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--color-white);
 }
 
 .title {
@@ -44,8 +44,8 @@
 }
 
 .button {
-  background-color: white;
-  color: #1f2937; /* text-gray-800 */
+  background-color: var(--color-white);
+  color: var(--color-gray-800); /* text-gray-800 */
   padding-left: 0.5rem; /* px-4 */
   padding-right: 0.5rem; /* px-4 */
   padding-top: 0.4rem; /* py-2 */
@@ -64,7 +64,7 @@
 }
 
 .button:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-gray-50);
 }
 
 .button:active {
@@ -72,7 +72,7 @@
 }
 
 .button:focus-visible {
-  outline: 2px solid #93c5fd;
+  outline: 2px solid var(--color-primary-light);
   outline-offset: 2px;
 }
 
@@ -87,7 +87,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.35);
+  background-color: rgba(var(--color-slate-rgb), 0.35);
   backdrop-filter: blur(6px);
   z-index: 1100;
   animation: overlayFade 200ms ease;
@@ -102,10 +102,10 @@
   height: 100dvh;
   width: min(78vw, 300px);
   min-width: 240px;
-  background-color: white;
-  color: #111827;
-  border-left: 1px solid #e5e7eb;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+  background-color: var(--color-white);
+  color: var(--color-gray-900);
+  border-left: 1px solid var(--color-gray-200);
+  box-shadow: 0 24px 60px rgba(var(--color-slate-rgb), 0.24);
   z-index: 1200;
   transform: translateX(100%);
   transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -141,16 +141,16 @@
 .sidebarTitle {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .closeButton {
   width: 2.2rem;
   height: 2.2rem;
   border-radius: 0.6rem;
-  border: 1px solid #e5e7eb;
-  background-color: #f3f4f6;
-  color: #1f2937;
+  border: 1px solid var(--color-gray-200);
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-800);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -162,7 +162,7 @@
 }
 
 .closeButton:hover {
-  background-color: #e5e7eb;
+  background-color: var(--color-gray-200);
 }
 
 .closeButton:active {
@@ -170,7 +170,7 @@
 }
 
 .closeButton:focus-visible {
-  outline: 2px solid #93c5fd;
+  outline: 2px solid var(--color-primary-light);
   outline-offset: 2px;
 }
 
@@ -187,8 +187,8 @@
 .userCard {
   padding: 0.75rem 0.9rem;
   border-radius: 0.9rem;
-  background-color: #f8fafc;
-  border: 1px solid #e5e7eb;
+  background-color: var(--color-gray-25);
+  border: 1px solid var(--color-gray-200);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -196,7 +196,7 @@
 }
 
 .userName {
-  color: #1f2937;
+  color: var(--color-gray-800);
   font-size: 0.95rem;
   font-weight: 600;
   white-space: nowrap;
@@ -205,7 +205,7 @@
 }
 
 .userMeta {
-  color: #6b7280;
+  color: var(--color-gray-300);
   font-size: 0.8rem;
   white-space: nowrap;
   overflow: hidden;
@@ -230,7 +230,7 @@
 }
 
 .menuItem:not(:last-child) {
-  border-bottom: 1px solid rgba(31, 41, 55, 0.1);
+  border-bottom: 1px solid rgba(var(--color-gray-800-rgb), 0.1);
   padding-bottom: 0.35rem;
 }
 
@@ -240,7 +240,7 @@
   gap: 0.75rem;
   padding: 0.75rem 0.85rem;
   border-radius: 0.75rem;
-  color: #111827;
+  color: var(--color-gray-900);
   text-decoration: none;
   background-color: transparent;
   min-width: 0;
@@ -252,7 +252,7 @@
 }
 
 .menuLink:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-gray-50);
 }
 
 .menuLink:active {
@@ -260,7 +260,7 @@
 }
 
 .menuLink:focus-visible {
-  outline: 2px solid #93c5fd;
+  outline: 2px solid var(--color-primary-light);
   outline-offset: 2px;
 }
 
@@ -283,7 +283,7 @@
   margin-top: auto;
   padding-top: 0.75rem;
   padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 .logoutButton {
@@ -294,8 +294,8 @@
   padding: 0.8rem 0.85rem;
   border-radius: 0.8rem;
   border: none;
-  background-color: #1f2937;
-  color: white;
+  background-color: var(--color-gray-800);
+  color: var(--color-white);
   cursor: pointer;
   overflow: hidden;
   transition:
@@ -317,7 +317,7 @@
 }
 
 .logoutButton:hover {
-  background-color: #111827;
+  background-color: var(--color-gray-900);
 }
 
 .logoutButton:active {
@@ -325,7 +325,7 @@
 }
 
 .logoutButton:focus-visible {
-  outline: 2px solid #93c5fd;
+  outline: 2px solid var(--color-primary-light);
   outline-offset: 2px;
 }
 
