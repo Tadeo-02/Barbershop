@@ -21,7 +21,7 @@ import {
 import { apiFetch } from "../../../lib/apiFetch.ts";
 
 const BarberAppointments: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [dateSort, setDateSort] = useState<"asc" | "desc">("desc");
@@ -81,18 +81,15 @@ const BarberAppointments: React.FC = () => {
 
   // first effect: check authentication and redirect if not authenticated
   useEffect(() => {
-    // give time to AuthContext to load from localStorage
-    const timer = setTimeout(() => {
-      setAuthChecked(true);
+    if (isAuthLoading) return;
 
-      if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
-        toast.error("Debes iniciar sesión como barbero para ver tus turnos");
-        navigate("/login");
-      }
-    }, 100);
+    setAuthChecked(true);
 
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, user, navigate]);
+    if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
+      toast.error("Debes iniciar sesión como barbero para ver tus turnos");
+      navigate("/login");
+    }
+  }, [isAuthLoading, isAuthenticated, user, navigate]);
 
   // second effect: load appointments once authenticated
   useEffect(() => {

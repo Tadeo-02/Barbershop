@@ -1,5 +1,11 @@
-// authContext.tsx — diff respecto al tuyo original
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import {
+  clearAuthStorage,
+  decodeAuthToken,
+  getStoredAuthToken,
+  isTokenExpired,
+  setStoredAuthToken,
+} from "../../lib/authStorage";
 
 interface User {
   codUsuario: string;
@@ -15,73 +21,114 @@ interface User {
 interface AuthContextType {
   user: User | null;
   userType: "client" | "barber" | "admin" | null;
-  token: string | null; // NUEVO
-  login: (userData: User, token: string) => void; // firma cambiada
+  token: string | null;
+  login: (userData: User, token: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
-function getStoredToken(): string | null {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    if (payload.exp * 1000 < Date.now()) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("userType");
-      return null;
-    }
-    return token;
-  } catch {
-    return null;
-  }
+function getRoleFromToken(token: string | null) {
+  if (!token) return null;
+  return decodeAuthToken(token)?.rol ?? null;
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [token, setToken] = useState<string | null>(() => getStoredToken());
-
-  const [user, setUser] = useState<User | null>(() => {
-    if (!getStoredToken()) return null;
-    try {
-      const saved = localStorage.getItem("user");
-      return saved ? (JSON.parse(saved) as User) : null;
-    } catch {
-      return null;
-    }
-  });
-
+  const [token, setToken] = useState<string | null>(() =>
+    getStoredAuthToken(),
+  );
+  const [user, setUser] = useState<User | null>(null);
   const [userType, setUserType] = useState<
     "client" | "barber" | "admin" | null
-  >(() => {
-    if (!getStoredToken()) return null;
-    try {
-      const t = localStorage.getItem("userType");
-      return t ? (t as "client" | "barber" | "admin") : null;
-    } catch {
-      return null;
-    }
-  });
+  >(() => getRoleFromToken(getStoredAuthToken()));
+  const [isAuthLoading, setIsAuthLoading] = useState(() => !!token);
 
-  // CAMBIO: recibe token explícitamente, rol viene del payload del token
+  useEffect(() => {
+    if (!token) {
+      setUser(null);
+      setUserType(null);
+      setIsAuthLoading(false);
+      return;
+    }
+
+    const payload = decodeAuthToken(token);
+    if (!payload || isTokenExpired(payload)) {
+      clearAuthStorage();
+      setToken(null);
+      setUser(null);
+      setUserType(null);
+      setIsAuthLoading(false);
+      return;
+    }
+
+    if (user?.codUsuario === payload.codUsuario) {
+      setUserType(payload.rol);
+      setIsAuthLoading(false);
+      return;
+    }
+
+    let isCurrent = true;
+    setUserType(payload.rol);
+    setIsAuthLoading(true);
+
+    fetch(`${API_URL}/usuarios/profiles/${payload.codUsuario}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (!isCurrent) return;
+        setUser((data?.data ?? data?.user ?? data) as User);
+      })
+      .catch((error) => {
+        if (!isCurrent) return;
+        console.warn("No se pudo restaurar la sesión", error);
+        clearAuthStorage();
+        setToken(null);
+        setUser(null);
+        setUserType(null);
+      })
+      .finally(() => {
+        if (isCurrent) setIsAuthLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [token, user?.codUsuario]);
+
   const login = (userData: User, newToken: string) => {
-    const payload = JSON.parse(atob(newToken.split(".")[1]));
-    const type = payload.rol as "client" | "barber" | "admin";
+    const payload = decodeAuthToken(newToken);
+    if (!payload || isTokenExpired(payload)) {
+      clearAuthStorage();
+      setUser(null);
+      setUserType(null);
+      setToken(null);
+      setIsAuthLoading(false);
+      return;
+    }
 
     setUser(userData);
-    setUserType(type);
+    setUserType(payload.rol);
     setToken(newToken);
+    setIsAuthLoading(false);
 
     try {
-      localStorage.setItem("token", newToken);
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("userType", type);
+      setStoredAuthToken(newToken);
     } catch (e) {
-      console.warn("No se pudo guardar en localStorage", e);
+      console.warn("No se pudo guardar el token de sesión", e);
     }
   };
 
@@ -89,12 +136,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
     setUserType(null);
     setToken(null);
+    setIsAuthLoading(false);
     try {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("userType");
+      clearAuthStorage();
     } catch (e) {
-      console.warn("No se pudo remover localStorage", e);
+      console.warn("No se pudo remover la sesión", e);
     }
   };
 
@@ -106,7 +152,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         token,
         login,
         logout,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !!token,
+        isAuthLoading,
       }}
     >
       {children}
@@ -114,6 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within AuthProvider");

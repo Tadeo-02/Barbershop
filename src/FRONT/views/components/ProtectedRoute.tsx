@@ -8,7 +8,13 @@ interface ProtectedRouteProps {
 }
 
 function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { userType, isAuthenticated } = useAuth();
+  const { userType, isAuthenticated, isAuthLoading } = useAuth();
+
+  if (isAuthLoading) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>Cargando...</div>
+    );
+  }
 
   // if not authenticated, redirect to login
   if (!isAuthenticated) {

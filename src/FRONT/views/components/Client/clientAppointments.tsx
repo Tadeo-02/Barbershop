@@ -13,7 +13,7 @@ import {
 import { apiFetch } from "../../lib/apiFetch.ts";
 
 const ClientAppointments: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [dateSort, setDateSort] = useState<"asc" | "desc">("asc");
@@ -40,18 +40,15 @@ const ClientAppointments: React.FC = () => {
 
   // first useEffect: verify authentication and redirect if not authenticated
   useEffect(() => {
-    // give time so AuthContext can read from localStorage
-    const timer = setTimeout(() => {
-      setAuthChecked(true);
+    if (isAuthLoading) return;
 
-      if (!isAuthenticated || !user || !user.codUsuario) {
-        toast.error("Debes iniciar sesión para ver tus turnos");
-        navigate("/login");
-      }
-    }, 100);
+    setAuthChecked(true);
 
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, user, navigate]);
+    if (!isAuthenticated || !user || !user.codUsuario) {
+      toast.error("Debes iniciar sesión para ver tus turnos");
+      navigate("/login");
+    }
+  }, [isAuthLoading, isAuthenticated, user, navigate]);
 
   // second effect: load appointments once authenticated
   useEffect(() => {

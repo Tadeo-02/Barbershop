@@ -468,7 +468,7 @@ const CheckoutForm: React.FC<{
 };
 
 const BranchAppointments: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [allCortes, setAllCortes] = useState<Cut[]>([]);
   const [loading, setLoading] = useState(false);
@@ -510,18 +510,15 @@ const BranchAppointments: React.FC = () => {
   };
 
   useEffect(() => {
-    // give time for the AuthContext to load from localStorage
-    const timer = setTimeout(() => {
-      setAuthChecked(true);
+    if (isAuthLoading) return;
 
-      if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
-        toast.error("Debes iniciar sesión como barbero para ver los turnos");
-        navigate("/login");
-      }
-    }, 100);
+    setAuthChecked(true);
 
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, user, navigate]);
+    if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
+      toast.error("Debes iniciar sesión como barbero para ver los turnos");
+      navigate("/login");
+    }
+  }, [isAuthLoading, isAuthenticated, user, navigate]);
 
   const loadTurnos = async () => {
     if (!user) return;

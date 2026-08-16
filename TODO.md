@@ -1,83 +1,3 @@
-### QUITAR 'ANY's
-
-# FRONT:
-
-## Usuarios:
-
-    - [X] Actualizar pantalla main turnos ## -> Pantallas necesarias para pedir turnos: seleccionar barbero, seleccionar fecha, seleccionar sucursal
-    - [X] Modificar frontend de seleccion de sucursales y turnos. Una vez seleccionas una opción ya no te deja volver hacia atras para ver las otras opciones
-    - [X] Pantalla de perfil de usuario
-    - [X] Pantalla de cancelar turnos // la pantalla ya está habria que cambiar el DELETE por un UPDATE de estado que depende del cambio q se haga en la lógica de los estados
-    - [X] Mostrar sucursal seleccionada en pantalla de seleccion barbero y mostrar barbero seleccionado en pantalla de sucursal seleccionada
-
-## Barberos:
-
-    - [X] Pantalla de modificar turno
-    - [X] Pantalla de ver turnos pendientes
-    - [X] Buscador de turnos medianto nombre y/o apellido del cliente o barbero en branchAppointments
-
-## Admin:
-
-    - [X] Pantalla general admin
-    - [X] Pantalla CRUD sucursales
-    - [NO] Pantalla CRUD estados?? Decidir si la hacemos
-    - [X] Listado de clientes (proposal.md) // faltaria la fecha de registro que creo q nuestra  bd no la tiene, si no me equivoco eso lo vamos a necesitar para la lógica de las categorías
-    - [X] Listado de rentabilidad (proposal.md)
-
-## General:
-
-    - [X] Definir estructura mobile first en estilos
-    - [X] Fix de Toasts de error cuando hay success (ej: create barberos desde admin)
-    - [X] Fix boton de login en Landing Page
-    - [X] Validar datos en front -> Implementar actualizacion aplicada en login/createUser para mejoras frontend al resto de formularios
-    - [X] Para muestreo de datos ver cambios aplicados en la infoSection (analizar si es necesario, es mas que nada para robustez)
-    - [X] Arreglar pdf de factura
-
-# BACK:
-
-## - Usuarios:
-
-    - [X] Pedir turnos
-    - [X] Ver perfil
-    - [X] Ver beneficios de categoría (en ver perfil)
-    - [X] Cancelar Turnos
-    - [X] Encriptar Contraseña
-    - [X] API Facturación
-    Hagan que sea vea bien la API
-    - [X] Verificar logica de envio de fecha de cancelacion de turno
-    - [X] Evitar que se puedan mandar múltiples peticiones para un mismo formulario (Ejemplo: al logearse, si presionas Enter varias veces, el sistema recibe varias veces la misma petición de logeo)
-
-## Barberos:
-
-    - [X] Modificar Turnos
-    - [X] Validar que el turno que completa sea de ese mismo día
-
-## Admin:
-
-    - [X] CRUD Sucursal
-    - [X] CRUD Barberos
-    - [X] CRUD Categorias
-    - [X] Dar de baja barbero en vez de eliminar
-    - [X] No permitir cambiar de sucursal al barbero cuando tiene un turno todavia vigente
-    - [X] No permitir eliminar barbero o sucursal si hay turnos vigentes
-    - [X] Si se elimina una categoria, que sucede con los clientes de la misma? suben o bajan de categoria --> decision del admin, la unica que no se puede eliminar es la inicial
-    - [X] Cuando se crea categoria, qué se hace con los descuentos (se aplican cuando se cobran los turnos?)
-
-## General:
-
-    - [ ] Revisar validaciones zod en general
-    - [X] Añadir/Mejorar validaciones Backend
-    - [X] Aplicar validación del tipo de usuario (Cliente, Barbero, Admin)
-    - [X] Cambiar NPM por PNPM
-    - [X] Cambiar logica del estado de turnos
-    - [X] Lógica de subida de categoría (AD)
-    - [X] Lógica de bajada de categoría (AD)
-    - [X] Agregar validaciones para checkear cuando un cliente esta vetado, asi no puede iniciar sesión
-    - [X] Manejo horarios ocupados del barbero
-    - [X] Validar que el cliente no pueda pedir dos turnos para el mismo horario con distintos barberos ?
-    - [X] Reestablecer contraseña y unificacion de patrones. Se permite mantener las contraseñas viejas a excepcion de cp3 (revisar readme para ver nueva contraseña).
-    - [X] Implementar los descuentos de las categorias
-
 # TODO — Correcciones de Code Review (Barbershop)
 
 ## 1. Consistencia de idioma
@@ -102,7 +22,8 @@
 - [x] Implementar **validación de usuario y roles** en el backend (actualmente no hay).
 - [x] Implementar **JWT** para autenticación y validación de las APIs.
 - [x] Usar JWT (o similar) para validar roles en cada endpoint, no solo en el front.
-- [ ] Revisar el manejo de tokens de autenticación (actualmente solo hay security events, no manejo de tokens).
+- [x] Revisar el manejo básico de tokens de autenticación: JWT emitido en login, validado por middleware, enviado desde el frontend y limpiado ante expiración/401.
+  - Pendiente opcional de hardening: evaluar refresh tokens, revocación server-side, invalidación al desactivar/vetar usuarios y cookies `HttpOnly`.
 - [ ] **Pregunta de seguridad**: no debe tratarse como un segundo password sin verificación adicional.
   - [ ] Implementar envío de email con token para validar que el usuario controla ese email antes de aceptar la respuesta a la pregunta de seguridad.
   - [ ] Documentar/comunicar al usuario que la pregunta de seguridad no reemplaza un password fuerte, para evitar que la subestime.
@@ -158,12 +79,17 @@
 
 ## 8. Almacenamiento de datos sensibles (localStorage)
 
-- [ ] Evitar guardar todos los datos personales del usuario en `localStorage`.
-- [ ] Verificar y **eliminar el guardado del password en `localStorage`**, aunque esté encriptado (no es una práctica segura).
+- [x] Evitar guardar todos los datos personales del usuario en `localStorage`.
+  - LISTO: se centralizó el acceso en `src/FRONT/views/lib/authStorage.ts`; `AuthContext` persiste solo el JWT, deriva rol/código desde el payload y rehidrata el perfil desde `/usuarios/profiles/:codUsuario`.
+  - Ajuste adicional: el JWT se guarda en `sessionStorage` para reducir la persistencia del token en el navegador y evitar dejar información sensible en `localStorage`.
+- [x] Verificar y **eliminar el guardado del password en `localStorage`**, aunque esté encriptado (no es una práctica segura).
+  - LISTO: no se encontró persistencia de password/contraseña en `localStorage`; también se eliminó el guardado del objeto `user` y `userType`.
   - Detectado en: `src/FRONT/views/pages/Barber/HomePageBarber.tsx`
     ```ts
     const savedUser = localStorage.getItem("user");
     ```
+  - LISTO: `HomePageBarber.tsx` ya no lee `localStorage` directamente; usa `useAuth`/estado de hidratación.
+  - Se limpian también claves heredadas como `user` y `userType` desde ambos storages cuando la sesión es inválida o se cierra.
 
 ## 9. Rutas protegidas duplicadas
 
