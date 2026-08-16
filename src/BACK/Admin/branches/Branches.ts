@@ -6,6 +6,7 @@ import {
   PendingAppointmentsError,
 } from "../../lib/barberBusinessRules";
 import { assertEntityExists } from "../../lib/entityChecks";
+import { parseValidatedInput } from "../../lib/zodHelpers";
 
 // funciones backend para Sucursales
 export const store = async (nombre: string, calle: string, altura: number) => {
@@ -16,7 +17,7 @@ export const store = async (nombre: string, calle: string, altura: number) => {
       calle: sanitizeInput(calle),
       altura: Number(altura),
     };
-    const validateData = BranchSchema.parse(sanitizedData);
+    const validateData = parseValidatedInput(BranchSchema, sanitizedData);
     console.log("Creating branch");
     // crear branch usando el modelo correcto de Prisma
     const branch = await prisma.sucursales.create({
@@ -112,7 +113,7 @@ export const update = async (
       calle: sanitizeInput(calle),
       altura: Number(altura),
     };
-    const validateData = BranchSchema.parse({
+    const validateData = parseValidatedInput(BranchSchema, {
       nombre: sanitizedData.nombre,
       calle: sanitizedData.calle,
       altura: sanitizedData.altura,

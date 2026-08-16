@@ -4,6 +4,7 @@ import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 import { billAppointment } from "../billing/Billing";
 import { getDiscountCycle, applyDiscountIfEligible } from "../lib/discount";
 import { assertEntityExists } from "../lib/entityChecks";
+import { parseValidatedInput } from "../lib/zodHelpers";
 
 // Umbrales configurables (pueden ser sobreescritos por env vars durante pruebas)
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
@@ -156,9 +157,10 @@ export const store = async (
     };
 
     // validación con zod - omitir codTurno para creación
-    const validatedData = AppointmentSchema.omit({
-      codTurno: true,
-    }).parse(sanitizedData);
+    const validatedData = parseValidatedInput(
+      AppointmentSchema.omit({ codTurno: true }),
+      sanitizedData,
+    );
     console.log("Creating turno");
 
     // convertir strings a Date objects para Prisma
@@ -676,7 +678,7 @@ export const update = async (
       estado: sanitizeInput(estado),
     };
 
-    const validatedData = AppointmentSchema.parse({
+    const validatedData = parseValidatedInput(AppointmentSchema, {
       codTurno: sanitizedData.codTurno,
       codCorte: sanitizedData.codCorte,
       codCliente: sanitizedData.codCliente,

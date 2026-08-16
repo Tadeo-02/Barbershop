@@ -16,6 +16,8 @@ import {
   assertNoPendingAppointments,
   PendingAppointmentsError,
 } from "../lib/barberBusinessRules";
+import { assertEntityExists } from "../lib/entityChecks";
+import { parseValidatedInput } from "../lib/zodHelpers";
 
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
   process.env.INITIAL_TO_MEDIUM_DAYS || "30",
@@ -169,7 +171,7 @@ export const store = async (
     };
 
     // Validación con zod
-    const validatedData = UserSchema.parse(sanitizedData);
+    const validatedData = parseValidatedInput(UserSchema, sanitizedData);
 
     console.log("Validated user data keys:", {
       preguntaSeguridad: !!validatedData.preguntaSeguridad,
@@ -454,9 +456,7 @@ export const findByIdWithCategory = async (codUsuario: string) => {
       },
     });
 
-    if (!usuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
+    assertEntityExists(usuario, "Usuario");
     const categoriaActual = usuario.categoria_vigente[0];
     const loyaltyProgress = await buildLoyaltyProgress(
       sanitizedCodUsuario,
@@ -612,7 +612,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       }
     }
 
-    const validatedData = UpdateUserSchema.parse({
+    const validatedData = parseValidatedInput(UpdateUserSchema, {
       dni: sanitizedData.dni,
       nombre: sanitizedData.nombre,
       apellido: sanitizedData.apellido,
@@ -892,7 +892,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
     };
 
     // Validación con zod
-    const validatedData = LoginSchema.parse(sanitizedData);
+    const validatedData = parseValidatedInput(LoginSchema, sanitizedData);
 
     console.log("Validating user login for email:", validatedData.email);
 
@@ -979,9 +979,7 @@ export const getSecurityQuestionByEmail = async (email: string) => {
       select: { preguntaSeguridad: true },
     });
 
-    if (!usuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
+    assertEntityExists(usuario, "Usuario");
 
     return usuario.preguntaSeguridad || null;
   } catch (error) {
@@ -1013,9 +1011,7 @@ const getUserAndValidateSecurityAnswer = async (
     !!(usuario && usuario.respuestaSeguridad),
   );
 
-  if (!usuario) {
-    throw new DatabaseError("Usuario no encontrado");
-  }
+  assertEntityExists(usuario, "Usuario");
 
   if (!usuario.respuestaSeguridad) {
     throw new DatabaseError(

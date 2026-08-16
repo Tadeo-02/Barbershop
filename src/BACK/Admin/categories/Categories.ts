@@ -2,6 +2,7 @@ import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 import { CategorySchema } from "../../Schemas/categoriesSchema";
 import { assertEntityExists } from "../../lib/entityChecks";
+import { parseValidatedInput } from "../../lib/zodHelpers";
 
 type CategoryDirection = "promote" | "demote";
 type DeleteCategoryAction = "promote_all" | "demote_all" | "per_client";
@@ -31,7 +32,8 @@ export const store = async (
     };
 
     // validacion con zod (omitimos el campo `codCategoria` al crear)
-    const validatedData = CategorySchema.omit({ codCategoria: true }).parse(
+    const validatedData = parseValidatedInput(
+      CategorySchema.omit({ codCategoria: true }),
       sanitizedData,
     );
 
@@ -134,12 +136,15 @@ export const update = async (
     };
 
     // validar datos (omitimos `codCategoria` al validar payload de actualización)
-    const validatedData = CategorySchema.omit({ codCategoria: true }).parse({
-      nombreCategoria: sanitizedData.nombreCategoria,
-      descCategoria: sanitizedData.descCategoria,
-      descuentoCorte: sanitizedData.descuentoCorte,
-      descuentoProducto: sanitizedData.descuentoProducto,
-    });
+    const validatedData = parseValidatedInput(
+      CategorySchema.omit({ codCategoria: true }),
+      {
+        nombreCategoria: sanitizedData.nombreCategoria,
+        descCategoria: sanitizedData.descCategoria,
+        descuentoCorte: sanitizedData.descuentoCorte,
+        descuentoProducto: sanitizedData.descuentoProducto,
+      },
+    );
 
     // verificar que la categoría existe
     const existingCategoria = await prisma.categoria.findUnique({

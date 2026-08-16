@@ -1,6 +1,7 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base"; // importamos todo desde Base
 import { z } from "zod";
 import { assertEntityExists } from "../../lib/entityChecks";
+import { parseValidatedInput } from "../../lib/zodHelpers";
 
 const TypeOfHaircutSchema = z.object({
   nombreCorte: z
@@ -26,7 +27,7 @@ export const store = async (nombreCorte: string, valorBase: string) => {
     };
 
     // validación con zod
-    const validatedData = TypeOfHaircutSchema.parse(sanitizedData);
+    const validatedData = parseValidatedInput(TypeOfHaircutSchema, sanitizedData);
 
     console.log("Creating tipo de corte");
 
@@ -110,7 +111,7 @@ export const update = async (
       valorBase: sanitizeInput(valorBase),
     };
 
-    const validatedData = TypeOfHaircutSchema.parse({
+    const validatedData = parseValidatedInput(TypeOfHaircutSchema, {
       nombreCorte: sanitizedData.nombreCorte,
       valorBase: sanitizedData.valorBase,
     });

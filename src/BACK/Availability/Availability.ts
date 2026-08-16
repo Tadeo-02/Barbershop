@@ -3,6 +3,7 @@ import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
 import { AvailabilitySchema } from "../Schemas/availabilitySchema";
 import { assertEntityExists } from "../lib/entityChecks";
+import { parseValidatedInput } from "../lib/zodHelpers";
 
 const ensureValidRange = (fechaDesde: Date, fechaHasta: Date) => {
   if (fechaDesde >= fechaHasta) {
@@ -122,9 +123,10 @@ export const store = async (
     };
 
     // validacion con zod
-    const validatedData = AvailabilitySchema.omit({
-      codBloqueo: true,
-    }).parse(sanitizedData);
+    const validatedData = parseValidatedInput(
+      AvailabilitySchema.omit({ codBloqueo: true }),
+      sanitizedData,
+    );
 
     console.log("Creating barber unavailability");
 
@@ -257,12 +259,15 @@ export const update = async (
     };
 
     // validar (menos codBloqueo)
-    const validatedData = AvailabilitySchema.omit({ codBloqueo: true }).parse({
-      codBarbero: sanitizedData.codBarbero,
-      fechaHoraDesde: sanitizedData.fechaHoraDesde,
-      fechaHoraHasta: sanitizedData.fechaHoraHasta,
-      motivo: sanitizedData.motivo,
-    });
+    const validatedData = parseValidatedInput(
+      AvailabilitySchema.omit({ codBloqueo: true }),
+      {
+        codBarbero: sanitizedData.codBarbero,
+        fechaHoraDesde: sanitizedData.fechaHoraDesde,
+        fechaHoraHasta: sanitizedData.fechaHoraHasta,
+        motivo: sanitizedData.motivo,
+      },
+    );
 
     // convertir strings a DateTime objects para Prisma (forzar UTC para evitar shift horario)
     const fechaDesde = new Date(
