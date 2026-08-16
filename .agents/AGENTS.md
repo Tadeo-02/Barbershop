@@ -8,7 +8,7 @@ pnpm dev           # Vite frontend on :5173
 pnpm dev:backend   # Express backend via ts-node on :3001
 ```
 
-Copy `.env.example` → `.env`; requires DB, JWT_SECRET, AFIP credentials.
+Create `.env` manually; no `.env.example` is currently committed. Required/used env vars include MySQL connection values (`DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`), `JWT_SECRET`, optional `FRONTEND_URL`/`PORT`, optional category promotion thresholds, and AFIP billing values (`AFIP_ENVIRONMENT`, `AFIP_CUIT`, `AFIP_ACCESS_TOKEN`, `AFIP_PUNTO_VENTA`, `AFIP_CERT_PATH`, `AFIP_KEY_PATH`). Frontend API base can be set with `VITE_API_URL`.
 
 ## Architecture
 - **Backend entrypoint:** `index.ts` (tsconfig.backend.json, CommonJS/mixed, Express 5)
