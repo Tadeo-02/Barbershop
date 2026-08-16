@@ -13,6 +13,7 @@ import {
 } from "../../shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import { normalizeFormErrors } from "../../../lib/formErrorUtils";
 
 const CreateBranchSchema = BranchSchema.extend({});
 
@@ -25,13 +26,30 @@ const CreateBranches: React.FC = () => {
   }
   const { renew: renewSubmitAbort } = useAbortController();
 
+  const branchResolver = async (
+    values: CreateBranchFormData,
+    context: unknown,
+    options: {
+      criteriaMode?: "first_error" | "all";
+      shouldFocus?: boolean;
+    },
+  ) => {
+    const result = await zodResolver(CreateBranchSchema)(
+      values,
+      context,
+      options,
+    );
+
+    return normalizeFormErrors(result) ?? result;
+  };
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateBranchFormData>({
-    resolver: zodResolver(CreateBranchSchema),
+    resolver: branchResolver,
     mode: "onBlur",
   });
 

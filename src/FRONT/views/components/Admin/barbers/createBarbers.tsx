@@ -12,6 +12,7 @@ import {
   useAbortController,
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
+import { normalizeFormErrors } from "../../../lib/formErrorUtils";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -33,13 +34,30 @@ const CreateBarbers: React.FC = () => {
     useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
 
+  const barberResolver = async (
+    values: CreateBarberForm,
+    context: unknown,
+    options: {
+      criteriaMode?: "first_error" | "all";
+      shouldFocus?: boolean;
+    },
+  ) => {
+    const result = await zodResolver(CreateBarberSchema)(
+      values,
+      context,
+      options,
+    );
+
+    return normalizeFormErrors(result) ?? result;
+  };
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateBarberForm>({
-    resolver: zodResolver(CreateBarberSchema),
+    resolver: barberResolver,
     mode: "onBlur",
   });
 

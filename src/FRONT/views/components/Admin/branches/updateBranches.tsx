@@ -15,6 +15,7 @@ import {
 } from "../../shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import { normalizeFormErrors } from "../../../lib/formErrorUtils";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -29,13 +30,30 @@ const UpdateBranches: React.FC = () => {
     useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
 
+  const branchUpdateResolver = async (
+    values: UpdateBranchForm,
+    context: unknown,
+    options: {
+      criteriaMode?: "first_error" | "all";
+      shouldFocus?: boolean;
+    },
+  ) => {
+    const result = await zodResolver(UpdateBranchSchema)(
+      values,
+      context,
+      options,
+    );
+
+    return normalizeFormErrors(result) ?? result;
+  };
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<UpdateBranchForm>({
-    resolver: zodResolver(UpdateBranchSchema),
+    resolver: branchUpdateResolver,
     mode: "onBlur",
   });
 

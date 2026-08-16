@@ -15,6 +15,7 @@ import {
 import { getPasswordMissing } from "../../lib/passwordRules";
 import { isAbortError, useAbortController } from "../shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch.ts";
+import { normalizeFormErrors } from "../../lib/formErrorUtils";
 
 //! Utilizamos el Schema de la librería Zod para validar campos
 // Extend schema for form with password confirmation
@@ -47,6 +48,19 @@ const CreateUser: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const userResolver = async (
+    values: CreateUserFormData,
+    context: unknown,
+    options: {
+      criteriaMode?: "first_error" | "all";
+      shouldFocus?: boolean;
+    },
+  ) => {
+    const result = await zodResolver(CreateUserSchema)(values, context, options);
+
+    return normalizeFormErrors(result) ?? result;
+  };
+
   const {
     register,
     handleSubmit,
@@ -54,7 +68,7 @@ const CreateUser: React.FC = () => {
     reset,
     watch,
   } = useForm<CreateUserFormData>({
-    resolver: zodResolver(CreateUserSchema),
+    resolver: userResolver,
     mode: "onBlur",
   });
 

@@ -12,6 +12,7 @@ import {
 } from "../../shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import { normalizeFormErrors } from "../../../lib/formErrorUtils";
 
 interface TipoCorte {
   codCorte: string;
@@ -29,13 +30,26 @@ const UpdateTypeOfHaircut: React.FC = () => {
     useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
 
+  const haircutUpdateResolver = async (
+    values: TypeForm,
+    context: unknown,
+    options: {
+      criteriaMode?: "first_error" | "all";
+      shouldFocus?: boolean;
+    },
+  ) => {
+    const result = await zodResolver(HaircutSchema)(values, context, options);
+
+    return normalizeFormErrors(result) ?? result;
+  };
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<TypeForm>({
-    resolver: zodResolver(HaircutSchema),
+    resolver: haircutUpdateResolver,
     mode: "onBlur",
     defaultValues: { valorBase: 0 },
   });

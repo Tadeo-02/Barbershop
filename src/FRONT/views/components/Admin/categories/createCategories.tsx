@@ -11,6 +11,7 @@ import {
   useAbortController,
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
+import { normalizeFormErrors } from "../../../lib/formErrorUtils";
 
 const CreateCategorySchema = CategorySchema.pick({
   nombreCategoria: true,
@@ -25,13 +26,30 @@ const CreateCategories: React.FC = () => {
   const navigate = useNavigate();
   const { renew: renewSubmitAbort } = useAbortController();
 
+  const categoryResolver = async (
+    values: CreateCategoryForm,
+    context: unknown,
+    options: {
+      criteriaMode?: "first_error" | "all";
+      shouldFocus?: boolean;
+    },
+  ) => {
+    const result = await zodResolver(CreateCategorySchema)(
+      values,
+      context,
+      options,
+    );
+
+    return normalizeFormErrors(result) ?? result;
+  };
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateCategoryForm>({
-    resolver: zodResolver(CreateCategorySchema),
+    resolver: categoryResolver,
     mode: "onBlur",
     defaultValues: {
       descuentoCorte: 0,

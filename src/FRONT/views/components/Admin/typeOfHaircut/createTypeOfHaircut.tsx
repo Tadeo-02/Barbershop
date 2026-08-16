@@ -12,6 +12,7 @@ import {
 } from "../../shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import { normalizeFormErrors } from "../../../lib/formErrorUtils";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;
 
@@ -19,16 +20,27 @@ const CreateTypeOfHaircut: React.FC = () => {
   const navigate = useNavigate();
   const { renew: renewSubmitAbort } = useAbortController();
 
+  const haircutResolver = async (
+    values: CreateTypeForm,
+    context: unknown,
+    options: {
+      criteriaMode?: "first_error" | "all";
+      shouldFocus?: boolean;
+    },
+  ) => {
+    const result = await zodResolver(HaircutSchema)(values, context, options);
+
+    return normalizeFormErrors(result) ?? result;
+  };
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateTypeForm>({
-    // use the global Zod error map (applied in main.tsx) and the normal resolver
-    resolver: zodResolver(HaircutSchema) as Resolver<CreateTypeForm>,
+    resolver: haircutResolver as Resolver<CreateTypeForm>,
     mode: "onBlur",
-    // valores por defecto
     defaultValues: {
       valorBase: 0,
     },

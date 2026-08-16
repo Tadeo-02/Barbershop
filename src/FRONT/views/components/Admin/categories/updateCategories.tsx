@@ -10,6 +10,7 @@ import {
   useAbortController,
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
+import { normalizeFormErrors } from "../../../lib/formErrorUtils";
 
 const CategorySchema = z.object({
   nombreCategoria: z.string().min(1, "Nombre requerido"),
@@ -27,13 +28,26 @@ const UpdateCategories: React.FC = () => {
     useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
 
+  const categoryResolver = async (
+    values: CategoryForm,
+    context: unknown,
+    options: {
+      criteriaMode?: "first_error" | "all";
+      shouldFocus?: boolean;
+    },
+  ) => {
+    const result = await zodResolver(CategorySchema)(values, context, options);
+
+    return normalizeFormErrors(result) ?? result;
+  };
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CategoryForm>({
-    resolver: zodResolver(CategorySchema),
+    resolver: categoryResolver,
     mode: "onBlur",
   });
 

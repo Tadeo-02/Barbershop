@@ -16,6 +16,7 @@ import {
 } from "../../shared/useAbortController";
 import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
+import { normalizeFormErrors } from "../../../lib/formErrorUtils";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
 
@@ -53,13 +54,30 @@ const UpdateBarber: React.FC = () => {
     useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
 
+  const barberUpdateResolver = async (
+    values: UpdateBarberForm,
+    context: unknown,
+    options: {
+      criteriaMode?: "first_error" | "all";
+      shouldFocus?: boolean;
+    },
+  ) => {
+    const result = await zodResolver(UpdateBarberSchema)(
+      values,
+      context,
+      options,
+    );
+
+    return normalizeFormErrors(result) ?? result;
+  };
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<UpdateBarberForm>({
-    resolver: zodResolver(UpdateBarberSchema),
+    resolver: barberUpdateResolver,
     mode: "onBlur",
   });
 
