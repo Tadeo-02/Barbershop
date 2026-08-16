@@ -108,13 +108,17 @@ describe("AuthProvider — initial state", () => {
 describe("AuthProvider — login userType derivation", () => {
   it('assigns "client" when cuil is null', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login({ ...baseUser, cuil: null }, makeToken("client")));
+    act(() =>
+      result.current.login({ ...baseUser, cuil: null }, makeToken("client")),
+    );
     expect(result.current.userType).toBe("client");
   });
 
   it('assigns "admin" when cuil is "1"', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login({ ...baseUser, cuil: "1" }, makeToken("admin")));
+    act(() =>
+      result.current.login({ ...baseUser, cuil: "1" }, makeToken("admin")),
+    );
     expect(result.current.userType).toBe("admin");
   });
 
@@ -158,9 +162,7 @@ describe("AuthProvider — login side effects", () => {
     act(() =>
       result.current.login({ ...baseUser, cuil: "1" }, makeToken("admin")),
     );
-    act(() =>
-      result.current.login({ ...baseUser, cuil: null }, clientToken),
-    );
+    act(() => result.current.login({ ...baseUser, cuil: null }, clientToken));
 
     expect(result.current.userType).toBe("client");
     expect(sessionStorage.getItem("token")).toBe(clientToken);

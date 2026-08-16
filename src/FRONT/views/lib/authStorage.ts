@@ -59,7 +59,8 @@ export function isTokenExpired(payload: AuthTokenPayload): boolean {
 export function getStoredAuthToken(): string | null {
   try {
     const token =
-      sessionStorage.getItem(AUTH_TOKEN_KEY) ?? localStorage.getItem(AUTH_TOKEN_KEY);
+      sessionStorage.getItem(AUTH_TOKEN_KEY) ??
+      localStorage.getItem(AUTH_TOKEN_KEY);
 
     if (!token) return null;
 
