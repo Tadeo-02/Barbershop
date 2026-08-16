@@ -10,7 +10,8 @@ import { changeEntityStatus } from "../shared/entityStatus";
 import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
-// Usamos el schema exportado desde el backend como single source of truth
+// Use the schema exported from the backend as the single source of truth.
+
 type Barbero = z.infer<typeof BarberResponseSchema>;
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -22,7 +23,7 @@ const IndexBarbers = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Cargar barberos y sucursales en paralelo
+        // load barbers and branches in parallel
         const [barberosResponse, sucursalesResponse] = await Promise.all([
           apiFetch("/usuarios?type=barber"),
           apiFetch("/sucursales"),
@@ -31,7 +32,9 @@ const IndexBarbers = () => {
         if (barberosResponse.ok) {
           const barberosData = await barberosResponse.json();
           console.log("Raw data from API:", barberosData);
-          // Validar y parsear con el schema derivado
+
+        // Validate and parse using the derived schema.
+
           const parsed = BarberResponseSchema.array().safeParse(barberosData);
           if (parsed.success) {
             // parsed data comes from backend and doesn't include contraseña (password)
@@ -55,11 +58,11 @@ const IndexBarbers = () => {
 
         if (sucursalesResponse.ok) {
           const sucursalesData = await sucursalesResponse.json();
-          // Validar sucursales con el schema importado
+          // Validate branches using the imported schema.
           const parsedSuc =
             BranchWithIdSchema.array().safeParse(sucursalesData);
           if (parsedSuc.success) {
-            // Convertir array a objeto para búsqueda rápida
+            // transform array to object for quick lookup
             const sucursalesMap = parsedSuc.data.reduce(
               (acc: { [key: string]: Sucursal }, sucursal: Sucursal) => {
                 if (sucursal.codSucursal) acc[sucursal.codSucursal] = sucursal;
@@ -88,7 +91,7 @@ const IndexBarbers = () => {
     fetchData();
   }, []);
 
-  // Función para obtener el nombre de la sucursal
+  // function to obtain the name of the branch
   const getSucursalNombre = (codSucursal?: string | null): string => {
     if (!codSucursal) return "Sucursal no encontrada";
     return sucursales[codSucursal]?.nombre || "Sucursal no encontrada";

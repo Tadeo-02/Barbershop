@@ -15,21 +15,21 @@ const TypeOfHaircutSchema = z.object({
     ),
 });
 
-// funciones backend
+//  backend functions
 export const store = async (nombreCorte: string, valorBase: string) => {
   try {
-    // sanitizar inputs
+    // sanitize inputs
     const sanitizedData = {
       nombreCorte: sanitizeInput(nombreCorte),
       valorBase: sanitizeInput(valorBase),
     };
 
-    // validación con zod
+    // validate with zod
     const validatedData = TypeOfHaircutSchema.parse(sanitizedData);
 
     console.log("Creating tipo de corte");
 
-    // crear tipo de corte
+    // create haircut
     const tipoCorte = await prisma.tipos_corte.create({
       data: {
         nombreCorte: validatedData.nombreCorte,
@@ -44,7 +44,7 @@ export const store = async (nombreCorte: string, valorBase: string) => {
       "Error creating tipo de corte:",
       error instanceof Error ? error.message : "Unknown error",
     );
-    //manejo de errores de validacion
+    //handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
@@ -75,7 +75,7 @@ export const findAll = async () => {
 
 export const findById = async (codTipoCorte: string) => {
   try {
-    //sanitizar y validar
+    //sanitize and validate
     const sanitizedCodTipoCorte = sanitizeInput(codTipoCorte);
 
     const tipoCorte = await prisma.tipos_corte.findUnique({
@@ -102,7 +102,7 @@ export const update = async (
   valorBase: string,
 ) => {
   try {
-    // sanitizar datos
+    // sanitize data
     const sanitizedData = {
       codCorte: sanitizeInput(codCorte),
       nombreCorte: sanitizeInput(nombreCorte),
@@ -114,7 +114,7 @@ export const update = async (
       valorBase: sanitizedData.valorBase,
     });
 
-    // Usar el codCorte sanitizado (no validado por Zod)
+    // Use the sanitized codCorte (not validated by Zod)
     const existingTipoCorte = await prisma.tipos_corte.findUnique({
       where: { codCorte: sanitizedData.codCorte },
     });
@@ -123,7 +123,7 @@ export const update = async (
       throw new DatabaseError("Tipo de corte no encontrado");
     }
 
-    // update tipo de corte usando codCorte sanitizado
+    // update type of haircut using sanitized codCorte
     const updatedTipoCorte = await prisma.tipos_corte.update({
       where: { codCorte: sanitizedData.codCorte },
       data: {
@@ -140,7 +140,7 @@ export const update = async (
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // manejo de errores de validacion
+    // handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
@@ -156,10 +156,10 @@ export const update = async (
 
 export const destroy = async (codCorte: string) => {
   try {
-    // sanitizar y validar
+    // sanitize and validate
     const sanitizedCodCorte = sanitizeInput(codCorte);
 
-    // verificar que el tipo de corte existe
+    // verify the type of haircut exists before attempting to delete
     const existingTipoCorte = await prisma.tipos_corte.findUnique({
       where: { codCorte: sanitizedCodCorte },
     });
@@ -168,7 +168,7 @@ export const destroy = async (codCorte: string) => {
       throw new DatabaseError("Tipo de corte no encontrado");
     }
 
-    // delete tipo de corte
+    // delete type of haircut
     const deletedTipoCorte = await prisma.tipos_corte.delete({
       where: { codCorte: sanitizedCodCorte },
     });

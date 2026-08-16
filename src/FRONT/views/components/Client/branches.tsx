@@ -14,20 +14,20 @@ const IndexBranches = () => {
   const navigate = useNavigate();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // loading inicial
+  const [loading, setLoading] = useState(true); // inicial loading 
 
   useEffect(() => {
     apiFetch("/sucursales")
       .then((res) => res.json())
       .then((data) => {
-        setBranches(data); // data debe ser un array de sucursales
+        setBranches(data); // data must be an array of branches
         console.log("Sucursales recibidas:", data);
       })
       .catch((error) => {
         console.error("Error al obtener sucursales:", error);
       })
       .finally(() => {
-        setLoading(false); // Termina el loading
+        setLoading(false); // end of loading
       });
   }, []);
 
@@ -36,7 +36,7 @@ const IndexBranches = () => {
   }
 
   const handleSelectBranch = (codSucursal: string) => {
-    // Toggle selection: si ya está seleccionada, la deseleccionamos
+    // Toggle selection
     if (selectedBranch === codSucursal) {
       setSelectedBranch(null);
     } else {

@@ -20,14 +20,14 @@ const ShowBarbers = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Primero obtenemos los datos del barbero
+        // first we get the barber data
         const barberoResponse = await apiFetch(`/usuarios/${codUsuario}`);
 
         if (barberoResponse.ok) {
           const barberoData = await barberoResponse.json();
           setBarbero(barberoData);
 
-          // Luego obtenemos los datos de la sucursal del barbero
+          // then we get the branch data if the barber has a branch assigned
           if (barberoData.codSucursal) {
             const sucursalResponse = await apiFetch(
               `/sucursales/${barberoData.codSucursal}`,
@@ -79,7 +79,7 @@ const ShowBarbers = () => {
       <h1 className={styles.pageTitle}>Detalles del Barbero</h1>
 
       <div className={styles.detailsContainer}>
-        {/* Información personal del barbero */}
+        {/* barber details */}
         <div className={styles.section}>
           <h3 className={styles.sectionTitle}>Información Personal</h3>
           <div className={styles.detailItem}>
@@ -106,7 +106,7 @@ const ShowBarbers = () => {
           </div>
         </div>
 
-        {/* Información de la sucursal */}
+        {/* branch info*/}
         <br />
         <div className={styles.section}>
           <h3 className={styles.sectionTitle}>Sucursal Asignada</h3>
@@ -131,7 +131,6 @@ const ShowBarbers = () => {
         </div>
       </div>
 
-      {/* Botones de acción */}
       <div className={styles.detailsActionButtons}>
         <Link
           to={`/Admin/BarbersPage/updateBarber/${barbero.codUsuario}`}

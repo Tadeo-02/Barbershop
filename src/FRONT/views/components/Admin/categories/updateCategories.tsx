@@ -114,7 +114,7 @@ const UpdateCategories: React.FC = () => {
       <h1 className={styles.pageTitle}>Editar Categoría</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
         <fieldset disabled={isSubmitting}>
-          {/* NOMBRE CATEGORIA */}
+          {/* category name */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="nombreCategoria">
               Nombre de la Categoría:
@@ -132,7 +132,7 @@ const UpdateCategories: React.FC = () => {
               </div>
             )}
           </div>
-          {/* DESCRIPCION CATEGORIA */}
+          {/* category description */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="descCategoria">
               Descripción:
@@ -151,7 +151,7 @@ const UpdateCategories: React.FC = () => {
             )}
           </div>
 
-          {/* DESCUENTO CORTES */}
+          {/* hair cut discount */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="descuentoCorte">
               Descuento en Cortes (%):

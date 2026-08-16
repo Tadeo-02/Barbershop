@@ -156,8 +156,7 @@ h2 {
     transform 0.2s ease,
     box-shadow 0.3s ease;
   text-decoration: none;
-  margin: 10px 0 0 0; /* Espacio superior para separar de otros elementos */
-}
+  margin: 10px 0 0 0; 
 
 .createButton {
   width: 100%;
@@ -241,7 +240,7 @@ h2 {
   margin-top: 16px;
 }
 
-/* Barbero info */
+/* Barber info */
 .barberoInfo {
   flex: 1;
   display: flex;
@@ -508,7 +507,7 @@ h2 {
   }
 }
 
-/* Responsive para móvil: same behavior as branches */
+/* Responsive pfor mobile - wrong, should be mobile first */
 @media (max-width: 768px) {
   .indexBarberos li {
     flex-direction: column;

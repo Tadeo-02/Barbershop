@@ -13,7 +13,7 @@ type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const IndexBranches = () => {
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
-  const [loading, setLoading] = useState(true); // loading inicial
+  const [loading, setLoading] = useState(true); // inicial loading 
 
   useEffect(() => {
     const fetchSucursales = async () => {

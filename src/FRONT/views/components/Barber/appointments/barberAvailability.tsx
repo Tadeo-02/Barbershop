@@ -24,7 +24,7 @@ const BarberAvailability: React.FC = () => {
 
     const payload = {
       codBarbero: user.codUsuario,
-      // Backend espera 'YYYY-MM-DD HH:MM:SS'
+      // Backend waits 'YYYY-MM-DD HH:MM:SS'
       fechaHoraDesde: `${values.desdeFecha} ${values.desdeHora}:00`,
       fechaHoraHasta: `${values.hastaFecha} ${values.hastaHora}:00`,
       motivo: values.motivo,

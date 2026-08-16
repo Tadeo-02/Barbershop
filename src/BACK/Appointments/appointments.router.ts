@@ -1,3 +1,5 @@
+//hay algunas cosas que dice que las hace el barbero y el admin pero despues no se implementan asi
+
 import * as controller from "./appointments.controller";
 import createRouter from "../base/base.router";
 import { Router } from "express";
@@ -17,7 +19,7 @@ import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 
 const router: Router = Router();
 
-// — Schemas igual que antes, sin cambios —
+
 const codTurnoParamSchema = z.object({ codTurno: z.string().min(1) });
 const optionalTurnoParamSchema = z.object({
   codTurno: z.string().optional(),
@@ -43,21 +45,21 @@ const updateAppointmentBodySchema = z.object({
   horaHasta: z.string().min(1),
 });
 
-// ─── CREAR TURNO ────────────────────────────────────────────────────────────
-// Solo clientes crean turnos (no tiene sentido que un barbero se saque turno)
+
 router.post(
   "/",
   authMiddleware,
-  requireRole("client", "admin"), // admin puede crear en nombre de un cliente
+  requireRole("client", "admin"), 
   userModificationLimiter,
   strictDeduplication,
   validateRequest({ body: AppointmentSchema.omit({ codTurno: true }) }),
   controller.store,
 );
 
-// ─── BASE ROUTER (CRUD genérico) ─────────────────────────────────────────────
-// El index/show del baseRouter no se usa en producción para appointments
-// (se usan las rutas específicas de abajo), pero se protegen igual
+// ─── BASE ROUTER (generic ABM) ─────────────────────────────────────────────
+// The baseRouter index/show is not used in production for appointments
+// (the specific routes below are used instead), but they are protected as well.
+
 const baseRouter = createRouter(controller, {
   create: "/create",
   idParam: "codTurno",
@@ -65,7 +67,7 @@ const baseRouter = createRouter(controller, {
   middleware: {
     read: [
       authMiddleware,
-      requireRole("barber", "admin"), // solo staff ve el listado genérico
+      requireRole("barber", "admin"), // only staff sees generic list
       userLimiter,
       validateRequest({ params: optionalTurnoParamSchema }),
     ],
@@ -88,7 +90,7 @@ const baseRouter = createRouter(controller, {
     ],
     delete: [
       authMiddleware,
-      requireRole("admin"), // solo admin puede eliminar físicamente
+      requireRole("admin"), // only admin can delete physically
       userModificationLimiter,
       standardDeduplication,
       validateRequest({ params: codTurnoParamSchema }),
@@ -98,9 +100,10 @@ const baseRouter = createRouter(controller, {
 
 router.use(baseRouter);
 
-// ─── CONSULTAS DE DISPONIBILIDAD ─────────────────────────────────────────────
-// Pública con rate limit: cualquiera necesita ver horarios disponibles
-// (incluso antes de loguearse para decidir si sacar turno)
+// ─── AVAILABILITY QUERIES ────────────────────────────────────────────────────
+// Public with rate limiting: anyone needs to see available time slots
+// (even before logging in to decide whether to book an appointment)
+
 router.get(
   "/available/:fechaTurno/:codSucursal",
   userLimiter,
@@ -108,8 +111,8 @@ router.get(
   controller.findByAvailableDate,
 );
 
-// ─── CONSULTAS DEL CLIENTE ───────────────────────────────────────────────────
-// Un cliente solo puede ver SUS turnos — la validación de ownership va en el controller
+// ─── CUSTOMER QUERIES ────────────────────────────────────────────────────────
+// A customer can only view THEIR appointments — ownership validation is handled in the controller.
 router.get(
   "/user/:codUsuario",
   authMiddleware,
@@ -119,7 +122,7 @@ router.get(
   controller.findByUserId,
 );
 
-// ─── CONSULTAS DEL BARBERO ───────────────────────────────────────────────────
+// ─── BARBER QUERIES ────────────────────────────────────────────────────────────
 router.get(
   "/barber/:codBarbero/:fechaTurno",
   authMiddleware,
@@ -138,7 +141,7 @@ router.get(
   controller.findPendingByBarberId,
 );
 
-// ─── CONSULTAS DE SUCURSAL (STAFF) ───────────────────────────────────────────
+// ─── BRANCH QUERIES (STAFF) ───────────────────────────────────────────
 router.get(
   "/branch/:codSucursal",
   authMiddleware,
@@ -157,8 +160,8 @@ router.get(
   controller.findPendingByBranchId,
 );
 
-// ─── MODIFICACIONES DE ESTADO ────────────────────────────────────────────────
-// Cancelar: cliente cancela el suyo, barbero/admin pueden cancelar cualquiera
+// ─── STATE'S UPDATES ────────────────────────────────────────────────
+// Cancel: client cancels their own, barber/admin can cancel any
 router.put(
   "/:codTurno/cancel",
   authMiddleware,
@@ -169,7 +172,7 @@ router.put(
   controller.cancelAppointment,
 );
 
-// Checkout: solo el barbero que atendió o admin cierran el turno con pago
+// Checkout: only the barber who attended or admin close the appointment with payment
 router.put(
   "/:codTurno/checkout",
   authMiddleware,
@@ -183,7 +186,7 @@ router.put(
   controller.checkoutAppointment,
 );
 
-// Reprogramar: cliente puede mover su turno, barbero/admin también
+// Reschedule: the customer can move their appointment; barber/admin can as well.
 router.put(
   "/:codTurno/update",
   authMiddleware,
@@ -197,7 +200,7 @@ router.put(
   controller.updateAppointment,
 );
 
-// No-show: solo el barbero o admin marcan inasistencia
+// No-show: only the barber or admin can mark an absence.
 router.put(
   "/:codTurno/no-show",
   authMiddleware,

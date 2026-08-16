@@ -2,10 +2,10 @@ import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 import { BranchSchema } from "../../Schemas/branchesSchema";
 
-// funciones backend para Sucursales
+// backend functions
 export const store = async (nombre: string, calle: string, altura: number) => {
   try {
-    // sanitizar de inputs
+    // sanitize inputs
     const sanitizedData = {
       nombre: sanitizeInput(nombre),
       calle: sanitizeInput(calle),
@@ -13,7 +13,7 @@ export const store = async (nombre: string, calle: string, altura: number) => {
     };
     const validateData = BranchSchema.parse(sanitizedData);
     console.log("Creating branch");
-    // crear branch usando el modelo correcto de Prisma
+    // create branch using the correct Prisma model
     const branch = await prisma.sucursales.create({
       data: {
         nombre: validateData.nombre,
@@ -133,12 +133,12 @@ export const update = async (
       "Error updating branch:",
       error instanceof Error ? error.message : "Unknown error",
     );
-    // Manejo de errores de validación
+    // handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
-    // Manejo de errores de DB
+    // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -209,7 +209,7 @@ export const destroy = async (codSucursal: string) => {
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // manejo de errores de DB
+    // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -257,6 +257,7 @@ export const reactivate = async (codSucursal: string) => {
       error instanceof Error ? error.message : "Unknown error",
     );
 
+    // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 

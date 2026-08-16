@@ -16,7 +16,7 @@ export abstract class BaseController<
     destroy: (id: string) => Promise<T>;
   };
   protected responseSchema?: z.ZodTypeAny;
-  // nombre del componente y el id que se utilizan para navegar
+  // name of component and the id that are used to navigate
   protected abstract entityName: string;
   protected abstract idFieldName: string;
   // aplica schema de respuesta si existe
@@ -24,7 +24,7 @@ export abstract class BaseController<
     if (!this.responseSchema) return data;
     return sanitizeOutput(this.responseSchema, data);
   }
-  // los path son generados de acuerdo a los parametros que llegan (nombre del componente e id)
+  // paths are generated according to the parameters that arrive (component name and id)
   create = (_req: Request, res: Response) => {
     res.render(
       `/src/FRONT/views/components/${this.entityName}/create${this.entityName}`,
@@ -32,7 +32,7 @@ export abstract class BaseController<
   };
 
   store = async (req: Request, res: Response) => {
-    // manejo de errores generales en estructura generica
+    // handling of general errors on generic structure 
     try {
       const args = Object.values(req.body) as unknown as TCreateArgs;
       const result = await this.model.store(...args);

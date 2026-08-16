@@ -1,8 +1,9 @@
 import * as model from "./Branches";
 import type { Request, Response } from "express";
 import { BranchResponseSchema } from "../../Schemas/branchesSchema";
-import { BaseController } from "../../base/base.controller"; // improtamos al base controller
-// creamos el modelo de controlador de sucursales
+import { BaseController } from "../../base/base.controller"; 
+
+// Create the branch controller model.
 type BranchEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type BranchCreateArgs = Parameters<typeof model.store>;
 type BranchUpdateArgs =
@@ -44,7 +45,7 @@ class BranchesController extends BaseController<
     }
   };
 }
-//creamos la instancia del controlador de sucursales
+// Create the branch controller instance.
 const branchesController = new BranchesController();
 
 export const { create, store, index, show, edit, update, destroy } =

@@ -1,21 +1,21 @@
 import { z } from "zod";
 
-// Schema para crear un comprobante (factura) desde el frontend o al completar un turno
+// Schema for creating an invoice from the frontend or when completing an appointment.
 export const CreateVoucherSchema = z.object({
-  // Punto de venta (default del env)
+  // Point of sale (default from environment variables)
   puntoDeVenta: z.number().int().positive().optional(),
 
-  // Tipo de comprobante (6=Factura B por defecto para consumidor final)
+  // Invoice type (6 = Invoice B by default for final consumers)
   tipoComprobante: z.number().int().positive().default(6),
 
-  // Concepto: 1=Productos, 2=Servicios, 3=Ambos
-  concepto: z.number().int().min(1).max(3).default(2), // Servicios por defecto (barbería)
+  // Concept: 1 = Products, 2 = Services, 3 = Both.
+  concepto: z.number().int().min(1).max(3).default(2),// Default: services (barbershop)
 
-  // Documento del comprador
-  tipoDocumento: z.number().int().default(99), // 99 = Consumidor final
-  numeroDocumento: z.number().int().default(0), // 0 = Consumidor final
+  // Buyer's document.
+  tipoDocumento: z.number().int().default(99), // 99 =  final consumer
+  numeroDocumento: z.number().int().default(0), // 0 =  final consumer
 
-  // Importes
+  // amounts
   importeTotal: z.number().positive("El importe total debe ser mayor a 0"),
   importeNetoGravado: z.number().min(0).default(0),
   importeNetoNoGravado: z.number().min(0).default(0),
@@ -23,39 +23,39 @@ export const CreateVoucherSchema = z.object({
   importeIVA: z.number().min(0).default(0),
   importeTributos: z.number().min(0).default(0),
 
-  // Moneda
+  // Currency
   moneda: z.string().default("PES"), // PES = Pesos Argentinos
   cotizacionMoneda: z.number().default(1),
 
-  // Condición IVA del receptor
-  condicionIVAReceptor: z.number().int().default(5), // 5 = Consumidor Final
+  // Recipient's IVA tax status.
+  condicionIVAReceptor: z.number().int().default(5), // 5 =  Final Consumer
 
-  // Alícuotas de IVA (opcional)
+  // IVA rates (optional)
   iva: z
     .array(
       z.object({
-        id: z.number().int(), // ID del tipo de IVA (5 = 21%)
+        id: z.number().int(), // ID type of IVA (5 = 21%)
         baseImponible: z.number().min(0),
         importe: z.number().min(0),
       }),
     )
     .optional(),
 
-  // Relación con turno (opcional, para facturación automática)
+  // relation with appointment (opcional, for automatic billing)
   codTurno: z.string().uuid().optional(),
 });
 
-// Schema simplificado para facturar un turno completado
+// Simplified schema for invoicing a completed appointment.
 export const BillAppointmentSchema = z.object({
   codTurno: z.string().uuid("ID de turno inválido"),
-  // Opcionales: si no se envían, se calculan del turno
+  // Optionals: if not provided, they are calculated from the appointment.
   tipoComprobante: z.number().int().positive().default(6),
   tipoDocumento: z.number().int().default(99),
   numeroDocumento: z.number().int().default(0),
   condicionIVAReceptor: z.number().int().default(5),
 });
 
-// Schema para consultar un comprobante
+// Schema for retrieving an invoice.
 export const GetVoucherSchema = z.object({
   numeroComprobante: z.number().int().positive(),
   puntoDeVenta: z.number().int().positive().optional(),

@@ -6,7 +6,7 @@ import {
   CategoryResponseSchema,
 } from "../../Schemas/categoriesSchema";
 import { sanitizeOutput } from "../../middleware/zodValidation";
-// creamos el modelo de controlador de categorias
+// Create the category controller model.
 type CategoryEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type CategoryCreateArgs = Parameters<typeof model.store>;
 type CategoryUpdateArgs =
@@ -75,7 +75,7 @@ class CategoriesController extends BaseController<
     }
   };
 }
-//creamos la instancia del controlador de categorias
+// Create the category controller instance.
 const categoriesController = new CategoriesController();
 
 export const {

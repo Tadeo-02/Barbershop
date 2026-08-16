@@ -20,7 +20,7 @@ type Sucursal = z.infer<typeof BranchWithIdSchema>;
 const BarbersByBranch = () => {
   const params = useParams();
   const { codSucursal, fechaTurno, horaDesde } = params;
-  const { user, isAuthenticated } = useAuth(); // Agregar isAuthenticated
+  const { user, isAuthenticated } = useAuth(); // add isAuthenticated
 
   const isHorario = !!fechaTurno && !!horaDesde;
 
@@ -31,12 +31,12 @@ const BarbersByBranch = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Función para calcular horaHasta (30 minutos después)
+  // function to calculate horaHasta (30 minutes after)
   const calculateHoraHasta = (horaDesde: string): string => {
     if (!horaDesde) return "";
 
     const [hours, minutes] = horaDesde.split(":").map(Number);
-    const totalMinutes = hours * 60 + minutes + 30; // Agregar 30 minutos
+    const totalMinutes = hours * 60 + minutes + 30; // add 30 min
 
     const newHours = Math.floor(totalMinutes / 60);
     const newMinutes = totalMinutes % 60;
@@ -46,11 +46,11 @@ const BarbersByBranch = () => {
       .padStart(2, "0")}`;
   };
 
-  // Formatea una fecha recibida (posible 'YYYY-MM-DD' o con 'T') a 'DD/MM/AAAA'
+  // Format a received date (posible 'YYYY-MM-DD' or with 'T') to 'DD/MM/AAAA'
   const formatFecha = (fecha?: string | null): string => {
     if (!fecha) return "";
     let f = fecha;
-    // Si viene con hora (ISO), tomamos la parte de fecha
+    // if it comes with time (ISO), we take only the date
     if (f.includes("T")) f = f.split("T")[0];
 
     if (f.includes("-")) {
@@ -61,9 +61,9 @@ const BarbersByBranch = () => {
       }
     }
 
-    if (f.includes("/")) return f; // ya está formateada
+    if (f.includes("/")) return f; // already formatted
 
-    // Fallback: intentar parsear con Date
+    // Fallback: try to parse with Date
     const d = new Date(f);
     if (!isNaN(d.getTime())) {
       const day = String(d.getDate()).padStart(2, "0");
@@ -72,7 +72,7 @@ const BarbersByBranch = () => {
       return `${day}/${month}/${year}`;
     }
 
-    return fecha; // si no conseguimos formatear, devolver original
+    return fecha; // if not posible to format, return original
   };
 
   useEffect(() => {
@@ -89,7 +89,7 @@ const BarbersByBranch = () => {
       return;
     }
 
-    // Endpoints: barberos y detalle de sucursal
+    // Endpoints: barbers and details of branch
     const barberosEndpoint = isHorario
       ? `/usuarios/schedule/${codSucursal}/${fechaTurno}/${horaDesde}`
       : `/usuarios/branch/${codSucursal}`;
@@ -98,7 +98,7 @@ const BarbersByBranch = () => {
     console.log("Fetching barbers from endpoint:", barberosEndpoint);
     console.log("Fetching sucursal from endpoint:", sucursalEndpoint);
 
-    // Hacemos las dos peticiones en paralelo
+    // both petitions in parallel
     Promise.all([apiFetch(barberosEndpoint), apiFetch(sucursalEndpoint)])
       .then(async ([resBarberos, resSucursal]) => {
         if (!resBarberos.ok) {
@@ -152,7 +152,7 @@ const BarbersByBranch = () => {
         setBarberos(Array.isArray(barbersArray) ? barbersArray : []);
 
         const suc = dataSucursal.data || dataSucursal;
-        // si la respuesta es un array por alguna razon tomamos el primero
+        // if the answer is an array for some reason, take the first element
         const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
         setSucursal(sucObj);
       })
@@ -191,20 +191,20 @@ const BarbersByBranch = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validar autenticación
+    // validate authentication
     if (!isAuthenticated || !user || !user.codUsuario) {
       toast.error("Debes iniciar sesión para reservar un turno");
       navigate("/login");
       return;
     }
 
-    // Validar selecciones
+    // validate selections
     if (!selectedBarber) {
       toast.error("Por favor selecciona un barbero");
       return;
     }
 
-    // Validar que tenemos el horario y sucursal
+    // validate that we have the schedule and branch
     if (!isHorario || !codSucursal || !fechaTurno || !horaDesde) {
       toast.error("Error: No se encontró el horario o sucursal");
       return;
@@ -212,7 +212,7 @@ const BarbersByBranch = () => {
 
     const toastId = toast.loading("Creando Turno...");
     try {
-      // Calcular horaHasta
+      // calculate horaHasta
       const horaHasta = calculateHoraHasta(horaDesde);
 
       console.log("Enviando POST a /turnos con datos:", {
@@ -268,7 +268,7 @@ const BarbersByBranch = () => {
 
         navigate("/client/home");
       } else {
-        // Verificar si es el error de turno duplicado
+        // verify if it's a duplicate appointment error
         if (
           data.message &&
           data.message.includes("ya tiene un turno en ese horario")
@@ -305,7 +305,7 @@ const BarbersByBranch = () => {
           </div>
         )}
 
-        {/* Mostrar horario seleccionado en tarjeta idéntica a la de sucursal */}
+        {/* show the selected schedule in a card identical to the branch card */}
         {isHorario && (
           <div className={styles.branchInfo}>
             <h3>Horario </h3>

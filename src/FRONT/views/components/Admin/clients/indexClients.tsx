@@ -4,17 +4,16 @@ import toast from "react-hot-toast";
 import { readJsonSafely } from "../shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
-//mantenemos una interfaz local de Cliente que refleja lo que esperamos del backend, y otra ClienteProfile
-//  que extiende a Cliente con los detalles adicionales del perfil.
-// Esto nos ayuda a tipar mejor el estado y las funciones de fetch.
+// We keep a local Cliente interface that reflects what we expect from the backend, and another ClienteProfile
+// that extends Cliente with additional profile details.
+// This helps us type the state and fetch functions more effectively.
 
-//mantenemos interface en vez de usar schema de zod directamente para evitar acoplar demasiado
-//  el frontend al backend, y porque la estructura que necesitamos en el frontend no siempre coincide 1:1 con
-// lo que devuelve el backend (ejemplo: el perfil viene envuelto en { success: true, data: profile } a veces,
-// o necesitamos transformar fechas, etc).
+// We keep the interface instead of using the Zod schema directly to avoid coupling the frontend
+// too tightly to the backend, since the structure we need on the frontend doesn't always match 1:1 with
+// what the backend returns (for example: the profile is sometimes wrapped in { success: true, data: profile },
+// or we need to transform dates, etc.).
 
-// Como solo mostramos los datos, no es necesario usar schema.
-
+// Since we only display the data, there's no need to use a schema.
 interface Cliente {
   codUsuario: string;
   dni: string;
@@ -118,7 +117,7 @@ const IndexClients = () => {
 
   const fetchProfile = async (codUsuario: string) => {
     try {
-      // evitar volver a buscar si ya está en caché
+      // avoid re-fetching if it's already in the cache
       if (profilesCache[codUsuario]) return profilesCache[codUsuario];
 
       const res = await apiFetch(`/usuarios/profiles/${codUsuario}`);
@@ -150,7 +149,7 @@ const IndexClients = () => {
     setExpandedClient(codUsuario);
   };
 
-  // fetch categories para el filtrado
+  // fetch categories for the filtering
   useEffect(() => {
     const fetchCategorias = async () => {
       try {

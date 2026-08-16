@@ -14,7 +14,7 @@ export interface RouterConfig {
   create: string;
   idParam: string;
   updatePath: string;
-  globalMiddleware?: RequestHandler[]; // <-- NUEVO: se aplica a TODAS las rutas
+  globalMiddleware?: RequestHandler[]; 
   middleware?: {
     create?: RequestHandler[];
     update?: RequestHandler[];
@@ -22,7 +22,7 @@ export interface RouterConfig {
     read?: RequestHandler[];
   };
 }
-// creacion de router general
+// General router creation.
 const createRouter = (
   controller: ControllerHandlers,
   config: RouterConfig = {
@@ -36,7 +36,7 @@ const createRouter = (
   const applyMiddleware = (
     type: keyof NonNullable<RouterConfig["middleware"]>,
   ) => {
-    // global primero, luego el específico de la operación
+    // Global first, then the operation-specific one.
     return [
       ...(config.globalMiddleware || []),
       ...(config.middleware?.[type] || []),

@@ -50,7 +50,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const isFirstRender = useRef(true);
 
-  // Determinar qué endpoint usar basado en los props
+  // Determine endpoint based on the props
   const isBarbero = !!codBarbero;
   const codigo = codBarbero || codSucursal;
 
@@ -61,14 +61,14 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
       return;
     }
 
-    // Mostrar loading de horarios al cambiar fecha/código
+    // Show loading of timeslots when changing date
     if (!isFirstRender.current) {
       setLoadingHorarios(true);
     } else {
       isFirstRender.current = false;
     }
 
-    // Ir directamente al endpoint correcto según el tipo
+    // Go directly to the correct endpoint based on the type
     const endpoint = isBarbero
       ? `/turnos/barber/${codigo}/${fechaTurno}`
       : `/turnos/available/${fechaTurno}/${codigo}`;
@@ -144,7 +144,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
     return <div className={styles.errorState}>Error: {error}</div>;
   }
 
-  // Función para agrupar horarios por período del día
+  // function to group timeslots by period of the day
   const groupHorariosByPeriod = () => {
     const manana: Horario[] = [];
     const tarde: Horario[] = [];

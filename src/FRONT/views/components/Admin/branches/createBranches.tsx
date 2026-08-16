@@ -21,7 +21,7 @@ type CreateBranchFormData = z.infer<typeof CreateBranchSchema>;
 const CreateBranches: React.FC = () => {
   const navigate = useNavigate();
   {
-    /*agregar atributos linkMap e img?*/
+    /*add img?*/
   }
   const { renew: renewSubmitAbort } = useAbortController();
 
@@ -36,7 +36,7 @@ const CreateBranches: React.FC = () => {
   });
 
   const onSubmit: SubmitHandler<CreateBranchFormData> = async (data) => {
-    // Cancelar request anterior si existe
+    // Cancel request if exists
     const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Creando Sucursal...");
@@ -63,26 +63,26 @@ const CreateBranches: React.FC = () => {
           duration: 2000,
         });
 
-        reset(); // Limpiar formulario
+        reset(); // clean form
 
-        // Redirección con delay a listado de sucursales
+        // redirect with delay to branches list
         setTimeout(() => {
           navigate("/Admin/BranchesPage");
         }, 1200);
       } else {
-        // ERROR DEL BACKEND
+        //  BACKEND ERROR
         toast.error(responseMessage || "Error al crear sucursal", {
           id: toastId,
         });
       }
     } catch (error: unknown) {
-      // Ignorar errores de abort (son intencionales)
+      // ignore abort errors (they are intentional)
       if (isAbortError(error)) {
         toast.dismiss(toastId);
         // console.log("Request cancelado");
         return;
       }
-      // ERROR DE RED u otro
+      // Network or unexpected error
       console.error("Error en handleSubmit:", error);
       toast.error("No se pudo conectar con el servidor", { id: toastId });
     }
@@ -98,7 +98,8 @@ const CreateBranches: React.FC = () => {
           style={{ border: "none", padding: 0, margin: 0 }}
         >
           <div className={styles.formGroup}>
-            {/*PROPIEDAD PARA DESHABILITAR ENVÍOS MULIPLES MEDIANTE HTML PURO  */}
+           {/* PROPERTY TO DISABLE MULTIPLE SUBMISSIONS USING PURE HTML */}
+
             <label htmlFor="nombre" className={styles.formLabel}>
               NOMBRE:
             </label>

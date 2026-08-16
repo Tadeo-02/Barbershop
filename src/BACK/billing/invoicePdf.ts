@@ -11,13 +11,14 @@ import {
 } from "./pdfTemplates/receiptTemplate";
 
 // ============================================================
-// Re-exportar templates para que otros modulos importen desde aqui
+//Re-export templates so other modules can import them from here.
+
 // ============================================================
 export { generateInvoicePdf, generateReceiptPdf };
 export type { InvoicePdfData, ReceiptPdfData };
 
 // ============================================================
-// Recopiladores de datos (acceso a DB)
+//Data collectors (DB access)
 // ============================================================
 
 const toNumber = (value: unknown): number | undefined => {
@@ -30,7 +31,7 @@ const toNumber = (value: unknown): number | undefined => {
 };
 
 /**
- * Recopilar todos los datos para el PDF a partir de codTurno + datos ARCA.
+ * Gather all the data for the PDF from codTurno + ARCA data.
  */
 export async function gatherInvoiceData(
   codTurno: string,
@@ -113,7 +114,7 @@ export async function gatherInvoiceData(
 }
 
 /**
- * Recopilar datos del recibo a partir del codTurno (solo DB, sin ARCA).
+ * Collect receipt data from the `codTurno` (DB only, without ARCA).
  */
 export async function gatherReceiptData(
   codTurno: string,

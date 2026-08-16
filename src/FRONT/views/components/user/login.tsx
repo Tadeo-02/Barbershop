@@ -37,11 +37,11 @@ function Login() {
       if (response.ok) {
         console.log("✅ Login successful, server response:", data);
 
-        // usar el contexto para manejar el login
-        // login.tsx — solo cambia esto dentro de handleSubmit
+        // use context to handle login
+        // login.tsx — this is the only thing that changes inside handleSubmit
         if (data.user && data.token) {
-          // verificar que llegó el token
-          login(data.user, data.token); // <-- antes: login(data.user)
+          // verify that the token arrived
+          login(data.user, data.token); // <-- before: login(data.user)
           redirectUser(data.user, data.message || "Login exitoso");
         } else {
           console.log("No user data in response");

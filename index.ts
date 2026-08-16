@@ -85,7 +85,7 @@ app.use("/usuarios", usersRouter);
 app.use("/tipoCortes", typeOfHaircutRouter);
 
 app.use("/sucursales", branchesRouter);
-// Ruta específica para login (with auth limiter)
+// apecific route for login (with auth limiter)
 app.post("/login", authLimiter, login);
 
 app.use("/turnos", appointmentsRouter);

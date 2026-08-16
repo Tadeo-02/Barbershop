@@ -71,7 +71,7 @@ body {
 }
 
 
-/* MOBILE FIRST: estilos base para móviles */
+/* MOBILE FIRSTs */
 [data-sonner-toaster] {
   top: 20% !important;
 }
@@ -91,7 +91,7 @@ body {
   min-width: 70px !important;
 }
 
-/* Para móviles muy pequeños */
+/* smaller screens */
 @media (max-width: 360px) {
   [data-sonner-toast] {
     min-width: 100px !important;
@@ -107,7 +107,7 @@ body {
   }
 }
 
-/* TABLET: estilos para pantallas medianas */
+/* TABLET */
 @media (min-width: 481px) {
   [data-sonner-toaster] {
     top: 25% !important;
@@ -121,7 +121,7 @@ body {
   }
 }
 
-/* DESKTOP: estilos para pantallas grandes */
+/* DESKTOP*/
 @media (min-width: 769px) {
   .mainContent {
     /* larger footer on desktop */
@@ -144,7 +144,7 @@ body {
   }
 }
 
-/* Fallback para navegadores que no soportan dvw */
+/* Fallback for browsers that don't support dvw */
 @supports not (width: 1dvw) {
   @media (min-width: 769px) {
     [data-sonner-toast] {
