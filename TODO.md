@@ -119,7 +119,7 @@
 
 ## 14. CSS
 
-- [ ] Crear variables CSS (o tokens de diseño) para:
+- [x] Crear variables CSS (o tokens de diseño) para:
   - Colores
   - Espaciados
   - Tamaños
