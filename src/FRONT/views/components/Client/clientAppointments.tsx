@@ -20,7 +20,7 @@ const ClientAppointments: React.FC = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
-  // Función para obtener la clase CSS según el estado del turno
+  // function to obtain the CSS class according to the appointment's status
   const getStatusClass = (estado: string): string => {
     switch (estado) {
       case "Programado":
@@ -34,13 +34,13 @@ const ClientAppointments: React.FC = () => {
       case "No asistido":
         return barberStyles.statusNoAsistido;
       default:
-        return barberStyles.statusProgramado; // Valor por defecto
+        return barberStyles.statusProgramado; // default
     }
   };
 
-  // Primer efecto: verificar autenticación
+  // first useEffect: verify authentication and redirect if not authenticated
   useEffect(() => {
-    // Dar tiempo para que el AuthContext cargue desde localStorage
+    // give time so AuthContext can read from localStorage
     const timer = setTimeout(() => {
       setAuthChecked(true);
 
@@ -53,12 +53,12 @@ const ClientAppointments: React.FC = () => {
     return () => clearTimeout(timer);
   }, [isAuthenticated, user, navigate]);
 
-  // Segundo efecto: cargar turnos una vez autenticado
+  // second effect: load appointments once authenticated
   useEffect(() => {
-    // No cargar hasta que se haya verificado la autenticación
+    // dont load until the authentication is verified
     if (!authChecked) return;
 
-    // Si no está autenticado, no hacer fetch
+    // if not authenticated, dont fetch
     if (!isAuthenticated || !user || !user.codUsuario) {
       return;
     }
@@ -87,7 +87,7 @@ const ClientAppointments: React.FC = () => {
   }, [authChecked, isAuthenticated, user, navigate]);
 
   const handleDelete = async (codTurno: string) => {
-    //alert personalizado para confirmacion:
+    //Custom confirmation alert
     toast(
       (t) => (
         <div className={barberStyles.modalContainer}>
@@ -141,7 +141,7 @@ const ClientAppointments: React.FC = () => {
           duration: 2000,
         });
 
-        // Actualizar el estado local del turno en lugar de eliminarlo
+        // update localState of the appointment instead of removing it
         setTurnos(
           turnos.map((turno) =>
             turno.codTurno === codTurno

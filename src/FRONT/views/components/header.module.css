@@ -12,7 +12,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3.5rem; /* más bajo en móviles */
+  height: 3.5rem; 
   background-color: #1f2937; /* bg-gray-800 */
   color: white;
   padding: 0.45rem 2rem 0.45rem 1.27rem;
@@ -329,7 +329,7 @@
   outline-offset: 2px;
 }
 
-/* TABLET Y DESKTOP: ajustes para pantallas grandes */
+/* TABLET and DESKTOP*/
 @media (min-width: 769px) {
   .header {
     height: 4rem;

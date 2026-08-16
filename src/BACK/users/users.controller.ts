@@ -320,7 +320,7 @@ export const login = usersController.login.bind(usersController);
 export const deactivate = usersController.deactivate.bind(usersController);
 export const reactivate = usersController.reactivate.bind(usersController);
 
-// Obtener pregunta de seguridad por email
+// get security question by email
 export const getSecurityQuestion = async (req: Request, res: Response) => {
   try {
     const { email } = req.params;
@@ -393,7 +393,7 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
   }
 };
 
-// Verificar respuesta y resetear contraseña
+// verify security answer and reset password
 export const verifySecurityAnswer = async (req: Request, res: Response) => {
   try {
     console.log("verifySecurityAnswer endpoint called. Body:", req.body);
@@ -447,7 +447,7 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
   }
 };
 
-// Resetear contraseña (paso separado, luego de verificar la respuesta de seguridad)
+// reset password  (separade step, after verifying security answer)
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { email, respuestaSeguridad, nuevaContraseña } = req.body;

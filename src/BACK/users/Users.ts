@@ -93,7 +93,7 @@ const buildLoyaltyProgress = async (
   const daysRequired = totalMs > 0 ? Math.ceil(totalMs / MS_PER_DAY) : null;
   const daysCurrent = totalMs > 0 ? Math.floor(elapsedMs / MS_PER_DAY) : null;
 
-  // Calcular ciclo de descuento para la categoría actual (si aplica)
+  // calculate cicle of discount for the current category (if applicable)
   const discountCycle = getDiscountCycle(nombreCategoria);
 
   let turnsUntilNextDiscount: number | null = null;
@@ -125,7 +125,7 @@ const buildLoyaltyProgress = async (
     daysRequired,
     progress,
     isMaxCategory: false,
-    // Campos adicionales para progreso hacia el próximo descuento dentro de la categoría
+    // Additional fields for progress toward the next discount within the category.
     discountCycle,
     turnsUntilNextDiscount,
     discountProgress,
@@ -133,7 +133,7 @@ const buildLoyaltyProgress = async (
   };
 };
 
-// Función para crear usuario normal (sin CUIL)
+// function to create a normal user (without CUIL)
 export const store = async (
   dni: string,
   nombre: string,
@@ -155,7 +155,7 @@ export const store = async (
       telefono: sanitizeInput(telefono),
       email: sanitizeInput(email),
       contraseña: sanitizeInput(contraseña),
-      cuil: cuil ? sanitizeInput(cuil) : undefined, // sanitizo si existe
+      cuil: cuil ? sanitizeInput(cuil) : undefined, // sanitize if exists
       preguntaSeguridad: preguntaSeguridad
         ? sanitizeInput(preguntaSeguridad)
         : undefined,
@@ -164,7 +164,7 @@ export const store = async (
         : undefined,
     };
 
-    // Validación con zod
+    // validation with zod
     const validatedData = UserSchema.parse(sanitizedData);
 
     console.log("Validated user data keys:", {
@@ -174,9 +174,9 @@ export const store = async (
 
     console.log("Creating user");
 
-    // encriptar contraseña luego de sanitizada
+   // Encrypt the password after sanitization.
     const hashedPassword = await hashPassword(validatedData.contraseña);
-    // encriptar respuesta de seguridad si se proporciona
+    // Encrypt the security answer if provided.
     let hashedRespuestaSeguridad: string | null = null;
     if (validatedData.respuestaSeguridad) {
       hashedRespuestaSeguridad = await hashPassword(
@@ -185,13 +185,13 @@ export const store = async (
     }
     let cuilValue = null;
     if (validatedData.cuil) {
-      // Limpiar CUIL para almacenamiento
+      // clean CUIL for storage (remove dashes and spaces)
       cuilValue = validatedData.cuil.replace(/[-\s]/g, "");
     }
-    // Crear usuario (mapeando contraseña -> contrase_a, sin transacción para evitar errores de transacción en dev)
+    // create user (map password -> contrase_a, without transaction to avoid transaction errors in dev)
     const createData: Prisma.usuariosUncheckedCreateInput = {
       dni: validatedData.dni,
-      cuil: cuilValue, // Los usuarios normales no tienen CUIL !
+      cuil: cuilValue, // normal users don't have CUIL
       nombre: validatedData.nombre,
       apellido: validatedData.apellido,
       telefono: validatedData.telefono,
@@ -207,9 +207,9 @@ export const store = async (
       data: createData,
     });
 
-    // Solo crear categoría vigente para clientes (sin CUIL)
+    // Only create a current category for customers (without CUIL).
     if (!cuilValue) {
-      // Buscar categoría inicial
+      // find inicial category
       const categoriaInicial = await prisma.categoria.findFirst({
         where: { nombreCategoria: "Inicial" },
       });
@@ -220,7 +220,7 @@ export const store = async (
         );
       }
 
-      // Crear categoría vigente inicial para el cliente
+      // create current category for the client
       await prisma.categoria_vigente.create({
         data: {
           codCategoria: categoriaInicial.codCategoria,
@@ -241,13 +241,13 @@ export const store = async (
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // Manejo de errores de validación
+    // handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
 
-    // Manejo de errores de DB (Prisma)
+    // handle errors of DB (Prisma)
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as {
         code: string;
@@ -266,10 +266,10 @@ export const store = async (
               "El email ya está registrado en el sistema",
             );
           }
-          // DNI y CUIL pueden estar duplicados, solo validamos email
+          // DNI and CUIL can be duplicated, only validate email
         }
 
-        // Si el error no es de email, lo ignoramos (permite DNI/CUIL duplicados)
+        // if the error is not related to email, we ignore it (allows for duplicate DNI/CUIL)
         throw new DatabaseError(
           "Los datos ingresados ya existen en el sistema",
         );
@@ -286,7 +286,8 @@ export const store = async (
 };
 
 export const findAll = async (userType?: "client" | "barber") => {
-  //indico que tipo de usuario quiero mostrar
+  //specify type of user to display.
+
   try {
     console.log(`Fetching all ${userType} with Prisma`);
 
@@ -368,17 +369,17 @@ export const findAll = async (userType?: "client" | "barber") => {
     let whereCondition = {};
     switch (userType) {
       case "barber":
-        // Mostrar todos los barberos (activos e inactivos) para que el admin pueda verlos
+        // show all the barbers (active and inactive) so the admin can see them
         whereCondition = {
           AND: [{ cuil: { not: null } }, { cuil: { not: "1" } }],
-          // NO filtramos por activo para mostrar también los barberos dados de baja
+          // DONT filter by active to show also the barbers that are inactive
         };
         break;
       default:
-        whereCondition = { activo: true }; // Todos los usuarios activos
+        whereCondition = { activo: true }; //  all active users
     }
 
-    // Solo usuarios sin CUIL (usuarios normales, no barberos)
+    // only users without CUIL (clients)
     const usuarios = await prisma.usuarios.findMany({
       where: whereCondition,
       orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
@@ -442,9 +443,9 @@ export const findByIdWithCategory = async (codUsuario: string) => {
       include: {
         categoria_vigente: {
           orderBy: { ultimaFechaInicio: "desc" },
-          take: 1, // Solo la más reciente
+          take: 1, // only most recent category
           include: {
-            categorias: true, // Incluir datos de la categoría
+            categorias: true, // Include category info
           },
         },
       },
@@ -471,7 +472,7 @@ export const findByIdWithCategory = async (codUsuario: string) => {
           }
         : null,
       loyaltyProgress,
-      categoria_vigente: undefined, // Remover para limpiar la respuesta
+      categoria_vigente: undefined, // Remove for cleaning the response
     };
   } catch (error) {
     if (error instanceof DatabaseError) {
@@ -488,7 +489,7 @@ export const findByIdWithCategory = async (codUsuario: string) => {
 
 export const findByBranchId = async (codSucursal: string) => {
   try {
-    // Sanitizar y validar
+    // Sanitize and validate
     const sanitizedCodSucursal = sanitizeInput(codSucursal);
 
     const usuarios = await prisma.usuarios.findMany({
@@ -582,7 +583,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
     console.log("🔍 Debug - Raw codUsuario received:", codUsuario);
     console.log("🔍 Debug - Raw codUsuario type:", typeof codUsuario);
 
-    // Sanitizar datos
+    // Sanitize data
     const sanitizedData = {
       codUsuario: sanitizeInput(codUsuario),
       dni: sanitizeInput(params.dni),
@@ -624,7 +625,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       sanitizedData.codUsuario,
     );
 
-    // Verificar que el usuario existe
+    // Verify that the user exists
     const existingUsuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedData.codUsuario },
     });
@@ -672,7 +673,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
         );
       }
     }
-    // preparo los datos obligatorios para la actualizacion
+    // prepare the required data for the update
     const updateData: Prisma.usuariosUncheckedUpdateInput = {
       //! Criminal
       dni: validatedData.dni,
@@ -683,18 +684,18 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       codSucursal: validatedData.codSucursal,
     };
 
-    // Solo encriptar y actualizar contraseña si se proporciona una nueva
+    // only encrypt and update password if a new one is provided
     if (validatedData.contraseña) {
       const hashedPassword = await hashPassword(validatedData.contraseña);
       updateData.contrase_a = hashedPassword;
     }
 
-    // Solo actualizar CUIL si se proporciona
+    // only update CUIL if it is provided
     if (validatedData.cuil) {
       updateData.cuil = validatedData.cuil.replace(/[-\s]/g, "");
     }
 
-    // Actualizar usuario
+    // update user
     const updatedUsuario = await prisma.usuarios.update({
       where: { codUsuario: sanitizedData.codUsuario },
       data: updateData,
@@ -708,13 +709,13 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // Manejo de errores de validación
+    // handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
 
-    // Manejar errores de DB
+    // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -737,10 +738,10 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
 
 export const destroy = async (codUsuario: string) => {
   try {
-    // Sanitizar y validar
+    // Sanitize and validate
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
 
-    // Verificar que el usuario existe
+    // Verify that the user exists
     const existingUsuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedCodUsuario },
     });
@@ -770,7 +771,7 @@ export const destroy = async (codUsuario: string) => {
       }
     }
 
-    // Baja lógica del usuario
+    //Soft delete of the user.
     const updatedUsuario = await prisma.usuarios.update({
       where: { codUsuario: sanitizedCodUsuario },
       data: { activo: false },
@@ -784,7 +785,7 @@ export const destroy = async (codUsuario: string) => {
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // Manejo de errores de DB
+    // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -813,10 +814,10 @@ export const deactivate = async (codUsuario: string) => {
 
 export const reactivate = async (codUsuario: string) => {
   try {
-    // Sanitizar y validar
+    // Sanitize and validate
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
 
-    // Verificar que el usuario existe
+    // Verify that the user exists
     const existingUsuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedCodUsuario },
     });
@@ -825,17 +826,17 @@ export const reactivate = async (codUsuario: string) => {
       throw new DatabaseError("Usuario no encontrado");
     }
 
-    // Verificar que es un barbero (tiene CUIL y no es admin)
+    // Verify that it is a barber (has CUIL and is not admin)
     if (!existingUsuario.cuil || existingUsuario.cuil === "1") {
       throw new DatabaseError("Solo se pueden reactivar barberos");
     }
 
-    // Verificar que el usuario está inactivo
+    // Verify that the user is inactive
     if (existingUsuario.activo) {
       throw new DatabaseError("El usuario ya está activo");
     }
 
-    // Reactivar el barbero
+    // Reactivate the barber
     const reactivatedUsuario = await prisma.usuarios.update({
       where: { codUsuario: sanitizedCodUsuario },
       data: { activo: true },
@@ -849,7 +850,7 @@ export const reactivate = async (codUsuario: string) => {
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // Manejo de errores de DB
+    // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -866,21 +867,21 @@ export const reactivate = async (codUsuario: string) => {
   }
 };
 
-// Función para validar login del usuario
+// Function to validate login of the user
 export const validateLogin = async (email: string, contraseña: string) => {
   try {
-    // Sanitizar inputs
+    // Sanitize inputs
     const sanitizedData = {
       email: sanitizeInput(email),
       contraseña: sanitizeInput(contraseña),
     };
 
-    // Validación con zod
+    // validate with zod
     const validatedData = LoginSchema.parse(sanitizedData);
 
     console.log("Validating user login for email:", validatedData.email);
 
-    // Buscar usuario solo por email (NO por contraseña)
+    // find user only by email (NOT by contraseña)
     const usuario = await prisma.usuarios.findFirst({
       where: {
         email: validatedData.email,
@@ -893,7 +894,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
       throw new DatabaseError("Email o contraseña incorrectos");
     }
 
-    // Verificar contraseña usando bcrypt
+    // verify contraseña using bcrypt
     const isPasswordValid = await comparePassword(
       validatedData.contraseña,
       usuario.contrase_a,
@@ -912,7 +913,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
         usuario.cuil === "1" ? "admin" : usuario.cuil ? "barber" : "client",
     });
 
-    // Verificar si el usuario es cliente y tiene categoría "Vetado"
+    // verify if the user is a client and has category "Vetado"
     const esCliente = !usuario.cuil || usuario.cuil === null;
 
     if (esCliente) {
@@ -930,7 +931,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
       }
     }
 
-    // Retornar usuario sin contraseña por seguridad
+    // return user without password for security
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { contrase_a, ...userWithoutPassword } = usuario;
     return userWithoutPassword;
@@ -940,7 +941,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // Manejo de errores de validación
+    // handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
@@ -954,7 +955,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
   }
 };
 
-// Obtener pregunta de seguridad por email (sin revelar respuesta)
+// get security question by email (without revealing the answer)
 export const getSecurityQuestionByEmail = async (email: string) => {
   try {
     const sanitizedEmail = sanitizeInput(email);
@@ -1007,7 +1008,7 @@ const getUserAndValidateSecurityAnswer = async (
     );
   }
 
-  // Comparar la respuesta (guardada hasheada)
+  // Compare answer (saved hashead)
   console.log(
     "Stored respuestaSeguridad length:",
     usuario.respuestaSeguridad ? usuario.respuestaSeguridad.length : 0,
@@ -1024,7 +1025,7 @@ const getUserAndValidateSecurityAnswer = async (
   return usuario;
 };
 
-// Verificar respuesta de seguridad (sin resetear contraseña)
+// Verify security answer (without resetting password)
 export const verifySecurityAnswerOnly = async (
   email: string,
   respuesta: string,
@@ -1039,7 +1040,7 @@ export const verifySecurityAnswerOnly = async (
   }
 };
 
-// Verificar respuesta de seguridad y actualizar contraseña si es correcta
+// Verify security answer and update password if correct
 export const verifySecurityAnswerAndReset = async (
   email: string,
   respuesta: string,
@@ -1050,7 +1051,7 @@ export const verifySecurityAnswerAndReset = async (
 
     const usuario = await getUserAndValidateSecurityAnswer(email, respuesta);
 
-    // Hashear nueva contraseña y actualizar
+    // Hash new pass and update
     const hashedNewPassword = await hashPassword(sanitizedNueva);
 
     const updated = await prisma.usuarios.update({
@@ -1082,7 +1083,7 @@ export const updateSecurityQuestion = async (
     const sanitizedPregunta = sanitizeInput(preguntaSeguridad);
     const sanitizedRespuesta = sanitizeInput(respuestaSeguridad);
 
-    // Hashear la respuesta antes de guardar
+    // Hash answer before saving it
     const hashedRespuesta = await hashPassword(sanitizedRespuesta);
 
     const updated = await prisma.usuarios.update({

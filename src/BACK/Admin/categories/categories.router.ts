@@ -14,7 +14,7 @@ import { requireRole } from "../../middleware/roleMiddleware";
 
 const router: Router = Router();
 
-// Rutas específicas deben ir antes de las rutas genéricas
+// Specific routes must come before generic routes.
 // Read operations - standard user limiting
 router.get(
   "/:codCategoria/clients",

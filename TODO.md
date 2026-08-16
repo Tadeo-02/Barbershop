@@ -84,7 +84,7 @@
 
 - [ ] Unificar el idioma del código y comentarios (elegir uno, recomendado: inglés) en todo el proyecto.
   - Ejemplo detectado: `codUsuario: usuario.codUsuario` (nombres de variables en castellano).
-  - Revisar comentarios mezclados en inglés/castellano en todo el repo.
+  - LISTO: Revisar comentarios mezclados en inglés/castellano en todo el repo.
 
 ## 2. Código muerto / comentado
 

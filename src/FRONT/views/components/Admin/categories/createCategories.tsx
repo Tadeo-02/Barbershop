@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
-import toast from "react-hot-toast"; // importar librería de alerts
+import toast from "react-hot-toast"; 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -82,7 +82,7 @@ const CreateCategories: React.FC = () => {
           disabled={isSubmitting}
           style={{ border: "none", padding: 0, margin: 0 }}
         >
-          {/* NOMBRE CATEGORIA */}
+          {/* category name */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="nombreCategoria">
               Nombre de la Categoría:
@@ -101,7 +101,7 @@ const CreateCategories: React.FC = () => {
               </div>
             )}
           </div>
-          {/* DESCRIPCIÓN */}
+          {/* DESCRIPTION */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="descCategoria">
               Descripción:
@@ -121,7 +121,7 @@ const CreateCategories: React.FC = () => {
             )}
           </div>
 
-          {/* DESCUENTO EN CORTES*/}
+          {/* DISCOUNT ON CUTS */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="descuentoCorte">
               Descuento en Cortes (%):

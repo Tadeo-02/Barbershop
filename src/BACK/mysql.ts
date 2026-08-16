@@ -1,4 +1,4 @@
-import mysql from "mysql2/promise"; // permite utilizar promesas, que son mejores que Callbacks
+import mysql from "mysql2/promise"; // allows to use promises, better than Callbacks
 
 const pool = mysql.createPool({
   //createPool > createConnection

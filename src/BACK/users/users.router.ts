@@ -214,7 +214,7 @@ router.patch(
   controller.updateSecurityQuestion,
 );
 
-// Ahora aplicamos las rutas base (GET, POST, PUT, DELETE genéricas)
+// apply base routes (GET, POST, PUT, DELETE genéricas)
 const baseRouter = createRouter(controller, {
   create: "/create",
   idParam: "codUsuario",

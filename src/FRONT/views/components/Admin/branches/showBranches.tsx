@@ -36,15 +36,15 @@ const ShowBranches = () => {
           usuariosRes.json(),
         ]);
 
-        // la ruta de sucursales devuelve directamente la entidad
+        // branches route returns the entity directly
         setSucursal(sucursalData);
 
-        // la ruta de usuarios devuelve { success: true, data: [...] }
+        // users route returns { success: true, data: [...] }
         const usuarios = Array.isArray(usuariosResp?.data)
           ? (usuariosResp.data as Usuario[])
           : [];
 
-        // Filtrar solo barberos: cuil presente y distinto de "1" (según convención en el backend)
+        // Filter only barbers: it has 'cuil' and is different from '1' 
         const soloBarberos = usuarios.filter(
           (u) => u.cuil !== null && u.cuil !== undefined && u.cuil !== "1",
         );

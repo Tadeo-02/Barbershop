@@ -45,7 +45,7 @@ const CreateBarbers: React.FC = () => {
 
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
-  // Cargar sucursales al montar el componente
+  // load branches when the component mounts
   useEffect(() => {
     const controller = renewSucursalesAbort();
     const fetchSucursales = async () => {
@@ -71,12 +71,12 @@ const CreateBarbers: React.FC = () => {
   }, [renewSucursalesAbort, abortSucursalesAbort]);
 
   const onSubmit = async (data: CreateBarberForm) => {
-    // Cancelar request anterior si existe
+    // Cancel request if exists
     const controller = renewSubmitAbort();
 
     const toastId = toast.loading("Creando Barbero...");
 
-    // Separar confirmarContraseña antes de enviar
+    // separate confirmarContraseña before sending
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmarContraseña: _, ...datosParaBackend } = data;
 
@@ -96,7 +96,7 @@ const CreateBarbers: React.FC = () => {
           duration: 4000,
         });
         reset();
-        // Redirección con delay
+        // redirect with delay
         setTimeout(() => {
           navigate("/Admin/BarbersPage");
         }, 2000);
@@ -139,7 +139,7 @@ const CreateBarbers: React.FC = () => {
             )}
           </div>
 
-          {/* NOMBRE */}
+          {/* name */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Nombre:</label>
             <input
@@ -157,7 +157,7 @@ const CreateBarbers: React.FC = () => {
             )}
           </div>
 
-          {/* APELLIDO */}
+          {/* lastname */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Apellido:</label>
             <input
@@ -175,7 +175,7 @@ const CreateBarbers: React.FC = () => {
             )}
           </div>
 
-          {/* TELÉFONO */}
+          {/* phone */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Teléfono:</label>
             <input
@@ -228,7 +228,7 @@ const CreateBarbers: React.FC = () => {
             )}
           </div>
 
-          {/* CONTRASEÑA */}
+          {/* password */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Contraseña:</label>
             <input
@@ -249,7 +249,7 @@ const CreateBarbers: React.FC = () => {
             )}
           </div>
 
-          {/* CONFIRMAR CONTRASEÑA */}
+          {/* confirm password */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Confirmar contraseña:</label>
             <input
@@ -268,7 +268,7 @@ const CreateBarbers: React.FC = () => {
             )}
           </div>
 
-          {/* ASIGNAR SUCURSAL - Cambiar a radio buttons */}
+          {/* assign branch - change to radio buttons */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Sucursal:</label>
             <div className={styles.radioGroup}>

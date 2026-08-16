@@ -40,12 +40,12 @@
   font-size: 1rem;
 }
 
-/* Contenedor de todos los horarios */
+/* Container for all time slots */
 .horariosContainer {
   margin: 20px 0;
 }
 
-/* Grupo de horarios por período (Mañana, Tarde, Noche) */
+/* Group of time slots by period (Morning, Afternoon, Evening) */
 .horarioGroup {
   margin-bottom: 24px;
 }
@@ -59,7 +59,7 @@
   border-bottom: 2px solid #e2e8f0;
 }
 
-/* Grid de 3 columnas para horarios */
+/* Three-column grid for time slots */
 .scheduleGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -124,7 +124,7 @@
   opacity: 0.6;
 }
 
-/* DESKTOP: ajustes para pantallas grandes */
+/* DESKTOP*/
 @media (min-width: 769px) {
   .scheduleGrid {
     grid-template-columns: repeat(4, 1fr);

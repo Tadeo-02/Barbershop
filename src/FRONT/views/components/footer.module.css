@@ -15,7 +15,7 @@
   font-size: 0.95rem;
   padding: 0 10px;
 }
-/* DESKTOP: ajustes para pantallas grandes */
+/* DESKTOP */
 @media (min-width: 769px) {
   .footer {
     height: 4rem;

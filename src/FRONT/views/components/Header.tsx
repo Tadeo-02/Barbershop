@@ -40,10 +40,10 @@ function Header() {
     closeMenu();
     navigate("/");
   };
-  //determino tipo de usuario
+  //determine user type
   const getHomeRoute = () => {
     if (!isAuthenticated) {
-      return "/"; // Si no está autenticado, ir a landingPage
+      return "/"; // if not authenticated, go to landingPage
     }
 
     switch (userType) {
@@ -110,16 +110,16 @@ function Header() {
           </Link>
         </div>
 
-        {/* título  */}
+        {/* title  */}
         <div className={styles.titleContainer}>
-          {/* estilos para que se vean una encima de la otra en móvil, lado a lado en desktop */}
+          {/* styles: one on top of the other on mobile, side by side on desktop */}
           <h1 className={styles.title}>Mechas</h1>
           <h1 className={`${styles.title} ${styles.titleSecond}`}>
             Barbershop
           </h1>
         </div>
 
-        {/* boton a la derecha */}
+        {/* right button */}
         <div className={styles.menuButton}>
           <button
             className={styles.button}

@@ -6,7 +6,7 @@ import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
 import type { z } from "zod";
 import { apiFetch } from "../../../lib/apiFetch";
 
-// Inferir tipo desde el schema existente en BACK y mapear a los nombres que usa el frontend
+// Infer the type from the existing BACKEND schema and map it to the names used by the frontend
 type Categoria = z.infer<typeof CategorySchema>;
 
 const ShowCategories = () => {
@@ -15,8 +15,8 @@ const ShowCategories = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const handleBack = () => {
-    // Si hay un historial previo en el navegador, ir atrás.
-    // Si no, navegar a la lista de categorías como fallback. Esa página no va a funcionar para los clientes, pero al menos no se van a quedar en una página vacía.
+    // If there is previous browser history, go back.
+    // Otherwise, navigate to the category list as a fallback. That page won't work for customers, but at least they won't be left on a blank page.
     if (
       typeof window !== "undefined" &&
       window.history &&

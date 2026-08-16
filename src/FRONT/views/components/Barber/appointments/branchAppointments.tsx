@@ -14,7 +14,7 @@ import {
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
 
-// (legacy per-item form state removed — CheckoutForm mantiene su propio estado)
+// (legacy per-item form state removed — CheckoutForm keeps its own state for each appointment, so we don't need to manage it here)
 
 interface Cut {
   codCorte: string;
@@ -22,7 +22,7 @@ interface Cut {
   valorBase: number;
 }
 
-// --- CheckoutForm component: encapsula formulario de cobro con react-hook-form + zod ---
+// --- CheckoutForm component: Wraps the payment form with react-hook-form + Zod. ---
 const CheckoutForm: React.FC<{
   codTurno: string;
   codCliente: string;
@@ -41,9 +41,9 @@ const CheckoutForm: React.FC<{
   const loadedClientRef = useRef<string | null>(null);
   const { renew: renewCheckoutAbort } = useAbortController();
 
-  // Cargar categoría del cliente (solo una vez por cliente)
+  // load category of the client (only once per client)
   useEffect(() => {
-    // Si ya cargamos para este cliente, no volver a cargar
+
     if (loadedClientRef.current === codCliente) {
       setLoadingCategoria(false);
       return;
@@ -115,7 +115,7 @@ const CheckoutForm: React.FC<{
     const controller = renewCheckoutAbort();
 
     try {
-      // Enviar el precio base - el backend aplicará el descuento
+      // send the price base - the backend will apply the discount
       const payload = {
         codCorte: values.codCorte,
         precioTurno: watchedPrecio, // Precio base
@@ -299,7 +299,7 @@ const CheckoutForm: React.FC<{
     );
   };
 
-  // Keep precio in sync when codCorte changes using react-hook-form watch
+  // Keep price in sync when codCorte changes using react-hook-form watch
   const watchedCodCorte = watch("codCorte");
   const watchedPrecio = watch("precioTurno");
   const watchedMetodoPago = watch("metodoPago");
@@ -309,8 +309,8 @@ const CheckoutForm: React.FC<{
     if (selected) setValue("precioTurno", selected.valorBase);
   }, [watchedCodCorte, allCortes, setValue]);
 
-  // Calcular precio final con descuento
-  // Aplicar descuento solo si la categoría aplica Y este turno es elegible
+  // calculate final price with discount if applicable
+
   const precioFinal =
     descuentoInfo &&
     descuentoInfo.descuento > 0 &&
@@ -351,7 +351,7 @@ const CheckoutForm: React.FC<{
           )}
         </div>
 
-        {/* Sección de Precio con Descuento */}
+        {/* price with discount section */}
         <div className={styles.formGroup}>
           <span className={styles.formLabel}>Información de Pago:</span>
           <div className={styles.priceInfo}>
@@ -493,24 +493,24 @@ const BranchAppointments: React.FC = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Función para verificar si el turno ya pasó (fecha + horaHasta < ahora)
+  // function to verify if the appointment has already passed (date + end time < now)
   const hasTurnoPassed = (fechaTurno: string, horaHasta: string): boolean => {
     const now = new Date();
     const fecha = new Date(fechaTurno);
     const horaHastaDate = new Date(horaHasta);
 
-    // Extraer horas y minutos de horaHasta
+    // extract hours and minutes from horaHasta
     const hours = horaHastaDate.getUTCHours();
     const minutes = horaHastaDate.getUTCMinutes();
 
-    // Combinar fecha del turno con hora hasta
+    // combine date of the appointment with end time
     fecha.setHours(hours, minutes, 0, 0);
 
     return fecha < now;
   };
 
   useEffect(() => {
-    // Dar tiempo para que el AuthContext cargue desde localStorage
+    // give time for the AuthContext to load from localStorage
     const timer = setTimeout(() => {
       setAuthChecked(true);
 
@@ -575,7 +575,7 @@ const BranchAppointments: React.FC = () => {
     return abortTurnosAbort;
   }, [authChecked, isAuthenticated, user, navigate, abortTurnosAbort]);
 
-  // Cargar todos los tipos de corte disponibles
+  // load all types of haircuts 
   useEffect(() => {
     const controller = renewCortesAbort();
     const loadCortes = async () => {
@@ -612,7 +612,7 @@ const BranchAppointments: React.FC = () => {
 
   // Client-side filtered results based on debounced search (barber or client name) and date
   const filteredTurnos = turnos.filter((turno) => {
-    // Filtro por búsqueda de texto
+    // filter by text search
     if (debouncedSearch && debouncedSearch.trim() !== "") {
       const q = debouncedSearch.toLowerCase();
 
@@ -628,7 +628,7 @@ const BranchAppointments: React.FC = () => {
       }
     }
 
-    // Filtro por fecha
+    // filter by date
     if (selectedDate) {
       const turnoDate = turno.fechaTurno.split("T")[0];
       if (turnoDate !== selectedDate) {
@@ -780,7 +780,7 @@ const BranchAppointments: React.FC = () => {
         await response.json().catch(() => null);
         toast.success("Turno marcado como No asistido", { id: toastId });
 
-        // Recargar turnos
+        // reload appointments
         await loadTurnos();
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });

@@ -52,7 +52,7 @@ const BarberAppointments: React.FC = () => {
       defaultValues: { fechaTurno: "", horaDesde: "" },
     });
 
-  // Estados para el modal de modificación
+  // states for the modal of update
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [turnoToUpdate, setTurnoToUpdate] = useState<AppointmentFull | null>(
     null,
@@ -61,7 +61,7 @@ const BarberAppointments: React.FC = () => {
 
   const navigate = useNavigate();
 
-  // Función para obtener la clase CSS según el estado del turno
+  // function to get the CSS class based on the appointment status
   const getStatusClass = (estado: string): string => {
     switch (estado) {
       case "Programado":
@@ -75,13 +75,13 @@ const BarberAppointments: React.FC = () => {
       case "No asistido":
         return barberStyles.statusNoAsistido;
       default:
-        return barberStyles.statusProgramado; // Valor por defecto
+        return barberStyles.statusProgramado; // default
     }
   };
 
-  // Primer efecto: verificar autenticación
+  // first effect: check authentication and redirect if not authenticated
   useEffect(() => {
-    // Dar tiempo para que el AuthContext cargue desde localStorage
+    // give time to AuthContext to load from localStorage
     const timer = setTimeout(() => {
       setAuthChecked(true);
 
@@ -94,12 +94,12 @@ const BarberAppointments: React.FC = () => {
     return () => clearTimeout(timer);
   }, [isAuthenticated, user, navigate]);
 
-  // Segundo efecto: cargar turnos una vez autenticado
+  // second effect: load appointments once authenticated
   useEffect(() => {
-    // No cargar hasta que se haya verificado la autenticación
+    // dont load until verification of auth is done
     if (!authChecked) return;
 
-    // Si no está autenticado o no tiene codSucursal (no es barbero), no hacer fetch
+    // if not authenticated or dont have codSucursal (isnt a barber), dont fetch
     if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
       return;
     }
@@ -151,7 +151,7 @@ const BarberAppointments: React.FC = () => {
   ]);
 
   const handleDelete = async (codTurno: string) => {
-    //alert personalizado para confirmacion:
+    //custom alert for confirmation:
     toast(
       (t) => (
         <div className={barberStyles.modalContainer}>
@@ -208,7 +208,7 @@ const BarberAppointments: React.FC = () => {
         await response.json().catch(() => null);
         toast.success("Turno cancelado correctamente", { id: toastId });
 
-        // Actualizar el estado local del turno en lugar de eliminarlo
+        // update localState of the appointment instead of removing it
         setTurnos(
           turnos.map((turno) =>
             turno.codTurno === codTurno
@@ -263,7 +263,7 @@ const BarberAppointments: React.FC = () => {
 
     const toastId = toast.loading("Modificando turno...");
 
-    // Calcular horaHasta (30 minutos después)
+    // calculate horaHasta (30 min after)
     const [hours, minutes] = data.horaDesde.split(":").map(Number);
     const totalMinutes = hours * 60 + minutes + 30;
     const newHours = Math.floor(totalMinutes / 60);
@@ -296,7 +296,7 @@ const BarberAppointments: React.FC = () => {
         await response.json().catch(() => null);
         toast.success("Turno modificado exitosamente", { id: toastId });
 
-        // Actualizar el estado local
+        // update localState
         setTurnos(
           turnos.map((t) =>
             t.codTurno === turnoToUpdate.codTurno
@@ -310,7 +310,7 @@ const BarberAppointments: React.FC = () => {
           ),
         );
 
-        // Cerrar modal
+        // close modal
         setIsUpdateModalOpen(false);
         setTurnoToUpdate(null);
         reset();
@@ -481,7 +481,7 @@ const BarberAppointments: React.FC = () => {
         )}
       </ul>
 
-      {/* Modal de modificación de turno */}
+      {/* Modal of appointment update */}
       {isUpdateModalOpen && turnoToUpdate && user && (
         <div className={barberStyles.modalOverlay}>
           <div className={barberStyles.modalContent}>

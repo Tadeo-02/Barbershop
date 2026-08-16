@@ -12,7 +12,7 @@ import { apiFetch } from "../../../lib/apiFetch";
 const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
 const PROTECTED_CATEGORY_NAMES = ["Inicial"] as const;
 
-// Inferir tipo desde el schema existente en BACK y mapear a los nombres que usa el frontend
+// Infer the type from the existing BACKEND schema and map it to the names used by the frontend.
 type Categoria = z.infer<typeof CategorySchema>;
 
 type DeleteAction = "promote" | "demote";
@@ -326,10 +326,10 @@ const IndexCategories = () => {
             {categorias.map(
               (
                 categoria,
-                idx, // idx como key backup
+                idx, // idx as key backup
               ) => (
                 <li key={categoria.codCategoria || idx}>
-                  {/* MOSTRAR DATOS CATEGORIA */}
+                  {/* show category info */}
                   <div className={styles.categoryInfo}>
                     <div className={styles.categoryTitle}>
                       {categoria.nombreCategoria}

@@ -465,7 +465,7 @@ body {
   }
 }
 
-/* DESKTOP: ajustes para pantallas grandes */
+/* DESKTOP*/
 @media (min-width: 769px) {
   .homeContainer {
     margin: 50px auto;

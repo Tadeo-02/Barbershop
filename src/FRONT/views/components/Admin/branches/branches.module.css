@@ -22,7 +22,7 @@ h2 {
   letter-spacing: -0.025em;
 }
 
-/* container de IndexSucursales */
+/* IndexSucursales container */
 .indexSucursales {
   max-width: 100%;
   margin: 20px auto;
@@ -33,7 +33,7 @@ h2 {
   animation: fadeIn 0.5s ease-out;
 }
 
-/* lista de Sucursales */
+/* branches list */
 .indexSucursales ul {
   list-style: none;
   padding: 0;
@@ -68,7 +68,7 @@ h2 {
   color: #4a5568;
 }
 
-/* Formulario (create y modificar) */
+/* Form (create and update) */
 .formContainer {
   max-width: 100%;
   margin: 20px 0;
@@ -105,12 +105,12 @@ h2 {
 
 .formInput:focus {
   outline: none;
-  border-color: #4299e1; /* borde azul brillante al enfocar */
+  border-color: #4299e1;
   box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.6);
-  background-color: #e6f4ff; /* fondo ligeramente azulado al enfocar */
+  background-color: #e6f4ff; 
 }
 
-/* Select styles (reutilizable) */
+/* Select styles (reusable) */
 .formSelect {
   width: 100%;
   padding: 10px 12px;
@@ -138,7 +138,7 @@ h2 {
   justify-content: center;
   width: 100%;
   padding: 10px;
-  border: none; /* eliminar borde para botones */
+  border: none; 
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
@@ -203,7 +203,7 @@ h2 {
   min-width: 130px;
 }
 
-/* animaciones */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -215,7 +215,7 @@ h2 {
   }
 }
 
-/* DESKTOP: ajustes para pantallas grandes */
+/* DESKTOP */
 @media (min-width: 769px) {
   h2 {
     font-size: 2.5rem;
@@ -257,7 +257,7 @@ h2 {
   margin-top: 16px;
 }
 
-/* Información de la sucursal */
+/* branch info */
 .sucursalInfo {
   flex: 1;
   display: flex;
@@ -311,7 +311,6 @@ h2 {
 }
 
 
-/* Botones de acción */
 .actionButtons {
   display: flex;
   gap: 8px;
@@ -320,7 +319,7 @@ h2 {
   justify-content: flex-end;
 }
 
-/* Estado vacío y loading */
+
 .emptyState {
   text-align: center;
   padding: 40px 20px;
@@ -336,7 +335,7 @@ h2 {
   font-weight: 500;
 }
 
-/* Barberos: sección y lista de tarjetas */
+/* Barbers: section and list of cards */
 .barberosSection {
   margin-top: 24px;
 }
@@ -383,7 +382,7 @@ h2 {
   color: #475569;
 }
 
-/* Desktop grid: dos columnas */
+/* Desktop grid: two columns*/
 @media (min-width: 700px) {
   .barberList {
     grid-template-columns: repeat(2, 1fr);
@@ -400,7 +399,7 @@ h2 {
   }
 }
 
-/* Responsive para móvil */
+/* Responsive - it should be mobile-first */ 
 @media (max-width: 768px) {
   .indexSucursales li {
     flex-direction: column;
@@ -418,7 +417,7 @@ h2 {
   }
 }
 
-/* Mensajes */
+
 .successMessage {
   background-color: #c6f6d5;
   color: #22543d;

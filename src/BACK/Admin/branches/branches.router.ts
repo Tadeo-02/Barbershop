@@ -16,7 +16,7 @@ import { requireRole } from "../../middleware/roleMiddleware";
 
 const router: Router = Router();
 
-// GET /all — solo admin ve sucursales inactivas también
+// GET /all — only admin sees inactive branches
 router.get(
   "/all",
   authMiddleware,
@@ -25,7 +25,7 @@ router.get(
   controller.indexAll,
 );
 
-// PATCH deactivate/reactivate — solo admin
+// PATCH deactivate/reactivate — only admin
 router.patch(
   "/:codSucursal/deactivate",
   authMiddleware,
@@ -49,10 +49,10 @@ const baseRouter = createRouter(controller, {
   idParam: "codSucursal",
   updatePath: "/update",
   middleware: {
-    // GET / y /:id — público, cualquiera puede ver sucursales activas
+    // GET / and /:id — public, anyone can see active branches
     read: [publicReadLimiter],
 
-    // POST / — solo admin crea sucursales
+    // POST / — only admin creates branches
     create: [
       authMiddleware,
       requireRole("admin"),
@@ -60,7 +60,7 @@ const baseRouter = createRouter(controller, {
       strictDeduplication,
     ],
 
-    // PUT /:id — solo admin edita
+    // PUT /:id — only admin edits
     update: [
       authMiddleware,
       requireRole("admin"),
@@ -68,7 +68,7 @@ const baseRouter = createRouter(controller, {
       standardDeduplication,
     ],
 
-    // DELETE /:id — solo admin elimina
+    // DELETE /:id — only admin deletes
     delete: [
       authMiddleware,
       requireRole("admin"),

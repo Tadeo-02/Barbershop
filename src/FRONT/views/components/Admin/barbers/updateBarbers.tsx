@@ -65,7 +65,7 @@ const UpdateBarber: React.FC = () => {
 
   useEffect(() => {
     const controller = renewSucursalesAbort();
-    // Cargar sucursales disponibles
+    // load available branches for the radio buttons
     const fetchSucursales = async () => {
       try {
         const response = await apiFetch("/sucursales", {
@@ -165,7 +165,8 @@ const UpdateBarber: React.FC = () => {
 
     const toastId = toast.loading("Actualizando barbero...");
 
-    // preparar payload y eliminar confirmarContraseña
+   // Prepare the payload and remove confirmarContraseña.
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmarContraseña: _, ...datosParaBackend } = formValues;
 
@@ -344,7 +345,7 @@ const UpdateBarber: React.FC = () => {
               </div>
             )}
           </div>
-          {/* ASIGNAR SUCURSAL - Cambiar a radio buttons */}
+          {/* asign branch - change to radio buttons */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Sucursal:</label>
             <div className={styles.radioGroup}>

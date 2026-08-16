@@ -28,7 +28,6 @@ const CreateTypeOfHaircut: React.FC = () => {
     // use the global Zod error map (applied in main.tsx) and the normal resolver
     resolver: zodResolver(HaircutSchema) as Resolver<CreateTypeForm>,
     mode: "onBlur",
-    // valores por defecto
     defaultValues: {
       valorBase: 0,
     },

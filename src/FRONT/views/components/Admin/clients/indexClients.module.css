@@ -127,7 +127,8 @@
 }
 
 
-/* Mobile-first: card list visible por defecto, table oculta en pantallas pequeñas */
+
+/* Mobile-first approach */
 .cardList {
     display: block;
 }
@@ -172,7 +173,7 @@
         padding: 0.9rem 1rem;
     }
 
-    /*en pantallas grandes, mostrar la tabla y ocultar las tarjetas */
+    /*big screens, show the table and hide the cards */
     .tableWrap {
         display: block;
     }

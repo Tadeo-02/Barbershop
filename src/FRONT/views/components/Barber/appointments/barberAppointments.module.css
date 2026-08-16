@@ -72,25 +72,25 @@
   font-weight: 600;
 }
 
-/* Estados específicos con colores distintos */
+/* different status colors */
 .statusProgramado {
-  background-color: #4299e1; /* Azul - turno activo y programado */
+  background-color: #4299e1; /* blue - appointment scheduled and active */
 }
 
 .statusCancelado {
-  background-color: #e53e3e; /* Rojo - cancelado por el cliente */
+  background-color: #e53e3e; /* red - canceled by the client */
 }
 
 .statusCobrado {
-  background-color: #48bb78; /* Verde - completado y pagado exitosamente */
+  background-color: #48bb78; /* green - done and paid */
 }
 
 .statusSinCobrar {
-  background-color: #ed8936; /* Naranja - servicio realizado pero no pagado */
+  background-color: #ed8936; /* orange - done but not paid */
 }
 
 .statusNoAsistido {
-  background-color: #718096; /* Gris - cliente no se presentó */
+  background-color: #718096; /* gray - no-show*/
 }
 
 .appointmentActions {
@@ -178,7 +178,7 @@
   font-style: italic;
 }
 
-/* Modal de confirmación */
+/* confirmation Modal  */
 .modalContainer {
   text-align: center;
 }
@@ -244,7 +244,7 @@
   }
 }
 
-/* DESKTOP: ajustes para pantallas grandes */
+/* DESKTOP*/
 @media (min-width: 769px) {
   .appointmentsContainer {
     max-width: 500px;

@@ -84,8 +84,8 @@
   border-color: #2b6cb0;
 }
 
-/* Cuando un elemento fue deseleccionado recientemente, desactivar hover para evitar
-   que el cursor vuelva a mostrar un estado parecido al seleccionado inmediatamente. */
+/* When an element was recently deselected, disable hover to prevent
+   the cursor from immediately showing a state similar to the selected one. */
 .branchItem:not(.branchItemSelected):hover {
   transform: none;
   box-shadow: none;
@@ -94,7 +94,7 @@
   cursor: default;
 }
 
-/* Estado visual cuando una sucursal está seleccionada */
+/* Visual state when a branch is selected */
 .branchItemSelected {
   transform: translateY(-6px) scale(1.03);
   box-shadow:
@@ -104,7 +104,7 @@
   border-color: #2b6cb0;
 }
 
-/* Animaciones/transiciones para entradas y salidas de estado */
+/* Animations/transitions for state entry and exit */
 .branchItem,
 .branchItemSelected {
   transition:
@@ -126,7 +126,7 @@
   font-weight: 500;
 }
 
-/* DESKTOP: ajustes para pantallas grandes */
+/* DESKTOP */
 @media (min-width: 769px) {
   .inlineOptions {
     gap: 1rem;

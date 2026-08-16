@@ -61,7 +61,7 @@
   margin: 1rem;
 }
 
-/* DESKTOP: ajustes para pantallas grandes */
+/* DESKTOP */
 @media (min-width: 769px) {
   .scheduleContainer {
     padding: 1.5rem;

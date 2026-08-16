@@ -6,7 +6,8 @@ import {
   AvailableSlotSchema,
 } from "../Schemas/appointmentsSchema";
 import { sanitizeOutput } from "../middleware/zodValidation";
-// creamos la clase barberController para enviar y manejar el base
+// Create the barberController class to send and handle the base.
+
 type AppointmentEntity = NonNullable<
   Awaited<ReturnType<typeof model.findById>>
 >;
@@ -32,7 +33,8 @@ class AppointmentsController extends BaseController<
 
 const appointmentsController = new AppointmentsController();
 
-// Funciones personalizadas para appointments
+// Custom functions for appointments.
+
 export const findByAvailableDate = async (
   req: Request,
   res: Response,

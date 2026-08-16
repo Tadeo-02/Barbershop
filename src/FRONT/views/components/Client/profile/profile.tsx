@@ -122,7 +122,7 @@ const MyProfile = () => {
 
   const displayUser = profile || { ...user, categoriaActual: null };
 
-  // Console.log cada vez que se renderiza
+  // Console.log every time it renders to debug the profile data
   console.log("🔥 PROFILE DEBUG - Rendering with displayUser:", displayUser);
   console.log(
     "🔥 PROFILE DEBUG - displayUser.categoriaActual:",

@@ -22,7 +22,7 @@ const getTomorrowDate = () => {
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0); // Inicio del día de mañana
+  tomorrow.setHours(0, 0, 0, 0); // Start of tomorrow
   // console.log("Hoy:", today.toDateString());
   // console.log("Mañana (minDate):", tomorrow.toDateString());
   return tomorrow;
@@ -31,9 +31,9 @@ const getTomorrowDate = () => {
 const ScheduleByBranch = () => {
   const params = useParams();
   const { codSucursal, codBarbero } = params;
-  const { user, isAuthenticated } = useAuth(); // Agregar isAuthenticated
+  const { user, isAuthenticated } = useAuth(); // add isAuthenticated
 
-  // Determinar qué código usar y el tipo
+  // Determine the code to use and the type of entity (branch or barber)
   const codigo = codSucursal || codBarbero;
   const isBarbero = !!codBarbero;
 
@@ -44,12 +44,12 @@ const ScheduleByBranch = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Función para calcular horaHasta (30 minutos después)
+  // Function to calculate horaHasta (30 minutes after horaDesde)
   const calculateHoraHasta = (horaDesde: string): string => {
     if (!horaDesde) return "";
 
     const [hours, minutes] = horaDesde.split(":").map(Number);
-    const totalMinutes = hours * 60 + minutes + 30; // Agregar 30 minutos
+    const totalMinutes = hours * 60 + minutes + 30; // add 30 min
 
     const newHours = Math.floor(totalMinutes / 60);
     const newMinutes = totalMinutes % 60;
@@ -67,7 +67,7 @@ const ScheduleByBranch = () => {
       return;
     }
 
-    // Si tenemos codSucursal en params, pedimos también la sucursal (no bloqueante)
+    // if we have codSucursal in params, we also request the branch (non-blocking)
     if (codSucursal) {
       const sucursalEndpoint = `/sucursales/${codSucursal}`;
       apiFetch(sucursalEndpoint)
@@ -95,11 +95,11 @@ const ScheduleByBranch = () => {
         })
         .catch((err) => {
           console.error("Error al obtener sucursal:", err);
-          // No setError global para no bloquear la vista de horarios
+          // No setError global so we don't block the timeslots view
         });
     }
 
-    // Si hay un barbero seleccionado (codBarbero en params), traemos su info (no bloqueante)
+    // if a barber is selected (codBarbero in params), we fetch their info (non-blocking)
     if (codBarbero) {
       const barberoEndpoint = `/usuarios/profiles/${codBarbero}`;
       apiFetch(barberoEndpoint)
@@ -125,7 +125,7 @@ const ScheduleByBranch = () => {
           const bObj = Array.isArray(b) ? b[0] || null : b || null;
           setBarberoInfo(bObj);
 
-          // Si el barbero trae codSucursal y aún no tenemos la sucursal, pedirla para mostrar ambos datos
+          // if the barber has a codSucursal and we still don't have the branch, request it to show both data
           try {
             if (bObj && bObj.codSucursal) {
               const sucursalEndpointFromBarber = `/sucursales/${bObj.codSucursal}`;
@@ -190,20 +190,20 @@ const ScheduleByBranch = () => {
   };
 
   const handleSubmit = async () => {
-    // Validar autenticación
+    // validate authentication
     if (!isAuthenticated || !user || !user.codUsuario) {
       toast.error("Debes iniciar sesión para reservar un turno");
       navigate("/login");
       return;
     }
 
-    // Validar selecciones
+    // validate selections
     if (!selectedHorario || !selectedFechaTurno) {
       toast.error("Por favor selecciona fecha y horario");
       return;
     }
 
-    // Validar que tenemos el código del barbero
+    // validate that we have the barber's code
     if (!isBarbero || !codBarbero) {
       toast.error("Error: No se encontró el código del barbero");
       return;
@@ -212,7 +212,7 @@ const ScheduleByBranch = () => {
     const toastId = toast.loading("Creando Turno...");
 
     try {
-      // Calcular horaHasta
+      // calculate horaHasta
       const horaHasta = calculateHoraHasta(selectedHorario);
 
       console.log("Enviando POST a /turnos con datos:", {
@@ -267,7 +267,7 @@ const ScheduleByBranch = () => {
 
         navigate("/client/home");
       } else {
-        // Verificar si es el error de turno duplicado
+        // verify if it's the error of a duplicate appointment in the same time slot
         if (
           data.message &&
           data.message.includes("ya tiene un turno en ese horario")
