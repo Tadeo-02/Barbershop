@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
 import { AvailabilitySchema } from "../Schemas/availabilitySchema";
+import { assertEntityExists } from "../lib/entityChecks";
 
 const ensureValidRange = (fechaDesde: Date, fechaHasta: Date) => {
   if (fechaDesde >= fechaHasta) {
@@ -279,9 +280,7 @@ export const update = async (
         where: { codBloqueo: sanitizedData.codBloqueo },
       });
 
-      if (!existingBloqueo) {
-        throw new DatabaseError("Bloqueo no encontrado");
-      }
+      assertEntityExists(existingBloqueo, "Bloqueo");
 
       ensureNotFinished(existingBloqueo.fechaHoraHasta, "modificar");
 
@@ -357,9 +356,7 @@ export const destroy = async (codBloqueo: string) => {
       where: { codBloqueo: sanitizedCodBloqueo },
     });
 
-    if (!existingBloqueo) {
-      throw new DatabaseError("Bloqueo no encontrado");
-    }
+    assertEntityExists(existingBloqueo, "Bloqueo");
 
     ensureNotFinished(existingBloqueo.fechaHoraHasta, "eliminar");
 

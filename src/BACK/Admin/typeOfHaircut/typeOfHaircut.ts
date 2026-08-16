@@ -1,5 +1,6 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base"; // importamos todo desde Base
 import { z } from "zod";
+import { assertEntityExists } from "../../lib/entityChecks";
 
 const TypeOfHaircutSchema = z.object({
   nombreCorte: z
@@ -119,9 +120,7 @@ export const update = async (
       where: { codCorte: sanitizedData.codCorte },
     });
 
-    if (!existingTipoCorte) {
-      throw new DatabaseError("Tipo de corte no encontrado");
-    }
+    assertEntityExists(existingTipoCorte, "Tipo de corte");
 
     // update tipo de corte usando codCorte sanitizado
     const updatedTipoCorte = await prisma.tipos_corte.update({
@@ -164,9 +163,7 @@ export const destroy = async (codCorte: string) => {
       where: { codCorte: sanitizedCodCorte },
     });
 
-    if (!existingTipoCorte) {
-      throw new DatabaseError("Tipo de corte no encontrado");
-    }
+    assertEntityExists(existingTipoCorte, "Tipo de corte");
 
     // delete tipo de corte
     const deletedTipoCorte = await prisma.tipos_corte.delete({

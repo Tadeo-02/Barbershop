@@ -1,6 +1,7 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 import { CategorySchema } from "../../Schemas/categoriesSchema";
+import { assertEntityExists } from "../../lib/entityChecks";
 
 type CategoryDirection = "promote" | "demote";
 type DeleteCategoryAction = "promote_all" | "demote_all" | "per_client";
@@ -145,9 +146,7 @@ export const update = async (
       where: { codCategoria: sanitizedData.codCategoria },
     });
 
-    if (!existingCategoria) {
-      throw new DatabaseError("Categoría no encontrada");
-    }
+    assertEntityExists(existingCategoria, "Categoría");
 
     // actualizar categoría
     const updatedCategoria = await prisma.categoria.update({
@@ -204,9 +203,7 @@ export const destroy = async (codCategoria: string) => {
       where: { codCategoria: sanitizedCodCategoria },
     });
 
-    if (!existingCategoria) {
-      throw new DatabaseError("Categoría no encontrada");
-    }
+    assertEntityExists(existingCategoria, "Categoría");
 
     if (
       PROTECTED_CATEGORY_NAMES.some(

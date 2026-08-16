@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 import { billAppointment } from "../billing/Billing";
 import { getDiscountCycle, applyDiscountIfEligible } from "../lib/discount";
+import { assertEntityExists } from "../lib/entityChecks";
 
 // Umbrales configurables (pueden ser sobreescritos por env vars durante pruebas)
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
@@ -693,9 +694,7 @@ export const update = async (
       where: { codTurno: sanitizedData.codTurno },
     });
 
-    if (!existingTurno) {
-      throw new DatabaseError("Turno no encontrado");
-    }
+    assertEntityExists(existingTurno, "Turno");
 
     // convertir strings a tipos correctos para Prisma
     const fechaDate = new Date(sanitizedData.fechaTurno); // Usar sanitized data
@@ -793,10 +792,7 @@ export const updateAppointment = async (
       where: { codTurno: sanitizedCodTurno },
     });
 
-    if (!existingTurno) {
-      console.log("Turno no encontrado");
-      throw new DatabaseError("Turno no encontrado");
-    }
+    assertEntityExists(existingTurno, "Turno");
 
     console.log("Turno encontrado, actualizando...");
 

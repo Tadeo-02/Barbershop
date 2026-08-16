@@ -5,6 +5,7 @@ import {
   assertNoPendingAppointments,
   PendingAppointmentsError,
 } from "../../lib/barberBusinessRules";
+import { assertEntityExists } from "../../lib/entityChecks";
 
 // funciones backend para Sucursales
 export const store = async (nombre: string, calle: string, altura: number) => {
@@ -119,9 +120,7 @@ export const update = async (
     const existingBranch = await prisma.sucursales.findUnique({
       where: { codSucursal: sanitizedData.codSucursal },
     });
-    if (!existingBranch) {
-      throw new DatabaseError("No existe una sucursal con ese código");
-    }
+    assertEntityExists(existingBranch, "Sucursal");
     const branch = await prisma.sucursales.update({
       where: { codSucursal: sanitizedData.codSucursal },
       data: {
@@ -169,9 +168,7 @@ export const destroy = async (codSucursal: string) => {
     const existingBranch = await prisma.sucursales.findUnique({
       where: { codSucursal: sanitizedCodSucursal },
     });
-    if (!existingBranch) {
-      throw new DatabaseError("No existe una sucursal con ese código");
-    }
+    assertEntityExists(existingBranch, "Sucursal");
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
