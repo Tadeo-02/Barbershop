@@ -24,9 +24,9 @@
 - [x] Usar JWT (o similar) para validar roles en cada endpoint, no solo en el front.
 - [x] Revisar el manejo básico de tokens de autenticación: JWT emitido en login, validado por middleware, enviado desde el frontend y limpiado ante expiración/401.
   - Pendiente opcional de hardening: evaluar refresh tokens, revocación server-side, invalidación al desactivar/vetar usuarios y cookies `HttpOnly`.
-- [ ] **Pregunta de seguridad**: no debe tratarse como un segundo password sin verificación adicional.
-  - [ ] Implementar envío de email con token para validar que el usuario controla ese email antes de aceptar la respuesta a la pregunta de seguridad.
-  - [ ] Documentar/comunicar al usuario que la pregunta de seguridad no reemplaza un password fuerte, para evitar que la subestime.
+- [x] **Pregunta de seguridad**: no debe tratarse como un segundo password sin verificación adicional.
+  - [x] Implementar envío de email con token para validar que el usuario controla ese email y usar recuperación por token.
+  - [x] Documentar/comunicar al usuario que la pregunta de seguridad no reemplaza un password fuerte, para evitar que la subestime.
 
 ## 4. Duplicación de código — Frontend
 

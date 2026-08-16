@@ -8,6 +8,11 @@ import {
   type UserResponse,
   UserResponseSchema,
 } from "../Schemas/usersSchema";
+import {
+  buildResetPasswordEmail,
+  buildVerificationEmail,
+  sendMail,
+} from "../lib/mailer";
 
 type UserEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type UserCreateArgs = Parameters<typeof model.store>;
@@ -18,6 +23,9 @@ type UserUpdateArgs =
 
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
+
+const getAppBaseUrl = () =>
+  process.env.FRONTEND_URL || process.env.APP_BASE_URL || "http://localhost:5173";
 
 class UsersController extends BaseController<
   UserEntity,
@@ -78,10 +86,30 @@ class UsersController extends BaseController<
       const userType = cuil ? "barbero" : "cliente";
       const safeUser = sanitizeOutput(UserResponseSchema, newUser);
 
+      const verificationPayload = await model.createEmailVerificationTokenByUserId(
+        newUser.codUsuario,
+      );
+
+      if (verificationPayload) {
+        const verificationUrl = `${getAppBaseUrl()}/verify-email?token=${encodeURIComponent(
+          verificationPayload.token,
+        )}`;
+        const emailContent = buildVerificationEmail(
+          verificationPayload.name,
+          verificationUrl,
+        );
+        await sendMail({
+          to: verificationPayload.email,
+          subject: emailContent.subject,
+          text: emailContent.text,
+          html: emailContent.html,
+        });
+      }
+
       res.status(201).json({
         message: `${
           userType.charAt(0).toUpperCase() + userType.slice(1)
-        } creado exitosamente`,
+        } creado exitosamente. Revisa tu email para verificar tu cuenta.`,
         user: safeUser,
       });
     } catch (error) {
@@ -231,11 +259,24 @@ class UsersController extends BaseController<
       console.error("Login error:", error);
 
       const errorMessage = getErrorMessage(error, "Error interno del servidor");
+      let statusCode = 500;
+      let code: string | undefined;
 
-      const statusCode = errorMessage.includes("incorrectos") ? 401 : 500;
+      if (errorMessage.includes("incorrectos")) {
+        statusCode = 401;
+      } else if (
+        error instanceof Error &&
+        "code" in error &&
+        typeof (error as { code?: unknown }).code === "string" &&
+        (error as { code: string }).code === "EMAIL_NOT_VERIFIED"
+      ) {
+        statusCode = 403;
+        code = "EMAIL_NOT_VERIFIED";
+      }
 
       res.status(statusCode).json({
         message: errorMessage,
+        code,
       });
     }
   }
@@ -319,6 +360,111 @@ export const update = usersController.update.bind(usersController);
 export const login = usersController.login.bind(usersController);
 export const deactivate = usersController.deactivate.bind(usersController);
 export const reactivate = usersController.reactivate.bind(usersController);
+
+export const requestEmailVerification = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+    const payload = await model.requestEmailVerificationForEmail(email);
+
+    if (payload) {
+      const verificationUrl = `${getAppBaseUrl()}/verify-email?token=${encodeURIComponent(
+        payload.token,
+      )}`;
+      const emailContent = buildVerificationEmail(payload.name, verificationUrl);
+      await sendMail({
+        to: payload.email,
+        subject: emailContent.subject,
+        text: emailContent.text,
+        html: emailContent.html,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Si el email existe y necesita verificación, enviamos un enlace para activar la cuenta.",
+    });
+  } catch (error) {
+    console.error("Error requesting email verification:", error);
+    res.status(500).json({
+      success: false,
+      message: getErrorMessage(error, "Error interno del servidor"),
+    });
+  }
+};
+
+export const confirmEmailVerification = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { token } = req.body;
+    await model.verifyEmailByToken(token);
+
+    res.status(200).json({
+      success: true,
+      message: "Email verificado correctamente.",
+    });
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, "Token inválido o expirado");
+    res.status(400).json({ success: false, message: errorMessage });
+  }
+};
+
+export const requestPasswordReset = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+    const payload = await model.createPasswordResetTokenByEmail(email);
+
+    if (payload) {
+      const resetUrl = `${getAppBaseUrl()}/changePassword?token=${encodeURIComponent(
+        payload.token,
+      )}`;
+      const emailContent = buildResetPasswordEmail(payload.name, resetUrl);
+      await sendMail({
+        to: payload.email,
+        subject: emailContent.subject,
+        text: emailContent.text,
+        html: emailContent.html,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Si el email existe en el sistema, enviamos un enlace para restablecer la contraseña.",
+    });
+  } catch (error) {
+    console.error("Error requesting password reset:", error);
+    res.status(500).json({
+      success: false,
+      message: getErrorMessage(error, "Error interno del servidor"),
+    });
+  }
+};
+
+export const resetPasswordWithToken = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { token, nuevaContraseña } = req.body;
+    await model.resetPasswordByToken(token, nuevaContraseña);
+    res.status(200).json({
+      success: true,
+      message: "Contraseña actualizada correctamente",
+    });
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, "Token inválido o expirado");
+    res.status(400).json({ success: false, message: errorMessage });
+  }
+};
 
 // get security question by email
 export const getSecurityQuestion = async (req: Request, res: Response) => {

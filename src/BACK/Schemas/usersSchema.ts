@@ -178,6 +178,7 @@ export const UserResponseSchema = UserBaseSchemaExport.omit({
   codUsuario: z.string(),
   cuil: z.string().nullable().optional(),
   codSucursal: z.string().nullable().optional(),
+  emailVerificado: z.boolean().optional(),
   activo: z
     .union([z.boolean(), z.number()])
     .optional()
@@ -192,4 +193,16 @@ export type UserResponse = z.infer<typeof UserResponseSchema>;
 export const LoginSchema = z.object({
   email: z.string().email("Email inválido"),
   contraseña: z.string().min(1, "Contraseña es requerida"),
+});
+
+export const EmailRequestSchema = z.object({
+  email: z.string().email("Email inválido"),
+});
+
+export const TokenValidationSchema = z.object({
+  token: z.string().min(32, "Token inválido"),
+});
+
+export const ResetPasswordByTokenSchema = TokenValidationSchema.extend({
+  nuevaContraseña: UserBaseSchema.shape.contraseña,
 });
