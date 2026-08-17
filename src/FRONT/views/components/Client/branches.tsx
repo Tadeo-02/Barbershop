@@ -17,18 +17,20 @@ const IndexBranches = () => {
   const [loading, setLoading] = useState(true); // loading inicial
 
   useEffect(() => {
-    apiFetch("/sucursales")
-      .then((res) => res.json())
-      .then((data) => {
-        setBranches(data); // data debe ser un array de sucursales
+    const loadBranches = async () => {
+      try {
+        const res = await apiFetch("/sucursales");
+        const data = await res.json();
+        setBranches(data);
         console.log("Sucursales recibidas:", data);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error al obtener sucursales:", error);
-      })
-      .finally(() => {
-        setLoading(false); // Termina el loading
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadBranches();
   }, []);
 
   if (loading) {

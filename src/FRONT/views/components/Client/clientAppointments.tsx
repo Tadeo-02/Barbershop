@@ -59,35 +59,36 @@ const ClientAppointments: React.FC = () => {
 
   // Segundo efecto: cargar turnos una vez autenticado
   useEffect(() => {
-    // No cargar hasta que se haya verificado la autenticación
-    if (!authChecked) return;
+    const loadAppointments = async () => {
+      if (!authChecked) return;
 
-    // Si no está autenticado, no hacer fetch
-    if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {})) {
-      return;
-    }
+      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {})) {
+        return;
+      }
 
-    apiFetch(`/turnos/user/${user.codUsuario}`)
-      .then(async (res) => {
+      try {
+        const res = await apiFetch(`/turnos/user/${user.codUsuario}`);
+
         console.log("Response status:", res.status);
         console.log("Response headers:", res.headers.get("content-type"));
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         console.log("Turnos data:", data);
         const turnosArray = unwrapAppointments<AppointmentFull>(data);
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching appointments:", error);
         setTurnos([]);
-      });
+      }
+    };
+
+    void loadAppointments();
   }, [authChecked, isAuthenticated, user, navigate]);
 
   const handleDelete = async (codTurno: string) => {

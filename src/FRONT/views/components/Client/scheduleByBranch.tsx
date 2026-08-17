@@ -62,24 +62,28 @@ const ScheduleByBranch = () => {
   };
 
   useEffect(() => {
-    console.log("Código from params:", codigo, "- Es barbero:", isBarbero);
+    const loadScheduleInfo = async () => {
+      console.log("Código from params:", codigo, "- Es barbero:", isBarbero);
 
-    if (!codigo) {
-      setLoading(false);
-      return;
-    }
+      if (!codigo) {
+        setLoading(false);
+        return;
+      }
 
-    // Si tenemos codSucursal en params, pedimos también la sucursal (no bloqueante)
-    if (codSucursal) {
-      const sucursalEndpoint = `/sucursales/${codSucursal}`;
-      apiFetch(sucursalEndpoint)
-        .then(async (res) => {
-          if (!res.ok) {
-            throw new Error(`Error sucursal ${res.status}: ${res.statusText}`);
+      try {
+        if (codSucursal) {
+          const sucursalEndpoint = `/sucursales/${codSucursal}`;
+          const sucursalResponse = await apiFetch(sucursalEndpoint);
+
+          if (!sucursalResponse.ok) {
+            throw new Error(
+              `Error sucursal ${sucursalResponse.status}: ${sucursalResponse.statusText}`,
+            );
           }
-          const contentType = res.headers.get("content-type");
+
+          const contentType = sucursalResponse.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
-            const text = await res.text();
+            const text = await sucursalResponse.text();
             console.error(
               "Expected JSON for sucursal but received:",
               text.substring(0, 100),
@@ -88,30 +92,26 @@ const ScheduleByBranch = () => {
               "El servidor no devolvió datos JSON válidos para sucursal",
             );
           }
-          return res.json();
-        })
-        .then((data) => {
-          const suc = data.data || data;
+
+          const sucursalData = await sucursalResponse.json();
+          const suc = sucursalData.data || sucursalData;
           const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
           setSucursal(sucObj);
-        })
-        .catch((err) => {
-          console.error("Error al obtener sucursal:", err);
-          // No setError global para no bloquear la vista de horarios
-        });
-    }
+        }
 
-    // Si hay un barbero seleccionado (codBarbero en params), traemos su info (no bloqueante)
-    if (codBarbero) {
-      const barberoEndpoint = `/usuarios/profiles/${codBarbero}`;
-      apiFetch(barberoEndpoint)
-        .then(async (res) => {
-          if (!res.ok) {
-            throw new Error(`Error barbero ${res.status}: ${res.statusText}`);
+        if (codBarbero) {
+          const barberoEndpoint = `/usuarios/profiles/${codBarbero}`;
+          const barberoResponse = await apiFetch(barberoEndpoint);
+
+          if (!barberoResponse.ok) {
+            throw new Error(
+              `Error barbero ${barberoResponse.status}: ${barberoResponse.statusText}`,
+            );
           }
-          const contentType = res.headers.get("content-type");
+
+          const contentType = barberoResponse.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
-            const text = await res.text();
+            const text = await barberoResponse.text();
             console.error(
               "Expected JSON for barbero but received:",
               text.substring(0, 200),
@@ -120,64 +120,54 @@ const ScheduleByBranch = () => {
               "El servidor no devolvió datos JSON válidos para barbero",
             );
           }
-          return res.json();
-        })
-        .then((data) => {
-          const b = data.data || data;
+
+          const barberoData = await barberoResponse.json();
+          const b = barberoData.data || barberoData;
           const bObj = Array.isArray(b) ? b[0] || null : b || null;
           setBarberoInfo(bObj);
 
-          // Si el barbero trae codSucursal y aún no tenemos la sucursal, pedirla para mostrar ambos datos
-          try {
-            if (bObj && bObj.codSucursal) {
-              const sucursalEndpointFromBarber = `/sucursales/${bObj.codSucursal}`;
-              apiFetch(sucursalEndpointFromBarber)
-                .then(async (res) => {
-                  if (!res.ok) {
-                    throw new Error(
-                      `Error sucursal ${res.status}: ${res.statusText}`,
-                    );
-                  }
-                  const contentType = res.headers.get("content-type");
-                  if (
-                    !contentType ||
-                    !contentType.includes("application/json")
-                  ) {
-                    const text = await res.text();
-                    console.error(
-                      "Expected JSON for sucursal but received:",
-                      text.substring(0, 100),
-                    );
-                    throw new Error(
-                      "El servidor no devolvió datos JSON válidos para sucursal",
-                    );
-                  }
-                  return res.json();
-                })
-                .then((sdata) => {
-                  const suc = sdata.data || sdata;
-                  const sucObj = Array.isArray(suc)
-                    ? suc[0] || null
-                    : suc || null;
-                  setSucursal(sucObj);
-                })
-                .catch((err) => {
-                  console.error(
-                    "Error al obtener sucursal desde barbero:",
-                    err,
-                  );
-                });
-            }
-          } catch (err) {
-            console.error("Error procesando sucursal desde barbero:", err);
-          }
-        })
-        .catch((err) => {
-          console.error("Error al obtener barbero:", err);
-        });
-    }
+          if (bObj && bObj.codSucursal) {
+            const sucursalEndpointFromBarber = `/sucursales/${bObj.codSucursal}`;
+            const sucursalFromBarberResponse = await apiFetch(
+              sucursalEndpointFromBarber,
+            );
 
-    setLoading(false);
+            if (!sucursalFromBarberResponse.ok) {
+              throw new Error(
+                `Error sucursal ${sucursalFromBarberResponse.status}: ${sucursalFromBarberResponse.statusText}`,
+              );
+            }
+
+            const sucursalContentType =
+              sucursalFromBarberResponse.headers.get("content-type");
+            if (
+              !sucursalContentType ||
+              !sucursalContentType.includes("application/json")
+            ) {
+              const text = await sucursalFromBarberResponse.text();
+              console.error(
+                "Expected JSON for sucursal but received:",
+                text.substring(0, 100),
+              );
+              throw new Error(
+                "El servidor no devolvió datos JSON válidos para sucursal",
+              );
+            }
+
+            const sucursalFromBarberData = await sucursalFromBarberResponse.json();
+            const suc = sucursalFromBarberData.data || sucursalFromBarberData;
+            const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
+            setSucursal(sucObj);
+          }
+        }
+      } catch (err) {
+        console.error("Error cargando información de horario:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadScheduleInfo();
   }, [codigo, codSucursal, codBarbero, isBarbero]);
 
   const handleTimeSlotSelect = (fecha: string, hora: string) => {

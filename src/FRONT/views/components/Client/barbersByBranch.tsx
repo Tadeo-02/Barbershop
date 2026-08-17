@@ -78,31 +78,34 @@ const BarbersByBranch = () => {
   };
 
   useEffect(() => {
-    console.log(
-      "codSucursal from params:",
-      codSucursal,
-      "- Selecciono el horario:",
-      isHorario,
-    );
+    const loadBarbersAndBranch = async () => {
+      console.log(
+        "codSucursal from params:",
+        codSucursal,
+        "- Selecciono el horario:",
+        isHorario,
+      );
 
-    if (!codSucursal) {
-      setError("No se encontró el código de sucursal");
-      setLoading(false);
-      return;
-    }
+      if (!codSucursal) {
+        setError("No se encontró el código de sucursal");
+        setLoading(false);
+        return;
+      }
 
-    // Endpoints: barberos y detalle de sucursal
-    const barberosEndpoint = isHorario
-      ? `/usuarios/schedule/${codSucursal}/${fechaTurno}/${horaDesde}`
-      : `/usuarios/branch/${codSucursal}`;
-    const sucursalEndpoint = `/sucursales/${codSucursal}`;
+      const barberosEndpoint = isHorario
+        ? `/usuarios/schedule/${codSucursal}/${fechaTurno}/${horaDesde}`
+        : `/usuarios/branch/${codSucursal}`;
+      const sucursalEndpoint = `/sucursales/${codSucursal}`;
 
-    console.log("Fetching barbers from endpoint:", barberosEndpoint);
-    console.log("Fetching sucursal from endpoint:", sucursalEndpoint);
+      console.log("Fetching barbers from endpoint:", barberosEndpoint);
+      console.log("Fetching sucursal from endpoint:", sucursalEndpoint);
 
-    // Hacemos las dos peticiones en paralelo
-    Promise.all([apiFetch(barberosEndpoint), apiFetch(sucursalEndpoint)])
-      .then(async ([resBarberos, resSucursal]) => {
+      try {
+        const [resBarberos, resSucursal] = await Promise.all([
+          apiFetch(barberosEndpoint),
+          apiFetch(sucursalEndpoint),
+        ]);
+
         if (!resBarberos.ok) {
           throw new Error(
             `Error barberos ${resBarberos.status}: ${resBarberos.statusText}`,
@@ -147,26 +150,23 @@ const BarbersByBranch = () => {
         const dataBarberos = await resBarberos.json();
         const dataSucursal = await resSucursal.json();
 
-        return { dataBarberos, dataSucursal };
-      })
-      .then(({ dataBarberos, dataSucursal }) => {
         const barbersArray = dataBarberos.data || dataBarberos;
         setBarberos(Array.isArray(barbersArray) ? barbersArray : []);
 
         const suc = dataSucursal.data || dataSucursal;
-        // si la respuesta es un array por alguna razon tomamos el primero
         const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
         setSucursal(sucObj);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error al obtener datos:", error);
-        setError(error.message);
+        setError(error instanceof Error ? error.message : "Error desconocido");
         setBarberos([]);
         setSucursal(null);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    void loadBarbersAndBranch();
   }, [codSucursal, isHorario, fechaTurno, horaDesde]);
 
   if (loading) {

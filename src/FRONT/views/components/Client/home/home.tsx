@@ -179,25 +179,28 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (!user?.codUsuario) {
-      setNextTurno(null);
-      setLoadingNextTurno(false);
-      setHasCheckedNextTurno(true);
-      return;
-    }
+    const loadNextTurno = async () => {
+      if (!user?.codUsuario) {
+        setNextTurno(null);
+        setLoadingNextTurno(false);
+        setHasCheckedNextTurno(true);
+        return;
+      }
 
-    const controller = renewNextTurnoAbort();
-    setHasCheckedNextTurno(false);
-    setLoadingNextTurno(true);
+      const controller = renewNextTurnoAbort();
+      setHasCheckedNextTurno(false);
+      setLoadingNextTurno(true);
 
-    apiFetch(`/turnos/user/${user.codUsuario}`, { signal: controller.signal })
-      .then(async (res) => {
+      try {
+        const res = await apiFetch(`/turnos/user/${user.codUsuario}`, {
+          signal: controller.signal,
+        });
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         const turnosArray = unwrapAppointments<AppointmentSummary>(data);
 
         const now = new Date();
@@ -215,52 +218,53 @@ const Home = () => {
           .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
 
         setNextTurno(upcoming[0]?.turno ?? null);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (isAbortError(error)) return;
         console.error("Error fetching next appointment:", error);
         setNextTurno(null);
-      })
-      .finally(() => {
+      } finally {
         setLoadingNextTurno(false);
         setHasCheckedNextTurno(true);
-      });
+      }
+    };
 
+    void loadNextTurno();
     return abortNextTurnoAbort;
   }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
 
   useEffect(() => {
-    if (!user?.codUsuario) {
-      setLoyaltyProgress(null);
-      setLoadingLoyalty(false);
-      return;
-    }
+    const loadLoyaltyProgress = async () => {
+      if (!user?.codUsuario) {
+        setLoyaltyProgress(null);
+        setLoadingLoyalty(false);
+        return;
+      }
 
-    const controller = renewLoyaltyAbort();
-    setLoadingLoyalty(true);
+      const controller = renewLoyaltyAbort();
+      setLoadingLoyalty(true);
 
-    apiFetch(`/usuarios/profiles/${user.codUsuario}`, {
-      signal: controller.signal,
-    })
-      .then(async (res) => {
+      try {
+        const res = await apiFetch(`/usuarios/profiles/${user.codUsuario}`, {
+          signal: controller.signal,
+        });
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         const profile = data?.success && data.data ? data.data : data;
         setLoyaltyProgress(profile?.loyaltyProgress ?? null);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (isAbortError(error)) return;
         console.error("Error fetching loyalty progress:", error);
         setLoyaltyProgress(null);
-      })
-      .finally(() => {
+      } finally {
         setLoadingLoyalty(false);
-      });
+      }
+    };
 
+    void loadLoyaltyProgress();
     return abortLoyaltyAbort;
   }, [user?.codUsuario, renewLoyaltyAbort, abortLoyaltyAbort]);
 

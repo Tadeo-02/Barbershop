@@ -55,28 +55,28 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
   const codigo = codBarbero || codSucursal;
 
   useEffect(() => {
-    if (!codigo) {
-      setError("No se encontró el código");
-      setLoading(false);
-      return;
-    }
+    const loadHorarios = async () => {
+      if (!codigo) {
+        setError("No se encontró el código");
+        setLoading(false);
+        return;
+      }
 
-    // Mostrar loading de horarios al cambiar fecha/código
-    if (!isFirstRender.current) {
-      setLoadingHorarios(true);
-    } else {
-      isFirstRender.current = false;
-    }
+      if (!isFirstRender.current) {
+        setLoadingHorarios(true);
+      } else {
+        isFirstRender.current = false;
+      }
 
-    // Ir directamente al endpoint correcto según el tipo
-    const endpoint = isBarbero
-      ? `/turnos/barber/${codigo}/${fechaTurno}`
-      : `/turnos/available/${fechaTurno}/${codigo}`;
+      const endpoint = isBarbero
+        ? `/turnos/barber/${codigo}/${fechaTurno}`
+        : `/turnos/available/${fechaTurno}/${codigo}`;
 
-    console.log("Llamando a endpoint:", endpoint);
+      console.log("Llamando a endpoint:", endpoint);
 
-    apiFetch(endpoint)
-      .then(async (res) => {
+      try {
+        const res = await apiFetch(endpoint);
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -88,9 +88,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
           throw new Error("El servidor no devolvió datos JSON válidos");
         }
 
-        return res.json();
-      })
-      .then((response) => {
+        const response = await res.json();
         let horariosData: Horario[] = [];
 
         if (response.success && Array.isArray(response.data)) {
@@ -105,15 +103,16 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
         }
 
         setHorarios(horariosData);
-        setLoading(false);
-        setLoadingHorarios(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching horarios:", error);
-        setError(error.message || "Error al obtener horarios");
+        setError(error instanceof Error ? error.message : "Error al obtener horarios");
+      } finally {
         setLoading(false);
         setLoadingHorarios(false);
-      });
+      }
+    };
+
+    void loadHorarios();
   }, [codigo, fechaTurno, isBarbero]);
 
   const handleDateChange = (date: Date | null) => {
