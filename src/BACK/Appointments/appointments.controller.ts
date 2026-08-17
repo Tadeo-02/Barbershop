@@ -9,7 +9,7 @@ import { sanitizeOutput } from "../middleware/zodValidation";
 import {
   createDataResponse,
   createErrorResponse,
-  createValidationErrorResponse,
+  getErrorMessage,
 } from "../lib/backendResponse";
 // creamos la clase barberController para enviar y manejar el base
 type AppointmentEntity = NonNullable<
@@ -20,12 +20,6 @@ type AppointmentUpdateArgs =
   Parameters<typeof model.update> extends [string, ...infer Rest]
     ? Rest
     : never;
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
-
-const validationError = (message: string) =>
-  createValidationErrorResponse(message);
 
 const successData = <T>(data: T, message?: string) =>
   createDataResponse(data, message);
@@ -54,13 +48,6 @@ export const findByAvailableDate = async (
   try {
     const { fechaTurno, codSucursal } = req.params;
 
-    if (!fechaTurno || !codSucursal) {
-      res.status(400).json(
-        validationError("fechaTurno y codSucursal son requeridos"),
-      );
-      return;
-    }
-
     const horasDisponibles = await model.findByAvailableDate(
       fechaTurno,
       codSucursal,
@@ -82,13 +69,6 @@ export const findByBarberId = async (
   try {
     const { codBarbero, fechaTurno } = req.params;
 
-    if (!codBarbero || !fechaTurno) {
-      res.status(400).json(
-        validationError("codBarbero y fechaTurno son requeridos"),
-      );
-      return;
-    }
-
     const horasDisponibles = await model.findByBarberId(codBarbero, fechaTurno);
     const safeHoras = sanitizeOutput(AvailableSlotSchema, horasDisponibles);
 
@@ -109,11 +89,6 @@ export const findByUserId = async (
   try {
     const { codUsuario } = req.params;
 
-    if (!codUsuario) {
-      res.status(400).json(validationError("codUsuario es requerido"));
-      return;
-    }
-
     const turno = await model.findByUserId(codUsuario);
     const safeTurno = sanitizeOutput(AppointmentOutputSchema, turno);
 
@@ -132,14 +107,6 @@ export const findByBranchId = async (
   try {
     const { codSucursal } = req.params;
 
-    if (!codSucursal) {
-      res.status(400).json({
-        success: false,
-        message: "codSucursal es requerido",
-      });
-      return;
-    }
-
     const turnos = await model.findByBranchId(codSucursal);
     const safeTurnos = sanitizeOutput(AppointmentOutputSchema, turnos);
 
@@ -157,11 +124,6 @@ export const findPendingByBranchId = async (
 ): Promise<void> => {
   try {
     const { codSucursal } = req.params;
-
-    if (!codSucursal) {
-      res.status(400).json(validationError("codSucursal es requerido"));
-      return;
-    }
 
     const turnos = await model.findPendingByBranchId(codSucursal);
     const safeTurnos = sanitizeOutput(AppointmentOutputSchema, turnos);
@@ -182,14 +144,6 @@ export const cancelAppointment = async (
 ): Promise<void> => {
   try {
     const { codTurno } = req.params;
-
-    if (!codTurno) {
-      res.status(400).json({
-        success: false,
-        message: "codTurno es requerido",
-      });
-      return;
-    }
 
     const result = await model.cancelAppointment(codTurno);
     const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
@@ -213,14 +167,6 @@ export const checkoutAppointment = async (
   try {
     const { codTurno } = req.params;
     const { codCorte, precioTurno, metodoPago } = req.body;
-
-    if (!codTurno) {
-      res.status(400).json({
-        success: false,
-        message: "codTurno es requerido",
-      });
-      return;
-    }
 
     const result = await model.checkoutAppointment(
       codTurno,
@@ -250,14 +196,6 @@ export const updateAppointment = async (
     const { codTurno } = req.params;
     const { fechaTurno, horaDesde, horaHasta } = req.body;
 
-    if (!codTurno) {
-      res.status(400).json({
-        success: false,
-        message: "codTurno es requerido",
-      });
-      return;
-    }
-
     const result = await model.updateAppointment(
       codTurno,
       fechaTurno,
@@ -285,14 +223,6 @@ export const markAsNoShow = async (
   try {
     const { codTurno } = req.params;
 
-    if (!codTurno) {
-      res.status(400).json({
-        success: false,
-        message: "codTurno es requerido",
-      });
-      return;
-    }
-
     const result = await model.markAsNoShow(codTurno);
     const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
 
@@ -314,14 +244,6 @@ export const findPendingByBarberId = async (
 ): Promise<void> => {
   try {
     const { codBarbero } = req.params;
-
-    if (!codBarbero) {
-      res.status(400).json({
-        success: false,
-        message: "codBarbero es requerido",
-      });
-      return;
-    }
 
     const pendingAppointments = await model.findPendingByBarberId(codBarbero);
     const safePending = sanitizeOutput(

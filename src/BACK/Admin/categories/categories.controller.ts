@@ -8,7 +8,6 @@ import {
 import { sanitizeOutput } from "../../middleware/zodValidation";
 import {
   createDataResponse,
-  createValidationErrorResponse,
 } from "../../lib/backendResponse";
 // creamos el modelo de controlador de categorias
 type CategoryEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
@@ -30,12 +29,6 @@ class CategoriesController extends BaseController<
 
   listClients = async (req: Request, res: Response) => {
     const { codCategoria } = req.params;
-    if (!codCategoria) {
-      res.status(400).json({
-        message: "codCategoria es requerido",
-      });
-      return;
-    }
     try {
       const result = await model.listClientsForCategory(codCategoria);
       const safeResult = sanitizeOutput(CategoryClientsResponseSchema, result);
@@ -48,10 +41,6 @@ class CategoriesController extends BaseController<
   destroy = async (req: Request, res: Response) => {
     const { codCategoria } = req.params;
     const { action, perClient } = req.body || {};
-    if (!codCategoria) {
-      res.status(400).json(createValidationErrorResponse("codCategoria es requerido"));
-      return;
-    }
 
     try {
       const result = await model.destroyWithClientReassignment(

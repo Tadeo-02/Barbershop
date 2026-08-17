@@ -13,8 +13,7 @@ import {
   createErrorResponse,
   createValidationErrorResponse,
   createUnauthorizedResponse,
-  createForbiddenResponse,
-  createNotFoundResponse,
+  getErrorMessage,
 } from "../lib/backendResponse";
 
 type UserEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
@@ -23,9 +22,6 @@ type UserUpdateArgs =
   Parameters<typeof model.update> extends [string, ...infer Rest]
     ? Rest
     : never;
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 class UsersController extends BaseController<
   UserEntity,
@@ -195,15 +191,9 @@ class UsersController extends BaseController<
     try {
       const { email, contraseña, correo, clave } = req.body;
 
+      // email/correo y contraseña/clave ya fueron validados por loginRequestSchema en el router
       const userEmail = email || correo;
       const userPassword = contraseña || clave;
-
-      if (!userEmail || !userPassword) {
-        res.status(400).json(
-          createValidationErrorResponse("Email y contraseña son requeridos"),
-        );
-        return;
-      }
 
       const usuario = await model.validateLogin(userEmail, userPassword);
       const safeUser = sanitizeOutput<UserResponse>(
@@ -267,11 +257,6 @@ export const findByBranchId = async (
   try {
     const { codSucursal } = req.params;
 
-    if (!codSucursal) {
-      res.status(400).json(createValidationErrorResponse("codSucursal es requerido"));
-      return;
-    }
-
     const usuarios = await model.findByBranchId(codSucursal);
     const safeUsuarios = sanitizeOutput(BarberResponseSchema, usuarios);
 
@@ -294,15 +279,6 @@ export const findBySchedule = async (
 ): Promise<void> => {
   try {
     const { codSucursal, fechaTurno, horaDesde } = req.params;
-
-    if (!codSucursal || !fechaTurno || !horaDesde) {
-      res.status(400).json(
-        createValidationErrorResponse(
-          "codSucursal, fechaTurno y horaDesde son requeridos",
-        ),
-      );
-      return;
-    }
 
     const barberosDisponibles = await model.findBySchedule(
       codSucursal,
@@ -340,10 +316,6 @@ export const getSecurityQuestion = async (req: Request, res: Response) => {
   try {
     const { email } = req.params;
     console.log("getSecurityQuestion called. Param email:", email);
-    if (!email) {
-      res.status(400).json(createValidationErrorResponse("Email es requerido"));
-      return;
-    }
     const pregunta = await model.getSecurityQuestionByEmail(email);
     console.log(
       "getSecurityQuestion result for",
@@ -366,23 +338,12 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
   try {
     const { codUsuario } = req.params;
 
-    if (!codUsuario) {
-      res.status(400).json(createValidationErrorResponse("codUsuario es requerido"));
-      return;
-    }
-
     if (req.user?.rol !== "admin" && req.user?.codUsuario !== codUsuario) {
       res.status(401).json(createUnauthorizedResponse("No autorizado"));
       return;
     }
 
     const { preguntaSeguridad, respuestaSeguridad } = req.body;
-    if (!preguntaSeguridad || !respuestaSeguridad) {
-      res.status(400).json(
-        createValidationErrorResponse("Pregunta y respuesta son requeridas"),
-      );
-      return;
-    }
 
     // Delegate to model
     const updated = await model.updateSecurityQuestion(
@@ -411,12 +372,6 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
   try {
     console.log("verifySecurityAnswer endpoint called. Body:", req.body);
     const { email, respuestaSeguridad, nuevaContraseña } = req.body;
-    if (!email || !respuestaSeguridad) {
-      res.status(400).json(
-        createValidationErrorResponse("Email y respuesta son requeridos"),
-      );
-      return;
-    }
 
     if (!nuevaContraseña) {
       await model.verifySecurityAnswerOnly(email, respuestaSeguridad);
@@ -464,14 +419,6 @@ export const verifySecurityAnswer = async (req: Request, res: Response) => {
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { email, respuestaSeguridad, nuevaContraseña } = req.body;
-    if (!email || !respuestaSeguridad || !nuevaContraseña) {
-      res.status(400).json(
-        createValidationErrorResponse(
-          "Email, respuesta y nueva contraseña son requeridos",
-        ),
-      );
-      return;
-    }
 
     await model.verifySecurityAnswerAndReset(
       email,

@@ -5,7 +5,6 @@ import { sanitizeOutput } from "../middleware/zodValidation";
 import {
   createErrorResponse,
   createNotFoundResponse,
-  createSuccessResponse,
 } from "../lib/backendResponse";
 // manejo universal de los distintos datos que llegan del front
 export abstract class BaseController<

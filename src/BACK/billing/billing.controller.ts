@@ -16,10 +16,8 @@ import {
   createDataResponse,
   createErrorResponse,
   createValidationErrorResponse,
+  getErrorMessage,
 } from "../lib/backendResponse";
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 const getErrorCode = (error: unknown): string | undefined => {
   if (error && typeof error === "object" && "code" in error) {
@@ -323,10 +321,10 @@ export const getInvoicePdf = async (
     );
     const nroComprobante = parseInt(voucherNumber, 10);
 
-    if (!codTurno || isNaN(nroComprobante)) {
+    if (isNaN(nroComprobante)) {
       res.status(400).json({
         success: false,
-        message: "codTurno y voucherNumber son requeridos",
+        message: "voucherNumber debe ser un número válido",
       });
       return;
     }
@@ -370,14 +368,6 @@ export const getBillingData = async (
 ): Promise<void> => {
   try {
     const { codTurno } = req.params;
-
-    if (!codTurno) {
-      res.status(400).json({
-        success: false,
-        message: "codTurno es requerido",
-      });
-      return;
-    }
 
     const turno = await prisma.turno.findUnique({
       where: { codTurno },
@@ -472,14 +462,6 @@ export const getReceiptPdf = async (
 ): Promise<void> => {
   try {
     const { codTurno } = req.params;
-
-    if (!codTurno) {
-      res.status(400).json({
-        success: false,
-        message: "codTurno es requerido",
-      });
-      return;
-    }
 
     // Check if turno has ARCA billing data
     const turno = await prisma.turno.findUnique({

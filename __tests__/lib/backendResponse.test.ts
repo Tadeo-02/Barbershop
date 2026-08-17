@@ -5,6 +5,11 @@ import {
   createSuccessResponse,
   getErrorMessage,
 } from "../../src/BACK/lib/backendResponse";
+import {
+  assertRequiredFields,
+  getMissingRequiredFields,
+  hasValue,
+} from "../../src/BACK/lib/entityChecks";
 
 describe("backendResponse helper", () => {
   it("creates a success payload with message and data", () => {
@@ -42,5 +47,25 @@ describe("backendResponse helper", () => {
       "bad request",
     );
     expect(getErrorMessage("plain text", "fallback")).toBe("fallback");
+  });
+
+  it("detects required fields and blank values consistently", () => {
+    expect(hasValue(undefined)).toBe(false);
+    expect(hasValue("   ")).toBe(false);
+    expect(hasValue("admin")).toBe(true);
+
+    expect(
+      getMissingRequiredFields(
+        { email: "", contraseña: "123456", codUsuario: "1" },
+        ["email", "contraseña"],
+      ),
+    ).toEqual(["email"]);
+
+    expect(() =>
+      assertRequiredFields(
+        { email: "", contraseña: "123456" },
+        ["email", "contraseña"],
+      ),
+    ).toThrow("Faltan campos requeridos: email");
   });
 });
