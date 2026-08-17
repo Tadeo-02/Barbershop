@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 type SendMailParams = {
   to: string;
@@ -7,28 +7,12 @@ type SendMailParams = {
   html: string;
 };
 
-const smtpHost = process.env.SMTP_HOST;
-const smtpPort = Number(process.env.SMTP_PORT || 587);
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-const defaultFrom = process.env.MAIL_FROM || smtpUser || "no-reply@barbershop.local";
-
-const canSendEmail = Boolean(smtpHost && smtpUser && smtpPass);
-
-const transporter = canSendEmail
-  ? nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    })
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
 export const sendMail = async ({ to, subject, text, html }: SendMailParams) => {
-  if (!transporter) {
+  if (!resend) {
     console.warn("Email transport not configured. Skipping email send.", {
       to,
       subject,
@@ -36,8 +20,8 @@ export const sendMail = async ({ to, subject, text, html }: SendMailParams) => {
     return;
   }
 
-  await transporter.sendMail({
-    from: defaultFrom,
+  await resend.emails.send({
+    from: process.env.MAIL_FROM || "onboarding@resend.dev",
     to,
     subject,
     text,

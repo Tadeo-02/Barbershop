@@ -108,10 +108,7 @@ Use this only if Prisma migration flow is not available in your environment.
 
 Defined in .env.example:
 
-- SMTP_HOST
-- SMTP_PORT
-- SMTP_USER
-- SMTP_PASS
+- RESEND_API_KEY
 - MAIL_FROM
 - FRONTEND_URL or APP_BASE_URL
 - EMAIL_VERIFICATION_TOKEN_TTL_MINUTES

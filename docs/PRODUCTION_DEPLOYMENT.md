@@ -126,7 +126,7 @@ Verified: no `localhost:3001` references exist in `src/FRONT/`. The `.env` file 
    - `DATABASE_URL` (Prisma MySQL connection string)
    - `JWT_SECRET`
    - `FRONTEND_URL` (comma-separated: `https://frontend.onrender.com,https://barbershop.com`)
-   - SMTP variables for email flow
+   - `RESEND_API_KEY` and `MAIL_FROM` for email flow
    - AFIP/ARCA billing variables
 2. Build command: `pnpm install && pnpm run build:backend`
 3. Start command: `node dist/index.js`
