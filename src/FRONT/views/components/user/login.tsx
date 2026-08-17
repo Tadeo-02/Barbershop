@@ -4,6 +4,7 @@ import { PASSWORD_MAX_LENGTH } from "../../lib/passwordConstants.ts";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
 import { useUserRedirect } from "../useUserRedirect.ts";
+import { apiFetch } from "../../lib/apiFetch.ts";
 import toast from "react-hot-toast";
 
 function Login() {
@@ -21,9 +22,8 @@ function Login() {
         return;
       }
 
-      const response = await fetch("/usuarios/email-verification/request", {
+      const response = await apiFetch("/usuarios/email-verification/request", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: cleanEmail }),
       });
       const data = await response.json();
@@ -40,9 +40,8 @@ function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/login", {
+      const response = await apiFetch("/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, contraseña }),
       });
       const data = await response.json();
