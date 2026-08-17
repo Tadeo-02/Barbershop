@@ -647,9 +647,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       });
     }
 
-    if (!existingUsuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
+    assertEntityExists(existingUsuario, "Usuario");
 
     if (
       existingUsuario.cuil &&
@@ -755,9 +753,7 @@ export const destroy = async (codUsuario: string) => {
       where: { codUsuario: sanitizedCodUsuario },
     });
 
-    if (!existingUsuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
+    assertEntityExists(existingUsuario, "Usuario");
 
     if (existingUsuario.cuil && existingUsuario.cuil !== "1") {
       const today = new Date();
@@ -837,9 +833,7 @@ export const reactivate = async (codUsuario: string) => {
       where: { codUsuario: sanitizedCodUsuario },
     });
 
-    if (!existingUsuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
+    assertEntityExists(existingUsuario, "Usuario");
 
     // Verificar que es un barbero (tiene CUIL y no es admin)
     if (!existingUsuario.cuil || existingUsuario.cuil === "1") {

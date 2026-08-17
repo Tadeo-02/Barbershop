@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  extractMessageValue,
   normalizeFormErrors,
   normalizeMessage,
 } from "../../src/FRONT/views/lib/formErrorUtils";
@@ -12,6 +13,18 @@ describe("normalizeMessage", () => {
   it("returns undefined for empty or invalid values", () => {
     expect(normalizeMessage("   ")).toBeUndefined();
     expect(normalizeMessage(123 as unknown)).toBeUndefined();
+  });
+});
+
+describe("extractMessageValue", () => {
+  it("returns a cleaned message when the payload exposes one", () => {
+    expect(extractMessageValue({ message: "  Error de validación  " })).toBe(
+      "Error de validación",
+    );
+    expect(extractMessageValue({ message: "   " })).toBeUndefined();
+    expect(extractMessageValue({})).toBeUndefined();
+    expect(extractMessageValue(null)).toBeUndefined();
+    expect(extractMessageValue(123 as unknown)).toBeUndefined();
   });
 });
 
