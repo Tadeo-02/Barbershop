@@ -72,6 +72,7 @@
     "globals": "^16.2.0",
     "jsdom": "^28.1.0",
     "postcss": "^8.5.6",
+    "serve": "^14.2.6",
     "tailwindcss": "^4.1.12",
     "ts-node": "^10.9.2",
     "tsc-watch": "^7.1.1",
