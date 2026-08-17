@@ -4,6 +4,7 @@ import { PASSWORD_MAX_LENGTH } from "../../lib/passwordConstants.ts";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
 import { useUserRedirect } from "../useUserRedirect.ts";
+import { apiFetch } from "../../lib/apiFetch.ts";
 import toast from "react-hot-toast";
 
 function Login() {
@@ -13,27 +14,37 @@ function Login() {
   const { login } = useAuth();
   const { redirectUser } = useUserRedirect();
 
+  const requestVerificationEmail = async () => {
+    try {
+      const cleanEmail = email.trim();
+      if (!cleanEmail) {
+        toast.error("Ingresá tu email para reenviar la verificación");
+        return;
+      }
+
+      const response = await apiFetch("/usuarios/email-verification/request", {
+        method: "POST",
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message || "Revisá tu email para verificar la cuenta");
+      } else {
+        toast.error(data?.message || "No se pudo reenviar el email");
+      }
+    } catch (_error) {
+      toast.error("Error de conexión");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/login", {
+      const response = await apiFetch("/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, contraseña }),
       });
-      const text = await response.text();
-      let data;
-      if (text) {
-        try {
-          data = JSON.parse(text);
-        } catch {
-          toast.error("Respuesta inválida del servidor");
-          return;
-        }
-      } else {
-        toast.error("El servidor no devolvió respuesta.");
-        return;
-      }
+      const data = await response.json();
       if (response.ok) {
         console.log("✅ Login successful, server response:", data);
 
@@ -49,6 +60,11 @@ function Login() {
         }
       } else {
         console.log("Login failed, server response:", data);
+        if (data?.code === "EMAIL_NOT_VERIFIED") {
+          toast.error("Tu cuenta no está verificada. Reenviando email...");
+          await requestVerificationEmail();
+          return;
+        }
         toast.error(data?.message || "Error de login");
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

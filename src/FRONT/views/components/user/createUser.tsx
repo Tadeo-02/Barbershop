@@ -91,6 +91,8 @@ const CreateUser: React.FC = () => {
           duration: 4000,
         });
 
+        toast.success("Te enviamos un email para verificar tu cuenta.");
+
         reset(); // clean form
 
         // redirect with delay
@@ -340,6 +342,9 @@ const CreateUser: React.FC = () => {
                   maxLength={100}
                   {...register("respuestaSeguridad")}
                 />
+                <p style={{ fontSize: "0.875rem", opacity: 0.9 }}>
+                  La pregunta de seguridad no reemplaza una contraseña fuerte.
+                </p>
                 {errors.respuestaSeguridad && (
                   <p style={{ color: "red", fontSize: "0.875rem" }}>
                     {errors.respuestaSeguridad.message}

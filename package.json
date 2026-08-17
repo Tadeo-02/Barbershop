@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "start": "node dist/index.js",
     "dev:backend": "pnpm exec ts-node --project tsconfig.backend.json index.ts",
-    "build:backend": "tsc -p tsconfig.backend.json",
+    "build:backend": "pnpm exec prisma generate && tsc -p tsconfig.backend.json",
     "start:backend": "node dist/index.js",
     "test": "vitest",
     "test:run": "vitest run",
@@ -41,6 +41,7 @@
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.3",
+    "resend": "^6.20.0",
     "uuid": "^11.1.0",
     "zod": "^4.3.6"
   },
@@ -70,6 +71,7 @@
     "globals": "^16.2.0",
     "jsdom": "^28.1.0",
     "postcss": "^8.5.6",
+    "serve": "^14.2.6",
     "tailwindcss": "^4.1.12",
     "ts-node": "^10.9.2",
     "tsc-watch": "^7.1.1",
@@ -78,5 +80,8 @@
     "vite": "^7.3.1",
     "vitest": "^4.0.18"
   },
-  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a"
+  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a",
+  "engines": {
+    "node": ">=20.19.0"
+  }
 }

@@ -2,6 +2,7 @@ import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { hashPassword, comparePassword } from "../users/bcrypt";
+import { createRawToken, hashToken } from "../lib/token";
 import {
   LoginSchema,
   UserSchema,
@@ -30,6 +31,14 @@ const MEDIUM_TO_PREMIUM_COUNT = parseInt(
   10,
 );
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const EMAIL_VERIFICATION_TOKEN_TTL_MINUTES = parseInt(
+  process.env.EMAIL_VERIFICATION_TOKEN_TTL_MINUTES || "60",
+  10,
+);
+const PASSWORD_RESET_TOKEN_TTL_MINUTES = parseInt(
+  process.env.PASSWORD_RESET_TOKEN_TTL_MINUTES || "30",
+  10,
+);
 
 const buildLoyaltyProgress = async (
   codCliente: string,
@@ -196,6 +205,7 @@ export const store = async (
       apellido: validatedData.apellido,
       telefono: validatedData.telefono,
       email: validatedData.email,
+      emailVerificado: false,
       contrase_a: hashedPassword,
       codSucursal: codSucursal || null,
       preguntaSeguridad:
@@ -905,6 +915,10 @@ export const validateLogin = async (email: string, contraseña: string) => {
       throw new DatabaseError("Email o contraseña incorrectos");
     }
 
+    if (!usuario.emailVerificado) {
+      throw new DatabaseError("Email no verificado", "EMAIL_NOT_VERIFIED");
+    }
+
     console.log("User login validated successfully for user:", {
       codUsuario: usuario.codUsuario,
       email: usuario.email,
@@ -953,6 +967,195 @@ export const validateLogin = async (email: string, contraseña: string) => {
 
     throw new DatabaseError("Error al validar credenciales");
   }
+};
+
+const buildTokenExpiry = (minutes: number) => {
+  const expiresAt = new Date();
+  expiresAt.setMinutes(expiresAt.getMinutes() + minutes);
+  return expiresAt;
+};
+
+const clearVerificationTokensForUser = async (codUsuario: string) => {
+  await prisma.email_verification_tokens.deleteMany({
+    where: {
+      userId: codUsuario,
+      consumedAt: null,
+    },
+  });
+};
+
+const clearResetTokensForUser = async (codUsuario: string) => {
+  await prisma.password_reset_tokens.deleteMany({
+    where: {
+      userId: codUsuario,
+      consumedAt: null,
+    },
+  });
+};
+
+export const createEmailVerificationTokenByUserId = async (codUsuario: string) => {
+  const sanitizedUserId = sanitizeInput(codUsuario);
+  const user = await prisma.usuarios.findUnique({
+    where: { codUsuario: sanitizedUserId },
+    select: {
+      codUsuario: true,
+      nombre: true,
+      email: true,
+      activo: true,
+      emailVerificado: true,
+    },
+  });
+
+  if (!user || !user.activo || user.emailVerificado) {
+    return null;
+  }
+
+  const rawToken = createRawToken();
+  const tokenHash = hashToken(rawToken);
+  const expiresAt = buildTokenExpiry(EMAIL_VERIFICATION_TOKEN_TTL_MINUTES);
+
+  await clearVerificationTokensForUser(user.codUsuario);
+  await prisma.email_verification_tokens.create({
+    data: {
+      userId: user.codUsuario,
+      tokenHash,
+      expiresAt,
+    },
+  });
+
+  return {
+    token: rawToken,
+    email: user.email,
+    name: user.nombre,
+  };
+};
+
+export const requestEmailVerificationForEmail = async (email: string) => {
+  const sanitizedEmail = sanitizeInput(email);
+  const user = await prisma.usuarios.findFirst({
+    where: { email: sanitizedEmail, activo: true },
+    select: {
+      codUsuario: true,
+      emailVerificado: true,
+    },
+  });
+
+  if (!user || user.emailVerificado) {
+    return null;
+  }
+
+  return createEmailVerificationTokenByUserId(user.codUsuario);
+};
+
+export const verifyEmailByToken = async (token: string) => {
+  const tokenHash = hashToken(sanitizeInput(token));
+  const now = new Date();
+
+  const verificationToken = await prisma.email_verification_tokens.findFirst({
+    where: {
+      tokenHash,
+      consumedAt: null,
+      expiresAt: { gt: now },
+    },
+    include: {
+      usuarios: {
+        select: {
+          codUsuario: true,
+          activo: true,
+        },
+      },
+    },
+  });
+
+  if (!verificationToken || !verificationToken.usuarios.activo) {
+    throw new DatabaseError("Token inválido o expirado");
+  }
+
+  await prisma.$transaction([
+    prisma.usuarios.update({
+      where: { codUsuario: verificationToken.userId },
+      data: { emailVerificado: true },
+    }),
+    prisma.email_verification_tokens.update({
+      where: { id: verificationToken.id },
+      data: { consumedAt: now },
+    }),
+  ]);
+};
+
+export const createPasswordResetTokenByEmail = async (email: string) => {
+  const sanitizedEmail = sanitizeInput(email);
+  const user = await prisma.usuarios.findFirst({
+    where: {
+      email: sanitizedEmail,
+      activo: true,
+      emailVerificado: true,
+    },
+    select: {
+      codUsuario: true,
+      nombre: true,
+      email: true,
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  const rawToken = createRawToken();
+  const tokenHash = hashToken(rawToken);
+  const expiresAt = buildTokenExpiry(PASSWORD_RESET_TOKEN_TTL_MINUTES);
+
+  await clearResetTokensForUser(user.codUsuario);
+  await prisma.password_reset_tokens.create({
+    data: {
+      userId: user.codUsuario,
+      tokenHash,
+      expiresAt,
+    },
+  });
+
+  return {
+    token: rawToken,
+    email: user.email,
+    name: user.nombre,
+  };
+};
+
+export const resetPasswordByToken = async (
+  token: string,
+  nuevaContraseña: string,
+) => {
+  const tokenHash = hashToken(sanitizeInput(token));
+  const now = new Date();
+
+  const resetToken = await prisma.password_reset_tokens.findFirst({
+    where: {
+      tokenHash,
+      consumedAt: null,
+      expiresAt: { gt: now },
+    },
+  });
+
+  if (!resetToken) {
+    throw new DatabaseError("Token inválido o expirado");
+  }
+
+  const validatedPassword = UserBaseSchemaExport.shape.contraseña.parse(
+    sanitizeInput(nuevaContraseña),
+  );
+  const hashedPassword = await hashPassword(validatedPassword);
+
+  await prisma.$transaction([
+    prisma.usuarios.update({
+      where: { codUsuario: resetToken.userId },
+      data: { contrase_a: hashedPassword },
+    }),
+    prisma.password_reset_tokens.update({
+      where: { id: resetToken.id },
+      data: { consumedAt: now },
+    }),
+  ]);
 };
 
 // get security question by email (without revealing the answer)

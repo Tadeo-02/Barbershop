@@ -15,7 +15,13 @@ import {
 } from "../middleware/deduplication";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
-import { UserSchema, UserUpdateSchema } from "../Schemas/usersSchema";
+import {
+  EmailRequestSchema,
+  ResetPasswordByTokenSchema,
+  TokenValidationSchema,
+  UserSchema,
+  UserUpdateSchema,
+} from "../Schemas/usersSchema";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { requireRole } from "../middleware/roleMiddleware";
 
@@ -28,7 +34,6 @@ const scheduleParamSchema = z.object({
   fechaTurno: z.string().min(1),
   horaDesde: z.string().min(1),
 });
-const emailParamSchema = z.object({ email: z.string().email() });
 const optionalUserParamSchema = z.object({
   codUsuario: z.string().optional(),
 });
@@ -48,16 +53,6 @@ const loginRequestSchema = z
 const securityQuestionBodySchema = z.object({
   preguntaSeguridad: z.string().min(1),
   respuestaSeguridad: z.string().min(1),
-});
-const verifySecurityAnswerSchema = z.object({
-  email: z.string().email(),
-  respuestaSeguridad: z.string().min(1),
-  nuevaContraseña: z.string().min(1).optional(),
-});
-const resetPasswordSchema = z.object({
-  email: z.string().email(),
-  respuestaSeguridad: z.string().min(1),
-  nuevaContraseña: z.string().min(1),
 });
 
 const requireAdminForStaffUser: RequestHandler = (req, res, next) => {
@@ -89,27 +84,34 @@ router.post(
   controller.login,
 );
 
-// Password reset endpoints - IP-based limiting (users not authenticated yet)
-router.get(
-  "/security-question/:email",
-  sensitiveLimiter,
-  validateRequest({ params: emailParamSchema }),
-  controller.getSecurityQuestion,
-);
+// Email verification and password reset endpoints - IP-based limiting
 router.post(
-  "/verify-security-answer",
+  "/email-verification/request",
   sensitiveLimiter,
   strictDeduplication,
-  validateRequest({ body: verifySecurityAnswerSchema }),
-  controller.verifySecurityAnswer,
+  validateRequest({ body: EmailRequestSchema }),
+  controller.requestEmailVerification,
 );
-// Dedicated password-reset endpoint (separate rate-limit bucket from answer verification)
 router.post(
-  "/reset-password",
+  "/email-verification/confirm",
   sensitiveLimiter,
   strictDeduplication,
-  validateRequest({ body: resetPasswordSchema }),
-  controller.resetPassword,
+  validateRequest({ body: TokenValidationSchema }),
+  controller.confirmEmailVerification,
+);
+router.post(
+  "/password-reset/request",
+  sensitiveLimiter,
+  strictDeduplication,
+  validateRequest({ body: EmailRequestSchema }),
+  controller.requestPasswordReset,
+);
+router.post(
+  "/password-reset/confirm",
+  sensitiveLimiter,
+  strictDeduplication,
+  validateRequest({ body: ResetPasswordByTokenSchema }),
+  controller.resetPasswordWithToken,
 );
 
 // User registration - IP-based limiting for non-authenticated users
