@@ -1,10 +1,9 @@
 // import { useState } from "react";
 import "./App.css";
 // Componentes Generales
-import Login from "./components/user/login.tsx";
-import CreateUser from "./components/user/createUser.tsx";
-import ResetSecurity from "./components/user/resetSecurity.tsx";
-import VerifyEmail from "./components/user/verifyEmail.tsx";
+import Login from "./pages/Auth/login.tsx";
+import CreateUser from "./pages/Auth/createUser.tsx";
+import ResetSecurity from "./pages/Auth/resetSecurity.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -12,27 +11,27 @@ import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
 import { AuthProvider } from "./components/user/AuthContext.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { AutoRedirect } from "./components/Redirect.tsx"; // puede ser que no haga falta
-import LandingPage from "./components/landingPage.tsx";
+import LandingPage from "./pages/LandingPage.tsx";
 
 // Client
 import ProfilePage from "./pages/Client/ProfilePage.tsx";
-import Home from "./components/Client/home/home.tsx";
+import Home from "./pages/Client/Home.tsx";
 
-import Branches from "./components/Client/branches.tsx";
-import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
-import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
-import ClientAppointments from "./components/Client/clientAppointments.tsx";
-import ReceiptViewer from "./components/Client/appointments/receiptViewer.tsx";
+import Branches from "./pages/Client/Branches.tsx";
+import BarbersByBranch from "./pages/Client/BarbersByBranch.tsx";
+import ScheduleByBranch from "./pages/Client/ScheduleByBranch.tsx";
+import ClientAppointments from "./pages/Client/ClientAppointments.tsx";
+import ReceiptViewer from "./pages/Client/appointments/receiptViewer.tsx";
 import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 // import HomeBarber from "./components/Barber/home/home.tsx";
-import BarberAppointments from "./components/Barber/appointments/barberAppointments.tsx";
-import BranchAppointments from "./components/Barber/appointments/branchAppointments.tsx";
-import BarberReceiptViewer from "./components/Barber/appointments/receiptViewer.tsx";
-import BarberAvailability from "./components/Barber/appointments/barberAvailability.tsx";
-import MyAvailability from "./components/Barber/appointments/myAvailability.tsx";
+import BarberAppointments from "./pages/Barber/appointments/barberAppointments.tsx";
+import BranchAppointments from "./pages/Barber/appointments/branchAppointments.tsx";
+import BarberReceiptViewer from "./pages/Barber/appointments/receiptViewer.tsx";
+import BarberAvailability from "./pages/Barber/appointments/barberAvailability.tsx";
+import MyAvailability from "./pages/Barber/appointments/myAvailability.tsx";
 
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
@@ -221,7 +220,6 @@ function App() {
               {/* Rutas de Login y Signup */}
               <Route path="/login" element={<Login />} />
               <Route path="/signUp" element={<CreateUser />} />
-              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/changePassword" element={<ResetSecurity />} />
               <Route path="/" element={<AutoRedirect />} />
               {/* con el '*' indico que tiene rutas anidadas*/}

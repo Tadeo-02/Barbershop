@@ -2,17 +2,17 @@ import { useEffect, useState } from "react";
 import { FaCut, FaRegCalendarAlt, FaRegClock } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../user/AuthContext";
-import styles from "./home.module.css";
+import { useAuth } from "../../components/user/AuthContext";
+import styles from "./Home.module.css";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
-import { apiFetch } from "../../../lib/apiFetch";
+} from "../../components/shared/useAbortController";
+import { apiFetch } from "../../lib/apiFetch";
 import {
   getTurnoDateTime,
   unwrapAppointments,
-} from "../../shared/appointments";
+} from "../../components/shared/appointments";
 
 interface AppointmentSummary {
   codTurno: string;

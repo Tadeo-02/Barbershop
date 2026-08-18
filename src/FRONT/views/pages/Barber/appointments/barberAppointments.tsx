@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../user/AuthContext";
+import { useAuth } from "../../../components/user/AuthContext";
 import barberStyles from "./barberAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import TimeSlotPicker from "../../shared/TimeSlotPicker";
-import type { AppointmentFull } from "../../shared/appointments";
+import TimeSlotPicker from "../../../components/shared/TimeSlotPicker";
+import type { AppointmentFull } from "../../../components/shared/appointments";
 import {
   formatDate,
   formatTime,
   sortTurnosByDateTime,
   unwrapAppointments,
-} from "../../shared/appointments";
+} from "../../../components/shared/appointments";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
+} from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
 
 const BarberAppointments: React.FC = () => {

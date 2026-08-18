@@ -1,6 +1,6 @@
-import InfoSection from "./infoSection";
+import InfoSection from "../components/infoSection";
 import React from "react";
-import HeroSection from "./heroSection";
+import HeroSection from "../components/heroSection";
 
 const LandingPage: React.FC = () => {
     return (

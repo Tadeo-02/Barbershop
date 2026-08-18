@@ -1,31 +1,22 @@
 //! TERMINAR
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import styles from "./login.module.css";
 import toast from "react-hot-toast";
-import { UserBaseSchemaExport } from "../../../../BACK/Schemas/usersSchema";
+import { UserBaseSchemaExport } from "../../../../BACK/Schemas/usersSchema.ts";
 import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   PASSWORD_PATTERN,
 } from "../../lib/passwordConstants.ts";
 import { getPasswordMissing } from "../../lib/passwordRules";
+import { isAbortError, useAbortController } from "../../components/shared/useAbortController";
+import { apiFetch } from "../../lib/apiFetch.ts";
 
-//! Mejoras FrontEnd
-/*
-1) formState: { isSubmitting }; es el mejor lock disponible de frontEnd
-2) <form onSubmit={handleSubmit(onSubmit)}>; prevención de errores
-3) aborController; resuelve problemas como request colgadas, multiples envios consecutivos, request tardías,
-hace que el backend procese menos 'basura' y mantiene un estado coherente
-4) fieldset disabled={isSubmitting}; bloquea inputs mientras se manda el form (no es seguro ya que es UX)
-5) if (error.name === "AbortError") return; manejo de errores
-6) Schema zod; aporta prevención de errores y a mantener la integridad de datos desde el front
-*/
-
-//! Utilizamos el Schema de la librería Zod para validar campos
+//! we use zods schema to validate fields
 // Extend schema for form with password confirmation
 const CreateUserSchema = UserBaseSchemaExport.omit({
   cuil: true,
@@ -48,11 +39,11 @@ const CreateUserSchema = UserBaseSchemaExport.omit({
   });
 
 type CreateUserFormData = z.infer<typeof CreateUserSchema>;
-//! isSubmitting es una estado de validación de formularios de la libreria react-hook-form para evitar multiples peticiones
+//! isSubmitting is a state of form validation from the react-hook-form library to avoid multiple requests
 const CreateUser: React.FC = () => {
   const navigate = useNavigate();
-  // AbortController ref para cancelar requests pendientes
-  const abortControllerRef = useRef<AbortController | null>(null);
+  // AbortController to cancel pending requests 
+  const { renew: renewSubmitAbort } = useAbortController();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -71,56 +62,50 @@ const CreateUser: React.FC = () => {
   const passwordMissing = getPasswordMissing(passwordValue);
 
   const onSubmit = async (data: CreateUserFormData) => {
-    // Cancelar request anterior si existe
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    const controller = renewSubmitAbort();
 
-    // Crear nuevo AbortController
-    abortControllerRef.current = new AbortController();
-
-    // 1. Inicias el Toast
+    // 1. Inicialize Toast
     const toastId = toast.loading("Creando Usuario...");
 
-    // 2. MAGIA: Separas lo que es del front (confirmación) de lo que va a la DB
+    // 2. Separate what is from the front (confirmation) from what goes to the DB
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmarContraseña: _, ...datosParaBackend } = data;
 
     try {
-      const response = await fetch("/usuarios", {
+      const response = await apiFetch("/usuarios", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(datosParaBackend),
-        signal: abortControllerRef.current.signal,
+        signal: controller.signal,
       });
 
-      // 3. Parseo directo a JSON (más limpio que text + parse)
+      // 3. Direct JSON parsing (cleaner than text + parse)
       const responseData = await response.json();
 
       if (response.ok) {
-        // ÉXITO
+        // success
         toast.success(responseData.message || "Usuario creado exitosamente", {
           id: toastId,
           duration: 4000,
         });
 
-        reset(); // Limpiar formulario
+        reset(); // clean form
 
-        // Redirección con delay
+        // redirect with delay
         setTimeout(() => {
           navigate("/login");
         }, 2000);
       } else {
-        // ERROR DEL BACKEND (Ej: DNI duplicado)
+        //  BACKEND ERROR (Ex: DNI duplicated)
         toast.error(responseData.message || "Error al crear usuario", {
           id: toastId,
         });
       }
     } catch (error) {
-      // Ignorar errores de abort (son intencionales)
-      if (error instanceof Error && error.name === "AbortError") {
+      // Ignore abort errors (they are intentional)
+      if (isAbortError(error)) {
         toast.dismiss(toastId);
         console.log("Request cancelado");
         return;
@@ -140,7 +125,7 @@ const CreateUser: React.FC = () => {
               className={`${styles.form} ${styles.formLong}`}
               onSubmit={handleSubmit(onSubmit)}
             >
-              {/*PROPIEDAD PARA DESHABILITAR ENVÍOS MULIPLES MEDIANTE HTML PURO  */}
+              {/*Property to disable multiple submissions using pure HTML */}
               <fieldset
                 disabled={isSubmitting}
                 style={{ border: "none", padding: 0, margin: 0 }}
@@ -162,7 +147,7 @@ const CreateUser: React.FC = () => {
                   </p>
                 )}
 
-                {/* NOMBRE */}
+                {/* Name */}
                 <label>Nombre:</label>
                 <input
                   required
@@ -177,7 +162,7 @@ const CreateUser: React.FC = () => {
                   </p>
                 )}
 
-                {/* APELLIDO */}
+                {/* Lastname */}
                 <label>Apellido:</label>
                 <input
                   required
@@ -192,7 +177,7 @@ const CreateUser: React.FC = () => {
                   </p>
                 )}
 
-                {/* TELÉFONO */}
+                {/* phone */}
                 <label>Teléfono:</label>
                 <input
                   required
@@ -207,7 +192,7 @@ const CreateUser: React.FC = () => {
                   </p>
                 )}
 
-                {/* EMAIL */}
+                {/* email */}
                 <label>Correo electrónico:</label>
                 <input
                   required
@@ -223,7 +208,7 @@ const CreateUser: React.FC = () => {
                   </p>
                 )}
 
-                {/* CONTRASEÑA */}
+                {/* password */}
                 <label>Contraseña:</label>
                 <div className={styles.inputWithIcon}>
                   <input
@@ -276,7 +261,7 @@ const CreateUser: React.FC = () => {
                   </p>
                 )}
 
-                {/* CONFIRMAR CONTRASEÑA */}
+                {/* Confirm password */}
                 <label>Confirmar contraseña:</label>
                 <div className={styles.inputWithIcon}>
                   <input
@@ -319,7 +304,7 @@ const CreateUser: React.FC = () => {
                   </p>
                 )}
 
-                {/* PREGUNTA DE SEGURIDAD */}
+                {/* security question */}
                 <label>Pregunta de seguridad:</label>
                 <select
                   required
@@ -346,7 +331,7 @@ const CreateUser: React.FC = () => {
                   </p>
                 )}
 
-                {/* RESPUESTA DE SEGURIDAD */}
+                {/* security answer */}
                 <label>Respuesta de seguridad:</label>
                 <input
                   required
@@ -360,7 +345,7 @@ const CreateUser: React.FC = () => {
                     {errors.respuestaSeguridad.message}
                   </p>
                 )}
-                {/* Aplicacion del isSubmitting */}
+                {/* using isSubmitting */}
                 <p className="has-text-centered">
                   <br />
                   <button

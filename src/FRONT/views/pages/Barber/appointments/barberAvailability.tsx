@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { useAuth } from "../../user/AuthContext";
+import { useAuth } from "../../../components/user/AuthContext";
 import toast from "react-hot-toast";
 import styles from "./barberAvailability.module.css";
-import AvailabilityForm from "./AvailabilityForm";
-import type { AvailabilityFormValues } from "./AvailabilityForm";
+import AvailabilityForm from "../../../components/Barber/appointments/AvailabilityForm";
+import type { AvailabilityFormValues } from "../../../components/Barber/appointments/AvailabilityForm";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
+} from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
 
 const BarberAvailability: React.FC = () => {

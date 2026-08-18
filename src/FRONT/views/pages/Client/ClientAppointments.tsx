@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../user/AuthContext";
-import barberStyles from "../Client/clientAppointments.module.css";
+import { useAuth } from "../../components/user/AuthContext";
+import barberStyles from "./ClientAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import type { AppointmentFull } from "../shared/appointments";
+import type { AppointmentFull } from "../../components/shared/appointments";
 import {
   formatDate,
   formatTime,
   sortTurnosByDateTime,
   unwrapAppointments,
-} from "../shared/appointments";
+} from "../../components/shared/appointments";
 import { apiFetch } from "../../lib/apiFetch.ts";
 
 const ClientAppointments: React.FC = () => {

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import styles from "./barbersByBranch.module.css";
+import styles from "./BarbersByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema.ts";
-import { useAuth } from "../user/AuthContext.tsx";
+import { useAuth } from "../../components/user/AuthContext.tsx";
 import { apiFetch } from "../../lib/apiFetch.ts";
 
 interface Barbero {

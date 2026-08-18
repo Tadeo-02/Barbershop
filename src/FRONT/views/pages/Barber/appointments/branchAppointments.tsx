@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from "../../user/AuthContext";
+import { useAuth } from "../../../components/user/AuthContext";
 import styles from "./branchAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { AppointmentFull } from "../../shared/appointments";
-import { formatDate, formatTime } from "../../shared/appointments";
+import type { AppointmentFull } from "../../../components/shared/appointments";
+import { formatDate, formatTime } from "../../../components/shared/appointments";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
+} from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
 
 // (legacy per-item form state removed — CheckoutForm keeps its own state for each appointment, so we don't need to manage it here)

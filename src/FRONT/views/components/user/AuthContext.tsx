@@ -6,7 +6,6 @@ import {
   isTokenExpired,
   setStoredAuthToken,
 } from "../../lib/authStorage";
-import { apiFetch } from "../../lib/apiFetch";
 
 interface User {
   codUsuario: string;
@@ -30,6 +29,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 function getRoleFromToken(token: string | null) {
   if (!token) return null;
@@ -76,7 +76,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUserType(payload.rol);
     setIsAuthLoading(true);
 
-    apiFetch(`/usuarios/profiles/${payload.codUsuario}`)
+    fetch(`${API_URL}/usuarios/profiles/${payload.codUsuario}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then(async (res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);

@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useAuth } from "../../user/AuthContext";
+import { useAuth } from "../../../components/user/AuthContext";
 import listStyles from "./barberAppointments.module.css";
-import AvailabilityForm from "./AvailabilityForm";
-import type { AvailabilityFormValues } from "./AvailabilityForm";
+import AvailabilityForm from "../../../components/Barber/appointments/AvailabilityForm";
+import type { AvailabilityFormValues } from "../../../components/Barber/appointments/AvailabilityForm";
 import {
   formatDate,
   formatTime,
   getDateParts,
   isAvailabilityEnded,
   normalizeDateInput,
-} from "../../shared/availabilityDateUtils";
+} from "../../../components/shared/availabilityDateUtils";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
+} from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 
 interface Availability {

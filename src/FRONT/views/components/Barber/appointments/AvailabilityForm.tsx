@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import listStyles from "./barberAppointments.module.css";
-import styles from "./barberAvailability.module.css";
+import listStyles from "../../../pages/Barber/appointments/barberAppointments.module.css";
+import styles from "../../../pages/Barber/appointments/barberAvailability.module.css";
 
 export interface AvailabilityFormValues {
   desdeFecha: string;

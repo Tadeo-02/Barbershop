@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import styles from "./login.module.css";
 import {
@@ -11,20 +11,17 @@ import { apiFetch } from "../../lib/apiFetch";
 import { getPasswordMissing } from "../../lib/passwordRules";
 
 const ResetSecurity: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const initialToken = searchParams.get("token") || "";
-  const [step, setStep] = useState<"email" | "password">(
-    initialToken ? "password" : "email",
-  );
+  const [step, setStep] = useState<"email" | "answer" | "password">("email");
   const [email, setEmail] = useState("");
-  const [token, setToken] = useState(initialToken);
+  const [pregunta, setPregunta] = useState<string | null>(null);
+  const [respuesta, setRespuesta] = useState("");
   const [nuevaContraseña, setNuevaContraseña] = useState("");
   const [confirmarContraseña, setConfirmarContraseña] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
-  const requestReset = async (e: React.FormEvent) => {
+  const askQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim();
     if (!cleanEmail) {
@@ -32,20 +29,49 @@ const ResetSecurity: React.FC = () => {
       return;
     }
     try {
-      const res = await apiFetch(`/usuarios/password-reset/request`, {
+      const res = await apiFetch(
+        `/usuarios/security-question/${encodeURIComponent(cleanEmail)}`,
+      );
+      const data = await res.json();
+      if (res.ok) {
+        if (data.pregunta) {
+          setPregunta(data.pregunta);
+          setStep("answer");
+        } else {
+          toast.error("No se encontró pregunta para ese correo");
+        }
+      } else {
+        toast.error(data.message || "Error al obtener la pregunta");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error de conexión");
+    }
+  };
+
+  const submitAnswer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = email.trim();
+    const cleanRespuesta = respuesta.trim();
+    if (!cleanEmail || !cleanRespuesta) {
+      toast.error("Email y respuesta son requeridos");
+      return;
+    }
+    try {
+      const res = await apiFetch(`/usuarios/verify-security-answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: cleanEmail }),
+        body: JSON.stringify({
+          email: cleanEmail,
+          respuestaSeguridad: cleanRespuesta,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(
-          data.message ||
-            "Si el correo existe, enviamos un enlace para restablecer la contraseña.",
-        );
+        toast.success(data.message || "Respuesta verificada");
         setStep("password");
       } else {
-        toast.error(data.message || "No se pudo iniciar la recuperación");
+        toast.error(data?.message || "Error al verificar la respuesta");
       }
     } catch (err) {
       console.error(err);
@@ -55,9 +81,10 @@ const ResetSecurity: React.FC = () => {
 
   const submitNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanToken = token.trim();
-    if (!cleanToken) {
-      toast.error("Ingresá el token o abrí el enlace de tu email");
+    const cleanEmail = email.trim();
+    const cleanRespuesta = respuesta.trim();
+    if (!cleanEmail || !cleanRespuesta) {
+      toast.error("Email y respuesta son requeridos");
       return;
     }
     const missing = getPasswordMissing(nuevaContraseña);
@@ -70,11 +97,12 @@ const ResetSecurity: React.FC = () => {
       return;
     }
     try {
-      const res = await apiFetch(`/usuarios/password-reset/confirm`, {
+      const res = await apiFetch(`/usuarios/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          token: cleanToken,
+          email: cleanEmail,
+          respuestaSeguridad: cleanRespuesta,
           nuevaContraseña,
         }),
       });
@@ -97,7 +125,7 @@ const ResetSecurity: React.FC = () => {
         <div className="row">
           <div className="col-12">
             {step === "email" && (
-              <form className={styles.form} onSubmit={requestReset}>
+              <form className={styles.form} onSubmit={askQuestion}>
                 <h1>Recuperar contraseña</h1>
                 <label>Correo electrónico:</label>
                 <input
@@ -107,12 +135,35 @@ const ResetSecurity: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-                <p>Te enviaremos un enlace con un token temporal.</p>
                 <p>
                   <button type="submit" className="btn btn-primary">
-                    Enviar enlace
+                    Siguiente
                   </button>
                   <button type="button" onClick={() => navigate("/login")}>
+                    Volver
+                  </button>
+                </p>
+              </form>
+            )}
+
+            {step === "answer" && (
+              <form className={styles.form} onSubmit={submitAnswer}>
+                <h1>Responder pregunta</h1>
+                <p>
+                  <strong>{pregunta}</strong>
+                </p>
+                <label>Respuesta:</label>
+                <input
+                  type="text"
+                  required
+                  value={respuesta}
+                  onChange={(e) => setRespuesta(e.target.value)}
+                />
+                <p>
+                  <button type="submit" className="btn btn-primary">
+                    Verificar respuesta
+                  </button>
+                  <button type="button" onClick={() => setStep("email")}>
                     Volver
                   </button>
                 </p>
@@ -122,15 +173,6 @@ const ResetSecurity: React.FC = () => {
             {step === "password" && (
               <form className={styles.form} onSubmit={submitNewPassword}>
                 <h1>Nueva contraseña</h1>
-
-                <label>Token de recuperación:</label>
-                <input
-                  type="text"
-                  required
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="Pegá aquí el token"
-                />
 
                 <label>Nueva contraseña:</label>
                 <div className={styles.inputWithIcon}>
@@ -223,7 +265,7 @@ const ResetSecurity: React.FC = () => {
                   <button type="submit" className="btn btn-primary">
                     Cambiar contraseña
                   </button>
-                  <button type="button" onClick={() => setStep("email")}>
+                  <button type="button" onClick={() => setStep("answer")}>
                     Volver
                   </button>
                 </p>
