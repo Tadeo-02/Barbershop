@@ -4,9 +4,9 @@ import styles from "./branches.module.css";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
-import { changeEntityStatus } from "../shared/entityStatus";
-import { showConfirmActionToast } from "../shared/confirmActionToast";
-import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
+import { changeEntityStatus } from "../../../components/Admin/shared/entityStatus";
+import { showConfirmActionToast } from "../../../components/Admin/shared/confirmActionToast";
+import { fetchPendingAppointmentsCount } from "../../../components/Admin/shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;

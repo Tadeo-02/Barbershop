@@ -5,9 +5,9 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
-import { showConfirmActionToast } from "../shared/confirmActionToast";
-import { changeEntityStatus } from "../shared/entityStatus";
-import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
+import { showConfirmActionToast } from "../../../components/Admin/shared/confirmActionToast";
+import { changeEntityStatus } from "../../../components/Admin/shared/entityStatus";
+import { fetchPendingAppointmentsCount } from "../../../components/Admin/shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
 // Use the schema exported from the backend as the single source of truth.

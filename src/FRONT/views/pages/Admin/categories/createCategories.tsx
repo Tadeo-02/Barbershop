@@ -9,7 +9,7 @@ import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
+} from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 
 const CreateCategorySchema = CategorySchema.pick({

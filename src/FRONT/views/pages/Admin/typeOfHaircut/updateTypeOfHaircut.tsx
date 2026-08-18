@@ -9,8 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
+} from "../../../components/shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../../components/Admin/shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 interface TipoCorte {

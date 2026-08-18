@@ -9,8 +9,8 @@ import { useNavigate } from "react-router-dom";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
+} from "../../../components/shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../../components/Admin/shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;

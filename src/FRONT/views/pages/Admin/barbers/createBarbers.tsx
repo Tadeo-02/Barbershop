@@ -10,7 +10,7 @@ import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
+} from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;

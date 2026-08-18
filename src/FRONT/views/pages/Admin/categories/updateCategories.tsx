@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
+} from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 
 const CategorySchema = z.object({

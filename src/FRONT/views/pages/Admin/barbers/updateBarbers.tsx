@@ -13,8 +13,8 @@ import {
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
-import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
+} from "../../../components/shared/useAbortController";
+import { fetchPendingAppointmentsCount } from "../../../components/Admin/shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
@@ -114,7 +114,7 @@ const UpdateBarber: React.FC = () => {
           toast.dismiss(toastId);
         } else if (response.status === 404) {
           toast.error("Barbero no encontrado", { id: toastId, duration: 2000 });
-          navigate("/BarbersPage");
+          navigate("/Admin/BarbersPage");
         } else {
           toast.error("Error al cargar los datos del barbero", {
             id: toastId,

@@ -12,8 +12,8 @@ import {
 import {
   isAbortError,
   useAbortController,
-} from "../../shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
+} from "../../../components/shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../../components/Admin/shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
@@ -60,7 +60,7 @@ const UpdateBranches: React.FC = () => {
           toast.dismiss(toastId);
         } else if (response.status === 404) {
           toast.error("Sucursal no encontrado", { id: toastId });
-          navigate("/BranchesPage");
+          navigate("/Admin/BranchesPage");
         } else {
           toast.error("Error al cargar los datos de la sucursal", {
             id: toastId,

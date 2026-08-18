@@ -4,9 +4,9 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema.ts";
 import type { z } from "zod";
-import { showConfirmActionToast } from "../shared/confirmActionToast";
-import { changeEntityStatus } from "../shared/entityStatus";
-import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
+import { showConfirmActionToast } from "../../../components/Admin/shared/confirmActionToast";
+import { changeEntityStatus } from "../../../components/Admin/shared/entityStatus";
+import { getResponseMessage, readJsonSafely } from "../../../components/Admin/shared/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
