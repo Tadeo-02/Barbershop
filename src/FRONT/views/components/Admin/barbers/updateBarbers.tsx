@@ -140,6 +140,10 @@ const UpdateBarber: React.FC = () => {
     const branchChanged = formValues.codSucursal !== barbero?.codSucursal;
 
     if (branchChanged) {
+      if (!codUsuario) {
+        toast.error("No se pudo identificar al barbero");
+        return;
+      }
       // Check for pending appointments before allowing branch change
       try {
         const pendingCount = await fetchPendingAppointmentsCount(

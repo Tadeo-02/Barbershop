@@ -9,6 +9,7 @@ import TimeSlotPicker from "../shared/TimeSlotPicker.tsx";
 import { apiFetch } from "../../lib/apiFetch.ts";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../lib/authUtils";
+import { parseBackendResponse } from "../../lib/backendResponse";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 

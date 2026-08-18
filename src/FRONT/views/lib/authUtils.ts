@@ -7,12 +7,17 @@ export interface AuthGuardOptions {
   requireSucursal?: boolean;
 }
 
-export const ensureAuthenticatedUser = (
+type AuthUserLike =
+  | { codUsuario?: string | null; codSucursal?: string | null }
+  | null
+  | undefined;
+
+export function ensureAuthenticatedUser<T extends AuthUserLike>(
   isAuthenticated: boolean,
-  user: { codUsuario?: string; codSucursal?: string } | null | undefined,
+  user: T,
   navigate: NavigateFunction,
   options: AuthGuardOptions = {},
-): boolean => {
+): user is NonNullable<T> {
   const hasUser = !!user && !!user.codUsuario;
   const hasSucursal = !!user?.codSucursal;
 
@@ -32,4 +37,4 @@ export const ensureAuthenticatedUser = (
   }
 
   return false;
-};
+}

@@ -1,7 +1,7 @@
-// authContext.tsx — diff respecto al tuyo original
+
 import React, { createContext, useContext, useState } from "react";
 
-interface User {
+export interface User {
   codUsuario: string;
   dni: string;
   cuil: string | null;

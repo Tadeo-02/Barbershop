@@ -15,6 +15,7 @@ import {
 import { apiFetch } from "../../../lib/apiFetch.ts";
 import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import { ensureAuthenticatedUser } from "../../../lib/authUtils";
 
 // (legacy per-item form state removed — CheckoutForm mantiene su propio estado)
 

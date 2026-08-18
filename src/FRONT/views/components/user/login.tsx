@@ -3,10 +3,11 @@ import styles from "./login.module.css";
 import { PASSWORD_MAX_LENGTH } from "../../lib/passwordConstants.ts";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
+import type { User } from "./AuthContext.tsx";
 import { useUserRedirect } from "../useUserRedirect.ts";
 import toast from "react-hot-toast";
-import { handleAbortOrConnectionError } from "../lib/toastUtils";
-import { parseBackendResponse } from "../lib/backendResponse";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import { parseBackendResponse } from "../../lib/backendResponse";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -23,8 +24,8 @@ function Login() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, contraseña }),
       });
-      const parsed = await parseBackendResponse<{ user?: unknown; token?: string; message?: string }>(response);
-
+      const parsed = await parseBackendResponse<{ user?: User; token?: string; message?: string }>(response);
+      
       if (!parsed.ok && parsed.message) {
         toast.error(parsed.message);
         return;

@@ -18,6 +18,7 @@ import { useAbortController } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
 import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import { ensureAuthenticatedUser } from "../../../lib/authUtils";
 
 const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -108,12 +109,14 @@ const BarberAppointments: React.FC = () => {
       return;
     }
 
+    const codUsuario = user.codUsuario;
+
     const loadTurnos = async () => {
       const controller = renewFetchAbort();
       setIsLoadingTurnos(true);
 
       try {
-        const res = await apiFetch(`/turnos/user/${user.codUsuario}`, {
+        const res = await apiFetch(`/turnos/user/${codUsuario}`, {
           signal: controller.signal,
         });
 
