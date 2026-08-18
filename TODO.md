@@ -109,7 +109,7 @@
 
 ## 4. Duplicación de código — Frontend
 
-- [ ] Simplificar/crear funciones reutilizables para evitar código duplicado.
+- [x] Simplificar/crear funciones reutilizables para evitar código duplicado.
   - Ejemplo: `src/FRONT/views/components/Admin/categories/createCategories.tsx`
     ```ts
     const result = await baseResolver(values, context, options);
@@ -129,8 +129,8 @@
     return result;
     ```
     → Extraer esta lógica de normalización de errores a una función/utilidad compartida.
-- [ ] Revisar y eliminar código defensivo duplicado innecesariamente (simplificar checks repetidos).
-- [ ] Usar `async/await` de forma consistente para simplificar el manejo de promesas.
+- [x] Revisar y eliminar código defensivo duplicado innecesariamente (simplificar checks repetidos).
+- [x] Usar `async/await` de forma consistente para simplificar el manejo de promesas.
 
 ## 5. Rutas y entornos
 
