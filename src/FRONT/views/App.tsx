@@ -21,7 +21,6 @@ import Branches from "./components/Client/branches.tsx";
 import BarbersByBranch from "./components/Client/barbersByBranch.tsx";
 import ScheduleByBranch from "./components/Client/scheduleByBranch.tsx";
 import ClientAppointments from "./components/Client/clientAppointments.tsx";
-import ReceiptViewer from "./components/Client/appointments/receiptViewer.tsx";
 import ShowCategories from "./components/Admin/categories/showCategories.tsx";
 
 // Barber
@@ -29,9 +28,9 @@ import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
 // import HomeBarber from "./components/Barber/home/home.tsx";
 import BarberAppointments from "./components/Barber/appointments/barberAppointments.tsx";
 import BranchAppointments from "./components/Barber/appointments/branchAppointments.tsx";
-import BarberReceiptViewer from "./components/Barber/appointments/receiptViewer.tsx";
 import BarberAvailability from "./components/Barber/appointments/barberAvailability.tsx";
 import MyAvailability from "./components/Barber/appointments/myAvailability.tsx";
+import ReceiptViewer from "./components/shared/ReceiptViewer.tsx";
 
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
@@ -89,7 +88,12 @@ function App() {
               />
               <Route
                 path="/client/appointments/recibo/:codTurno"
-                element={<ReceiptViewer />}
+                element={
+                  <ReceiptViewer
+                    backRoute="/client/appointments"
+                    backLabel="Volver a mis turnos"
+                  />
+                }
               />
               <Route path="/branches" element={<Branches />} />
               <Route
@@ -138,7 +142,10 @@ function App() {
                 path="/Barber/appointments/recibo/:codTurno"
                 element={
                   <ProtectedRoute allowedRoles={["barber"]}>
-                    <BarberReceiptViewer />
+                    <ReceiptViewer
+                      backRoute="/Barber/MyAppointments"
+                      backLabel="Volver a turnos de sucursal"
+                    />
                   </ProtectedRoute>
                 }
               />

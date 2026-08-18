@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import styles from "./login.module.css";
 import toast from "react-hot-toast";
@@ -15,7 +14,7 @@ import {
 import { getPasswordMissing } from "../../lib/passwordRules";
 import { useAbortController } from "../shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch.ts";
-import { normalizeFormErrors } from "../../lib/formErrorUtils";
+import { createResolver } from "../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 
 //! Utilizamos el Schema de la librería Zod para validar campos
@@ -49,19 +48,6 @@ const CreateUser: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const userResolver = async (
-    values: CreateUserFormData,
-    context: unknown,
-    options: {
-      criteriaMode?: "first_error" | "all";
-      shouldFocus?: boolean;
-    },
-  ) => {
-    const result = await zodResolver(CreateUserSchema)(values, context, options);
-
-    return normalizeFormErrors(result) ?? result;
-  };
-
   const {
     register,
     handleSubmit,
@@ -69,7 +55,7 @@ const CreateUser: React.FC = () => {
     reset,
     watch,
   } = useForm<CreateUserFormData>({
-    resolver: userResolver,
+    resolver: createResolver(CreateUserSchema),
     mode: "onBlur",
   });
 

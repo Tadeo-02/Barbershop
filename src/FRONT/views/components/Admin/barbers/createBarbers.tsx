@@ -5,11 +5,10 @@ import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
 import { useAbortController } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
-import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
@@ -32,30 +31,13 @@ const CreateBarbers: React.FC = () => {
     useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
 
-  const barberResolver = async (
-    values: CreateBarberForm,
-    context: unknown,
-    options: {
-      criteriaMode?: "first_error" | "all";
-      shouldFocus?: boolean;
-    },
-  ) => {
-    const result = await zodResolver(CreateBarberSchema)(
-      values,
-      context,
-      options,
-    );
-
-    return normalizeFormErrors(result) ?? result;
-  };
-
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateBarberForm>({
-    resolver: barberResolver,
+    resolver: createResolver(CreateBarberSchema),
     mode: "onBlur",
   });
 

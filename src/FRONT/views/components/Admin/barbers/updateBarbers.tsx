@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   UserBaseSchemaExport,
   UserSchema,
@@ -13,7 +12,7 @@ import {
 import { useAbortController } from "../../shared/useAbortController";
 import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
-import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
@@ -52,30 +51,13 @@ const UpdateBarber: React.FC = () => {
     useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
 
-  const barberUpdateResolver = async (
-    values: UpdateBarberForm,
-    context: unknown,
-    options: {
-      criteriaMode?: "first_error" | "all";
-      shouldFocus?: boolean;
-    },
-  ) => {
-    const result = await zodResolver(UpdateBarberSchema)(
-      values,
-      context,
-      options,
-    );
-
-    return normalizeFormErrors(result) ?? result;
-  };
-
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<UpdateBarberForm>({
-    resolver: barberUpdateResolver,
+    resolver: createResolver(UpdateBarberSchema),
     mode: "onBlur",
   });
 

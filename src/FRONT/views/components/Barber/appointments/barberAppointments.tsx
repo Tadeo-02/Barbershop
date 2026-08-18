@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAbortController } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const BarberAppointments: React.FC = () => {
@@ -123,7 +124,7 @@ const BarberAppointments: React.FC = () => {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
 
-        const data = await res.json().catch(() => null);
+        const data = await readJsonSafely(res);
 
         console.log("Turnos data:", data);
         const turnosArray = unwrapAppointments<AppointmentFull>(data);
@@ -208,7 +209,7 @@ const BarberAppointments: React.FC = () => {
       });
 
       if (response.ok) {
-        await response.json().catch(() => null);
+        await readJsonSafely(response);
         toast.success("Turno cancelado correctamente", { id: toastId });
 
         // Actualizar el estado local del turno en lugar de eliminarlo
@@ -222,13 +223,13 @@ const BarberAppointments: React.FC = () => {
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Error" }));
+        const errorData = await readJsonSafely(response);
         console.error("Error response:", errorData);
-        toast.error(errorData.message || "Error al cancelar el turno", {
-          id: toastId,
-        });
+        toast.error(
+          getResponseMessage(errorData, "Error al cancelar el turno") ??
+            "Error al cancelar el turno",
+          { id: toastId },
+        );
       }
     } catch (error: unknown) {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
@@ -293,7 +294,7 @@ const BarberAppointments: React.FC = () => {
       );
 
       if (response.ok) {
-        await response.json().catch(() => null);
+        await readJsonSafely(response);
         toast.success("Turno modificado exitosamente", { id: toastId });
 
         // Actualizar el estado local
@@ -315,12 +316,12 @@ const BarberAppointments: React.FC = () => {
         setTurnoToUpdate(null);
         reset();
       } else {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Error" }));
-        toast.error(errorData.message || "Error al modificar el turno", {
-          id: toastId,
-        });
+        const errorData = await readJsonSafely(response);
+        toast.error(
+          getResponseMessage(errorData, "Error al modificar el turno") ??
+            "Error al modificar el turno",
+          { id: toastId },
+        );
       }
     } catch (error: unknown) {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {

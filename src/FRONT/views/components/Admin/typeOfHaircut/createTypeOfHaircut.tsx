@@ -1,15 +1,14 @@
 import React from "react";
 import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { useAbortController } from "../../shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
-import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;
@@ -18,26 +17,13 @@ const CreateTypeOfHaircut: React.FC = () => {
   const navigate = useNavigate();
   const { renew: renewSubmitAbort } = useAbortController();
 
-  const haircutResolver = async (
-    values: CreateTypeForm,
-    context: unknown,
-    options: {
-      criteriaMode?: "first_error" | "all";
-      shouldFocus?: boolean;
-    },
-  ) => {
-    const result = await zodResolver(HaircutSchema)(values, context, options);
-
-    return normalizeFormErrors(result) ?? result;
-  };
-
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateTypeForm>({
-    resolver: haircutResolver as Resolver<CreateTypeForm>,
+    resolver: createResolver(HaircutSchema),
     mode: "onBlur",
     defaultValues: {
       valorBase: 0,

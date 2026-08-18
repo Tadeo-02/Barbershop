@@ -6,7 +6,7 @@ import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema.ts"
 import type { z } from "zod";
 import { showConfirmActionToast } from "../shared/confirmActionToast";
 import { changeEntityStatus } from "../shared/entityStatus";
-import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;

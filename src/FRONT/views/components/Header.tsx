@@ -5,6 +5,7 @@ import { useAuth } from "./user/AuthContext.tsx";
 import styles from "./header.module.css";
 import { isAbortError, useAbortController } from "./shared/useAbortController";
 import { apiFetch } from "../lib/apiFetch";
+import { readJsonSafely } from "../lib/apiResponse";
 // import logoBarber from "../../public/images/logoBarber.png";
 
 function Header() {
@@ -77,7 +78,7 @@ function Header() {
           setClientCategory("Sin categoría");
           return;
         }
-        const data = await response.json().catch(() => null);
+        const data = await readJsonSafely<any>(response);
         const profile = data?.success && data.data ? data.data : data;
         const category = profile?.categoriaActual?.nombreCategoria;
         setClientCategory(category || "Sin categoría");

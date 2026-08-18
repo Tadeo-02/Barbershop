@@ -4,13 +4,12 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast"; // importar librería de alerts
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
 import {
   useAbortController,
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
-import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const CreateCategorySchema = CategorySchema.pick({
@@ -26,30 +25,13 @@ const CreateCategories: React.FC = () => {
   const navigate = useNavigate();
   const { renew: renewSubmitAbort } = useAbortController();
 
-  const categoryResolver = async (
-    values: CreateCategoryForm,
-    context: unknown,
-    options: {
-      criteriaMode?: "first_error" | "all";
-      shouldFocus?: boolean;
-    },
-  ) => {
-    const result = await zodResolver(CreateCategorySchema)(
-      values,
-      context,
-      options,
-    );
-
-    return normalizeFormErrors(result) ?? result;
-  };
-
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateCategoryForm>({
-    resolver: categoryResolver,
+    resolver: createResolver(CreateCategorySchema),
     mode: "onBlur",
     defaultValues: {
       descuentoCorte: 0,

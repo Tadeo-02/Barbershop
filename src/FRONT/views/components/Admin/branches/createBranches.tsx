@@ -2,15 +2,14 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast"; //importamos libreria de alertas
 import { BranchSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { useAbortController } from "../../shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
-import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const CreateBranchSchema = BranchSchema.extend({});
@@ -24,30 +23,13 @@ const CreateBranches: React.FC = () => {
   }
   const { renew: renewSubmitAbort } = useAbortController();
 
-  const branchResolver = async (
-    values: CreateBranchFormData,
-    context: unknown,
-    options: {
-      criteriaMode?: "first_error" | "all";
-      shouldFocus?: boolean;
-    },
-  ) => {
-    const result = await zodResolver(CreateBranchSchema)(
-      values,
-      context,
-      options,
-    );
-
-    return normalizeFormErrors(result) ?? result;
-  };
-
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateBranchFormData>({
-    resolver: branchResolver,
+    resolver: createResolver(CreateBranchSchema),
     mode: "onBlur",
   });
 

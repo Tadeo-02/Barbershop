@@ -4,8 +4,9 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../user/AuthContext";
 import styles from "./home.module.css";
-import { useAbortController } from "../../shared/useAbortController";
+import { isAbortError, useAbortController } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import {
   getTurnoDateTime,
@@ -133,7 +134,7 @@ const Home = () => {
       });
 
       if (response.ok) {
-        await response.json().catch(() => null);
+        await readJsonSafely(response);
         toast.success("Turno cancelado correctamente", {
           id: toastId,
           duration: 2000,
@@ -142,11 +143,12 @@ const Home = () => {
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId, duration: 2000 });
       } else {
-        const errorData = await response.json().catch(() => null);
-        toast.error(errorData?.message || "Error al cancelar el turno", {
-          id: toastId,
-          duration: 2000,
-        });
+        const errorData = await readJsonSafely(response);
+        toast.error(
+          getResponseMessage(errorData, "Error al cancelar el turno") ??
+            "Error al cancelar el turno",
+          { id: toastId, duration: 2000 },
+        );
       }
     } catch (error) {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {

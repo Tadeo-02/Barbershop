@@ -13,6 +13,8 @@ import {
   useAbortController,
 } from "../../shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 // (legacy per-item form state removed — CheckoutForm mantiene su propio estado)
 
@@ -130,7 +132,7 @@ const CheckoutForm: React.FC<{
       });
 
       if (response.ok) {
-        const resData = await response.json().catch(() => null);
+        const resData = await readJsonSafely<any>(response);
         const facturacion = resData?.data?.facturacion;
         if (facturacion?.CAE && facturacion?.voucher_number) {
           toast.success("Turno cobrado y facturado", {
@@ -229,13 +231,12 @@ const CheckoutForm: React.FC<{
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId, duration: 2000 });
       } else {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Error" }));
-        toast.error(errorData.message || "Error al finalizar el turno", {
-          id: toastId,
-          duration: 2000,
-        });
+        const errorData = await readJsonSafely(response);
+        toast.error(
+          getResponseMessage(errorData, "Error al finalizar el turno") ??
+            "Error al finalizar el turno",
+          { id: toastId, duration: 2000 },
+        );
       }
     } catch (error: unknown) {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión al finalizar el turno")) {
@@ -537,7 +538,7 @@ const BranchAppointments: React.FC = () => {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
-      const data = await res.json().catch(() => null);
+      const data = await readJsonSafely<any>(res);
 
       console.log("Turnos data:", data);
 
@@ -585,7 +586,7 @@ const BranchAppointments: React.FC = () => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        const data = await res.json().catch(() => null);
+        const data = await readJsonSafely<any>(res);
         console.log("Cortes data:", data);
         if (Array.isArray(data)) {
           console.log("Setting allCortes:", data);
@@ -698,13 +699,12 @@ const BranchAppointments: React.FC = () => {
           },
         );
       } else {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Error" }));
-        toast.error(errorData.message || "Error al generar factura", {
-          id: toastId,
-          duration: 3000,
-        });
+        const errorData = await readJsonSafely(response);
+        toast.error(
+          getResponseMessage(errorData, "Error al generar factura") ??
+            "Error al generar factura",
+          { id: toastId, duration: 3000 },
+        );
       }
     } catch (error) {
       console.error("Error facturando:", error);
@@ -775,7 +775,7 @@ const BranchAppointments: React.FC = () => {
       });
 
       if (response.ok) {
-        await response.json().catch(() => null);
+        await readJsonSafely(response);
         toast.success("Turno marcado como No asistido", { id: toastId });
 
         // Recargar turnos
@@ -783,12 +783,13 @@ const BranchAppointments: React.FC = () => {
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Error" }));
+        const errorData = await readJsonSafely(response);
         console.error("Error response:", errorData);
         toast.error(
-          errorData.message || "Error al marcar turno como No asistido",
+          getResponseMessage(
+            errorData,
+            "Error al marcar turno como No asistido",
+          ) ?? "Error al marcar turno como No asistido",
           {
             id: toastId,
           },

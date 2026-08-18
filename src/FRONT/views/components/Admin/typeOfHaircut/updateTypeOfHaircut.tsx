@@ -5,11 +5,10 @@ import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useAbortController } from "../../shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../shared/apiResponse";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
-import { normalizeFormErrors } from "../../../lib/formErrorUtils";
+import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 interface TipoCorte {
@@ -28,26 +27,13 @@ const UpdateTypeOfHaircut: React.FC = () => {
     useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
 
-  const haircutUpdateResolver = async (
-    values: TypeForm,
-    context: unknown,
-    options: {
-      criteriaMode?: "first_error" | "all";
-      shouldFocus?: boolean;
-    },
-  ) => {
-    const result = await zodResolver(HaircutSchema)(values, context, options);
-
-    return normalizeFormErrors(result) ?? result;
-  };
-
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<TypeForm>({
-    resolver: haircutUpdateResolver,
+    resolver: createResolver(HaircutSchema),
     mode: "onBlur",
     defaultValues: { valorBase: 0 },
   });
