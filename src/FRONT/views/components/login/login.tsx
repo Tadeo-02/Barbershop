@@ -3,7 +3,7 @@ import styles from "./login.module.css";
 import { PASSWORD_MAX_LENGTH } from "../../lib/passwordConstants.ts";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.tsx";
-import { useUserRedirect } from "../Redirect.tsx";
+import { useUserRedirect } from "../useUserRedirect";
 import toast from "react-hot-toast";
 
 function Login() {
