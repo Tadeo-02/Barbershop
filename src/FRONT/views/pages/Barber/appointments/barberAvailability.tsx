@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useAuth } from "../../../components/user/AuthContext";
 import toast from "react-hot-toast";
 import styles from "./barberAvailability.module.css";
-import AvailabilityForm from "../../../components/Barber/appointments/AvailabilityForm";
-import type { AvailabilityFormValues } from "../../../components/Barber/appointments/AvailabilityForm";
+import AvailabilityForm from "../../../components/Barber/AvailabilityForm";
+import type { AvailabilityFormValues } from "../../../components/Barber/AvailabilityForm";
 import {
   isAbortError,
   useAbortController,

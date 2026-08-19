@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./branches.module.css";
-import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
-import { changeEntityStatus } from "../../../components/Admin/shared/entityStatus";
-import { showConfirmActionToast } from "../../../components/Admin/shared/confirmActionToast";
-import { fetchPendingAppointmentsCount } from "../../../components/Admin/shared/pendingAppointments";
+import { useEntityActivation } from "../../../components/Admin/useEntityActivation";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
@@ -31,70 +28,33 @@ const IndexBranches = () => {
 
     fetchSucursales();
   }, []);
+
+  const { handleDelete, handleReactivate } = useEntityActivation({
+    entityLabel: "sucursal",
+    entityLabelCapitalized: "Sucursal",
+    gender: "feminine",
+    endpointBase: "/sucursales",
+    pendingCheck: {
+      scope: "branch",
+      blockedMessage: (count) =>
+        `No se puede dar de baja la sucursal. Tiene ${count} turno(s) pendiente(s).`,
+      blockedMessageDuration: 4000,
+    },
+    onStatusChange: (codSucursal, activo) => {
+      setSucursales((prevSucursales) =>
+        prevSucursales.map((sucursal) =>
+          sucursal.codSucursal === codSucursal
+            ? { ...sucursal, activo }
+            : sucursal,
+        ),
+      );
+    },
+  });
+
   // loading state
   if (loading) {
     return <div className={styles.loadingState}>Cargando sucursales...</div>;
   }
-
-  const updateBranchStatus = (codSucursal: string, activo: boolean) => {
-    setSucursales((prevSucursales) =>
-      prevSucursales.map((sucursal) =>
-        sucursal.codSucursal === codSucursal
-          ? { ...sucursal, activo }
-          : sucursal,
-      ),
-    );
-  };
-
-  const handleDelete = async (codSucursal: string) => {
-    try {
-      const pendingCount = await fetchPendingAppointmentsCount(
-        "branch",
-        codSucursal,
-      );
-
-      if (pendingCount > 0) {
-        toast.error(
-          `No se puede dar de baja la sucursal. Tiene ${pendingCount} turno(s) pendiente(s).`,
-          { duration: 4000 },
-        );
-        return;
-      }
-    } catch (error) {
-      console.error("Error checking pending appointments:", error);
-      toast.error("Error al verificar turnos pendientes", { duration: 4000 });
-      return;
-    }
-
-    showConfirmActionToast({
-      title: "¿Estás seguro de que querés dar de baja esta sucursal?",
-      confirmLabel: "Dar de baja",
-      confirmColor: "danger",
-      onConfirm: () => confirmedDelete(codSucursal),
-    });
-  };
-
-  const confirmedDelete = async (codSucursal: string) => {
-    await changeEntityStatus({
-      endpoint: `/sucursales/${codSucursal}/deactivate`,
-      loadingMessage: "Dando de baja sucursal...",
-      successMessage: "Sucursal dada de baja correctamente",
-      notFoundMessage: "Sucursal no encontrada",
-      genericErrorMessage: "Error al dar de baja la sucursal",
-      onSuccess: () => updateBranchStatus(codSucursal, false),
-    });
-  };
-
-  const handleReactivate = async (codSucursal: string) => {
-    await changeEntityStatus({
-      endpoint: `/sucursales/${codSucursal}/reactivate`,
-      loadingMessage: "Reactivando sucursal...",
-      successMessage: "Sucursal reactivada correctamente",
-      notFoundMessage: "Sucursal no encontrada",
-      genericErrorMessage: "Error al reactivar la sucursal",
-      onSuccess: () => updateBranchStatus(codSucursal, true),
-    });
-  };
 
   return (
     <>

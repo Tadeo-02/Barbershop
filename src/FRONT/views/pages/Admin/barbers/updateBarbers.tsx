@@ -14,7 +14,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../../components/shared/useAbortController";
-import { fetchPendingAppointmentsCount } from "../../../components/Admin/shared/pendingAppointments";
+import { fetchPendingAppointmentsCount } from "../../../components/Admin/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 
 type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };

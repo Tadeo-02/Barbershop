@@ -1,5 +1,5 @@
 import toast from "react-hot-toast";
-import { apiFetch } from "../../../lib/apiFetch";
+import { apiFetch } from "../../lib/apiFetch";
 import { getResponseMessage, readJsonSafely } from "./apiResponse";
 
 type ChangeEntityStatusOptions = {

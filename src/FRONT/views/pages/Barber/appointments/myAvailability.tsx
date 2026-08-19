@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../components/user/AuthContext";
 import listStyles from "./barberAppointments.module.css";
-import AvailabilityForm from "../../../components/Barber/appointments/AvailabilityForm";
-import type { AvailabilityFormValues } from "../../../components/Barber/appointments/AvailabilityForm";
+import AvailabilityForm from "../../../components/Barber/AvailabilityForm";
+import type { AvailabilityFormValues } from "../../../components/Barber/AvailabilityForm";
 import {
   formatDate,
   formatTime,

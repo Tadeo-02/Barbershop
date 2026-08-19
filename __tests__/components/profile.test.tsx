@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import MyProfile from "../../src/FRONT/views/components/client/profile/profile.tsx";
+import MyProfile from "../../src/FRONT/views/components/client/profile.tsx";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -21,7 +21,7 @@ vi.mock("../../src/FRONT/views/components/user/AuthContext.tsx", () => ({
 
 // We mock the CSS module so it doesn't break the jsdom environment.
 vi.mock(
-  "../../src/FRONT/views/components/Client/profile/profile.module.css",
+  "../../src/FRONT/views/components/Client/profile.module.css",
   () => ({ default: {} }),
 );
 

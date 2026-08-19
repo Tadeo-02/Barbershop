@@ -10,7 +10,7 @@ import {
   isAbortError,
   useAbortController,
 } from "../../../components/shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../../../components/Admin/shared/apiResponse";
+import { getResponseMessage, readJsonSafely } from "../../../components/Admin/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 
 interface TipoCorte {

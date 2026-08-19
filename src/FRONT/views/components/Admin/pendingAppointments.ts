@@ -1,4 +1,4 @@
-import { apiFetch } from "../../../lib/apiFetch";
+import { apiFetch } from "../../lib/apiFetch";
 import { readJsonSafely } from "./apiResponse";
 
 type PendingScope = "barber" | "branch";

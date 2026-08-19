@@ -5,9 +5,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
-import { showConfirmActionToast } from "../../../components/Admin/shared/confirmActionToast";
-import { changeEntityStatus } from "../../../components/Admin/shared/entityStatus";
-import { fetchPendingAppointmentsCount } from "../../../components/Admin/shared/pendingAppointments";
+import { useEntityActivation } from "../../../components/Admin/useEntityActivation";
 import { apiFetch } from "../../../lib/apiFetch";
 
 // Use the schema exported from the backend as the single source of truth.
@@ -92,6 +90,26 @@ const IndexBarbers = () => {
   }, []);
 
   // function to obtain the name of the branch
+  const { handleDelete, handleReactivate } = useEntityActivation({
+    entityLabel: "barbero",
+    entityLabelCapitalized: "Barbero",
+    gender: "masculine",
+    endpointBase: "/usuarios",
+    pendingCheck: {
+      scope: "barber",
+      blockedMessage: (count) =>
+        `No se puede dar de baja al barbero. Tiene ${count} turno(s) vigente(s) sin atender.`,
+      blockedMessageDuration: 2000,
+    },
+    onStatusChange: (codUsuario, activo) => {
+      setBarberos((prev) =>
+        prev.map((barbero) =>
+          barbero.codUsuario === codUsuario ? { ...barbero, activo } : barbero,
+        ),
+      );
+    },
+  });
+
   const getSucursalNombre = (codSucursal?: string | null): string => {
     if (!codSucursal) return "Sucursal no encontrada";
     return sucursales[codSucursal]?.nombre || "Sucursal no encontrada";
@@ -101,82 +119,6 @@ const IndexBarbers = () => {
   if (loading) {
     return <div className={styles.loadingState}>Cargando barberos...</div>;
   }
-
-  const handleDelete = async (codUsuario: string) => {
-    // Check for pending appointments before showing confirmation dialog
-    try {
-      const pendingCount = await fetchPendingAppointmentsCount(
-        "barber",
-        codUsuario,
-      );
-
-      if (pendingCount > 0) {
-        toast.error(
-          `No se puede dar de baja al barbero. Tiene ${pendingCount} turno(s) vigente(s) sin atender.`,
-          { duration: 2000 },
-        );
-        return;
-      }
-    } catch (error) {
-      console.error("Error checking pending appointments:", error);
-      toast.error("Error al verificar turnos pendientes");
-      return;
-    }
-
-    showConfirmActionToast({
-      title: "¿Estás seguro de que querés dar de baja este barbero?",
-      confirmLabel: "Dar de baja",
-      confirmColor: "danger",
-      onConfirm: () => confirmedDelete(codUsuario),
-    });
-  };
-
-  const confirmedDelete = async (codUsuario: string) => {
-    await changeEntityStatus({
-      endpoint: `/usuarios/${codUsuario}/deactivate`,
-      loadingMessage: "Dando de baja barbero...",
-      successMessage: "Barbero dado de baja correctamente",
-      notFoundMessage: "Barbero no encontrado",
-      genericErrorMessage: "Error al dar de baja el barbero",
-      onSuccess: () => {
-        setBarberos((prev) =>
-          prev.map((barbero) =>
-            barbero.codUsuario === codUsuario
-              ? { ...barbero, activo: false }
-              : barbero,
-          ),
-        );
-      },
-    });
-  };
-
-  const handleReactivate = async (codUsuario: string) => {
-    showConfirmActionToast({
-      title: "¿Estás seguro de que querés reactivar este barbero?",
-      confirmLabel: "Reactivar",
-      confirmColor: "success",
-      onConfirm: () => confirmedReactivate(codUsuario),
-    });
-  };
-
-  const confirmedReactivate = async (codUsuario: string) => {
-    await changeEntityStatus({
-      endpoint: `/usuarios/${codUsuario}/reactivate`,
-      loadingMessage: "Reactivando barbero...",
-      successMessage: "Barbero reactivado correctamente",
-      notFoundMessage: "Barbero no encontrado",
-      genericErrorMessage: "Error al reactivar el barbero",
-      onSuccess: () => {
-        setBarberos((prev) =>
-          prev.map((barbero) =>
-            barbero.codUsuario === codUsuario
-              ? { ...barbero, activo: true }
-              : barbero,
-          ),
-        );
-      },
-    });
-  };
 
   return (
     <>
