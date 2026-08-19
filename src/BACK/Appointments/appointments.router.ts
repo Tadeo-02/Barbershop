@@ -112,6 +112,16 @@ router.get(
 );
 
 // ─── CUSTOMER QUERIES ────────────────────────────────────────────────────────
+// Next appointment: must be defined BEFORE /user/:codUsuario to avoid route conflict
+router.get(
+  "/user/:codUsuario/next",
+  authMiddleware,
+  requireRole("client", "admin"),
+  userLimiter,
+  validateRequest({ params: userParamsSchema }),
+  controller.findNextByUserId,
+);
+
 // A customer can only view THEIR appointments — ownership validation is handled in the controller.
 router.get(
   "/user/:codUsuario",

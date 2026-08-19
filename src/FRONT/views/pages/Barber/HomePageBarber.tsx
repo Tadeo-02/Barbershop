@@ -8,10 +8,6 @@ import {
   useAbortController,
 } from "../../components/shared/useAbortController.ts";
 import { apiFetch } from "../../lib/apiFetch";
-import {
-  getTurnoDateTime,
-  unwrapAppointments,
-} from "../../components/shared/appointments";
 
 interface AppointmentPartial {
   codTurno: string;
@@ -86,7 +82,9 @@ const Home = () => {
     setHasCheckedNextTurno(false);
     setLoadingNextTurno(true);
 
-    apiFetch(`/turnos/user/${user.codUsuario}`, { signal: controller.signal })
+    apiFetch(`/turnos/user/${user.codUsuario}/next`, {
+      signal: controller.signal,
+    })
       .then(async (res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -94,23 +92,7 @@ const Home = () => {
         return res.json();
       })
       .then((data) => {
-        const turnosArray = unwrapAppointments<AppointmentPartial>(data);
-
-        const now = new Date();
-        const upcoming = turnosArray
-          .map((turno) => {
-            const dateTime = getTurnoDateTime(turno);
-            return dateTime ? { turno, dateTime } : null;
-          })
-          .filter(
-            (item): item is { turno: AppointmentPartial; dateTime: Date } =>
-              !!item &&
-              item.turno.estado === "Programado" &&
-              item.dateTime >= now,
-          )
-          .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
-
-        setNextTurno(upcoming[0]?.turno ?? null);
+        setNextTurno(data ?? null);
       })
       .catch((error) => {
         if (isAbortError(error)) return;

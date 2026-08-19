@@ -9,10 +9,6 @@ import {
   useAbortController,
 } from "../../components/shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch";
-import {
-  getTurnoDateTime,
-  unwrapAppointments,
-} from "../../components/shared/appointments";
 
 interface AppointmentSummary {
   codTurno: string;
@@ -193,7 +189,7 @@ const Home = () => {
     setHasCheckedNextTurno(false);
     setLoadingNextTurno(true);
 
-    apiFetch(`/turnos/user/${user.codUsuario}`, { signal: controller.signal })
+    apiFetch(`/turnos/user/${user.codUsuario}/next`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -201,23 +197,8 @@ const Home = () => {
         return res.json();
       })
       .then((data) => {
-        const turnosArray = unwrapAppointments<AppointmentSummary>(data);
-
-        const now = new Date();
-        const upcoming = turnosArray
-          .map((turno) => {
-            const dateTime = getTurnoDateTime(turno);
-            return dateTime ? { turno, dateTime } : null;
-          })
-          .filter(
-            (item): item is { turno: AppointmentSummary; dateTime: Date } =>
-              !!item &&
-              item.turno.estado === "Programado" &&
-              item.dateTime >= now,
-          )
-          .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
-
-        setNextTurno(upcoming[0]?.turno ?? null);
+        const raw = data?.data ?? data;
+        setNextTurno(raw || null);
       })
       .catch((error) => {
         if (isAbortError(error)) return;

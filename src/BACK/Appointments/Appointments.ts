@@ -304,6 +304,89 @@ export const findById = async (codTurno: string) => {
   }
 };
 
+export const findNextByUserId = async (codUsuario: string) => {
+  try {
+    const sanitizedCodUsuario = sanitizeInput(codUsuario);
+    const now = new Date();
+
+    const turno = await prisma.turno.findFirst({
+      where: {
+        AND: [
+          {
+            OR: [
+              { codCliente: sanitizedCodUsuario },
+              { codBarbero: sanitizedCodUsuario },
+            ],
+          },
+          { estado: "Programado" },
+          {
+            OR: [
+              { fechaTurno: { gt: now } },
+              {
+                fechaTurno: { equals: now },
+                horaDesde: { gte: now },
+              },
+            ],
+          },
+        ],
+      },
+      include: {
+        usuarios_turnos_codBarberoTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            email: true,
+            codSucursal: true,
+            sucursales: {
+              select: {
+                codSucursal: true,
+                nombre: true,
+                calle: true,
+                altura: true,
+              },
+            },
+          },
+        },
+        usuarios_turnos_codClienteTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            email: true,
+          },
+        },
+        tipos_corte: {
+          select: {
+            codCorte: true,
+            nombreCorte: true,
+            valorBase: true,
+          },
+        },
+      },
+      orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
+    });
+
+    console.log(
+      `Found next turno for user ${sanitizedCodUsuario}: ${turno?.codTurno ?? "none"}`,
+    );
+
+    return turno ?? null;
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding next turno:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    throw new DatabaseError("Error al buscar próximo turno");
+  }
+};
+
 export const findByUserId = async (codUsuario: string) => {
   try {
     //sanitize and validate
