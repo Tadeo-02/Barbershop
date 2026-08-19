@@ -16,21 +16,16 @@ import { apiFetch } from "../../../lib/apiFetch.ts";
 import { getResponseMessage, readJsonSafely, unwrapArray } from "../../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../../lib/authUtils";
+import type { Haircut } from "../../../../types/haircut";
 
 // (legacy per-item form state removed — CheckoutForm keeps its own state for each appointment, so we don't need to manage it here)
-
-interface Cut {
-  codCorte: string;
-  nombreCorte: string;
-  valorBase: number;
-}
 
 // --- CheckoutForm component: Wraps the payment form with react-hook-form + Zod. ---
 const CheckoutForm: React.FC<{
   codTurno: string;
   codCliente: string;
   initial: { codCorte: string; precioTurno: number; metodoPago: string };
-  allCortes: Cut[];
+  allCortes: Haircut[];
   onCompleted: () => Promise<void>;
 }> = ({ codTurno, codCliente, initial, allCortes, onCompleted }) => {
   const navigate = useNavigate();
@@ -465,9 +460,9 @@ const CheckoutForm: React.FC<{
 };
 
 const BranchAppointments: React.FC = () => {
-  const { user, isAuthenticated, isAuthLoading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
-  const [allCortes, setAllCortes] = useState<Cut[]>([]);
+  const [allCortes, setAllCortes] = useState<Haircut[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -559,7 +554,7 @@ const BranchAppointments: React.FC = () => {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = await readJsonSafely<any>(res);
-        setAllCortes(unwrapArray<Cut>(data, ["data"]));
+        setAllCortes(unwrapArray<Haircut>(data, ["data"]));
       } catch (error: unknown) {
         if (isAbortError(error)) return;
         console.error("Error fetching cuts:", error);
@@ -614,8 +609,10 @@ const BranchAppointments: React.FC = () => {
       });
 
       if (response.ok) {
-        const resData = await response.json();
-        const cae = resData.data?.CAE || "OK";
+        const resData = await readJsonSafely<{ data?: { CAE?: string } }>(
+          response,
+        );
+        const cae = resData?.data?.CAE || "OK";
         toast.success("Factura generada exitosamente", {
           id: toastId,
           duration: 2000,

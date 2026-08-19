@@ -2,19 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./branches.module.css";
 import toast from "react-hot-toast";
-import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
-import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
 import { apiFetch } from "../../../lib/apiFetch";
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
-type Usuario = z.infer<typeof UserBaseSchemaExport> & { codUsuario?: string };
+import type { Sucursal } from "../../../../types/branch";
+import type { Barbero } from "../../../../types/barber";
 
 const ShowBranches = () => {
   const { codSucursal } = useParams();
   const navigate = useNavigate();
   const [sucursal, setSucursal] = useState<Sucursal | null>(null);
-  const [barberos, setBarberos] = useState<Usuario[]>([]);
+  const [barberos, setBarberos] = useState<Barbero[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingBarberos, setLoadingBarberos] = useState(true);
 
@@ -41,7 +37,7 @@ const ShowBranches = () => {
 
         // users route returns { success: true, data: [...] }
         const usuarios = Array.isArray(usuariosResp?.data)
-          ? (usuariosResp.data as Usuario[])
+          ? (usuariosResp.data as Barbero[])
           : [];
 
         // Filter only barbers: it has 'cuil' and is different from '1' 

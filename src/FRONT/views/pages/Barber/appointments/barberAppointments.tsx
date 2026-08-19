@@ -21,7 +21,7 @@ import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../../lib/authUtils";
 
 const BarberAppointments: React.FC = () => {
-  const { user, isAuthenticated, isAuthLoading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [dateSort, setDateSort] = useState<"asc" | "desc">("desc");

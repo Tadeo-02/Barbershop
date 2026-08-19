@@ -3,17 +3,9 @@ import styles from "./indexClients.module.css";
 import toast from "react-hot-toast";
 import { readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import type { Category } from "../../../../types/category";
+import type { CategorySummary } from "../../../../types/category";
 
-// We keep a local Cliente interface that reflects what we expect from the backend, and another ClienteProfile
-// that extends Cliente with additional profile details.
-// This helps us type the state and fetch functions more effectively.
-
-// We keep the interface instead of using the Zod schema directly to avoid coupling the frontend
-// too tightly to the backend, since the structure we need on the frontend doesn't always match 1:1 with
-// what the backend returns (for example: the profile is sometimes wrapped in { success: true, data: profile },
-// or we need to transform dates, etc.).
-
-// Since we only display the data, there's no need to use a schema.
 interface Cliente {
   codUsuario: string;
   dni: string;
@@ -23,14 +15,7 @@ interface Cliente {
   email?: string | null;
   cuil?: string | null;
   codSucursal?: string | null;
-  categoriaActual?: {
-    codCategoria: string;
-    nombreCategoria: string;
-    descCategoria?: string;
-    descuentoCorte?: number;
-    descuentoProducto?: number;
-    fechaInicio?: string | Date;
-  } | null;
+  categoriaActual?: CategorySummary | null;
   appointmentCounts?: {
     total: number;
     canceled: number;
@@ -38,11 +23,6 @@ interface Cliente {
 }
 
 type ClienteProfile = Cliente;
-
-interface Categoria {
-  codCategoria: string;
-  nombreCategoria: string;
-}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -53,7 +33,7 @@ const getDataArray = <T,>(value: unknown): T[] => {
   return [];
 };
 
-const isCategoria = (value: unknown): value is Categoria =>
+const isCategoria = (value: unknown): value is Category =>
   isRecord(value) &&
   typeof value.codCategoria === "string" &&
   typeof value.nombreCategoria === "string";
@@ -79,7 +59,7 @@ const IndexClients = () => {
   const [profilesCache, setProfilesCache] = useState<
     Record<string, ClienteProfile>
   >({});
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [categorias, setCategorias] = useState<Category[]>([]);
   const [selectedCategoria, setSelectedCategoria] = useState<string>("all");
   const [visibleClients, setVisibleClients] = useState<Cliente[]>([]);
 
@@ -162,7 +142,7 @@ const IndexClients = () => {
         }
         const json = await res.json();
         const categoriasData =
-          getDataArray<Categoria>(json).filter(isCategoria);
+          getDataArray<Category>(json).filter(isCategoria);
         setCategorias(categoriasData);
       } catch (error) {
         console.error("Error fetching categorias:", error);

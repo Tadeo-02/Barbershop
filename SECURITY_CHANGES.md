@@ -170,3 +170,77 @@ Items checked off in `TODO.md`:
 
 **Files changed (prior commit):**
 - `src/FRONT/views/pages/Auth/login.tsx`
+
+---
+
+### FIX-E: CSRF 403 on /turnos — investigation and confirmation (INFORMATIONAL)
+
+**Problem:** A 403 "CSRF token missing" was observed when booking appointments (`POST /turnos`). Investigation was needed to determine whether the cause was a raw `fetch()` bypassing CSRF or a timing/ordering issue.
+
+**Investigation (grep audit of all raw `fetch()` calls in frontend):**
+
+| File | URL | Method | CSRF needed? | Verdict |
+|---|---|---|---|---|
+| `login.tsx:25` | `/usuarios/login` | POST | No — unauthenticated endpoint | Intentional |
+| `AuthContext.tsx:54` | `/usuarios/profiles/:codUsuario` | GET | No — GET skips CSRF | Intentional |
+| `AuthContext.tsx:102` | `/usuarios/logout` | POST | No — no `csrfProtection` on route (best-effort) | Intentional |
+
+All appointment-related code (`ScheduleByBranch.tsx`, `branchAppointments.tsx`, `ClientAppointments.tsx`, `barberAppointments.tsx`, `HomePageBarber.tsx`) uses `apiFetch`, which:
+1. Reads the `csrf_token` cookie
+2. Sends `X-CSRF-Token` header
+3. Sets `credentials: "include"` for cross-site cookie flow
+
+**Conclusion:** The 403 was already resolved. No raw `fetch()` calls bypass CSRF on state-changing authenticated endpoints. The current code is correct.
+
+**Preventive measure:** Added a warning comment to `apiFetch.ts` to prevent future developers from introducing raw `fetch()` calls for authenticated requests.
+
+**Files changed:**
+- `src/FRONT/views/lib/apiFetch.ts` (comment only)
+
+---
+
+### SEC-01 update: Authorization header fallback removed
+
+**Problem:** The `Authorization: Bearer` fallback in `authMiddleware.ts` was added as a temporary migration aid when moving from header-based auth to cookie-based auth (SEC-01). After multiple successful deploys with cookie-only auth, confirmed that zero frontend files use the `Authorization` header (grep of `src/FRONT` for `Authorization|Bearer` returns empty).
+
+**Changes:**
+- `authMiddleware.ts`: Removed the 5-line `Authorization: Bearer` header fallback. Authentication now uses only the `access_token` HttpOnly cookie. This reduces attack surface and removes dead code.
+
+**Files changed:**
+- `src/BACK/middleware/authMiddleware.ts`
+
+---
+
+### FIX-F: CSRF double-submit cookie broken in cross-site deployment (HIGH)
+
+**Problem:** `apiFetch` read the `csrf_token` value from `document.cookie` to send it as the `X-CSRF-Token` header. In the production cross-site deployment (frontend on `vercel.app`, backend on `onrender.com`), `document.cookie` on the frontend page **cannot** read cookies set by the backend — they are stored under the backend's domain, not the frontend's. This meant `csrfToken` was always `undefined` in production, the `X-CSRF-Token` header was never sent, and every authenticated state-changing request (POST/PUT/PATCH/DELETE) failed with `403 CSRF token missing`.
+
+The pattern worked in local development because both frontend and backend run on `localhost` (same registrable domain, different ports), so `document.cookie` could read the cookie. This masked the bug until production deployment.
+
+**Root cause:** The double-submit cookie pattern requires the frontend JavaScript to be able to read the cookie value. This only works when the cookie and the JavaScript share the same domain. In a cross-site architecture (different registrable domains), this is impossible via `document.cookie`.
+
+**Changes:**
+- `apiFetch.ts`: Added a module-level `csrfToken` variable with `setCsrfToken()` / `clearCsrfToken()` exports. `apiFetch` now uses the in-memory token (with `document.cookie` as a fallback for same-origin dev). This works because the backend already returns `csrfToken` in the login response body — we just weren't storing it.
+- `login.tsx`: After successful login, extracts `csrfToken` from the parsed response body and calls `setCsrfToken()` to store it in the module-level variable.
+- `AuthContext.tsx`: Calls `clearCsrfToken()` on logout to prevent stale token usage.
+
+**Files changed:**
+- `src/FRONT/views/lib/apiFetch.ts`
+- `src/FRONT/views/pages/Auth/login.tsx`
+- `src/FRONT/views/components/user/AuthContext.tsx`
+
+---
+
+### FIX-G: CSRF token loss on page refresh / new tab (HIGH)
+
+**Problem:** FIX-F stored the CSRF token in a module-level JS variable. This variable is lost on page refresh, tab close/reopen, or hard navigation. The `access_token` HttpOnly cookie survives the refresh, so `AuthContext.tsx` successfully re-hydrates the session via `GET /usuarios/profiles/:codUsuario`. The user appears logged in with no error, but the in-memory `csrfToken` is `null` — the next mutation fails with `403 CSRF token missing`.
+
+**Changes:**
+- `users.router.ts`: The `GET /usuarios/profiles/:codUsuario` endpoint now reads the existing `csrf_token` cookie (already set, `httpOnly: false`) via `req.cookies` and returns it in the response body as `csrfToken`. No token regeneration — just echoes the existing value to keep the double-submit comparison valid.
+- `AuthContext.tsx`: In `loadProfile()`, extracts `csrfToken` from the hydration response and calls `setCsrfToken()` to populate the in-memory variable.
+- `types/user.ts`: Added `ProfileHydrationResponse` interface (separate from `UserProfile` to keep auth hydration concerns out of the canonical user type used by 7+ other callers).
+
+**Files changed:**
+- `src/BACK/users/users.router.ts`
+- `src/FRONT/views/components/user/AuthContext.tsx`
+- `src/FRONT/types/user.ts`

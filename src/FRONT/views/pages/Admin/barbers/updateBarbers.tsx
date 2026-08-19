@@ -4,10 +4,8 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import {
   UserBaseSchemaExport,
-  UserSchema,
 } from "../../../../../BACK/Schemas/usersSchema";
 import { useAbortController } from "../../../components/shared/useAbortController";
 import { fetchPendingAppointmentsCount } from "../../../components/Admin/pendingAppointments";
@@ -20,10 +18,11 @@ import {
   PASSWORD_PATTERN,
 } from "../../../lib/passwordConstants";
 import { getPasswordMissing } from "../../../lib/passwordRules";
+import { parseBackendResponse } from "../../../lib/backendResponse";
+import type { Sucursal } from "../../../../types/branch";
+import type { UserResponse } from "../../../../types/user";
 
-type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+type Barbero = UserResponse;
 
 const UpdateBarberSchema = UserBaseSchemaExport.extend({
   contraseña: z.string().optional(),
@@ -194,18 +193,16 @@ const UpdateBarber: React.FC = () => {
         body: JSON.stringify(datosParaBackend),
         signal: controller.signal,
       });
+      const parsed = await parseBackendResponse(response);
 
-      const responseData = await response.json();
-      console.log("🔍 Debug - Response data:", responseData);
-
-      if (response.ok) {
+      if (parsed.ok) {
         toast.success(
-          responseData.message || "Barbero actualizado exitosamente",
+          parsed.message || "Barbero actualizado exitosamente",
           { id: toastId, duration: 2000 },
         );
         navigate("/Admin/BarbersPage");
       } else {
-        toast.error(responseData.message || "Error al actualizar barbero", {
+        toast.error(parsed.message || "Error al actualizar barbero", {
           id: toastId,
           duration: 2000,
         });

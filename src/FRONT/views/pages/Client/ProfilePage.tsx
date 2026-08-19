@@ -3,28 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "./ProfilePage.module.css";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../lib/apiFetch";
-
-//! ADAPTAR A MOBILE
-interface CategoriaActual {
-  codCategoria: string;
-  nombreCategoria: string;
-  descCategoria: string;
-  descuentoCorte: number;
-  descuentoProducto: number;
-  fechaInicio: string;
-}
-
-interface UserProfile {
-  codUsuario: string;
-  dni: string;
-  cuil: string | null;
-  codSucursal: string | null;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  email: string;
-  categoriaActual: CategoriaActual | null;
-}
+import type { UserProfile } from "../../../types/user";
 
 const MyProfile = () => {
   const { user } = useAuth();

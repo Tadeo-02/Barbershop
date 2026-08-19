@@ -2,17 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Branches.module.css";
 import { apiFetch } from "../../lib/apiFetch";
+import type { Sucursal } from "../../../types/branch";
 // import toast from "react-hot-toast";
-interface Branch {
-  codSucursal: string;
-  nombre: string;
-  calle: string;
-  altura: number;
-}
 
 const IndexBranches = () => {
   const navigate = useNavigate();
-  const [branches, setBranches] = useState<Branch[]>([]);
+  const [branches, setBranches] = useState<Sucursal[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [loading, setLoading] = useState(true); // inicial loading 
 

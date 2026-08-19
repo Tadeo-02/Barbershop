@@ -2,16 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
-import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
-import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
 import { useEntityActivation } from "../../../components/Admin/useEntityActivation";
+import { BarberResponseSchema } from "../../../../../BACK/Schemas/usersSchema";
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { apiFetch } from "../../../lib/apiFetch";
-
-// Use the schema exported from the backend as the single source of truth.
-
-type Barbero = z.infer<typeof BarberResponseSchema>;
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+import type { Barbero } from "../../../../types/barber";
+import type { Sucursal } from "../../../../types/branch";
 
 const IndexBarbers = () => {
   const [barberos, setBarberos] = useState<Barbero[]>([]);

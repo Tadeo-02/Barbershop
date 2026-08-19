@@ -2,24 +2,14 @@ import { useEffect, useState } from "react";
 import styles from "./ScheduleByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema.ts";
 import { useAuth } from "../../components/user/AuthContext.tsx";
 import TimeSlotPicker from "../../components/shared/TimeSlotPicker.tsx";
 import { apiFetch } from "../../lib/apiFetch.ts";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../lib/authUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
-
-interface Barbero {
-  codUsuario: string;
-  codSucursal?: string;
-  nombre?: string;
-  apellido?: string;
-  telefono?: string;
-}
+import type { Sucursal } from "../../../types/branch";
+import type { Barbero } from "../../../types/barber";
 
 const getTomorrowDate = () => {
   const today = new Date();

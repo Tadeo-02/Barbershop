@@ -8,6 +8,8 @@ import { deriveRole } from "../../lib/roles.ts";
 import toast from "react-hot-toast";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
+import { setCsrfToken } from "../../lib/apiFetch";
+import type { User } from "../../../types/user";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -27,7 +29,7 @@ function Login() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, contraseña }),
       });
-      const parsed = await parseBackendResponse<{ user?: User; token?: string; message?: string }>(response);
+      const parsed = await parseBackendResponse<{ user?: User; csrfToken?: string; message?: string }>(response);
       
       if (!parsed.ok && parsed.message) {
         toast.error(parsed.message);
@@ -35,6 +37,11 @@ function Login() {
       }
       if (response.ok) {
         if (parsed.data?.user) {
+          // Store the CSRF token in JS memory for cross-site double-submit.
+          // document.cookie can't read cookies set by a different domain.
+          if (parsed.data.csrfToken) {
+            setCsrfToken(parsed.data.csrfToken);
+          }
           const role = deriveRole(parsed.data.user.cuil);
           login(parsed.data.user, role);
           redirectUser(parsed.data.user, parsed.message || "Login exitoso");
@@ -44,7 +51,7 @@ function Login() {
       } else {
         toast.error(parsed.message || "Error de login");
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     } catch (error) {
       if (handleAbortOrConnectionError(error, undefined, "Error de conexión")) {
         return;

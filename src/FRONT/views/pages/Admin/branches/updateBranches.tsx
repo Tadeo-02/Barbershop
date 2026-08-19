@@ -6,15 +6,13 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   BranchSchema,
-  BranchWithIdSchema,
 } from "../../../../../BACK/Schemas/branchesSchema";
 import { useAbortController } from "../../../components/shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+import type { Sucursal } from "../../../../types/branch";
 
 const UpdateBranchSchema = BranchSchema.extend({});
 type UpdateBranchForm = z.infer<typeof UpdateBranchSchema>;

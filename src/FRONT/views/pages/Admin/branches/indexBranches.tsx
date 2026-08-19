@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./branches.module.css";
-import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { useEntityActivation } from "../../../components/Admin/useEntityActivation";
 import { apiFetch } from "../../../lib/apiFetch";
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+import type { Sucursal } from "../../../../types/branch";
 
 const IndexBranches = () => {
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);

@@ -4,18 +4,9 @@ import {
   getSessionUser,
   setSessionUser,
 } from "../../lib/authStorage";
+import { clearCsrfToken, setCsrfToken } from "../../lib/apiFetch";
 import type { UserRole } from "../../lib/roles";
-
-export interface User {
-  codUsuario: string;
-  dni: string;
-  cuil: string | null;
-  codSucursal: string | null;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  email: string;
-}
+import type { User, ProfileHydrationResponse } from "../../../types/user";
 
 interface AuthContextType {
   user: User | null;
@@ -70,9 +61,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           throw new Error(`HTTP error! status: ${res.status}`);
         }
 
-        const data = await res.json();
+        const data = (await res.json()) as ProfileHydrationResponse;
         if (!isCurrent) return;
-        setUser((data?.data ?? data?.user ?? data) as User);
+        setUser(data.data as User);
+        if (data.csrfToken) {
+          setCsrfToken(data.csrfToken);
+        }
       } catch {
         if (!isCurrent) return;
         clearAuthStorage();
@@ -107,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUserType(null);
     setIsAuthLoading(false);
     clearAuthStorage();
+    clearCsrfToken();
 
     try {
       await fetch(`${API_URL}/usuarios/logout`, {

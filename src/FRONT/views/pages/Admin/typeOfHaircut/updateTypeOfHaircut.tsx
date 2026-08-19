@@ -10,19 +10,14 @@ import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
-
-interface TipoCorte {
-  codCorte: string;
-  nombre: string;
-  valorBase: number;
-}
+import type { Haircut } from "../../../../types/haircut";
 
 type TypeForm = z.infer<typeof HaircutSchema>;
 
 const UpdateTypeOfHaircut: React.FC = () => {
   const { codCorte } = useParams<{ codCorte: string }>();
   const navigate = useNavigate();
-  const [corte, setCorte] = useState<TipoCorte | null>(null);
+  const [corte, setCorte] = useState<Haircut | null>(null);
   const { renew: renewFetchAbort, abort: abortFetchAbort } =
     useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
@@ -50,14 +45,14 @@ const UpdateTypeOfHaircut: React.FC = () => {
         if (response.ok) {
           const raw = await response.json();
           // map backend response fields to frontend form shape
-          const mapped: TipoCorte = {
-            codCorte: raw.codCorte ?? raw.codCorte,
-            nombre: raw.nombre ?? raw.nombreCorte ?? "",
-            valorBase: raw.valorBase ?? undefined,
-          } as TipoCorte;
+          const mapped: Haircut = {
+            codCorte: raw.codCorte ?? "",
+            nombreCorte: raw.nombre ?? raw.nombreCorte ?? "",
+            valorBase: raw.valorBase ?? 0,
+          };
           setCorte(mapped);
           reset({
-            nombre: mapped.nombre,
+            nombre: mapped.nombreCorte,
             valorBase: mapped.valorBase,
           });
           toast.dismiss(toastId);

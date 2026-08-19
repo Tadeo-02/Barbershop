@@ -2,23 +2,13 @@ import { useEffect, useState } from "react";
 import styles from "./BarbersByBranch.module.css";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../BACK/Schemas/branchesSchema.ts";
 import { useAuth } from "../../components/user/AuthContext.tsx";
 import { apiFetch } from "../../lib/apiFetch.ts";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../lib/authUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
-
-interface Barbero {
-  codUsuario: string;
-  codSucursal: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-}
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+import type { Barbero } from "../../../types/barber";
+import type { Sucursal } from "../../../types/branch";
 
 const BarbersByBranch = () => {
   const params = useParams();

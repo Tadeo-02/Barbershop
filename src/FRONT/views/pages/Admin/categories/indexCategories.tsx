@@ -2,18 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast";
-import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema.ts";
-import type { z } from "zod";
 import { showConfirmActionToast } from "../../../components/Admin/confirmActionToast";
 import { changeEntityStatus } from "../../../components/Admin/entityStatus";
 import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import type { Category } from "../../../../types/category";
 
 const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
 const PROTECTED_CATEGORY_NAMES = ["Inicial"] as const;
-
-// Infer the type from the existing BACKEND schema and map it to the names used by the frontend.
-type Categoria = z.infer<typeof CategorySchema>;
 
 type DeleteAction = "promote" | "demote";
 
@@ -39,7 +35,7 @@ interface DeleteContext {
 }
 
 const IndexCategories = () => {
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [categorias, setCategorias] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true); // loading
   const [deleteContext, setDeleteContext] = useState<DeleteContext | null>(
     null,
