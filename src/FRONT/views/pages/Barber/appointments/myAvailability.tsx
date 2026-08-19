@@ -16,6 +16,7 @@ import {
   useAbortController,
 } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
+import { getResponseMessage, readJsonSafely, unwrapArray } from "../../../lib/apiResponse";
 
 interface Availability {
   codBloqueo: string;
@@ -61,16 +62,11 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
 
-        const data = await res.json().catch(() => null);
+        const data = await readJsonSafely<
+          Availability[] | { data?: Availability[]; availability?: Availability[] }
+        >(res);
 
-        let list: Availability[] = [];
-        if (Array.isArray(data)) {
-          list = data;
-        } else if (data && Array.isArray(data.data)) {
-          list = data.data;
-        } else if (data && Array.isArray(data.availability)) {
-          list = data.availability;
-        }
+        const list = unwrapArray<Availability>(data, ["data", "availability"]);
 
         const filtered = list
           .filter((item) => item.codBarbero === user.codUsuario)
@@ -156,17 +152,17 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
         signal: controller.signal,
       });
 
-      const data = await response.json().catch(() => null);
-
       if (response.ok) {
+        await readJsonSafely(response);
         toast.success("Bloqueo cancelado correctamente", { id: toastId });
         setAvailability((prev) =>
           prev.filter((current) => current.codBloqueo !== item.codBloqueo),
         );
       } else {
-        const message =
-          data?.message || data?.error || "Error al cancelar bloqueo";
-        toast.error(message, { id: toastId });
+        const data = await readJsonSafely(response);
+        toast.error(getResponseMessage(data, "Error al cancelar bloqueo") ?? "Error al cancelar bloqueo", {
+          id: toastId,
+        });
       }
     } catch (error: unknown) {
       if (isAbortError(error)) {
@@ -242,9 +238,8 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
         },
       );
 
-      const data = await response.json().catch(() => null);
-
       if (response.ok) {
+        await readJsonSafely(response);
         toast.success("Bloqueo modificado correctamente", { id: toastId });
         setAvailability((prev) =>
           prev
@@ -269,9 +264,10 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
         setAvailabilityToUpdate(null);
         setEditValues(null);
       } else {
-        const message =
-          data?.message || data?.error || "Error al modificar bloqueo";
-        toast.error(message, { id: toastId });
+        const data = await readJsonSafely(response);
+        toast.error(getResponseMessage(data, "Error al modificar bloqueo") ?? "Error al modificar bloqueo", {
+          id: toastId,
+        });
       }
     } catch (error: unknown) {
       if (isAbortError(error)) {

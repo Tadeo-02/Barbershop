@@ -4,17 +4,15 @@ import styles from "./branches.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   BranchSchema,
   BranchWithIdSchema,
 } from "../../../../../BACK/Schemas/branchesSchema";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../../components/shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../../../components/Admin/apiResponse";
+import { useAbortController } from "../../../components/shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import { createResolver } from "../../../lib/zodFormResolver";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -35,7 +33,7 @@ const UpdateBranches: React.FC = () => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<UpdateBranchForm>({
-    resolver: zodResolver(UpdateBranchSchema),
+    resolver: createResolver(UpdateBranchSchema),
     mode: "onBlur",
   });
 
@@ -67,12 +65,10 @@ const UpdateBranches: React.FC = () => {
           });
         }
       } catch (error: unknown) {
-        if (isAbortError(error)) {
-          toast.dismiss(toastId);
+        if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
           return;
         }
         console.error("🔍 Debug - Fetch error:", error);
-        toast.error("Error de conexión", { id: toastId });
       }
     };
 
@@ -111,12 +107,10 @@ const UpdateBranches: React.FC = () => {
         toast.error(msg, { id: toastId });
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
         return;
       }
       console.error("🔍 Debug - Submit error:", error);
-      toast.error("Error de conexión", { id: toastId });
     }
   };
 

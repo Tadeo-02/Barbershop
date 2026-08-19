@@ -3,6 +3,8 @@ import { z } from "zod";
 import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 import { billAppointment } from "../billing/Billing";
 import { getDiscountCycle, applyDiscountIfEligible } from "../lib/discount";
+import { assertEntityExists } from "../lib/entityChecks";
+import { parseValidatedInput } from "../lib/zodHelpers";
 
 // Configurable thresholds (can be overridden by environment variables during testing)
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
@@ -166,9 +168,10 @@ export const store = async (
     }
 
     // validate with zod - omit codTurno for creation
-    const validatedData = AppointmentSchema.omit({
-      codTurno: true,
-    }).parse(sanitizedData);
+    const validatedData = parseValidatedInput(
+      AppointmentSchema.omit({ codTurno: true }),
+      sanitizedData,
+    );
     console.log("Creating turno");
 
     // convert strings to Date objects for Prisma
@@ -553,6 +556,7 @@ export const findByBarberId = async (
       where: {
         codBarbero: sanitizedCodBarbero,
         fechaTurno: new Date(sanitizedFechaTurno),
+        estado: "Programado",
       },
     });
 
@@ -771,27 +775,28 @@ export const update = async (
       estado: sanitizeInput(estado),
     };
 
-    const validatedData = AppointmentSchema.parse({
-      codTurno: sanitizedData.codTurno,
-      codCorte: sanitizedData.codCorte,
-      codCliente: sanitizedData.codCliente,
-      precioTurno: sanitizedData.precioTurno,
-      metodoPago: sanitizedData.metodoPago,
-      fechaCancelacion: sanitizedData.fechaCancelacion,
-      fechaTurno: sanitizedData.fechaTurno,
-      horaDesde: sanitizedData.horaDesde,
-      horaHasta: sanitizedData.horaHasta,
-      estado: sanitizedData.estado,
-    });
+    const validatedData = parseValidatedInput(
+      AppointmentSchema.omit({ codBarbero: true }),
+      {
+        codTurno: sanitizedData.codTurno,
+        codCorte: sanitizedData.codCorte,
+        codCliente: sanitizedData.codCliente,
+        precioTurno: sanitizedData.precioTurno,
+        metodoPago: sanitizedData.metodoPago,
+        fechaCancelacion: sanitizedData.fechaCancelacion,
+        fechaTurno: sanitizedData.fechaTurno,
+        horaDesde: sanitizedData.horaDesde,
+        horaHasta: sanitizedData.horaHasta,
+        estado: sanitizedData.estado,
+      },
+    );
 
     // Use the sanitized codTurno (not validated by Zod)
     const existingTurno = await prisma.turno.findUnique({
       where: { codTurno: sanitizedData.codTurno },
     });
 
-    if (!existingTurno) {
-      throw new DatabaseError("Turno no encontrado");
-    }
+    assertEntityExists(existingTurno, "Turno");
 
     // convert strings to correct types for Prisma
     const fechaDate = new Date(sanitizedData.fechaTurno); // Use sanitized data
@@ -899,10 +904,7 @@ export const updateAppointment = async (
       where: { codTurno: sanitizedCodTurno },
     });
 
-    if (!existingTurno) {
-      console.log("Turno no encontrado");
-      throw new DatabaseError("Turno no encontrado");
-    }
+    assertEntityExists(existingTurno, "Turno");
 
     console.log("Turno encontrado, actualizando...");
 

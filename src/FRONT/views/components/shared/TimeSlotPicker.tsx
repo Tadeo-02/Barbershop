@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from "./TimeSlotPicker.module.css";
 import { apiFetch } from "../../lib/apiFetch.ts";
+import { unwrapArray } from "../../lib/apiResponse";
 
 interface Horario {
   hora: string;
@@ -55,28 +56,28 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
   const codigo = codBarbero || codSucursal;
 
   useEffect(() => {
-    if (!codigo) {
-      setError("No se encontró el código");
-      setLoading(false);
-      return;
-    }
+    const loadHorarios = async () => {
+      if (!codigo) {
+        setError("No se encontró el código");
+        setLoading(false);
+        return;
+      }
 
-    // Show loading of timeslots when changing date
-    if (!isFirstRender.current) {
-      setLoadingHorarios(true);
-    } else {
-      isFirstRender.current = false;
-    }
+      if (!isFirstRender.current) {
+        setLoadingHorarios(true);
+      } else {
+        isFirstRender.current = false;
+      }
 
-    // Go directly to the correct endpoint based on the type
-    const endpoint = isBarbero
-      ? `/turnos/barber/${codigo}/${fechaTurno}`
-      : `/turnos/available/${fechaTurno}/${codigo}`;
+      const endpoint = isBarbero
+        ? `/turnos/barber/${codigo}/${fechaTurno}`
+        : `/turnos/available/${fechaTurno}/${codigo}`;
 
-    console.log("Llamando a endpoint:", endpoint);
+      console.log("Llamando a endpoint:", endpoint);
 
-    apiFetch(endpoint)
-      .then(async (res) => {
+      try {
+        const res = await apiFetch(endpoint);
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -88,32 +89,22 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
           throw new Error("El servidor no devolvió datos JSON válidos");
         }
 
-        return res.json();
-      })
-      .then((response) => {
-        let horariosData: Horario[] = [];
-
-        if (response.success && Array.isArray(response.data)) {
-          horariosData = response.data.filter(
-            (item: Horario) => item && item.hora,
-          );
-        } else if (Array.isArray(response)) {
-          horariosData = response.filter((item: Horario) => item && item.hora);
-        } else {
-          console.error("Unexpected response format:", response);
-          horariosData = [];
-        }
+        const response = await res.json();
+        const horariosData = unwrapArray<Horario>(response, ["data"]).filter(
+          (item) => item && item.hora,
+        );
 
         setHorarios(horariosData);
-        setLoading(false);
-        setLoadingHorarios(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching horarios:", error);
-        setError(error.message || "Error al obtener horarios");
+        setError(error instanceof Error ? error.message : "Error al obtener horarios");
+      } finally {
         setLoading(false);
         setLoadingHorarios(false);
-      });
+      }
+    };
+
+    void loadHorarios();
   }, [codigo, fechaTurno, isBarbero]);
 
   const handleDateChange = (date: Date | null) => {

@@ -12,9 +12,12 @@ import {
   gatherReceiptData,
   generateReceiptPdf,
 } from "./invoicePdf";
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
+import {
+  createDataResponse,
+  createErrorResponse,
+  createValidationErrorResponse,
+  getErrorMessage,
+} from "../lib/backendResponse";
 
 const getErrorCode = (error: unknown): string | undefined => {
   if (error && typeof error === "object" && "code" in error) {
@@ -23,6 +26,15 @@ const getErrorCode = (error: unknown): string | undefined => {
   }
   return undefined;
 };
+
+const validationError = (message: string, details?: unknown) =>
+  createValidationErrorResponse(message, details);
+
+const dataResponse = <T>(data: T, message?: string) =>
+  createDataResponse(data, message);
+
+const serverError = (message: string) =>
+  createErrorResponse(message, "server_error");
 
 // ============================================================
 // Controller de Facturación Electrónica - ARCA
@@ -39,25 +51,20 @@ export const createVoucher = async (
   try {
     const parsed = CreateVoucherSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({
-        success: false,
-        message: "Datos de comprobante inválidos",
-        errors: parsed.error.flatten().fieldErrors,
-      });
+      res.status(400).json(
+        validationError("Datos de comprobante inválidos", parsed.error.flatten().fieldErrors),
+      );
       return;
     }
 
     const result = await model.createVoucher(parsed.data);
 
-    res.status(201).json({
-      success: true,
-      message: "Comprobante creado exitosamente",
-      data: result,
-    });
+    res.status(201).json(
+      dataResponse(result, "Comprobante creado exitosamente"),
+    );
   } catch (error: unknown) {
     res.status(500).json({
-      success: false,
-      message: getErrorMessage(error, "Error al crear comprobante"),
+      ...serverError(getErrorMessage(error, "Error al crear comprobante")),
       code: getErrorCode(error),
     });
   }
@@ -74,11 +81,9 @@ export const billAppointment = async (
   try {
     const parsed = BillAppointmentSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({
-        success: false,
-        message: "Datos de facturación inválidos",
-        errors: parsed.error.flatten().fieldErrors,
-      });
+      res.status(400).json(
+        validationError("Datos de facturación inválidos", parsed.error.flatten().fieldErrors),
+      );
       return;
     }
 
@@ -98,11 +103,9 @@ export const billAppointment = async (
       condicionIVAReceptor,
     );
 
-    res.status(201).json({
-      success: true,
-      message: "Turno facturado exitosamente",
-      data: result,
-    });
+    res.status(201).json(
+      dataResponse(result, "Turno facturado exitosamente"),
+    );
   } catch (error: unknown) {
     const errorCode = getErrorCode(error);
     const statusCode =
@@ -318,10 +321,10 @@ export const getInvoicePdf = async (
     );
     const nroComprobante = parseInt(voucherNumber, 10);
 
-    if (!codTurno || isNaN(nroComprobante)) {
+    if (isNaN(nroComprobante)) {
       res.status(400).json({
         success: false,
-        message: "codTurno y voucherNumber son requeridos",
+        message: "voucherNumber debe ser un número válido",
       });
       return;
     }
@@ -366,18 +369,11 @@ export const getBillingData = async (
   try {
     const { codTurno } = req.params;
 
-    if (!codTurno) {
-      res.status(400).json({
-        success: false,
-        message: "codTurno es requerido",
-      });
-      return;
-    }
-
     const turno = await prisma.turno.findUnique({
       where: { codTurno },
       select: {
         codTurno: true,
+        codCliente: true,
         estado: true,
         precioTurno: true,
         metodoPago: true,
@@ -396,6 +392,15 @@ export const getBillingData = async (
       res.status(404).json({
         success: false,
         message: "Turno no encontrado",
+      });
+      return;
+    }
+
+    // a client can only access their own appointment's billing data. barbers and admins can access any.
+    if (req.user?.rol === "client" && req.user.codUsuario !== turno.codCliente) {
+      res.status(403).json({
+        success: false,
+        message: "Acceso denegado",
       });
       return;
     }
@@ -468,24 +473,34 @@ export const getReceiptPdf = async (
   try {
     const { codTurno } = req.params;
 
-    if (!codTurno) {
-      res.status(400).json({
-        success: false,
-        message: "codTurno es requerido",
-      });
-      return;
-    }
-
     // Check if turno has ARCA billing data
     const turno = await prisma.turno.findUnique({
       where: { codTurno },
       select: {
+        codCliente: true,
         cae: true,
         voucherNumber: true,
         tipoComprobante: true,
         puntoDeVenta: true,
       },
     });
+
+    if (!turno) {
+      res.status(404).json({
+        success: false,
+        message: "Turno no encontrado",
+      });
+      return;
+    }
+
+    // Un cliente solo puede ver el recibo de sus propios turnos
+    if (req.user?.rol === "client" && req.user.codUsuario !== turno.codCliente) {
+      res.status(403).json({
+        success: false,
+        message: "Acceso denegado",
+      });
+      return;
+    }
 
     if (turno?.cae && turno.voucherNumber) {
       // Serve full ARCA invoice PDF

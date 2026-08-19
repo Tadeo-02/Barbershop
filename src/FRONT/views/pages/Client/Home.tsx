@@ -3,12 +3,15 @@ import { FaCut, FaRegCalendarAlt, FaRegClock } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/user/AuthContext";
-import styles from "./Home.module.css";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../components/shared/useAbortController";
+import styles from "./home.module.css";
+import { isAbortError, useAbortController } from "../../components/shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch";
+import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import {
+  getTurnoDateTime,
+  unwrapAppointments,
+} from "../../components/shared/appointments";
 
 interface AppointmentSummary {
   codTurno: string;
@@ -133,7 +136,7 @@ const Home = () => {
       });
 
       if (response.ok) {
-        await response.json().catch(() => null);
+        await readJsonSafely(response);
         toast.success("Turno cancelado correctamente", {
           id: toastId,
           duration: 2000,
@@ -142,18 +145,18 @@ const Home = () => {
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId, duration: 2000 });
       } else {
-        const errorData = await response.json().catch(() => null);
-        toast.error(errorData?.message || "Error al cancelar el turno", {
-          id: toastId,
-          duration: 2000,
-        });
+        const errorData = await readJsonSafely(response);
+        toast.error(
+          getResponseMessage(errorData, "Error al cancelar el turno") ??
+            "Error al cancelar el turno",
+          { id: toastId, duration: 2000 },
+        );
       }
     } catch (error) {
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
+        return;
+      }
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
     } finally {
       setIsCancelling(false);
     }
@@ -179,74 +182,94 @@ const Home = () => {
     };
   };
 
-  useEffect(() => {
-    if (!user?.codUsuario) {
-      setNextTurno(null);
-      setLoadingNextTurno(false);
-      setHasCheckedNextTurno(true);
-      return;
-    }
+useEffect(() => {
+    const loadNextTurno = async () => {
+      if (!user?.codUsuario) {
+        setNextTurno(null);
+        setLoadingNextTurno(false);
+        setHasCheckedNextTurno(true);
+        return;
+      }
 
-    const controller = renewNextTurnoAbort();
-    setHasCheckedNextTurno(false);
-    setLoadingNextTurno(true);
+      const controller = renewNextTurnoAbort();
+      setHasCheckedNextTurno(false);
+      setLoadingNextTurno(true);
 
-    apiFetch(`/turnos/user/${user.codUsuario}/next`, { signal: controller.signal })
-      .then(async (res) => {
+      try {
+        const res = await apiFetch(`/turnos/user/${user.codUsuario}`, {
+          signal: controller.signal,
+        });
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
-        const raw = data?.data ?? data;
-        setNextTurno(raw || null);
-      })
-      .catch((error) => {
+
+        const data = await res.json();
+        const turnosArray = unwrapAppointments<AppointmentSummary>(data);
+
+        const now = new Date();
+        const upcoming = turnosArray
+          .map((turno) => {
+            const dateTime = getTurnoDateTime(turno);
+            return dateTime ? { turno, dateTime } : null;
+          })
+          .filter(
+            (item): item is { turno: AppointmentSummary; dateTime: Date } =>
+              !!item &&
+              item.turno.estado === "Programado" &&
+              item.dateTime >= now,
+          )
+          .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
+
+        setNextTurno(upcoming[0]?.turno ?? null);
+      } catch (error) {
         if (isAbortError(error)) return;
         console.error("Error fetching next appointment:", error);
         setNextTurno(null);
-      })
-      .finally(() => {
+      } finally {
         setLoadingNextTurno(false);
         setHasCheckedNextTurno(true);
-      });
+      }
+    };
 
+    void loadNextTurno();
     return abortNextTurnoAbort;
   }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
 
+
   useEffect(() => {
-    if (!user?.codUsuario) {
-      setLoyaltyProgress(null);
-      setLoadingLoyalty(false);
-      return;
-    }
+    const loadLoyaltyProgress = async () => {
+      if (!user?.codUsuario) {
+        setLoyaltyProgress(null);
+        setLoadingLoyalty(false);
+        return;
+      }
 
-    const controller = renewLoyaltyAbort();
-    setLoadingLoyalty(true);
+      const controller = renewLoyaltyAbort();
+      setLoadingLoyalty(true);
 
-    apiFetch(`/usuarios/profiles/${user.codUsuario}`, {
-      signal: controller.signal,
-    })
-      .then(async (res) => {
+      try {
+        const res = await apiFetch(`/usuarios/profiles/${user.codUsuario}`, {
+          signal: controller.signal,
+        });
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         const profile = data?.success && data.data ? data.data : data;
         setLoyaltyProgress(profile?.loyaltyProgress ?? null);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (isAbortError(error)) return;
         console.error("Error fetching loyalty progress:", error);
         setLoyaltyProgress(null);
-      })
-      .finally(() => {
+      } finally {
         setLoadingLoyalty(false);
-      });
+      }
+    };
 
+    void loadLoyaltyProgress();
     return abortLoyaltyAbort;
   }, [user?.codUsuario, renewLoyaltyAbort, abortLoyaltyAbort]);
 

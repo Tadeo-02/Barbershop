@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import styles from "./ReceiptViewer.module.css";
 import toast from "react-hot-toast";
 import { apiFetch } from "../../lib/apiFetch";
+import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
 
 interface BillingData {
   codTurno: string;
@@ -21,14 +22,19 @@ interface BillingData {
 }
 
 interface ReceiptViewerProps {
-  /** Ruta a la que navega el botón "Volver" cuando hay un error. */
-  backPath: string;
-  /** Texto del botón "Volver" en el estado de error. */
+  /** Ruta a la que se vuelve al presionar "Volver" (ej: "/client/appointments"). */
+  backRoute: string;
+  /** Texto del botón de "volver" que se muestra en el estado de error. */
   backLabel: string;
 }
 
+/**
+ * Visor de recibo/factura de un turno. Es compartido entre las vistas de
+ * Cliente y Barbero: ambos roles consultan y descargan el mismo recibo,
+ * solo cambia a dónde vuelve el usuario y cómo se lo describe.
+ */
 const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
-  backPath,
+  backRoute,
   backLabel,
 }) => {
   const { codTurno } = useParams<{ codTurno: string }>();
@@ -54,10 +60,12 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
           `/facturacion/datos-turno/${codTurno}`,
         );
         if (!metaResponse.ok) {
-          const errorData = await metaResponse.json().catch(() => null);
+          const errorData = await readJsonSafely(metaResponse);
           throw new Error(
-            errorData?.message ||
+            getResponseMessage(
+              errorData,
               `Error al obtener datos de facturación (${metaResponse.status})`,
+            ),
           );
         }
         const metaJson = await metaResponse.json();
@@ -66,10 +74,12 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
         // 2. get PDF
         const pdfResponse = await apiFetch(`/facturacion/recibo/${codTurno}`);
         if (!pdfResponse.ok) {
-          const errorData = await pdfResponse.json().catch(() => null);
+          const errorData = await readJsonSafely(pdfResponse);
           throw new Error(
-            errorData?.message ||
+            getResponseMessage(
+              errorData,
               `Error al obtener el recibo (${pdfResponse.status})`,
+            ),
           );
         }
 
@@ -104,7 +114,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
   };
 
   const handleBack = () => {
-    navigate(backPath);
+    navigate(backRoute);
   };
 
   if (loading) {

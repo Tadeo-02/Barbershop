@@ -1,17 +1,15 @@
 import React from "react";
 import styles from "./typeOfHaircut.module.css";
 import toast from "react-hot-toast";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../../components/shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../../../components/Admin/apiResponse";
+import { useAbortController } from "../../../components/shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import { createResolver } from "../../../lib/zodFormResolver";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;
 
@@ -25,8 +23,7 @@ const CreateTypeOfHaircut: React.FC = () => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateTypeForm>({
-    // use the global Zod error map (applied in main.tsx) and the normal resolver
-    resolver: zodResolver(HaircutSchema) as Resolver<CreateTypeForm>,
+    resolver: createResolver(HaircutSchema),
     mode: "onBlur",
     defaultValues: {
       valorBase: 0,
@@ -58,12 +55,10 @@ const CreateTypeOfHaircut: React.FC = () => {
         toast.error(msg, { id: toastId });
       }
     } catch (err: unknown) {
-      if (isAbortError(err)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(err, toastId, "Error de conexión con el servidor")) {
         return;
       }
       console.error("Error en handleSubmit:", err);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 

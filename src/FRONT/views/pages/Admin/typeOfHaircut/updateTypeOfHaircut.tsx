@@ -5,13 +5,11 @@ import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../../components/shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../../../components/Admin/apiResponse";
+import { useAbortController } from "../../../components/shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import { createResolver } from "../../../lib/zodFormResolver";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 interface TipoCorte {
   codCorte: string;
@@ -35,7 +33,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<TypeForm>({
-    resolver: zodResolver(HaircutSchema),
+    resolver: createResolver(HaircutSchema),
     mode: "onBlur",
     defaultValues: { valorBase: 0 },
   });
@@ -76,12 +74,10 @@ const UpdateTypeOfHaircut: React.FC = () => {
           });
         }
       } catch (err: unknown) {
-        if (isAbortError(err)) {
-          toast.dismiss(toastId);
+        if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
           return;
         }
         console.error("Error fetching tipo de corte:", err);
-        toast.error("Error de conexión", { id: toastId, duration: 2000 });
       }
     };
 
@@ -117,12 +113,10 @@ const UpdateTypeOfHaircut: React.FC = () => {
         toast.error(msg, { id: toastId, duration: 2000 });
       }
     } catch (err: unknown) {
-      if (isAbortError(err)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
         return;
       }
       console.error("Error modificando Tipo de Corte:", err);
-      toast.error("Error de conexión", { id: toastId, duration: 2000 });
     }
   };
 

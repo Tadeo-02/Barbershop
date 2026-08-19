@@ -31,7 +31,8 @@
   - [x] Documentar/comunicar al usuario que la pregunta de seguridad no reemplaza un password fuerte, para evitar que la subestime.
 
 ## 4. Duplicación de código — Frontend
-- [ ] Simplificar/crear funciones reutilizables para evitar código duplicado.
+
+- [x] Simplificar/crear funciones reutilizables para evitar código duplicado.
   - Ejemplo: `src/FRONT/views/components/Admin/categories/createCategories.tsx`
     ```ts
     const result = await baseResolver(values, context, options);
@@ -51,8 +52,8 @@
     return result;
     ```
     → Extraer esta lógica de normalización de errores a una función/utilidad compartida.
-- [ ] Revisar y eliminar código defensivo duplicado innecesariamente (simplificar checks repetidos).
-- [ ] Usar `async/await` de forma consistente para simplificar el manejo de promesas.
+- [x] Revisar y eliminar código defensivo duplicado innecesariamente (simplificar checks repetidos).
+- [x] Usar `async/await` de forma consistente para simplificar el manejo de promesas.
 
 ## 5. Rutas y entornos
 - [ ] Quitar rutas de prueba de `src/FRONT/views/App.tsx` (o protegerlas para que no estén disponibles en producción).

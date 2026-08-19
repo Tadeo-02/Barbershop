@@ -12,13 +12,13 @@ import {
   unwrapAppointments,
 } from "../../../components/shared/appointments";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { createResolver } from "../../../lib/zodFormResolver";
 import { z } from "zod";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../../components/shared/useAbortController";
+import { useAbortController } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import { ensureAuthenticatedUser } from "../../../lib/authUtils";
 
 const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated, isAuthLoading } = useAuth();
@@ -48,7 +48,7 @@ const BarberAppointments: React.FC = () => {
 
   const { register, handleSubmit, setValue, reset, formState } =
     useForm<UpdateFormValues>({
-      resolver: zodResolver(UpdateAppointmentSchema),
+      resolver: createResolver(UpdateAppointmentSchema),
       defaultValues: { fechaTurno: "", horaDesde: "" },
     });
 
@@ -81,15 +81,21 @@ const BarberAppointments: React.FC = () => {
 
   // first effect: check authentication and redirect if not authenticated
   useEffect(() => {
-    if (isAuthLoading) return;
+    const timer = setTimeout(() => {
+      setAuthChecked(true);
 
-    setAuthChecked(true);
+      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+        message: "Debes iniciar sesión como barbero para ver tus turnos",
+        redirectTo: "/login",
+        requireSucursal: true,
+      })) {
+        return;
+      }
+    }, 100);
 
-    if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
-      toast.error("Debes iniciar sesión como barbero para ver tus turnos");
-      navigate("/login");
-    }
-  }, [isAuthLoading, isAuthenticated, user, navigate]);
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, user, navigate]);
+
 
   // second effect: load appointments once authenticated
   useEffect(() => {
@@ -97,16 +103,20 @@ const BarberAppointments: React.FC = () => {
     if (!authChecked) return;
 
     // if not authenticated or dont have codSucursal (isnt a barber), dont fetch
-    if (!isAuthenticated || !user || !user.codUsuario || !user.codSucursal) {
+    if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+      requireSucursal: true,
+    })) {
       return;
     }
+
+    const codUsuario = user.codUsuario;
 
     const loadTurnos = async () => {
       const controller = renewFetchAbort();
       setIsLoadingTurnos(true);
 
       try {
-        const res = await apiFetch(`/turnos/user/${user.codUsuario}`, {
+        const res = await apiFetch(`/turnos/user/${codUsuario}`, {
           signal: controller.signal,
         });
 
@@ -117,7 +127,7 @@ const BarberAppointments: React.FC = () => {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
 
-        const data = await res.json().catch(() => null);
+        const data = await readJsonSafely(res);
 
         console.log("Turnos data:", data);
         const turnosArray = unwrapAppointments<AppointmentFull>(data);
@@ -125,7 +135,7 @@ const BarberAppointments: React.FC = () => {
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
       } catch (error: unknown) {
-        if (isAbortError(error)) {
+        if (handleAbortOrConnectionError(error, undefined, "Error de conexión con el servidor")) {
           console.log("Fetch aborted for turnos");
           return;
         }
@@ -202,7 +212,7 @@ const BarberAppointments: React.FC = () => {
       });
 
       if (response.ok) {
-        await response.json().catch(() => null);
+        await readJsonSafely(response);
         toast.success("Turno cancelado correctamente", { id: toastId });
 
         // update localState of the appointment instead of removing it
@@ -216,23 +226,20 @@ const BarberAppointments: React.FC = () => {
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Error" }));
+        const errorData = await readJsonSafely(response);
         console.error("Error response:", errorData);
-        toast.error(errorData.message || "Error al cancelar el turno", {
-          id: toastId,
-        });
+        toast.error(
+          getResponseMessage(errorData, "Error al cancelar el turno") ??
+            "Error al cancelar el turno",
+          { id: toastId },
+        );
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        // request was intentionally aborted
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
         console.log("Cancel request aborted");
-      } else {
-        console.error("Error en la solicitud:", error);
-        toast.error("Error de conexión con el servidor", { id: toastId });
+        return;
       }
+      console.error("Error en la solicitud:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -274,51 +281,52 @@ const BarberAppointments: React.FC = () => {
           body: JSON.stringify({
             fechaTurno: data.fechaTurno,
             horaDesde: data.horaDesde,
-            horaHasta: "",
           }),
           signal: controller.signal,
         },
       );
 
-      if (response.ok) {
-        await response.json().catch(() => null);
-        toast.success("Turno modificado exitosamente", { id: toastId });
+    if (response.ok) {
+      const responseData = await readJsonSafely(response) as {
+        success: boolean;
+        data?: AppointmentFull;
+      };
 
-        // update localState
-        setTurnos(
-          turnos.map((t) =>
-            t.codTurno === turnoToUpdate.codTurno
-              ? {
-                  ...t,
-                  fechaTurno: data.fechaTurno,
-                  horaDesde: data.horaDesde,
-                  horaHasta: "",
-                }
-              : t,
-          ),
-        );
+      const updatedTurno = responseData.data;
 
-        // close modal
-        setIsUpdateModalOpen(false);
-        setTurnoToUpdate(null);
-        reset();
+      if (!updatedTurno) {
+        throw new Error("El backend no devolvió el turno actualizado");
+      }
+
+      toast.success("Turno modificado exitosamente", { id: toastId });
+
+      setTurnos((prevTurnos) =>
+        prevTurnos.map((t) =>
+          t.codTurno === updatedTurno.codTurno
+            ? updatedTurno
+            : t,
+        ),
+      );
+
+      setIsUpdateModalOpen(false);
+      setTurnoToUpdate(null);
+      reset();
+
       } else {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Error" }));
-        toast.error(errorData.message || "Error al modificar el turno", {
-          id: toastId,
-        });
+        const errorData = await readJsonSafely(response);
+        toast.error(
+          getResponseMessage(errorData, "Error al modificar el turno") ??
+            "Error al modificar el turno",
+          { id: toastId },
+        );
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
         console.log("Update request aborted");
-        return; // early return for aborted requests
+        return;
       }
 
       console.error("Error modificando turno:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 

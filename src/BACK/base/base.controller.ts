@@ -2,6 +2,10 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import { DatabaseError } from "./Base";
 import { sanitizeOutput } from "../middleware/zodValidation";
+import {
+  createErrorResponse,
+  createNotFoundResponse,
+} from "../lib/backendResponse";
 // manejo universal de los distintos datos que llegan del front
 export abstract class BaseController<
   T,
@@ -61,10 +65,7 @@ export abstract class BaseController<
     try {
       const entity = await this.model.findById(id);
       if (!entity) {
-        return res.status(404).json({
-          message: `${this.entityName} no encontrado`,
-          type: "not_found",
-        });
+        return res.status(404).json(createNotFoundResponse(this.entityName));
       }
       const safeEntity = this.shapeResponse(entity);
       res.status(200).json(safeEntity);
@@ -78,10 +79,7 @@ export abstract class BaseController<
     try {
       const entity = await this.model.findById(id);
       if (!entity) {
-        return res.status(404).json({
-          message: `${this.entityName} no encontrado`,
-          type: "not_found",
-        });
+        return res.status(404).json(createNotFoundResponse(this.entityName));
       }
       const safeEntity = this.shapeResponse(entity);
       res.json(safeEntity);
@@ -126,15 +124,13 @@ export abstract class BaseController<
     );
 
     if (error instanceof DatabaseError) {
-      return res.status(400).json({
-        message: error.message,
-        type: "validation_error",
-      });
+      return res.status(400).json(
+        createErrorResponse(error.message, "validation_error"),
+      );
     }
 
-    return res.status(500).json({
-      message: "Error interno del servidor",
-      type: "server_error",
-    });
+    return res.status(500).json(
+      createErrorResponse("Error interno del servidor", "server_error"),
+    );
   }
 }

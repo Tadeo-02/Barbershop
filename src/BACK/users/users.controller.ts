@@ -19,6 +19,13 @@ import {
   UserResponseSchema,
 } from "../Schemas/usersSchema";
 import {
+  createDataResponse,
+  createErrorResponse,
+  createValidationErrorResponse,
+  createUnauthorizedResponse,
+  getErrorMessage,
+} from "../lib/backendResponse";
+import {
   buildResetPasswordEmail,
   buildVerificationEmail,
   sendMail,
@@ -32,9 +39,6 @@ type UserUpdateArgs =
   Parameters<typeof model.update> extends [string, ...infer Rest]
     ? Rest
     : never;
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 const getAppBaseUrl = () =>
   process.env.FRONTEND_URL || process.env.APP_BASE_URL || "http://localhost:5173";
@@ -143,9 +147,11 @@ class UsersController extends BaseController<
       } = req.body;
 
       if (cuil && !codSucursal) {
-        res.status(400).json({
-          message: "Los barberos deben tener una sucursal asignada",
-        });
+        res.status(400).json(
+          createValidationErrorResponse(
+            "Los barberos deben tener una sucursal asignada",
+          ),
+        );
         return;
       }
 
@@ -222,15 +228,9 @@ class UsersController extends BaseController<
     try {
       const { email, contraseña, correo, clave } = req.body;
 
+      // email/correo y contraseña/clave ya fueron validados por loginRequestSchema en el router
       const userEmail = email || correo;
       const userPassword = contraseña || clave;
-
-      if (!userEmail || !userPassword) {
-        res.status(400).json({
-          message: "Email y contraseña son requeridos",
-        });
-        return;
-      }
 
       const usuario = await model.validateLogin(userEmail, userPassword);
       const safeUser = sanitizeOutput<UserResponse>(
@@ -240,9 +240,9 @@ class UsersController extends BaseController<
       const jwtSecret = process.env.JWT_SECRET;
 
       if (!jwtSecret) {
-        res.status(500).json({
-          message: "JWT_SECRET no configurado",
-        });
+        res.status(500).json(
+          createErrorResponse("JWT_SECRET no configurado", "server_error"),
+        );
         return;
       }
 
@@ -285,10 +285,12 @@ class UsersController extends BaseController<
         code = "EMAIL_NOT_VERIFIED";
       }
 
-      res.status(statusCode).json({
-        message: errorMessage,
-        code,
-      });
+      res.status(statusCode).json(
+        createErrorResponse(
+          errorMessage,
+          statusCode === 401 ? "unauthorized" : "server_error",
+        ),
+      );
     }
   }
 
@@ -307,14 +309,6 @@ export const findByBranchId = async (
 ): Promise<void> => {
   try {
     const { codSucursal } = req.params;
-
-    if (!codSucursal) {
-      res.status(400).json({
-        success: false,
-        message: "codSucursal es requerido",
-      });
-      return;
-    }
 
     const usuarios = await model.findByBranchId(codSucursal);
     const safeUsuarios = sanitizeOutput(BarberResponseSchema, usuarios);
@@ -338,14 +332,6 @@ export const findBySchedule = async (
 ): Promise<void> => {
   try {
     const { codSucursal, fechaTurno, horaDesde } = req.params;
-
-    if (!codSucursal || !fechaTurno || !horaDesde) {
-      res.status(400).json({
-        success: false,
-        message: "codSucursal, fechaTurno y horaDesde son requeridos",
-      });
-      return;
-    }
 
     const barberosDisponibles = await model.findBySchedule(
       codSucursal,

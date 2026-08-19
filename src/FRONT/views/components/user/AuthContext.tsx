@@ -6,7 +6,7 @@ import {
 } from "../../lib/authStorage";
 import type { UserRole } from "../../lib/roles";
 
-interface User {
+export interface User {
   codUsuario: string;
   dni: string;
   cuil: string | null;
@@ -59,28 +59,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUserType(session.rol);
     setIsAuthLoading(true);
 
-    fetch(`${API_URL}/usuarios/profiles/${session.codUsuario}`, {
-      credentials: "include",
-    })
-      .then(async (res) => {
+        const loadProfile = async () => {
+      try {
+        const res = await fetch(
+          `${API_URL}/usuarios/profiles/${session.codUsuario}`,
+          { credentials: "include" },
+        );
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         if (!isCurrent) return;
         setUser((data?.data ?? data?.user ?? data) as User);
-      })
-      .catch(() => {
+      } catch {
         if (!isCurrent) return;
         clearAuthStorage();
         setUser(null);
         setUserType(null);
-      })
-      .finally(() => {
+      } finally {
         if (isCurrent) setIsAuthLoading(false);
-      });
+      }
+    };
+
+    void loadProfile();
 
     return () => {
       isCurrent = false;

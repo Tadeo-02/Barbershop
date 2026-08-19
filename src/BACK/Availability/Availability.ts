@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client";
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import { z } from "zod";
 import { AvailabilitySchema } from "../Schemas/availabilitySchema";
+import { assertEntityExists } from "../lib/entityChecks";
+import { parseValidatedInput } from "../lib/zodHelpers";
 
 const ensureValidRange = (fechaDesde: Date, fechaHasta: Date) => {
   if (fechaDesde >= fechaHasta) {
@@ -121,9 +123,10 @@ export const store = async (
     };
 
     // validate with zod
-    const validatedData = AvailabilitySchema.omit({
-      codBloqueo: true,
-    }).parse(sanitizedData);
+    const validatedData = parseValidatedInput(
+      AvailabilitySchema.omit({ codBloqueo: true }),
+      sanitizedData,
+    );
 
     console.log("Creating barber unavailability");
 
@@ -256,12 +259,15 @@ export const update = async (
     };
 
     // validate (except codBloqueo)
-    const validatedData = AvailabilitySchema.omit({ codBloqueo: true }).parse({
-      codBarbero: sanitizedData.codBarbero,
-      fechaHoraDesde: sanitizedData.fechaHoraDesde,
-      fechaHoraHasta: sanitizedData.fechaHoraHasta,
-      motivo: sanitizedData.motivo,
-    });
+    const validatedData = parseValidatedInput(
+      AvailabilitySchema.omit({ codBloqueo: true }),
+      {
+        codBarbero: sanitizedData.codBarbero,
+        fechaHoraDesde: sanitizedData.fechaHoraDesde,
+        fechaHoraHasta: sanitizedData.fechaHoraHasta,
+        motivo: sanitizedData.motivo,
+      },
+    );
 
     // convert strings to DateTime objects for Prisma (forze UTC to avoid shift schedule)
     const fechaDesde = new Date(
@@ -279,9 +285,7 @@ export const update = async (
         where: { codBloqueo: sanitizedData.codBloqueo },
       });
 
-      if (!existingBloqueo) {
-        throw new DatabaseError("Bloqueo no encontrado");
-      }
+      assertEntityExists(existingBloqueo, "Bloqueo");
 
       ensureNotFinished(existingBloqueo.fechaHoraHasta, "modificar");
 
@@ -357,9 +361,7 @@ export const destroy = async (codBloqueo: string) => {
       where: { codBloqueo: sanitizedCodBloqueo },
     });
 
-    if (!existingBloqueo) {
-      throw new DatabaseError("Bloqueo no encontrado");
-    }
+    assertEntityExists(existingBloqueo, "Bloqueo");
 
     ensureNotFinished(existingBloqueo.fechaHoraHasta, "eliminar");
 

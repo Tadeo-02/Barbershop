@@ -1,6 +1,12 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 import { BranchSchema } from "../../Schemas/branchesSchema";
+import {
+  assertNoPendingAppointments,
+  PendingAppointmentsError,
+} from "../../lib/barberBusinessRules";
+import { assertEntityExists } from "../../lib/entityChecks";
+import { parseValidatedInput } from "../../lib/zodHelpers";
 
 // backend functions
 export const store = async (nombre: string, calle: string, altura: number) => {
@@ -11,7 +17,7 @@ export const store = async (nombre: string, calle: string, altura: number) => {
       calle: sanitizeInput(calle),
       altura: Number(altura),
     };
-    const validateData = BranchSchema.parse(sanitizedData);
+    const validateData = parseValidatedInput(BranchSchema, sanitizedData);
     console.log("Creating branch");
     // create branch using the correct Prisma model
     const branch = await prisma.sucursales.create({
@@ -107,7 +113,7 @@ export const update = async (
       calle: sanitizeInput(calle),
       altura: Number(altura),
     };
-    const validateData = BranchSchema.parse({
+    const validateData = parseValidatedInput(BranchSchema, {
       nombre: sanitizedData.nombre,
       calle: sanitizedData.calle,
       altura: sanitizedData.altura,
@@ -115,9 +121,7 @@ export const update = async (
     const existingBranch = await prisma.sucursales.findUnique({
       where: { codSucursal: sanitizedData.codSucursal },
     });
-    if (!existingBranch) {
-      throw new DatabaseError("No existe una sucursal con ese código");
-    }
+    assertEntityExists(existingBranch, "Sucursal");
     const branch = await prisma.sucursales.update({
       where: { codSucursal: sanitizedData.codSucursal },
       data: {
@@ -165,9 +169,7 @@ export const destroy = async (codSucursal: string) => {
     const existingBranch = await prisma.sucursales.findUnique({
       where: { codSucursal: sanitizedCodSucursal },
     });
-    if (!existingBranch) {
-      throw new DatabaseError("No existe una sucursal con ese código");
-    }
+    assertEntityExists(existingBranch, "Sucursal");
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -191,10 +193,16 @@ export const destroy = async (codSucursal: string) => {
       },
     });
 
-    if (pendingCount > 0) {
-      throw new DatabaseError(
+    try {
+      assertNoPendingAppointments(
+        pendingCount,
         `No se puede desactivar: hay ${pendingCount} turno(s) pendiente(s)`,
       );
+    } catch (error) {
+      if (error instanceof PendingAppointmentsError) {
+        throw new DatabaseError(error.message);
+      }
+      throw error;
     }
 
     const deletedBranch = await prisma.sucursales.update({

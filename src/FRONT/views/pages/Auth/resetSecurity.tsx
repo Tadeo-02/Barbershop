@@ -9,6 +9,7 @@ import {
 } from "../../lib/passwordConstants.ts";
 import { apiFetch } from "../../lib/apiFetch";
 import { getPasswordMissing } from "../../lib/passwordRules";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 
 const ResetSecurity: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -53,8 +54,11 @@ const ResetSecurity: React.FC = () => {
       } else {
         toast.error(data.message || "Error al solicitar restablecimiento");
       }
-    } catch {
-      toast.error("Error de conexión");
+    } catch (err) {
+      if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
+        return;
+      }
+      console.error(err);
     }
   };
 
@@ -87,8 +91,11 @@ const ResetSecurity: React.FC = () => {
       } else {
         toast.error(data?.message || "Error al actualizar");
       }
-    } catch {
-      toast.error("Error de conexión");
+    } catch (err) {
+      if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
+        return;
+      }
+      console.error(err);
     }
   };
 
