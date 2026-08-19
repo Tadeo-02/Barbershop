@@ -15,8 +15,6 @@ const validTestUser = {
   telefono: "1234567890",
   email: `test-${Date.now()}@security.com`,
   contraseña: "TestPassword123!",
-  preguntaSeguridad: "¿Color favorito?",
-  respuestaSeguridad: "Azul",
 };
 
 const loginData = {

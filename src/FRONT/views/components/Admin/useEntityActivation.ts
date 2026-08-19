@@ -7,26 +7,17 @@ type PendingScope = "barber" | "branch";
 type Gender = "masculine" | "feminine";
 
 interface EntityActivationConfig {
-  /** Nombre de la entidad en minúscula, para armar los mensajes (ej. "barbero", "sucursal"). */
   entityLabel: string;
-  /** Nombre de la entidad con la primera letra en mayúscula (ej. "Barbero", "Sucursal"). */
   entityLabelCapitalized: string;
-  /** Género gramatical de entityLabel, para concordancia de artículos y participios. */
   gender: Gender;
-  /** Endpoint base sin id, ej. "/usuarios" o "/sucursales". Se arma como `${endpointBase}/${id}/deactivate`. */
   endpointBase: string;
-  /**
-   * Si se especifica, antes de desactivar se chequean turnos pendientes de esa entidad
-   * y se bloquea la baja si hay alguno.
-   */
+
+  // Si se especifica, antes de desactivar se chequean turnos pendientes de esa entidad y se bloquea la baja si hay alguno.
   pendingCheck?: {
     scope: PendingScope;
-    /** Mensaje mostrado cuando hay turnos pendientes; recibe la cantidad. */
     blockedMessage: (count: number) => string;
-    /** Duración del toast de bloqueo en ms. Default: 4000. */
     blockedMessageDuration?: number;
   };
-  /** Se llama con (id, activo) para actualizar el estado local de la lista tras el cambio. */
   onStatusChange: (id: string, activo: boolean) => void;
 }
 
@@ -38,11 +29,8 @@ const AGREEMENT: Record<
   feminine: { article: "la", demonstrative: "esta", pastSuffix: "a" },
 };
 
-/**
- * Encapsula el flujo repetido de dar de baja / reactivar una entidad de Admin
- * (confirmación -> chequeo opcional de turnos pendientes -> cambio de estado
- * en el backend -> actualización del estado local).
- */
+// Encapsula el flujo repetido de dar de baja / reactivar una entidad de Admin
+// (confirmación -> chequeo opcional de turnos pendientes -> cambio de estado en el backend -> actualización del estado local).
 export function useEntityActivation({
   entityLabel,
   entityLabelCapitalized,

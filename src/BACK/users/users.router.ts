@@ -50,11 +50,6 @@ const loginRequestSchema = z
   .refine((data) => data.contraseña || data.clave, {
     message: "Contraseña es requerida",
   });
-const securityQuestionBodySchema = z.object({
-  preguntaSeguridad: z.string().min(1),
-  respuestaSeguridad: z.string().min(1),
-});
-
 const requireAdminForStaffUser: RequestHandler = (req, res, next) => {
   if (!req.body?.cuil && !req.body?.codSucursal) {
     next();
