@@ -1,5 +1,5 @@
 import * as model from "./Appointments";
-import { BaseController } from "../base/base.controller"; // importamos las reques, responde y dataBaseError de la base
+import { BaseController } from "../base/base.controller";
 import { Request, Response } from "express";
 import {
   AppointmentOutputSchema,
@@ -12,7 +12,6 @@ import {
   getErrorMessage,
 } from "../lib/backendResponse";
 import { DatabaseError } from "../base/Base";
-// Create the barberController class to send and handle the base.
 
 type AppointmentEntity = NonNullable<
   Awaited<ReturnType<typeof model.findById>>

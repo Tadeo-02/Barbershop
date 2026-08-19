@@ -281,34 +281,37 @@ const BarberAppointments: React.FC = () => {
           body: JSON.stringify({
             fechaTurno: data.fechaTurno,
             horaDesde: data.horaDesde,
-            horaHasta: "",
           }),
           signal: controller.signal,
         },
       );
 
-      if (response.ok) {
-        await readJsonSafely(response);
-        toast.success("Turno modificado exitosamente", { id: toastId });
+    if (response.ok) {
+      const responseData = await readJsonSafely(response) as {
+        success: boolean;
+        data?: AppointmentFull;
+      };
 
-        // update localState
-        setTurnos(
-          turnos.map((t) =>
-            t.codTurno === turnoToUpdate.codTurno
-              ? {
-                  ...t,
-                  fechaTurno: data.fechaTurno,
-                  horaDesde: data.horaDesde,
-                  horaHasta: horaHasta,
-                }
-              : t,
-          ),
-        );
+      const updatedTurno = responseData.data;
 
-        // close modal
-        setIsUpdateModalOpen(false);
-        setTurnoToUpdate(null);
-        reset();
+      if (!updatedTurno) {
+        throw new Error("El backend no devolvió el turno actualizado");
+      }
+
+      toast.success("Turno modificado exitosamente", { id: toastId });
+
+      setTurnos((prevTurnos) =>
+        prevTurnos.map((t) =>
+          t.codTurno === updatedTurno.codTurno
+            ? updatedTurno
+            : t,
+        ),
+      );
+
+      setIsUpdateModalOpen(false);
+      setTurnoToUpdate(null);
+      reset();
+
       } else {
         const errorData = await readJsonSafely(response);
         toast.error(

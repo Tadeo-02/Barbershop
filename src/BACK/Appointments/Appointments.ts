@@ -556,6 +556,7 @@ export const findByBarberId = async (
       where: {
         codBarbero: sanitizedCodBarbero,
         fechaTurno: new Date(sanitizedFechaTurno),
+        estado: "Programado",
       },
     });
 

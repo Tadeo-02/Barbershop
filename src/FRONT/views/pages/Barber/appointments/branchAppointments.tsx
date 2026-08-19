@@ -490,22 +490,6 @@ const BranchAppointments: React.FC = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // function to verify if the appointment has already passed (date + end time < now)
-  const hasTurnoPassed = (fechaTurno: string, horaHasta: string): boolean => {
-    const now = new Date();
-    const fecha = new Date(fechaTurno);
-    const horaHastaDate = new Date(horaHasta);
-
-    // extract hours and minutes from horaHasta
-    const hours = horaHastaDate.getUTCHours();
-    const minutes = horaHastaDate.getUTCMinutes();
-
-    // combine date of the appointment with end time
-    fecha.setHours(hours, minutes, 0, 0);
-
-    return fecha < now;
-  };
-
   useEffect(() => {
     // give time to AuthContext to load from localStorage
     const timer = setTimeout(() => {
@@ -917,11 +901,8 @@ const BranchAppointments: React.FC = () => {
                       <button
                         onClick={() => handleMarkAsNoShow(turno.codTurno)}
                         className={`${styles.button} ${styles.buttonWarning}`}
-                        disabled={
-                          !hasTurnoPassed(turno.fechaTurno, turno.horaHasta)
-                        }
                       >
-                        No asistido
+                      No asistido
                       </button>
                     </div>
                   )}
