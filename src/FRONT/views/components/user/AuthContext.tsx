@@ -4,6 +4,7 @@ import {
   getSessionUser,
   setSessionUser,
 } from "../../lib/authStorage";
+import { clearCsrfToken } from "../../lib/apiFetch";
 import type { UserRole } from "../../lib/roles";
 import type { User } from "../../../types/user";
 
@@ -97,6 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUserType(null);
     setIsAuthLoading(false);
     clearAuthStorage();
+    clearCsrfToken();
 
     try {
       await fetch(`${API_URL}/usuarios/logout`, {

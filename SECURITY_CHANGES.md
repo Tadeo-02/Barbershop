@@ -208,3 +208,23 @@ All appointment-related code (`ScheduleByBranch.tsx`, `branchAppointments.tsx`, 
 
 **Files changed:**
 - `src/BACK/middleware/authMiddleware.ts`
+
+---
+
+### FIX-F: CSRF double-submit cookie broken in cross-site deployment (HIGH)
+
+**Problem:** `apiFetch` read the `csrf_token` value from `document.cookie` to send it as the `X-CSRF-Token` header. In the production cross-site deployment (frontend on `vercel.app`, backend on `onrender.com`), `document.cookie` on the frontend page **cannot** read cookies set by the backend — they are stored under the backend's domain, not the frontend's. This meant `csrfToken` was always `undefined` in production, the `X-CSRF-Token` header was never sent, and every authenticated state-changing request (POST/PUT/PATCH/DELETE) failed with `403 CSRF token missing`.
+
+The pattern worked in local development because both frontend and backend run on `localhost` (same registrable domain, different ports), so `document.cookie` could read the cookie. This masked the bug until production deployment.
+
+**Root cause:** The double-submit cookie pattern requires the frontend JavaScript to be able to read the cookie value. This only works when the cookie and the JavaScript share the same domain. In a cross-site architecture (different registrable domains), this is impossible via `document.cookie`.
+
+**Changes:**
+- `apiFetch.ts`: Added a module-level `csrfToken` variable with `setCsrfToken()` / `clearCsrfToken()` exports. `apiFetch` now uses the in-memory token (with `document.cookie` as a fallback for same-origin dev). This works because the backend already returns `csrfToken` in the login response body — we just weren't storing it.
+- `login.tsx`: After successful login, extracts `csrfToken` from the parsed response body and calls `setCsrfToken()` to store it in the module-level variable.
+- `AuthContext.tsx`: Calls `clearCsrfToken()` on logout to prevent stale token usage.
+
+**Files changed:**
+- `src/FRONT/views/lib/apiFetch.ts`
+- `src/FRONT/views/pages/Auth/login.tsx`
+- `src/FRONT/views/components/user/AuthContext.tsx`
