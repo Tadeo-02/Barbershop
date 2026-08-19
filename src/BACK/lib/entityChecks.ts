@@ -26,20 +26,20 @@ export const assertRequiredFields = <T extends Record<string, unknown>>(
   }
 };
 
-export const assertEntityExists = <T>(
+export function assertEntityExists<T>(
   entity: T | null,
   entityName: string,
-): asserts entity is T => {
+): asserts entity is T {
   if (!entity) {
     throw new DatabaseError(`${entityName} no encontrado`);
   }
-};
+}
 
-export const assertEntityExistsWithCode = <T>(
+export function assertEntityExistsWithCode<T>(
   entity: T | null,
   entityName: string,
   code?: string,
-): asserts entity is T => {
+): asserts entity is T {
   if (!entity) {
     const suffix = code ? ` con el código ${code}` : "";
     throw new DatabaseError(`${entityName}${suffix} no encontrado`);

@@ -678,18 +678,21 @@ export const update = async (
       estado: sanitizeInput(estado),
     };
 
-    const validatedData = parseValidatedInput(AppointmentSchema, {
-      codTurno: sanitizedData.codTurno,
-      codCorte: sanitizedData.codCorte,
-      codCliente: sanitizedData.codCliente,
-      precioTurno: sanitizedData.precioTurno,
-      metodoPago: sanitizedData.metodoPago,
-      fechaCancelacion: sanitizedData.fechaCancelacion,
-      fechaTurno: sanitizedData.fechaTurno,
-      horaDesde: sanitizedData.horaDesde,
-      horaHasta: sanitizedData.horaHasta,
-      estado: sanitizedData.estado,
-    });
+    const validatedData = parseValidatedInput(
+      AppointmentSchema.omit({ codBarbero: true }),
+      {
+        codTurno: sanitizedData.codTurno,
+        codCorte: sanitizedData.codCorte,
+        codCliente: sanitizedData.codCliente,
+        precioTurno: sanitizedData.precioTurno,
+        metodoPago: sanitizedData.metodoPago,
+        fechaCancelacion: sanitizedData.fechaCancelacion,
+        fechaTurno: sanitizedData.fechaTurno,
+        horaDesde: sanitizedData.horaDesde,
+        horaHasta: sanitizedData.horaHasta,
+        estado: sanitizedData.estado,
+      },
+    );
 
     // Usar el codTurno sanitizado (no validado por Zod)
     const existingTurno = await prisma.turno.findUnique({

@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { DatabaseError } from "../base/Base";
 
-export const parseValidatedInput = <TOutput, TInput>(
-  schema: z.ZodType<TOutput, z.ZodTypeDef, TInput>,
+export const parseValidatedInput = <TOutput, TInput = TOutput>(
+  schema: z.ZodType<TOutput, TInput>,
   input: TInput,
 ): TOutput => {
   try {
@@ -16,8 +16,8 @@ export const parseValidatedInput = <TOutput, TInput>(
   }
 };
 
-export const safeValidate = <TOutput, TInput>(
-  schema: z.ZodType<TOutput, z.ZodTypeDef, TInput>,
+export const safeValidate = <TOutput, TInput = TOutput>(
+  schema: z.ZodType<TOutput, TInput>,
   input: TInput,
 ): TOutput | null => {
   const result = schema.safeParse(input);
