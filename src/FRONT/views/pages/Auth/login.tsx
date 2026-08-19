@@ -8,6 +8,7 @@ import { deriveRole } from "../../lib/roles.ts";
 import toast from "react-hot-toast";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
+import type { User } from "../../../types/user";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
