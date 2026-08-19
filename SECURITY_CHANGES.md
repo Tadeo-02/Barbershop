@@ -170,3 +170,41 @@ Items checked off in `TODO.md`:
 
 **Files changed (prior commit):**
 - `src/FRONT/views/pages/Auth/login.tsx`
+
+---
+
+### FIX-E: CSRF 403 on /turnos — investigation and confirmation (INFORMATIONAL)
+
+**Problem:** A 403 "CSRF token missing" was observed when booking appointments (`POST /turnos`). Investigation was needed to determine whether the cause was a raw `fetch()` bypassing CSRF or a timing/ordering issue.
+
+**Investigation (grep audit of all raw `fetch()` calls in frontend):**
+
+| File | URL | Method | CSRF needed? | Verdict |
+|---|---|---|---|---|
+| `login.tsx:25` | `/usuarios/login` | POST | No — unauthenticated endpoint | Intentional |
+| `AuthContext.tsx:54` | `/usuarios/profiles/:codUsuario` | GET | No — GET skips CSRF | Intentional |
+| `AuthContext.tsx:102` | `/usuarios/logout` | POST | No — no `csrfProtection` on route (best-effort) | Intentional |
+
+All appointment-related code (`ScheduleByBranch.tsx`, `branchAppointments.tsx`, `ClientAppointments.tsx`, `barberAppointments.tsx`, `HomePageBarber.tsx`) uses `apiFetch`, which:
+1. Reads the `csrf_token` cookie
+2. Sends `X-CSRF-Token` header
+3. Sets `credentials: "include"` for cross-site cookie flow
+
+**Conclusion:** The 403 was already resolved. No raw `fetch()` calls bypass CSRF on state-changing authenticated endpoints. The current code is correct.
+
+**Preventive measure:** Added a warning comment to `apiFetch.ts` to prevent future developers from introducing raw `fetch()` calls for authenticated requests.
+
+**Files changed:**
+- `src/FRONT/views/lib/apiFetch.ts` (comment only)
+
+---
+
+### SEC-01 update: Authorization header fallback removed
+
+**Problem:** The `Authorization: Bearer` fallback in `authMiddleware.ts` was added as a temporary migration aid when moving from header-based auth to cookie-based auth (SEC-01). After multiple successful deploys with cookie-only auth, confirmed that zero frontend files use the `Authorization` header (grep of `src/FRONT` for `Authorization|Bearer` returns empty).
+
+**Changes:**
+- `authMiddleware.ts`: Removed the 5-line `Authorization: Bearer` header fallback. Authentication now uses only the `access_token` HttpOnly cookie. This reduces attack surface and removes dead code.
+
+**Files changed:**
+- `src/BACK/middleware/authMiddleware.ts`

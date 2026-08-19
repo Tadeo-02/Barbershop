@@ -1,5 +1,8 @@
 import { clearAuthStorage } from "./authStorage";
 
+// IMPORTANT: All authenticated requests must go through this function.
+// Raw fetch() calls will silently break CSRF protection because they
+// won't include the X-CSRF-Token header or send credentials (cookies).
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 export async function apiFetch(

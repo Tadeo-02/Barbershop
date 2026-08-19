@@ -14,17 +14,7 @@ export function authMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  let token: string | undefined;
-
-  const cookieToken = req.cookies?.[AUTH_COOKIE] as string | undefined;
-  if (cookieToken) {
-    token = cookieToken;
-  } else {
-    const authHeader = req.headers.authorization;
-    if (authHeader?.startsWith("Bearer ")) {
-      token = authHeader.split(" ")[1];
-    }
-  }
+  const token = req.cookies?.[AUTH_COOKIE] as string | undefined;
 
   if (!token) {
     return res.status(401).json({ message: "Token requerido" });

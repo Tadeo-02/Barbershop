@@ -14,6 +14,7 @@ export const authCookieOptions = (maxAgeMs: number) =>
     httpOnly: true,
     secure: isProduction,
     sameSite: sameSiteValue,
+    partitioned: isProduction,
     path: "/",
     maxAge: maxAgeMs,
   }) satisfies import("express").CookieOptions;
@@ -23,6 +24,7 @@ export const csrfCookieOptions = (maxAgeMs: number) =>
     httpOnly: false,
     secure: isProduction,
     sameSite: sameSiteValue,
+    partitioned: isProduction,
     path: "/",
     maxAge: maxAgeMs,
   }) satisfies import("express").CookieOptions;
@@ -31,6 +33,7 @@ export const clearCookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: sameSiteValue,
+  partitioned: isProduction,
   path: "/",
   maxAge: 0,
 } satisfies import("express").CookieOptions;
@@ -39,6 +42,7 @@ export const clearCsrfCookieOptions = {
   httpOnly: false,
   secure: isProduction,
   sameSite: sameSiteValue,
+  partitioned: isProduction,
   path: "/",
   maxAge: 0,
 } satisfies import("express").CookieOptions;
