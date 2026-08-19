@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { Request } from "express";
 
 /**
@@ -9,7 +9,7 @@ const userIdKeyGenerator = (req: Request): string => {
   if (req.user?.codUsuario) {
     return `user:${req.user.codUsuario}`;
   }
-  return `ip:${req.ip ?? "unknown"}`;
+  return ipKeyGenerator(req.ip ?? "unknown");
 };
 
 /**
