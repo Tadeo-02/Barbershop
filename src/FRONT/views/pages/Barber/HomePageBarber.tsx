@@ -8,6 +8,10 @@ import {
   useAbortController,
 } from "../../components/shared/useAbortController.ts";
 import { apiFetch } from "../../lib/apiFetch";
+import {
+  getTurnoDateTime,
+  unwrapAppointments,
+} from "../../components/shared/appointments";
 import type { AppointmentPartial } from "../../../types/appointment";
 
 const MONTH_LABELS = [
@@ -51,39 +55,56 @@ const Home = () => {
   }, [isAuthLoading, isAuthenticated, userType, navigate]);
 
   useEffect(() => {
-    if (!user?.codUsuario) {
-      setNextTurno(null);
-      setLoadingNextTurno(false);
-      setHasCheckedNextTurno(true);
-      return;
-    }
+    const loadNextTurno = async () => {
+      if (!user?.codUsuario) {
+        setNextTurno(null);
+        setLoadingNextTurno(false);
+        setHasCheckedNextTurno(true);
+        return;
+      }
 
-    const controller = renewNextTurnoAbort();
-    setHasCheckedNextTurno(false);
-    setLoadingNextTurno(true);
+      const controller = renewNextTurnoAbort();
+      setHasCheckedNextTurno(false);
+      setLoadingNextTurno(true);
 
-    apiFetch(`/turnos/user/${user.codUsuario}/next`, {
-      signal: controller.signal,
-    })
-      .then(async (res) => {
+      try {
+        const res = await apiFetch(`/turnos/user/${user.codUsuario}`, {
+          signal: controller.signal,
+        });
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
-        setNextTurno(data ?? null);
-      })
-      .catch((error) => {
+
+        const data = await res.json();
+        const turnosArray = unwrapAppointments<AppointmentPartial>(data);
+
+        const now = new Date();
+        const upcoming = turnosArray
+          .map((turno) => {
+            const dateTime = getTurnoDateTime(turno);
+            return dateTime ? { turno, dateTime } : null;
+          })
+          .filter(
+            (item): item is { turno: AppointmentPartial; dateTime: Date } =>
+              !!item &&
+              item.turno.estado === "Programado" &&
+              item.dateTime >= now,
+          )
+          .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
+
+        setNextTurno(upcoming[0]?.turno ?? null);
+      } catch (error) {
         if (isAbortError(error)) return;
         console.error("Error fetching next appointment:", error);
         setNextTurno(null);
-      })
-      .finally(() => {
+      } finally {
         setLoadingNextTurno(false);
         setHasCheckedNextTurno(true);
-      });
+      }
+    };
 
+    void loadNextTurno();
     return abortNextTurnoAbort;
   }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
 

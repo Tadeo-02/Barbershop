@@ -2,17 +2,15 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import styles from "./branches.module.css";
-import toast from "react-hot-toast"; //importamos libreria de alertas
+import toast from "react-hot-toast";
 import { BranchSchema } from "../../../../../BACK/Schemas/branchesSchema";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../../components/shared/useAbortController";
-import { getResponseMessage, readJsonSafely } from "../../../components/Admin/apiResponse";
+import { useAbortController } from "../../../components/shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
+import { createResolver } from "../../../lib/zodFormResolver";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const CreateBranchSchema = BranchSchema.extend({});
 
@@ -31,7 +29,7 @@ const CreateBranches: React.FC = () => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateBranchFormData>({
-    resolver: zodResolver(CreateBranchSchema),
+    resolver: createResolver(CreateBranchSchema),
     mode: "onBlur",
   });
 
@@ -76,15 +74,10 @@ const CreateBranches: React.FC = () => {
         });
       }
     } catch (error: unknown) {
-      // ignore abort errors (they are intentional)
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
-        // console.log("Request cancelado");
+      if (handleAbortOrConnectionError(error, toastId, "No se pudo conectar con el servidor")) {
         return;
       }
-      // Network or unexpected error
       console.error("Error en handleSubmit:", error);
-      toast.error("No se pudo conectar con el servidor", { id: toastId });
     }
   };
 

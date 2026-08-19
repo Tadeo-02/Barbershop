@@ -6,6 +6,8 @@ import { useAuth } from "../../components/user/AuthContext.tsx";
 import { useUserRedirect } from "../../components/useUserRedirect.ts";
 import { deriveRole } from "../../lib/roles.ts";
 import toast from "react-hot-toast";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import { parseBackendResponse } from "../../lib/backendResponse";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -25,33 +27,28 @@ function Login() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, contraseña }),
       });
-      const text = await response.text();
-      let data;
-      if (text) {
-        try {
-          data = JSON.parse(text);
-        } catch {
-          toast.error("Respuesta inválida del servidor");
-          return;
-        }
-      } else {
-        toast.error("El servidor no devolvió respuesta.");
+      const parsed = await parseBackendResponse<{ user?: User; token?: string; message?: string }>(response);
+      
+      if (!parsed.ok && parsed.message) {
+        toast.error(parsed.message);
         return;
       }
       if (response.ok) {
-        if (data.user) {
-          const role = deriveRole(data.user.cuil);
-          login(data.user, role);
-          redirectUser(data.user, data.message || "Login exitoso");
+        if (parsed.data?.user) {
+          const role = deriveRole(parsed.data.user.cuil);
+          login(parsed.data.user, role);
+          redirectUser(parsed.data.user, parsed.message || "Login exitoso");
         } else {
           toast.error("Datos de usuario no encontrados");
         }
       } else {
-        toast.error(data?.message || "Error de login");
+        toast.error(parsed.message || "Error de login");
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Error de conexión");
+      if (handleAbortOrConnectionError(error, undefined, "Error de conexión")) {
+        return;
+      }
     }
   };
 

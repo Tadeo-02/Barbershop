@@ -1,6 +1,8 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
 import { z } from "zod";
 import { CategorySchema } from "../../Schemas/categoriesSchema";
+import { assertEntityExists } from "../../lib/entityChecks";
+import { parseValidatedInput } from "../../lib/zodHelpers";
 
 type CategoryDirection = "promote" | "demote";
 type DeleteCategoryAction = "promote_all" | "demote_all" | "per_client";
@@ -30,7 +32,8 @@ export const store = async (
     };
 
     // validate with zod (omit `codCategoria` when creating)
-    const validatedData = CategorySchema.omit({ codCategoria: true }).parse(
+    const validatedData = parseValidatedInput(
+      CategorySchema.omit({ codCategoria: true }),
       sanitizedData,
     );
 
@@ -133,21 +136,22 @@ export const update = async (
     };
 
     // validate data (omit `codCategoria` when validating update payload)
-    const validatedData = CategorySchema.omit({ codCategoria: true }).parse({
-      nombreCategoria: sanitizedData.nombreCategoria,
-      descCategoria: sanitizedData.descCategoria,
-      descuentoCorte: sanitizedData.descuentoCorte,
-      descuentoProducto: sanitizedData.descuentoProducto,
-    });
+    const validatedData = parseValidatedInput(
+      CategorySchema.omit({ codCategoria: true }),
+      {
+        nombreCategoria: sanitizedData.nombreCategoria,
+        descCategoria: sanitizedData.descCategoria,
+        descuentoCorte: sanitizedData.descuentoCorte,
+        descuentoProducto: sanitizedData.descuentoProducto,
+      },
+    );
 
     // verify that the category exists
     const existingCategoria = await prisma.categoria.findUnique({
       where: { codCategoria: sanitizedData.codCategoria },
     });
 
-    if (!existingCategoria) {
-      throw new DatabaseError("Categoría no encontrada");
-    }
+    assertEntityExists(existingCategoria, "Categoría");
 
     // update category
     const updatedCategoria = await prisma.categoria.update({
@@ -204,9 +208,7 @@ export const destroy = async (codCategoria: string) => {
       where: { codCategoria: sanitizedCodCategoria },
     });
 
-    if (!existingCategoria) {
-      throw new DatabaseError("Categoría no encontrada");
-    }
+    assertEntityExists(existingCategoria, "Categoría");
 
     if (
       PROTECTED_CATEGORY_NAMES.some(

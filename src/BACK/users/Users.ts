@@ -13,6 +13,12 @@ import {
   turnsUntilNextDiscount as calcTurnsUntilNextDiscount,
   isThisTurnEligible,
 } from "../lib/discount";
+import {
+  assertNoPendingAppointments,
+  PendingAppointmentsError,
+} from "../lib/barberBusinessRules";
+import { assertEntityExists } from "../lib/entityChecks";
+import { parseValidatedInput } from "../lib/zodHelpers";
 
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
   process.env.INITIAL_TO_MEDIUM_DAYS || "30",
@@ -179,7 +185,7 @@ export const store = async (
     };
 
     // validation with zod
-    const validatedData = UserSchema.parse(sanitizedData);
+    const validatedData = parseValidatedInput(UserSchema, sanitizedData);
 
     console.log("Creating user");
 
@@ -451,9 +457,7 @@ export const findByIdWithCategory = async (codUsuario: string) => {
       },
     });
 
-    if (!usuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
+    assertEntityExists(usuario, "Usuario");
     const categoriaActual = usuario.categoria_vigente[0];
     const loyaltyProgress = await buildLoyaltyProgress(
       sanitizedCodUsuario,
@@ -609,7 +613,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       }
     }
 
-    const validatedData = UpdateUserSchema.parse({
+    const validatedData = parseValidatedInput(UpdateUserSchema, {
       dni: sanitizedData.dni,
       nombre: sanitizedData.nombre,
       apellido: sanitizedData.apellido,
@@ -644,9 +648,7 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       });
     }
 
-    if (!existingUsuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
+    assertEntityExists(existingUsuario, "Usuario");
 
     if (
       existingUsuario.cuil &&
@@ -667,10 +669,16 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
         },
       });
 
-      if (pendingCount > 0) {
-        throw new DatabaseError(
+      try {
+        assertNoPendingAppointments(
+          pendingCount,
           "No se puede cambiar de sucursal. Tiene turnos pendientes",
         );
+      } catch (error) {
+        if (error instanceof PendingAppointmentsError) {
+          throw new DatabaseError(error.message);
+        }
+        throw error;
       }
     }
     // prepare the required data for the update
@@ -746,9 +754,7 @@ export const destroy = async (codUsuario: string) => {
       where: { codUsuario: sanitizedCodUsuario },
     });
 
-    if (!existingUsuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
+    assertEntityExists(existingUsuario, "Usuario");
 
     if (existingUsuario.cuil && existingUsuario.cuil !== "1") {
       const today = new Date();
@@ -764,10 +770,16 @@ export const destroy = async (codUsuario: string) => {
         },
       });
 
-      if (pendingCount > 0) {
-        throw new DatabaseError(
+      try {
+        assertNoPendingAppointments(
+          pendingCount,
           "No se puede dar de baja al barbero. Tiene turnos pendientes",
         );
+      } catch (error) {
+        if (error instanceof PendingAppointmentsError) {
+          throw new DatabaseError(error.message);
+        }
+        throw error;
       }
     }
 
@@ -822,9 +834,7 @@ export const reactivate = async (codUsuario: string) => {
       where: { codUsuario: sanitizedCodUsuario },
     });
 
-    if (!existingUsuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
+    assertEntityExists(existingUsuario, "Usuario");
 
     // Verify that it is a barber (has CUIL and is not admin)
     if (!existingUsuario.cuil || existingUsuario.cuil === "1") {
@@ -877,7 +887,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
     };
 
     // validate with zod
-    const validatedData = LoginSchema.parse(sanitizedData);
+    const validatedData = parseValidatedInput(LoginSchema, sanitizedData);
 
     console.log("Validating user login for email:", validatedData.email);
 

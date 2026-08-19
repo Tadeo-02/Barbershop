@@ -11,6 +11,8 @@ import {
   unwrapAppointments,
 } from "../../components/shared/appointments";
 import { apiFetch } from "../../lib/apiFetch.ts";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import { ensureAuthenticatedUser } from "../../lib/authUtils";
 
 const ClientAppointments: React.FC = () => {
   const { user, isAuthenticated, isAuthLoading } = useAuth();
@@ -40,47 +42,53 @@ const ClientAppointments: React.FC = () => {
 
   // first useEffect: verify authentication and redirect if not authenticated
   useEffect(() => {
-    if (isAuthLoading) return;
+    // Dar tiempo para que el AuthContext cargue desde localStorage
+    const timer = setTimeout(() => {
+      setAuthChecked(true);
 
-    setAuthChecked(true);
+      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+        message: "Debes iniciar sesión para ver tus turnos",
+        redirectTo: "/login",
+      })) {
+        return;
+      }
+    }, 100);
 
-    if (!isAuthenticated || !user || !user.codUsuario) {
-      toast.error("Debes iniciar sesión para ver tus turnos");
-      navigate("/login");
-    }
-  }, [isAuthLoading, isAuthenticated, user, navigate]);
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, user, navigate]);
 
   // second effect: load appointments once authenticated
   useEffect(() => {
-    // dont load until the authentication is verified
-    if (!authChecked) return;
+    const loadAppointments = async () => {
+      if (!authChecked) return;
 
-    // if not authenticated, dont fetch
-    if (!isAuthenticated || !user || !user.codUsuario) {
-      return;
-    }
+      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {})) {
+        return;
+      }
 
-    apiFetch(`/turnos/user/${user.codUsuario}`)
-      .then(async (res) => {
+      try {
+        const res = await apiFetch(`/turnos/user/${user.codUsuario}`);
+
         console.log("Response status:", res.status);
         console.log("Response headers:", res.headers.get("content-type"));
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         console.log("Turnos data:", data);
         const turnosArray = unwrapAppointments<AppointmentFull>(data);
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching appointments:", error);
         setTurnos([]);
-      });
+      }
+    };
+
+    void loadAppointments();
   }, [authChecked, isAuthenticated, user, navigate]);
 
   const handleDelete = async (codTurno: string) => {
@@ -157,11 +165,10 @@ const ClientAppointments: React.FC = () => {
         });
       }
     } catch (error) {
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
+        return;
+      }
       console.error("Error en la solicitud:", error);
-      toast.error("Error de conexión con el servidor", {
-        id: toastId,
-        duration: 2000,
-      });
     }
   };
 

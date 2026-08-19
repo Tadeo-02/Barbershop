@@ -4,7 +4,7 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { showConfirmActionToast } from "../../../components/Admin/confirmActionToast";
 import { changeEntityStatus } from "../../../components/Admin/entityStatus";
-import { getResponseMessage, readJsonSafely } from "../../../components/Admin/apiResponse";
+import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import type { Category } from "../../../../types/category";
 

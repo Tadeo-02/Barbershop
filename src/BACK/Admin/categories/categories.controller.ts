@@ -6,6 +6,10 @@ import {
   CategoryResponseSchema,
 } from "../../Schemas/categoriesSchema";
 import { sanitizeOutput } from "../../middleware/zodValidation";
+import {
+  createDataResponse,
+} from "../../lib/backendResponse";
+
 // Create the category controller model.
 type CategoryEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type CategoryCreateArgs = Parameters<typeof model.store>;
@@ -26,19 +30,10 @@ class CategoriesController extends BaseController<
 
   listClients = async (req: Request, res: Response) => {
     const { codCategoria } = req.params;
-    if (!codCategoria) {
-      res.status(400).json({
-        message: "codCategoria es requerido",
-      });
-      return;
-    }
     try {
       const result = await model.listClientsForCategory(codCategoria);
       const safeResult = sanitizeOutput(CategoryClientsResponseSchema, result);
-      res.status(200).json({
-        success: true,
-        data: safeResult,
-      });
+      res.status(200).json(createDataResponse(safeResult));
     } catch (error) {
       this.handleError(error, res);
     }
@@ -47,12 +42,6 @@ class CategoriesController extends BaseController<
   destroy = async (req: Request, res: Response) => {
     const { codCategoria } = req.params;
     const { action, perClient } = req.body || {};
-    if (!codCategoria) {
-      res.status(400).json({
-        message: "codCategoria es requerido",
-      });
-      return;
-    }
 
     try {
       const result = await model.destroyWithClientReassignment(

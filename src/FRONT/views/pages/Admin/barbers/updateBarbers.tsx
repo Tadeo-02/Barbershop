@@ -4,18 +4,18 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   UserBaseSchemaExport,
 } from "../../../../../BACK/Schemas/usersSchema";
-import {
-  isAbortError,
-  useAbortController,
-} from "../../../components/shared/useAbortController";
+import { useAbortController } from "../../../components/shared/useAbortController";
 import { fetchPendingAppointmentsCount } from "../../../components/Admin/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
+import { createResolver } from "../../../lib/zodFormResolver";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import type { Sucursal } from "../../../../types/branch";
 import type { UserResponse } from "../../../../types/user";
+
+type Barbero = UserResponse;
 
 const UpdateBarberSchema = UserBaseSchemaExport.extend({
   contraseña: z.string().optional(),
@@ -39,7 +39,7 @@ type UpdateBarberForm = z.infer<typeof UpdateBarberSchema>;
 const UpdateBarber: React.FC = () => {
   const { codUsuario } = useParams<{ codUsuario: string }>();
   const navigate = useNavigate();
-  const [barbero, setBarbero] = useState<UserResponse | null>(null);
+  const [barbero, setBarbero] = useState<Barbero | null>(null);
   const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
     Sucursal[]
   >([]);
@@ -55,7 +55,7 @@ const UpdateBarber: React.FC = () => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<UpdateBarberForm>({
-    resolver: zodResolver(UpdateBarberSchema),
+    resolver: createResolver(UpdateBarberSchema),
     mode: "onBlur",
   });
 
@@ -72,7 +72,9 @@ const UpdateBarber: React.FC = () => {
           setSucursalesDisponibles(data);
         }
       } catch (error: unknown) {
-        if (isAbortError(error)) return;
+        if (handleAbortOrConnectionError(error, undefined, "Error de conexión")) {
+          return;
+        }
         console.error("Error fetching sucursales:", error);
       }
     };
@@ -118,12 +120,10 @@ const UpdateBarber: React.FC = () => {
           });
         }
       } catch (error: unknown) {
-        if (isAbortError(error)) {
-          toast.dismiss(toastId);
+        if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
           return;
         }
         console.error("🔍 Debug - Fetch error:", error);
-        toast.error("Error de conexión", { id: toastId, duration: 2000 });
       }
     };
 
@@ -138,6 +138,10 @@ const UpdateBarber: React.FC = () => {
     const branchChanged = formValues.codSucursal !== barbero?.codSucursal;
 
     if (branchChanged) {
+      if (!codUsuario) {
+        toast.error("No se pudo identificar al barbero");
+        return;
+      }
       // Check for pending appointments before allowing branch change
       try {
         const pendingCount = await fetchPendingAppointmentsCount(
@@ -194,12 +198,10 @@ const UpdateBarber: React.FC = () => {
         });
       }
     } catch (error: unknown) {
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
         return;
       }
       console.error("🔍 Debug - Submit error:", error);
-      toast.error("Error de conexión", { id: toastId, duration: 2000 });
     }
   };
 

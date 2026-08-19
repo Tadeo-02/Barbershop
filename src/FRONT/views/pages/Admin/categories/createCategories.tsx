@@ -4,13 +4,13 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast"; 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
 import {
-  isAbortError,
   useAbortController,
 } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
+import { createResolver } from "../../../lib/zodFormResolver";
+import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 
 const CreateCategorySchema = CategorySchema.pick({
   nombreCategoria: true,
@@ -31,7 +31,7 @@ const CreateCategories: React.FC = () => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateCategoryForm>({
-    resolver: zodResolver(CreateCategorySchema),
+    resolver: createResolver(CreateCategorySchema),
     mode: "onBlur",
     defaultValues: {
       descuentoCorte: 0,
@@ -65,12 +65,10 @@ const CreateCategories: React.FC = () => {
         });
       }
     } catch (err: unknown) {
-      if (isAbortError(err)) {
-        toast.dismiss(toastId);
+      if (handleAbortOrConnectionError(err, toastId, "Error de conexión con el servidor")) {
         return;
       }
       console.error("Error en handleSubmit:", err);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 

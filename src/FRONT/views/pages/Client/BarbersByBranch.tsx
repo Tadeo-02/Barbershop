@@ -4,6 +4,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../../components/user/AuthContext.tsx";
 import { apiFetch } from "../../lib/apiFetch.ts";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import { ensureAuthenticatedUser } from "../../lib/authUtils";
+import { parseBackendResponse } from "../../lib/backendResponse";
 import type { Barbero } from "../../../types/barber";
 import type { Sucursal } from "../../../types/branch";
 
@@ -51,18 +54,19 @@ const BarbersByBranch = () => {
   };
 
   useEffect(() => {
-    console.log(
-      "codSucursal from params:",
-      codSucursal,
-      "- Selecciono el horario:",
-      isHorario,
-    );
+    const loadBarbersAndBranch = async () => {
+      console.log(
+        "codSucursal from params:",
+        codSucursal,
+        "- Selecciono el horario:",
+        isHorario,
+      );
 
-    if (!codSucursal) {
-      setError("No se encontró el código de sucursal");
-      setLoading(false);
-      return;
-    }
+      if (!codSucursal) {
+        setError("No se encontró el código de sucursal");
+        setLoading(false);
+        return;
+      }
 
     // Endpoints: barbers and details of branch
     const barberosEndpoint = isHorario
@@ -70,17 +74,14 @@ const BarbersByBranch = () => {
       : `/usuarios/branch/${codSucursal}`;
     const sucursalEndpoint = `/sucursales/${codSucursal}`;
 
-    console.log("Fetching barbers from endpoint:", barberosEndpoint);
-    console.log("Fetching sucursal from endpoint:", sucursalEndpoint);
+      console.log("Fetching barbers from endpoint:", barberosEndpoint);
+      console.log("Fetching sucursal from endpoint:", sucursalEndpoint);
 
-    // both petitions in parallel
-    Promise.all([apiFetch(barberosEndpoint), apiFetch(sucursalEndpoint)])
-      .then(async ([resBarberos, resSucursal]) => {
-        if (!resBarberos.ok) {
-          throw new Error(
-            `Error barberos ${resBarberos.status}: ${resBarberos.statusText}`,
-          );
-        }
+      try {
+        const [resBarberos, resSucursal] = await Promise.all([
+          apiFetch(barberosEndpoint),
+          apiFetch(sucursalEndpoint),
+        ]);
         if (!resSucursal.ok) {
           throw new Error(
             `Error sucursal ${resSucursal.status}: ${resSucursal.statusText}`,
@@ -120,26 +121,23 @@ const BarbersByBranch = () => {
         const dataBarberos = await resBarberos.json();
         const dataSucursal = await resSucursal.json();
 
-        return { dataBarberos, dataSucursal };
-      })
-      .then(({ dataBarberos, dataSucursal }) => {
         const barbersArray = dataBarberos.data || dataBarberos;
         setBarberos(Array.isArray(barbersArray) ? barbersArray : []);
 
         const suc = dataSucursal.data || dataSucursal;
-        // if the answer is an array for some reason, take the first element
         const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
         setSucursal(sucObj);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error al obtener datos:", error);
-        setError(error.message);
+        setError(error instanceof Error ? error.message : "Error desconocido");
         setBarberos([]);
         setSucursal(null);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    void loadBarbersAndBranch();
   }, [codSucursal, isHorario, fechaTurno, horaDesde]);
 
   if (loading) {
@@ -166,10 +164,11 @@ const BarbersByBranch = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // validate authentication
-    if (!isAuthenticated || !user || !user.codUsuario) {
-      toast.error("Debes iniciar sesión para reservar un turno");
-      navigate("/login");
+     // validate authentication
+    if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+      message: "Debes iniciar sesión para reservar un turno",
+      redirectTo: "/login",
+    })) {
       return;
     }
 
@@ -205,29 +204,17 @@ const BarbersByBranch = () => {
           codBarbero: selectedBarber,
           fechaTurno: fechaTurno,
           horaDesde: horaDesde,
-          horaHasta: "",
           estado: "Programado",
         }),
       });
 
       console.log("Response status:", response.status);
 
-      const text = await response.text();
-      console.log("Respuesta cruda del backend:", text);
+      const parsed = await parseBackendResponse<{ message?: string }>(response);
+      console.log("Respuesta cruda del backend:", parsed.raw);
 
-      if (!text) {
-        toast.error("Respuesta vacía del servidor", { id: toastId });
-        return;
-      }
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-        toast.error("Error al procesar respuesta del servidor", {
-          id: toastId,
-        });
+      if (!parsed.ok && parsed.message) {
+        toast.error(parsed.message, { id: toastId });
         return;
       }
 
@@ -241,8 +228,8 @@ const BarbersByBranch = () => {
       } else {
         // verify if it's a duplicate appointment error
         if (
-          data.message &&
-          data.message.includes("ya tiene un turno en ese horario")
+          parsed.message &&
+          parsed.message.includes("ya tiene un turno en ese horario")
         ) {
           toast.error(
             "Ya tienes un turno reservado en ese horario. Por favor elige otro horario.",
@@ -252,14 +239,16 @@ const BarbersByBranch = () => {
             },
           );
         } else {
-          toast.error(data.message || "Error al reservar turno", {
+          toast.error(parsed.message || "Error al reservar turno", {
             id: toastId,
           });
         }
       }
     } catch (error) {
+      if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
+        return;
+      }
       console.error("Error en handleSubmit:", error);
-      toast.error("Error de conexión con el servidor", { id: toastId });
     }
   };
 
@@ -342,14 +331,6 @@ const BarbersByBranch = () => {
           ))
         )}
       </ul>
-      {/* {showSchedule && (
-        <div className={styles.optionsContainer}>
-          <h3>Ahora elige el horario</h3>
-          <button className={styles.optionButton} onClick={handleSchedule}>
-            Ver horarios disponibles
-          </button>
-        </div>
-      )} */}
     </div>
   );
 };

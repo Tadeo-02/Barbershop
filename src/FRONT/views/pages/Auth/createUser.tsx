@@ -1,8 +1,7 @@
-//! TERMINAR
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import styles from "./login.module.css";
 import toast from "react-hot-toast";
@@ -13,8 +12,10 @@ import {
   PASSWORD_PATTERN,
 } from "../../lib/passwordConstants.ts";
 import { getPasswordMissing } from "../../lib/passwordRules";
-import { isAbortError, useAbortController } from "../../components/shared/useAbortController";
+import { useAbortController } from "../../components/shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch.ts";
+import { createResolver } from "../../lib/zodFormResolver";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 
 //! we use zods schema to validate fields
 // Extend schema for form with password confirmation
@@ -48,7 +49,7 @@ const CreateUser: React.FC = () => {
     reset,
     watch,
   } = useForm<CreateUserFormData>({
-    resolver: zodResolver(CreateUserSchema),
+    resolver: createResolver(CreateUserSchema),
     mode: "onBlur",
   });
 
@@ -98,15 +99,10 @@ const CreateUser: React.FC = () => {
         });
       }
     } catch (error) {
-      // Ignore abort errors (they are intentional)
-      if (isAbortError(error)) {
-        toast.dismiss(toastId);
-        console.log("Request cancelado");
+      if (handleAbortOrConnectionError(error, toastId, "No se pudo conectar con el servidor")) {
         return;
       }
-      // ERROR DE RED
       console.error("Error en handleSubmit:", error);
-      toast.error("No se pudo conectar con el servidor", { id: toastId });
     }
   };
 

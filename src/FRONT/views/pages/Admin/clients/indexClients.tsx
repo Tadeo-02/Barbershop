@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./indexClients.module.css";
 import toast from "react-hot-toast";
-import { readJsonSafely } from "../../../components/Admin/apiResponse";
+import { readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import type { Category } from "../../../../types/category";
 import type { CategorySummary } from "../../../../types/category";
