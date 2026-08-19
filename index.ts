@@ -66,6 +66,14 @@ app.use(
   }),
 );
 
+// CORS error handler — return 403 JSON instead of crashing into 500
+app.use((err: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({ message: "Origen no permitido por CORS" });
+  }
+  next(err);
+});
+
 // 3. Cookie parser (before body parsers so cookies are available)
 app.use(cookieParser());
 

@@ -1,5 +1,19 @@
 # Security Changes Log
 
+## 2026-08-19 — Cross-site cookie fix (HOTFIX)
+
+**Problem:** In deployed environments, frontend (`barbershop-frontend-six.vercel.app`) and backend are on different origins. With `SameSite=Strict`, the browser **never sends** the `access_token` cookie in cross-site requests, breaking all authenticated flows after login.
+
+**Changes:**
+- `cookieConfig.ts`: Changed `sameSite` from `"strict"` to `"none"` in production (`NODE_ENV=production`), `"lax"` in development. `SameSite=None` requires `Secure=true`, which was already gated by `isProduction`.
+- `index.ts`: Added CORS error handler middleware that returns 403 JSON (`{ message: "Origen no permitido por CORS" }`) instead of crashing into the generic 500 handler.
+
+**Prerequisites for cross-site cookies to work:**
+- `FRONTEND_URL` env var on backend must be set to the exact deployed frontend origin (e.g. `https://barbershop-frontend-six.vercel.app`)
+- CORS config already has `credentials: true` and specific `origin` check (not `*`) — confirmed correct.
+
+---
+
 ## 2026-08-19 — Remaining Security Issues Resolution
 
 ### SEC-01: JWT moved to HttpOnly cookie (HIGH)
@@ -7,7 +21,7 @@
 **Problem:** JWT was stored in `sessionStorage`, readable by any injected JavaScript (XSS exposure).
 
 **Changes:**
-- Backend now sets JWT in an `HttpOnly`, `Secure` (in production), `SameSite=Strict` cookie (`access_token`) on login.
+- Backend now sets JWT in an `HttpOnly`, `Secure` (in production), `SameSite=None` (production) / `SameSite=Lax` (development) cookie (`access_token`) on login.
 - A separate readable `csrf_token` cookie is set for double-submit CSRF protection.
 - Login response no longer returns the JWT in the body; returns `user` + `csrfToken` instead.
 - New `POST /usuarios/logout` endpoint clears both cookies.
