@@ -1,7 +1,7 @@
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { hashPassword } from "../users/bcrypt";
+import { hashPassword, comparePassword } from "../users/bcrypt";
 import { createRawToken, hashToken } from "../lib/token";
 import {
   LoginSchema,
