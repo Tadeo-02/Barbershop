@@ -214,7 +214,6 @@ const BarbersByBranch = () => {
           codBarbero: selectedBarber,
           fechaTurno: fechaTurno,
           horaDesde: horaDesde,
-          horaHasta: "",
           estado: "Programado",
         }),
       });
@@ -342,14 +341,6 @@ const BarbersByBranch = () => {
           ))
         )}
       </ul>
-      {/* {showSchedule && (
-        <div className={styles.optionsContainer}>
-          <h3>Ahora elige el horario</h3>
-          <button className={styles.optionButton} onClick={handleSchedule}>
-            Ver horarios disponibles
-          </button>
-        </div>
-      )} */}
     </div>
   );
 };

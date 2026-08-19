@@ -11,6 +11,7 @@ import {
   createErrorResponse,
   getErrorMessage,
 } from "../lib/backendResponse";
+import { DatabaseError } from "../base/Base";
 // Create the barberController class to send and handle the base.
 
 type AppointmentEntity = NonNullable<
@@ -60,6 +61,41 @@ export const findByAvailableDate = async (
   } catch (error: unknown) {
     res.status(500).json(
       serverError(getErrorMessage(error, "Error al buscar horas disponibles")),
+    );
+  }
+};
+
+export const store = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { codCliente, codBarbero, fechaTurno, horaDesde, horaHasta, estado } =
+      req.body as {
+        codCliente: string;
+        codBarbero: string;
+        fechaTurno: string;
+        horaDesde: string;
+        horaHasta?: string;
+        estado: string;
+      };
+
+    const result = await model.store(
+      codCliente,
+      codBarbero,
+      fechaTurno,
+      horaDesde,
+      horaHasta,
+      estado,
+    );
+    const safeResult = sanitizeOutput(AppointmentOutputSchema, result);
+
+    res.status(201).json(successData(safeResult, "Turno creado exitosamente"));
+  } catch (error: unknown) {
+    if (error instanceof DatabaseError) {
+      res.status(400).json(createErrorResponse(error.message, "validation_error"));
+      return;
+    }
+
+    res.status(500).json(
+      serverError(getErrorMessage(error, "Error al crear turno")),
     );
   }
 };
@@ -314,5 +350,5 @@ export const findPendingByBarberId = async (
   }
 };
 
-export const { create, store, index, show, edit, update, destroy } =
+export const { create, index, show, edit, update, destroy } =
   appointmentsController;

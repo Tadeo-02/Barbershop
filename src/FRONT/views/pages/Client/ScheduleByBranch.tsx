@@ -209,7 +209,6 @@ const ScheduleByBranch = () => {
           codBarbero: codBarbero,
           fechaTurno: selectedFechaTurno,
           horaDesde: selectedHorario,
-          horaHasta: "",
           estado: "Programado",
         }),
       });
