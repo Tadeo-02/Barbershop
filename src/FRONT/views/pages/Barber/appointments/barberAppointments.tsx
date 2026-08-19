@@ -292,7 +292,7 @@ const BarberAppointments: React.FC = () => {
                   ...t,
                   fechaTurno: data.fechaTurno,
                   horaDesde: data.horaDesde,
-                  horaHasta: horaHasta,
+                  horaHasta: "",
                 }
               : t,
           ),
