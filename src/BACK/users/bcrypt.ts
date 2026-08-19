@@ -1,14 +1,12 @@
 import bcrypt from "bcrypt";
 
-//encrypt the password
-const saltRounds = 12; // number of rounds; The more you add, the more it impacts performance while also making it more secure.
-// Takes the password entered from the frontend and encrypts it using the library's function.
+const BCRYPT_SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 12;
+
 export const hashPassword = async (password: string): Promise<string> => {
   try {
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
     return hashedPassword;
-  } catch (error) {
-    console.error("Error hashing password:", error);
+  } catch {
     throw new Error("Error al encriptar contraseña");
   }
 };
@@ -20,8 +18,7 @@ export const comparePassword = async (
   try {
     const isMatch = await bcrypt.compare(password, hashedPassword);
     return isMatch;
-  } catch (error) {
-    console.error("❌ Error comparing password:", error);
+  } catch {
     throw new Error("Error al verificar la contraseña");
   }
 };

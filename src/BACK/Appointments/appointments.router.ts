@@ -12,6 +12,7 @@ import {
   standardDeduplication,
 } from "../middleware/deduplication";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { csrfProtection } from "../middleware/csrf";
 import { requireRole } from "../middleware/roleMiddleware";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
@@ -49,6 +50,7 @@ const updateAppointmentBodySchema = z.object({
 router.post(
   "/",
   authMiddleware,
+  csrfProtection,
   requireRole("client", "admin"), 
   userModificationLimiter,
   strictDeduplication,
@@ -73,6 +75,7 @@ const baseRouter = createRouter(controller, {
     ],
     create: [
       authMiddleware,
+      csrfProtection,
       requireRole("client", "admin"),
       userModificationLimiter,
       strictDeduplication,
@@ -80,6 +83,7 @@ const baseRouter = createRouter(controller, {
     ],
     update: [
       authMiddleware,
+      csrfProtection,
       requireRole("barber", "admin"),
       userModificationLimiter,
       standardDeduplication,
@@ -90,6 +94,7 @@ const baseRouter = createRouter(controller, {
     ],
     delete: [
       authMiddleware,
+      csrfProtection,
       requireRole("admin"), // only admin can delete physically
       userModificationLimiter,
       standardDeduplication,
@@ -116,17 +121,17 @@ router.get(
 router.get(
   "/user/:codUsuario/next",
   authMiddleware,
-  requireRole("client", "admin"),
+  requireRole("client", "barber", "admin"),
   userLimiter,
   validateRequest({ params: userParamsSchema }),
   controller.findNextByUserId,
 );
 
-// A customer can only view THEIR appointments — ownership validation is handled in the controller.
+// A user can only view THEIR appointments — ownership validation is handled in the controller.
 router.get(
   "/user/:codUsuario",
   authMiddleware,
-  requireRole("client", "admin"),
+  requireRole("client", "barber", "admin"),
   userLimiter,
   validateRequest({ params: userParamsSchema }),
   controller.findByUserId,
@@ -175,6 +180,7 @@ router.get(
 router.put(
   "/:codTurno/cancel",
   authMiddleware,
+  csrfProtection,
   requireRole("client", "barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -186,6 +192,7 @@ router.put(
 router.put(
   "/:codTurno/checkout",
   authMiddleware,
+  csrfProtection,
   requireRole("barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -200,6 +207,7 @@ router.put(
 router.put(
   "/:codTurno/update",
   authMiddleware,
+  csrfProtection,
   requireRole("client", "barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -214,6 +222,7 @@ router.put(
 router.put(
   "/:codTurno/no-show",
   authMiddleware,
+  csrfProtection,
   requireRole("barber", "admin"),
   userModificationLimiter,
   standardDeduplication,

@@ -23,6 +23,7 @@ import {
 } from "../Schemas/usersSchema";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { requireRole } from "../middleware/roleMiddleware";
+import { csrfProtection } from "../middleware/csrf";
 
 const router: Router = Router();
 
@@ -82,6 +83,9 @@ router.post(
   validateRequest({ body: loginRequestSchema }),
   controller.login,
 );
+
+// Logout endpoint - clears auth and CSRF cookies
+router.post("/logout", controller.logout);
 
 // Email verification and password reset endpoints - IP-based limiting
 router.post(
@@ -185,6 +189,7 @@ router.get(
 router.patch(
   "/:codUsuario/deactivate",
   authMiddleware,
+  csrfProtection,
   requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -194,6 +199,7 @@ router.patch(
 router.patch(
   "/:codUsuario/reactivate",
   authMiddleware,
+  csrfProtection,
   requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -215,6 +221,7 @@ const baseRouter = createRouter(controller, {
     create: [validateRequest({ body: UserSchema })],
     update: [
       authMiddleware,
+      csrfProtection,
       requireRole("admin"),
       validateRequest({
         params: codUsuarioParamSchema,
@@ -223,6 +230,7 @@ const baseRouter = createRouter(controller, {
     ],
     delete: [
       authMiddleware,
+      csrfProtection,
       requireRole("admin"),
       validateRequest({ params: codUsuarioParamSchema }),
     ],

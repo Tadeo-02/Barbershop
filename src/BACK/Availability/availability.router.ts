@@ -13,6 +13,7 @@ import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
 import { AvailabilitySchema } from "../Schemas/availabilitySchema";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { csrfProtection } from "../middleware/csrf";
 import { requireRole } from "../middleware/roleMiddleware";
 
 const router: Router = Router();
@@ -27,6 +28,7 @@ const optionalCodBloqueoSchema = z.object({
 router.post(
   "/",
   authMiddleware,
+  csrfProtection,
   requireRole("barber", "admin"),
   userModificationLimiter,
   strictDeduplication,
@@ -48,6 +50,7 @@ const baseRouter = createRouter(controller, {
     ],
     create: [
       authMiddleware,
+      csrfProtection,
       requireRole("barber", "admin"),
       userModificationLimiter,
       strictDeduplication,
@@ -55,6 +58,7 @@ const baseRouter = createRouter(controller, {
     ],
     update: [
       authMiddleware,
+      csrfProtection,
       requireRole("barber", "admin"),
       userModificationLimiter,
       standardDeduplication,
@@ -65,6 +69,7 @@ const baseRouter = createRouter(controller, {
     ],
     delete: [
       authMiddleware,
+      csrfProtection,
       requireRole("barber", "admin"),
       userModificationLimiter,
       standardDeduplication,

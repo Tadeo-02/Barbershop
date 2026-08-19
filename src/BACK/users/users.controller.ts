@@ -2,8 +2,17 @@ import * as model from "./Users";
 import { BaseController } from "../base/base.controller";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { randomBytes } from "crypto";
 import { sanitizeOutput } from "../middleware/zodValidation";
 import { deriveRole } from "../lib/roles";
+import {
+  AUTH_COOKIE,
+  CSRF_COOKIE,
+  authCookieOptions,
+  csrfCookieOptions,
+  clearCookieOptions,
+  clearCsrfCookieOptions,
+} from "../lib/cookieConfig";
 import {
   BarberResponseSchema,
   type UserResponse,
@@ -14,6 +23,8 @@ import {
   buildVerificationEmail,
   sendMail,
 } from "../lib/mailer";
+
+const TOKEN_MAX_AGE_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 type UserEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type UserCreateArgs = Parameters<typeof model.store>;
@@ -244,17 +255,20 @@ class UsersController extends BaseController<
           rol,
         },
         jwtSecret,
-        { expiresIn: "8h" },
+        { algorithm: "HS256", expiresIn: "8h" },
       );
+
+      const csrfToken = randomBytes(32).toString("hex");
+
+      res.cookie(AUTH_COOKIE, token, authCookieOptions(TOKEN_MAX_AGE_MS));
+      res.cookie(CSRF_COOKIE, csrfToken, csrfCookieOptions(TOKEN_MAX_AGE_MS));
 
       res.status(200).json({
         message: "Login exitoso",
         user: safeUser,
-        token,
+        csrfToken,
       });
     } catch (error) {
-      console.error("Login error:", error);
-
       const errorMessage = getErrorMessage(error, "Error interno del servidor");
       let statusCode = 500;
       let code: string | undefined;
@@ -276,6 +290,12 @@ class UsersController extends BaseController<
         code,
       });
     }
+  }
+
+  async logout(_req: Request, res: Response): Promise<void> {
+    res.cookie(AUTH_COOKIE, "", clearCookieOptions);
+    res.cookie(CSRF_COOKIE, "", clearCsrfCookieOptions);
+    res.status(200).json({ message: "Sesión cerrada" });
   }
 }
 
@@ -355,6 +375,7 @@ export const store = usersController.store.bind(usersController);
 export const index = usersController.index.bind(usersController);
 export const update = usersController.update.bind(usersController);
 export const login = usersController.login.bind(usersController);
+export const logout = usersController.logout.bind(usersController);
 export const deactivate = usersController.deactivate.bind(usersController);
 export const reactivate = usersController.reactivate.bind(usersController);
 
