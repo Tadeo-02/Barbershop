@@ -16,22 +16,21 @@ import LandingPage from "./pages/LandingPage.tsx";
 // Client
 import ProfilePage from "./pages/Client/ProfilePage.tsx";
 import Home from "./pages/Client/Home.tsx";
-
 import Branches from "./pages/Client/Branches.tsx";
 import BarbersByBranch from "./pages/Client/BarbersByBranch.tsx";
 import ScheduleByBranch from "./pages/Client/ScheduleByBranch.tsx";
 import ClientAppointments from "./pages/Client/ClientAppointments.tsx";
-import ReceiptViewer from "./pages/Client/appointments/receiptViewer.tsx";
 import ShowCategories from "./pages/Admin/categories/showCategories.tsx";
 
 // Barber
 import HomePageBarber from "./pages/Barber/HomePageBarber.tsx";
-// import HomeBarber from "./components/Barber/home/home.tsx";
 import BarberAppointments from "./pages/Barber/appointments/barberAppointments.tsx";
 import BranchAppointments from "./pages/Barber/appointments/branchAppointments.tsx";
-import BarberReceiptViewer from "./pages/Barber/appointments/receiptViewer.tsx";
 import BarberAvailability from "./pages/Barber/appointments/barberAvailability.tsx";
 import MyAvailability from "./pages/Barber/appointments/myAvailability.tsx";
+
+//Client and Barber share the same receipt viewer
+import ReceiptViewer from "./components/shared/ReceiptViewer.tsx";
 
 // Admin
 import HomePageAdmin from "./pages/Admin/HomePageAdmin.tsx";
@@ -109,7 +108,7 @@ function App() {
                 path="/client/appointments/recibo/:codTurno"
                 element={
                   <ProtectedRoute allowedRoles={["client"]}>
-                    <ReceiptViewer />
+                    <ReceiptViewer backRoute="/client/appointments" backLabel="Volver a turnos" />
                   </ProtectedRoute>
                 }
               />
