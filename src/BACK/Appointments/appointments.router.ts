@@ -42,7 +42,7 @@ const checkoutBodySchema = z.object({
 const updateAppointmentBodySchema = z.object({
   fechaTurno: z.string().min(1),
   horaDesde: z.string().min(1),
-  horaHasta: z.string().min(1),
+  horaHasta: z.string().min(1).optional(),
 });
 
 
