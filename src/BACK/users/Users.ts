@@ -124,6 +124,17 @@ const buildLoyaltyProgress = async (
     isThisTurnEligibleFlag = isThisTurnEligible(countCurrent, discountCycle);
   }
 
+  const discountTurnsRequired = discountCycle
+    ? Math.max(discountCycle - 1, 0)
+    : null;
+  const discountTurnsCompleted =
+    discountTurnsRequired !== null && turnsUntilNextDiscount !== null
+      ? Math.min(
+          Math.max(discountTurnsRequired - turnsUntilNextDiscount, 0),
+          discountTurnsRequired,
+        )
+      : null;
+
   return {
     currentCategory: nombreCategoria,
     currentDiscount: descuentoCorte,
@@ -139,6 +150,8 @@ const buildLoyaltyProgress = async (
     turnsUntilNextDiscount,
     discountProgress,
     isThisTurnEligible: isThisTurnEligibleFlag,
+    discountTurnsRequired,
+    discountTurnsCompleted,
   };
 };
 

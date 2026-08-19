@@ -255,30 +255,11 @@ const Home = () => {
   const currentDiscount = loyaltyProgress?.currentDiscount ?? null;
 
   const remainingTurns = loyaltyProgress?.turnsUntilNextDiscount ?? null;
-  const discountTurnsRequired = (() => {
-    if (typeof loyaltyProgress?.discountCycle !== "number") return null;
-    return Math.max(loyaltyProgress.discountCycle - 1, 0);
-  })();
-  const discountTurnsCompleted = (() => {
-    if (discountTurnsRequired === null || remainingTurns === null) return null;
-    return Math.min(
-      Math.max(discountTurnsRequired - remainingTurns, 0),
-      discountTurnsRequired,
-    );
-  })();
-  const discountProgressPercent = (() => {
-    if (
-      discountTurnsRequired !== null &&
-      discountTurnsRequired > 0 &&
-      discountTurnsCompleted !== null
-    ) {
-      const pct = Math.round(
-        (discountTurnsCompleted / discountTurnsRequired) * 100,
-      );
-      return Number.isFinite(pct) ? pct : null;
-    }
-    return null;
-  })();
+  const discountTurnsRequired = loyaltyProgress?.discountTurnsRequired ?? null;
+  const discountTurnsCompleted = loyaltyProgress?.discountTurnsCompleted ?? null;
+  const discountProgressPercent = loyaltyProgress?.discountProgress != null
+    ? Math.round(loyaltyProgress.discountProgress * 100)
+    : null;
 
   const isInitialCategory =
     loyaltyProgress?.currentCategory?.trim().toLowerCase() === "inicial";
