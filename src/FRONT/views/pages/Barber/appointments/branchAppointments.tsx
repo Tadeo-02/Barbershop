@@ -4,7 +4,7 @@ import styles from "./branchAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { createResolver } from "../../../lib/zodFormResolver";
 import { z } from "zod";
 import type { AppointmentFull } from "../../../components/shared/appointments";
 import { formatDate, formatTime } from "../../../components/shared/appointments";
@@ -13,7 +13,7 @@ import {
   useAbortController,
 } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
-import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
+import { getResponseMessage, readJsonSafely, unwrapArray } from "../../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../../lib/authUtils";
 
@@ -102,7 +102,7 @@ const CheckoutForm: React.FC<{
 
   const { register, handleSubmit, setValue, watch, trigger, formState } =
     useForm<CheckoutValues>({
-      resolver: zodResolver(CheckoutSchema),
+      resolver: createResolver(CheckoutSchema),
       defaultValues: {
         codCorte: initial.codCorte || "",
         precioTurno: initial.precioTurno || 0,
@@ -524,21 +524,8 @@ const BranchAppointments: React.FC = () => {
       }
 
       const data = await readJsonSafely<any>(res);
+      setTurnos(unwrapArray<AppointmentFull>(data, ["data"]));
 
-      console.log("Turnos data:", data);
-
-      let turnosArray: AppointmentFull[] = [];
-
-      if (data) {
-        if (data.success && Array.isArray(data.data)) {
-          turnosArray = data.data;
-        } else if (Array.isArray(data)) {
-          turnosArray = data;
-        }
-      }
-
-      console.log("Turnos array procesado:", turnosArray);
-      setTurnos(turnosArray);
     } catch (error: unknown) {
       if (isAbortError(error)) {
         console.log("Fetch aborted for branch turnos");
@@ -572,16 +559,7 @@ const BranchAppointments: React.FC = () => {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = await readJsonSafely<any>(res);
-        console.log("Cortes data:", data);
-        if (Array.isArray(data)) {
-          console.log("Setting allCortes:", data);
-          setAllCortes(data);
-        } else if (data && data.success && Array.isArray(data.data)) {
-          console.log("Setting allCortes from data.data:", data.data);
-          setAllCortes(data.data);
-        } else {
-          console.warn("Formato de respuesta inesperado:", data);
-        }
+        setAllCortes(unwrapArray<Cut>(data, ["data"]));
       } catch (error: unknown) {
         if (isAbortError(error)) return;
         console.error("Error fetching cuts:", error);

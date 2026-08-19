@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from "./TimeSlotPicker.module.css";
 import { apiFetch } from "../../lib/apiFetch.ts";
+import { unwrapArray } from "../../lib/apiResponse";
 
 interface Horario {
   hora: string;
@@ -89,18 +90,9 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
         }
 
         const response = await res.json();
-        let horariosData: Horario[] = [];
-
-        if (response.success && Array.isArray(response.data)) {
-          horariosData = response.data.filter(
-            (item: Horario) => item && item.hora,
-          );
-        } else if (Array.isArray(response)) {
-          horariosData = response.filter((item: Horario) => item && item.hora);
-        } else {
-          console.error("Unexpected response format:", response);
-          horariosData = [];
-        }
+        const horariosData = unwrapArray<Horario>(response, ["data"]).filter(
+          (item) => item && item.hora,
+        );
 
         setHorarios(horariosData);
       } catch (error) {

@@ -16,3 +16,18 @@ export const readJsonSafely = async <T = unknown>(
     return null;
   }
 };
+export const unwrapArray = <T = unknown>(
+  data: unknown,
+  keys: string[] = ["data"],
+): T[] => {
+  if (Array.isArray(data)) return data as T[];
+
+  if (data && typeof data === "object") {
+    for (const key of keys) {
+      const value = (data as Record<string, unknown>)[key];
+      if (Array.isArray(value)) return value as T[];
+    }
+  }
+
+  return [];
+};

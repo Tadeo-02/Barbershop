@@ -16,7 +16,7 @@ import {
   useAbortController,
 } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
-import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
+import { getResponseMessage, readJsonSafely, unwrapArray } from "../../../lib/apiResponse";
 
 interface Availability {
   codBloqueo: string;
@@ -66,14 +66,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
           Availability[] | { data?: Availability[]; availability?: Availability[] }
         >(res);
 
-        let list: Availability[] = [];
-        if (Array.isArray(data)) {
-          list = data;
-        } else if (data && Array.isArray(data.data)) {
-          list = data.data;
-        } else if (data && Array.isArray(data.availability)) {
-          list = data.availability;
-        }
+        const list = unwrapArray<Availability>(data, ["data", "availability"]);
 
         const filtered = list
           .filter((item) => item.codBarbero === user.codUsuario)

@@ -12,7 +12,7 @@ import {
   unwrapAppointments,
 } from "../../../components/shared/appointments";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { createResolver } from "../../../lib/zodFormResolver";
 import { z } from "zod";
 import { useAbortController } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
@@ -48,7 +48,7 @@ const BarberAppointments: React.FC = () => {
 
   const { register, handleSubmit, setValue, reset, formState } =
     useForm<UpdateFormValues>({
-      resolver: zodResolver(UpdateAppointmentSchema),
+      resolver: createResolver(UpdateAppointmentSchema),
       defaultValues: { fechaTurno: "", horaDesde: "" },
     });
 
