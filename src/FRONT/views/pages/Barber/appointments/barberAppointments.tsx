@@ -14,7 +14,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAbortController } from "../../shared/useAbortController";
+import { useAbortController } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
 import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";

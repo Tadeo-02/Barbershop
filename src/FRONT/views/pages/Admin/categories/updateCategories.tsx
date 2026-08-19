@@ -4,7 +4,7 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useAbortController } from "../../shared/useAbortController";
+import { useAbortController } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";

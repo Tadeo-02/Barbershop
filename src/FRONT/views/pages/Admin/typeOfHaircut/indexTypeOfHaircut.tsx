@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./typeOfHaircut.module.css";
-import { showConfirmActionToast } from "../shared/confirmActionToast";
-import { changeEntityStatus } from "../shared/entityStatus";
+import { showConfirmActionToast } from "../../../components/Admin/confirmActionToast";
+import { changeEntityStatus } from "../../../components/Admin/entityStatus";
 import { apiFetch } from "../../../lib/apiFetch";
 
 interface TipoCorte {

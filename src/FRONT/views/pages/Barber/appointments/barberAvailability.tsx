@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useAuth } from "../../../components/user/AuthContext";
 import toast from "react-hot-toast";
 import styles from "./barberAvailability.module.css";
-import AvailabilityForm from "./AvailabilityForm";
-import type { AvailabilityFormValues } from "./AvailabilityForm";
-import { useAbortController } from "../../shared/useAbortController";
+import AvailabilityForm from "../../../components/Barber/AvailabilityForm";
+import type { AvailabilityFormValues } from "../../../components/Barber/AvailabilityForm";
+import { useAbortController } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 

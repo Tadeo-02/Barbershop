@@ -9,8 +9,8 @@ import {
   UserBaseSchemaExport,
   UserSchema,
 } from "../../../../../BACK/Schemas/usersSchema";
-import { useAbortController } from "../../shared/useAbortController";
-import { fetchPendingAppointmentsCount } from "../shared/pendingAppointments";
+import { useAbortController } from "../../../components/shared/useAbortController";
+import { fetchPendingAppointmentsCount } from "../../../components/Admin/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";

@@ -1,4 +1,4 @@
-//! TERMINAR
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -12,7 +12,7 @@ import {
   PASSWORD_PATTERN,
 } from "../../lib/passwordConstants.ts";
 import { getPasswordMissing } from "../../lib/passwordRules";
-import { useAbortController } from "../shared/useAbortController";
+import { useAbortController } from "../../components/shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch.ts";
 import { createResolver } from "../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
