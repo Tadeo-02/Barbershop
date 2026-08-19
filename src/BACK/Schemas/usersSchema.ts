@@ -60,9 +60,6 @@ const UserBaseSchema = z.object({
 
   cuil: z.string().optional(),
   codSucursal: z.string().optional(),
-  // Options to retrieve the password
-  preguntaSeguridad: z.string().optional(),
-  respuestaSeguridad: z.string().optional(),
 });
 
 // Full schema with refinements for validation
@@ -93,8 +90,6 @@ export const UserSchema = UserBaseSchema.refine(
 
 const UserUpdateBaseSchema = UserBaseSchema.extend({
   contraseña: z.string().optional(),
-  preguntaSeguridad: z.string().optional(),
-  respuestaSeguridad: z.string().optional(),
 });
 
 export const UserUpdateSchema = UserUpdateBaseSchema.refine(
@@ -145,8 +140,6 @@ export const BarberResponseSchema = z
     email: z.string(),
     cuil: z.string().nullable(),
     codSucursal: z.string().nullable().optional(),
-    preguntaSeguridad: z.string().optional().nullable(),
-    respuestaSeguridad: z.string().optional().nullable(),
     activo: z.union([z.boolean(), z.number()]).transform((val) => Boolean(val)),
   })
   .passthrough(); // Allow extra fields from database
@@ -172,8 +165,6 @@ const AppointmentCountsSchema = z.object({
 
 export const UserResponseSchema = UserBaseSchemaExport.omit({
   contraseña: true,
-  preguntaSeguridad: true,
-  respuestaSeguridad: true,
 }).extend({
   codUsuario: z.string(),
   cuil: z.string().nullable().optional(),

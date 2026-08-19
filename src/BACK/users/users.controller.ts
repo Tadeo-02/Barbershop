@@ -62,7 +62,6 @@ class UsersController extends BaseController<
         cuil,
         codSucursal,
       } = req.body;
-      const { preguntaSeguridad, respuestaSeguridad } = req.body;
 
       if (cuil && !codSucursal) {
         res.status(400).json({
@@ -80,8 +79,6 @@ class UsersController extends BaseController<
         contraseña,
         cuil,
         codSucursal,
-        preguntaSeguridad,
-        respuestaSeguridad,
       );
 
       const userType = cuil ? "barbero" : "cliente";
@@ -463,167 +460,5 @@ export const resetPasswordWithToken = async (
   } catch (error) {
     const errorMessage = getErrorMessage(error, "Token inválido o expirado");
     res.status(400).json({ success: false, message: errorMessage });
-  }
-};
-
-// get security question by email
-export const getSecurityQuestion = async (req: Request, res: Response) => {
-  try {
-    const { email } = req.params;
-    console.log("getSecurityQuestion called. Param email:", email);
-    if (!email) {
-      res.status(400).json({ success: false, message: "Email es requerido" });
-      return;
-    }
-    const pregunta = await model.getSecurityQuestionByEmail(email);
-    console.log(
-      "getSecurityQuestion result for",
-      email,
-      "-> pregunta:",
-      pregunta,
-    );
-    res.status(200).json({ success: true, pregunta });
-  } catch (error: unknown) {
-    console.error("Error getting security question:", error);
-    res.status(500).json({
-      success: false,
-      message: getErrorMessage(error, "Error interno"),
-    });
-  }
-};
-
-// Update security question and answer for a user (requires simple header auth: x-user-id === codUsuario)
-export const updateSecurityQuestion = async (req: Request, res: Response) => {
-  try {
-    const { codUsuario } = req.params;
-
-    if (!codUsuario) {
-      res
-        .status(400)
-        .json({ success: false, message: "codUsuario es requerido" });
-      return;
-    }
-
-    const { preguntaSeguridad, respuestaSeguridad } = req.body;
-    if (!preguntaSeguridad || !respuestaSeguridad) {
-      res.status(400).json({
-        success: false,
-        message: "Pregunta y respuesta son requeridas",
-      });
-      return;
-    }
-
-    // Delegate to model
-    const updated = await model.updateSecurityQuestion(
-      codUsuario,
-      preguntaSeguridad,
-      respuestaSeguridad,
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Pregunta de seguridad actualizada",
-      data: { codUsuario: updated.codUsuario },
-    });
-  } catch (error: unknown) {
-    console.error("Error updating security question:", error);
-    res.status(500).json({
-      success: false,
-      message: getErrorMessage(error, "Error interno"),
-    });
-  }
-};
-
-// verify security answer and reset password
-export const verifySecurityAnswer = async (req: Request, res: Response) => {
-  try {
-    console.log("verifySecurityAnswer endpoint called. Body:", req.body);
-    const { email, respuestaSeguridad, nuevaContraseña } = req.body;
-    if (!email || !respuestaSeguridad) {
-      res
-        .status(400)
-        .json({ success: false, message: "Email y respuesta son requeridos" });
-      return;
-    }
-
-    if (!nuevaContraseña) {
-      await model.verifySecurityAnswerOnly(email, respuestaSeguridad);
-      res
-        .status(200)
-        .json({ success: true, message: "Respuesta verificada correctamente" });
-      return;
-    }
-
-    await model.verifySecurityAnswerAndReset(
-      email,
-      respuestaSeguridad,
-      nuevaContraseña,
-    );
-
-    res
-      .status(200)
-      .json({ success: true, message: "Contraseña actualizada correctamente" });
-  } catch (error: unknown) {
-    console.error("Error verifying security answer:", error);
-    if (error instanceof Error && error.stack) console.error(error.stack);
-    const errMsg = getErrorMessage(error, "Error interno");
-    let status = 500;
-
-    const lowerMsg = errMsg.toLowerCase();
-    if (lowerMsg.includes("incorrecta")) {
-      status = 401; // incorrect answer -> unauthorized
-    } else if (
-      lowerMsg.includes("usuario no encontrado") ||
-      lowerMsg.includes("no user found")
-    ) {
-      status = 404; // user not found
-    } else if (
-      lowerMsg.includes("no hay respuesta") ||
-      lowerMsg.includes("no hay respuesta de seguridad")
-    ) {
-      status = 400; // bad request: no security answer configured
-    }
-
-    res.status(status).json({ success: false, message: errMsg });
-  }
-};
-
-// reset password  (separade step, after verifying security answer)
-export const resetPassword = async (req: Request, res: Response) => {
-  try {
-    const { email, respuestaSeguridad, nuevaContraseña } = req.body;
-    if (!email || !respuestaSeguridad || !nuevaContraseña) {
-      res.status(400).json({
-        success: false,
-        message: "Email, respuesta y nueva contraseña son requeridos",
-      });
-      return;
-    }
-
-    await model.verifySecurityAnswerAndReset(
-      email,
-      respuestaSeguridad,
-      nuevaContraseña,
-    );
-
-    res
-      .status(200)
-      .json({ success: true, message: "Contraseña actualizada correctamente" });
-  } catch (error: unknown) {
-    console.error("Error resetting password:", error);
-    const errMsg = getErrorMessage(error, "Error interno");
-    let status = 500;
-    const lowerMsg = errMsg.toLowerCase();
-    if (lowerMsg.includes("incorrecta")) {
-      status = 401;
-    } else if (
-      lowerMsg.includes("usuario no encontrado") ||
-      lowerMsg.includes("no user found")
-    ) {
-      status = 404;
-    } else if (lowerMsg.includes("no hay respuesta")) {
-      status = 400;
-    }
-    res.status(status).json({ success: false, message: errMsg });
   }
 };

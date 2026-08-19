@@ -1,7 +1,7 @@
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { hashPassword, comparePassword } from "../users/bcrypt";
+import { hashPassword } from "../users/bcrypt";
 import { createRawToken, hashToken } from "../lib/token";
 import {
   LoginSchema,
@@ -152,8 +152,6 @@ export const store = async (
   contraseña: string,
   cuil?: string,
   codSucursal?: string,
-  preguntaSeguridad?: string,
-  respuestaSeguridad?: string,
 ) => {
   try {
     // Sanitizar inputs
@@ -165,33 +163,15 @@ export const store = async (
       email: sanitizeInput(email),
       contraseña: sanitizeInput(contraseña),
       cuil: cuil ? sanitizeInput(cuil) : undefined, // sanitize if exists
-      preguntaSeguridad: preguntaSeguridad
-        ? sanitizeInput(preguntaSeguridad)
-        : undefined,
-      respuestaSeguridad: respuestaSeguridad
-        ? sanitizeInput(respuestaSeguridad)
-        : undefined,
     };
 
     // validation with zod
     const validatedData = UserSchema.parse(sanitizedData);
 
-    console.log("Validated user data keys:", {
-      preguntaSeguridad: !!validatedData.preguntaSeguridad,
-      respuestaSeguridad: !!validatedData.respuestaSeguridad,
-    });
-
     console.log("Creating user");
 
    // Encrypt the password after sanitization.
     const hashedPassword = await hashPassword(validatedData.contraseña);
-    // Encrypt the security answer if provided.
-    let hashedRespuestaSeguridad: string | null = null;
-    if (validatedData.respuestaSeguridad) {
-      hashedRespuestaSeguridad = await hashPassword(
-        validatedData.respuestaSeguridad,
-      );
-    }
     let cuilValue = null;
     if (validatedData.cuil) {
       // clean CUIL for storage (remove dashes and spaces)
@@ -208,9 +188,6 @@ export const store = async (
       emailVerificado: false,
       contrase_a: hashedPassword,
       codSucursal: codSucursal || null,
-      preguntaSeguridad:
-        validatedData.preguntaSeguridad || preguntaSeguridad || null,
-      respuestaSeguridad: hashedRespuestaSeguridad || null,
     };
 
     const usuario = await prisma.usuarios.create({
@@ -1156,151 +1133,4 @@ export const resetPasswordByToken = async (
       data: { consumedAt: now },
     }),
   ]);
-};
-
-// get security question by email (without revealing the answer)
-export const getSecurityQuestionByEmail = async (email: string) => {
-  try {
-    const sanitizedEmail = sanitizeInput(email);
-    const usuario = await prisma.usuarios.findFirst({
-      where: { email: sanitizedEmail, activo: true },
-      select: { preguntaSeguridad: true },
-    });
-
-    if (!usuario) {
-      throw new DatabaseError("Usuario no encontrado");
-    }
-
-    return usuario.preguntaSeguridad || null;
-  } catch (error) {
-    console.error("Error getting security question:", error);
-    throw new DatabaseError("Error al obtener la pregunta de seguridad");
-  }
-};
-
-const getUserAndValidateSecurityAnswer = async (
-  email: string,
-  respuesta: string,
-) => {
-  const sanitizedEmail = sanitizeInput(email);
-  const sanitizedRespuesta = sanitizeInput(respuesta);
-
-  console.log("validateSecurityAnswer called for:", sanitizedEmail);
-
-  const usuario = await prisma.usuarios.findFirst({
-    where: { email: sanitizedEmail, activo: true },
-  });
-
-  console.log(
-    "User lookup result:",
-    !!usuario,
-    usuario ? { codUsuario: usuario.codUsuario, email: usuario.email } : null,
-  );
-  console.log(
-    "Has stored respuestaSeguridad?",
-    !!(usuario && usuario.respuestaSeguridad),
-  );
-
-  if (!usuario) {
-    throw new DatabaseError("Usuario no encontrado");
-  }
-
-  if (!usuario.respuestaSeguridad) {
-    throw new DatabaseError(
-      "No hay respuesta de seguridad configurada para este usuario",
-    );
-  }
-
-  // Compare answer (saved hashead)
-  console.log(
-    "Stored respuestaSeguridad length:",
-    usuario.respuestaSeguridad ? usuario.respuestaSeguridad.length : 0,
-  );
-  const isAnswerValid = await comparePassword(
-    sanitizedRespuesta,
-    usuario.respuestaSeguridad,
-  );
-
-  if (!isAnswerValid) {
-    throw new DatabaseError("Respuesta incorrecta");
-  }
-
-  return usuario;
-};
-
-// Verify security answer (without resetting password)
-export const verifySecurityAnswerOnly = async (
-  email: string,
-  respuesta: string,
-) => {
-  try {
-    await getUserAndValidateSecurityAnswer(email, respuesta);
-    return true;
-  } catch (error) {
-    console.error("Error verifying security answer:", error);
-    if (error instanceof DatabaseError) throw error;
-    throw new DatabaseError("Error al verificar la respuesta");
-  }
-};
-
-// Verify security answer and update password if correct
-export const verifySecurityAnswerAndReset = async (
-  email: string,
-  respuesta: string,
-  nuevaContraseña: string,
-) => {
-  try {
-    const sanitizedNueva = sanitizeInput(nuevaContraseña);
-
-    const usuario = await getUserAndValidateSecurityAnswer(email, respuesta);
-
-    // Hash new pass and update
-    const hashedNewPassword = await hashPassword(sanitizedNueva);
-
-    const updated = await prisma.usuarios.update({
-      where: { codUsuario: usuario.codUsuario },
-      data: { contrase_a: hashedNewPassword },
-    });
-
-    return updated;
-  } catch (error) {
-    console.error(
-      "Error verifying security answer or resetting password:",
-      error,
-    );
-    if (error instanceof DatabaseError) throw error;
-    throw new DatabaseError(
-      "Error al verificar la respuesta o actualizar la contraseña",
-    );
-  }
-};
-
-// Update security question and (hashed) answer for a user
-export const updateSecurityQuestion = async (
-  codUsuario: string,
-  preguntaSeguridad: string,
-  respuestaSeguridad: string,
-) => {
-  try {
-    const sanitizedCod = sanitizeInput(codUsuario);
-    const sanitizedPregunta = sanitizeInput(preguntaSeguridad);
-    const sanitizedRespuesta = sanitizeInput(respuestaSeguridad);
-
-    // Hash answer before saving it
-    const hashedRespuesta = await hashPassword(sanitizedRespuesta);
-
-    const updated = await prisma.usuarios.update({
-      where: { codUsuario: sanitizedCod },
-      data: {
-        preguntaSeguridad: sanitizedPregunta,
-        respuestaSeguridad: hashedRespuesta,
-      },
-    });
-
-    return updated;
-  } catch (error) {
-    console.error("Error updating security question in model:", error);
-    if (error instanceof DatabaseError) throw error;
-    throw new DatabaseError("Error al actualizar la pregunta de seguridad");
-  }
 };

@@ -6,7 +6,6 @@ import {
   authLimiter,
   sensitiveLimiter,
   userModificationLimiter,
-  userSensitiveLimiter,
   userLimiter,
 } from "../middleware/rateLimiter";
 import {
@@ -23,7 +22,7 @@ import {
   UserUpdateSchema,
 } from "../Schemas/usersSchema";
 import { authMiddleware } from "../middleware/authMiddleware";
-import { requireRole, requireOwnershipOrRole } from "../middleware/roleMiddleware";
+import { requireRole } from "../middleware/roleMiddleware";
 
 const router: Router = Router();
 
@@ -200,20 +199,6 @@ router.patch(
   standardDeduplication,
   validateRequest({ params: codUsuarioParamSchema }),
   controller.reactivate,
-);
-
-// Security question update - sensitive operation for authenticated users
-router.patch(
-  "/:codUsuario/security-question",
-  authMiddleware,
-  requireOwnershipOrRole("admin"),
-  userSensitiveLimiter,
-  strictDeduplication,
-  validateRequest({
-    params: codUsuarioParamSchema,
-    body: securityQuestionBodySchema,
-  }),
-  controller.updateSecurityQuestion,
 );
 
 // apply base routes (GET, POST, PUT, DELETE genéricas)
