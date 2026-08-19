@@ -192,6 +192,8 @@ All appointment-related code (`ScheduleByBranch.tsx`, `branchAppointments.tsx`, 
 
 **Conclusion:** The 403 was already resolved. No raw `fetch()` calls bypass CSRF on state-changing authenticated endpoints. The current code is correct.
 
+**Retrospective note:** This investigation correctly ruled out raw `fetch()` bypasses as the cause, but the conclusion that the issue was "already resolved" was premature — the actual root cause (cross-site `document.cookie` unable to read cookies set by a different domain) was not identified until FIX-F. The grep audit was necessary but not sufficient; validating against the live symptom would have caught the gap earlier.
+
 **Preventive measure:** Added a warning comment to `apiFetch.ts` to prevent future developers from introducing raw `fetch()` calls for authenticated requests.
 
 **Files changed:**
