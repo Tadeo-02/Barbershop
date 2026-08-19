@@ -6,6 +6,7 @@ import {
   isTokenExpired,
   setStoredAuthToken,
 } from "../../lib/authStorage";
+import type { UserRole } from "../../lib/roles";
 
 interface User {
   codUsuario: string;
@@ -20,7 +21,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  userType: "client" | "barber" | "admin" | null;
+  userType: UserRole | null;
   token: string | null;
   login: (userData: User, token: string) => void;
   logout: () => void;
@@ -44,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [user, setUser] = useState<User | null>(null);
   const [userType, setUserType] = useState<
-    "client" | "barber" | "admin" | null
+    UserRole | null
   >(() => getRoleFromToken(getStoredAuthToken()));
   const [isAuthLoading, setIsAuthLoading] = useState(() => !!token);
 

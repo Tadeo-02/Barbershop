@@ -1,4 +1,6 @@
-type UserRole = "client" | "barber" | "admin";
+import { type UserRole, ROLE_VALUES } from "./roles";
+
+export type { UserRole } from "./roles";
 
 export interface AuthTokenPayload {
   codUsuario: string;
@@ -36,7 +38,7 @@ export function decodeAuthToken(token: string): AuthTokenPayload | null {
 
     if (
       typeof parsed.codUsuario !== "string" ||
-      !["client", "barber", "admin"].includes(parsed.rol ?? "")
+      !ROLE_VALUES.includes((parsed.rol ?? "") as UserRole)
     ) {
       return null;
     }

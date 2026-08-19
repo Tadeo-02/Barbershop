@@ -1,11 +1,12 @@
 // middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import type { Rol } from "../lib/roles";
 
 interface JwtPayload {
   codUsuario: string;
   codSucursal: string | null;
-  rol: "admin" | "barber" | "client";
+  rol: Rol;
 }
 
 export function authMiddleware(

@@ -1,4 +1,4 @@
-type JwtRole = "admin" | "barber" | "client";
+import type { Rol } from "../lib/roles";
 
 declare global {
   namespace Express {
@@ -6,7 +6,7 @@ declare global {
       user?: {
         codUsuario: string;
         codSucursal: string | null;
-        rol: JwtRole;
+        rol: Rol;
       };
     }
   }

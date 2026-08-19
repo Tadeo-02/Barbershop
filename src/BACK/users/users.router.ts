@@ -23,7 +23,7 @@ import {
   UserUpdateSchema,
 } from "../Schemas/usersSchema";
 import { authMiddleware } from "../middleware/authMiddleware";
-import { requireRole } from "../middleware/roleMiddleware";
+import { requireRole, requireOwnershipOrRole } from "../middleware/roleMiddleware";
 
 const router: Router = Router();
 
@@ -206,7 +206,7 @@ router.patch(
 router.patch(
   "/:codUsuario/security-question",
   authMiddleware,
-  requireRole("client", "barber", "admin"),
+  requireOwnershipOrRole("admin"),
   userSensitiveLimiter,
   strictDeduplication,
   validateRequest({

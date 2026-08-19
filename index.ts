@@ -6,7 +6,7 @@ import helmet from "helmet";
 import cors from "cors";
 
 // Import rate limiters
-import { generalLimiter, authLimiter } from "./src/BACK/middleware/rateLimiter";
+import { generalLimiter } from "./src/BACK/middleware/rateLimiter";
 import {
   securityMonitor,
   getSecurityEventsHandler,
@@ -14,12 +14,13 @@ import {
 import { authMiddleware } from "./src/BACK/middleware/authMiddleware";
 import { requireRole } from "./src/BACK/middleware/roleMiddleware";
 
+
+
 // Import CommonJS routers
 import categoriesRouter from "./src/BACK/Admin/categories/categories.router";
 import branchesRouter from "./src/BACK/Admin/branches/branches.router";
 import usersRouter from "./src/BACK/users/users.router";
 import appointmentsRouter from "./src/BACK/Appointments/appointments.router";
-import { login } from "./src/BACK/users/users.controller";
 // console.log("🔍 Categories router:", categoriesRouter);
 // console.log("🔍 Branches router:", branchesRouter);
 // console.log("🔍 Users router:", usersRouter);
@@ -105,8 +106,6 @@ app.use("/usuarios", usersRouter);
 app.use("/tipoCortes", typeOfHaircutRouter);
 
 app.use("/sucursales", branchesRouter);
-// apecific route for login (with auth limiter)
-app.post("/login", authLimiter, login);
 
 app.use("/turnos", appointmentsRouter);
 

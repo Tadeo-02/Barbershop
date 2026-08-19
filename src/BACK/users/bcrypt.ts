@@ -18,16 +18,7 @@ export const comparePassword = async (
   hashedPassword: string
 ): Promise<boolean> => {
   try {
-    console.log("🔍 Comparing passwords...");
-    console.log("Plain password length:", password.length);
-    console.log("Hashed password:", hashedPassword);
-    console.log(
-      "Hashed password starts with $2b:",
-      hashedPassword.startsWith("$2b$")
-    );
-
     const isMatch = await bcrypt.compare(password, hashedPassword);
-    console.log("🔍 Password comparison result:", isMatch);
     return isMatch;
   } catch (error) {
     console.error("❌ Error comparing password:", error);

@@ -3,6 +3,7 @@ import { BaseController } from "../base/base.controller";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { sanitizeOutput } from "../middleware/zodValidation";
+import { deriveRole } from "../lib/roles";
 import {
   BarberResponseSchema,
   type UserResponse,
@@ -237,8 +238,7 @@ class UsersController extends BaseController<
         return;
       }
 
-      const rol: "admin" | "barber" | "client" =
-        safeUser.cuil === "1" ? "admin" : safeUser.cuil ? "barber" : "client";
+      const rol = deriveRole(safeUser.cuil);
 
       const token = jwt.sign(
         {
@@ -501,11 +501,6 @@ export const updateSecurityQuestion = async (req: Request, res: Response) => {
       res
         .status(400)
         .json({ success: false, message: "codUsuario es requerido" });
-      return;
-    }
-
-    if (req.user?.rol !== "admin" && req.user?.codUsuario !== codUsuario) {
-      res.status(401).json({ success: false, message: "No autorizado" });
       return;
     }
 
