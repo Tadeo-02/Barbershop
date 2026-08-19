@@ -1,0 +1,198 @@
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import styles from "./typeOfHaircut.module.css";
+import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { HaircutSchema } from "../../../../../BACK/Schemas/typeOfHaircutSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  isAbortError,
+  useAbortController,
+} from "../../../components/shared/useAbortController";
+import { getResponseMessage, readJsonSafely } from "../../../components/Admin/apiResponse";
+import { apiFetch } from "../../../lib/apiFetch";
+
+interface TipoCorte {
+  codCorte: string;
+  nombre: string;
+  valorBase: number;
+}
+
+type TypeForm = z.infer<typeof HaircutSchema>;
+
+const UpdateTypeOfHaircut: React.FC = () => {
+  const { codCorte } = useParams<{ codCorte: string }>();
+  const navigate = useNavigate();
+  const [corte, setCorte] = useState<TipoCorte | null>(null);
+  const { renew: renewFetchAbort, abort: abortFetchAbort } =
+    useAbortController();
+  const { renew: renewSubmitAbort } = useAbortController();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<TypeForm>({
+    resolver: zodResolver(HaircutSchema),
+    mode: "onBlur",
+    defaultValues: { valorBase: 0 },
+  });
+
+  useEffect(() => {
+    const controller = renewFetchAbort();
+    const toastId = toast.loading("Cargando datos del tipo de corte...");
+
+    const fetchCorte = async () => {
+      try {
+        const response = await apiFetch(`/tipoCortes/${codCorte}`, {
+          signal: controller.signal,
+        });
+        if (response.ok) {
+          const raw = await response.json();
+          // map backend response fields to frontend form shape
+          const mapped: TipoCorte = {
+            codCorte: raw.codCorte ?? raw.codCorte,
+            nombre: raw.nombre ?? raw.nombreCorte ?? "",
+            valorBase: raw.valorBase ?? undefined,
+          } as TipoCorte;
+          setCorte(mapped);
+          reset({
+            nombre: mapped.nombre,
+            valorBase: mapped.valorBase,
+          });
+          toast.dismiss(toastId);
+        } else if (response.status === 404) {
+          toast.error("Tipo de corte no encontrado", {
+            id: toastId,
+            duration: 2000,
+          });
+          navigate("/Admin/HaircutTypesPage");
+        } else {
+          toast.error("Error al cargar los datos del tipo de corte", {
+            id: toastId,
+            duration: 2000,
+          });
+        }
+      } catch (err: unknown) {
+        if (isAbortError(err)) {
+          toast.dismiss(toastId);
+          return;
+        }
+        console.error("Error fetching tipo de corte:", err);
+        toast.error("Error de conexión", { id: toastId, duration: 2000 });
+      }
+    };
+
+    fetchCorte();
+    return abortFetchAbort;
+  }, [codCorte, navigate, reset, renewFetchAbort, abortFetchAbort]);
+
+  const onSubmit = async (values: TypeForm) => {
+    const controller = renewSubmitAbort();
+
+    const toastId = toast.loading("Actualizando tipo de corte...");
+    try {
+      // Use POST with ?_method=PUT for method-override compatibility
+      const res = await apiFetch(`/tipoCortes/${codCorte}?_method=PUT`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+        signal: controller.signal,
+      });
+
+      const data = await readJsonSafely(res);
+
+      if (res.ok) {
+        toast.success("Tipo de corte actualizado", {
+          id: toastId,
+          duration: 2000,
+        });
+        navigate("/Admin/HaircutTypesPage");
+      } else {
+        const msg =
+          getResponseMessage(data, "Error al actualizar tipo de corte") ??
+          "Error al actualizar tipo de corte";
+        toast.error(msg, { id: toastId, duration: 2000 });
+      }
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
+        toast.dismiss(toastId);
+        return;
+      }
+      console.error("Error modificando Tipo de Corte:", err);
+      toast.error("Error de conexión", { id: toastId, duration: 2000 });
+    }
+  };
+
+  if (!corte) {
+    return <div className={styles.loadingState}>Cargando tipo de corte...</div>;
+  }
+
+  return (
+    <div className={styles.formContainer}>
+      <h1 className={styles.pageTitle}>Editar Tipo de Corte</h1>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <fieldset disabled={isSubmitting}>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="nombre">
+              Nombre del corte:
+            </label>
+            <input
+              className={styles.formInput}
+              type="text"
+              id="nombre"
+              {...register("nombre")}
+              maxLength={50}
+              required
+            />
+            {errors.nombre && (
+              <div className={styles.errorMessage}>
+                {errors.nombre.message as string}
+              </div>
+            )}
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="valorBase">
+              Valor base:
+            </label>
+            <input
+              className={styles.formInput}
+              type="number"
+              id="valorBase"
+              min={0}
+              step={0.01}
+              {...register("valorBase", { valueAsNumber: true })}
+              required
+            />
+            {errors.valorBase && (
+              <div className={styles.errorMessage}>
+                {errors.valorBase.message as string}
+              </div>
+            )}
+          </div>
+          <div className={styles.detailsActionButtons}>
+            <button
+              className={`${styles.button} ${styles.buttonSuccess}`}
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+            </button>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              className={`${styles.button} ${styles.buttonPrimary}`}
+              onClick={() => navigate("/Admin/HaircutTypesPage")}
+            >
+              Volver
+            </button>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  );
+};
+
+export default UpdateTypeOfHaircut;
