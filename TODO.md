@@ -94,8 +94,8 @@ Si login.tsx usara response.json() directo, esos casos tirarían una excepción 
   - Se limpian también claves heredadas como `user` y `userType` desde ambos storages cuando la sesión es inválida o se cierra.
 
 ## 9. Rutas protegidas duplicadas
-- [ ] Revisar si el `useEffect` que valida el usuario en `HomePageBarber.tsx` duplica la lógica de `ProtectedRoute.tsx`.
-  - [ ] Unificar usando el componente `src/FRONT/views/components/ProtectedRoute.tsx` en lugar de reimplementar la validación en cada página.
+- [x] Revisar si el `useEffect` que valida el usuario en `HomePageBarber.tsx` duplica la lógica de `ProtectedRoute.tsx`.
+- [x] Unificar usando el componente `src/FRONT/views/components/ProtectedRoute.tsx` en lugar de reimplementar la validación en cada página.
 
 ## 10. Lógica de negocio en el front
 - [x] Mover lógica de negocio (cálculos de fechas, etc.) del front al backend/API.

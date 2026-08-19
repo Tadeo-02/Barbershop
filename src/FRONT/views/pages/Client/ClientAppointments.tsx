@@ -16,11 +16,10 @@ import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../lib/authUtils";
 
 const ClientAppointments: React.FC = () => {
-  const { user, isAuthenticated, isAuthLoading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [dateSort, setDateSort] = useState<"asc" | "desc">("asc");
-  const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
   // function to obtain the CSS class according to the appointment's status
@@ -41,27 +40,8 @@ const ClientAppointments: React.FC = () => {
     }
   };
 
-  // first useEffect: verify authentication and redirect if not authenticated
-  useEffect(() => {
-    // Dar tiempo para que el AuthContext cargue desde localStorage
-    const timer = setTimeout(() => {
-      setAuthChecked(true);
-
-      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
-        message: "Debes iniciar sesión para ver tus turnos",
-        redirectTo: "/login",
-      })) {
-        return;
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, user, navigate]);
-
-  // second effect: load appointments once authenticated
   useEffect(() => {
     const loadAppointments = async () => {
-      if (!authChecked) return;
 
       if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {})) {
         return;
@@ -90,7 +70,7 @@ const ClientAppointments: React.FC = () => {
     };
 
     void loadAppointments();
-  }, [authChecked, isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleDelete = async (codTurno: string) => {
     //Custom confirmation alert
