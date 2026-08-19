@@ -61,13 +61,19 @@ const requireAdminForStaffUser: RequestHandler = (req, res, next) => {
     return;
   }
 
-  authMiddleware(req, res, (authError?: unknown) => {
-    if (authError) {
-      next(authError);
+  csrfProtection(req, res, (csrfError?: unknown) => {
+    if (csrfError || res.headersSent) {
       return;
     }
 
-    requireRole("admin")(req, res, next);
+    authMiddleware(req, res, (authError?: unknown) => {
+      if (authError) {
+        next(authError);
+        return;
+      }
+
+      requireRole("admin")(req, res, next);
+    });
   });
 };
 

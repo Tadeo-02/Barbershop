@@ -31,6 +31,9 @@ import availabilityRouter from "./src/BACK/Availability/availability.router";
 
 const app = express();
 
+// 0. Trust first proxy (required for correct req.ip behind Render/Cloudflare/etc.)
+app.set("trust proxy", 1);
+
 // 1. Helmet - Sets various HTTP headers for security
 app.use(
   helmet({

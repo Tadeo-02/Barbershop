@@ -133,3 +133,40 @@ Items checked off in `TODO.md`:
 - Refresh tokens with server-side revocation
 - JWT invalidation when user is deactivated/banned
 - Email-based verification for security question changes
+
+---
+
+## 2026-08-19 — Production fixes: trust proxy, CSRF on registration, login response fix
+
+### FIX-B: Express `trust proxy` setting (HIGH)
+
+**Problem:** Without `trust proxy`, `req.ip` returns the raw TCP connection IP (typically `127.0.0.1` behind Render's reverse proxy). All IP-based rate limiters (`generalLimiter`, `authLimiter`, `sensitiveLimiter`, `publicReadLimiter`, and the IP fallback in `userIdKeyGenerator`) share the same IP for every client, defeating rate limiting entirely.
+
+**Changes:**
+- `index.ts`: Added `app.set("trust proxy", 1)` immediately after `const app = express()`, before all middleware. Value `1` trusts the first proxy hop (correct for Render's architecture).
+
+**Files changed:**
+- `index.ts`
+
+---
+
+### FIX-C: CSRF protection on admin-only staff registration (MEDIUM)
+
+**Problem:** `POST /usuarios/` (user registration) had no CSRF protection. Public self-registration (no `cuil`/`codSucursal` in body) is intentionally unauthenticated and should not require CSRF. But when an authenticated admin creates staff users (body contains `cuil` or `codSucursal`), the request is state-changing and authenticated — it needs CSRF protection like all other authenticated mutations.
+
+**Changes:**
+- `users.router.ts`: Modified `requireAdminForStaffUser` middleware to chain `csrfProtection` before the auth/role check when `cuil` or `codSucursal` is present. The `csrfProtection` middleware validates the double-submit cookie pattern (`csrf_token` cookie matches `X-CSRF-Token` header) and rejects requests from non-allowed origins. Public self-registration (no `cuil`/`codSucursal`) skips CSRF entirely via the existing early return.
+
+**Files changed:**
+- `src/BACK/users/users.router.ts`
+
+---
+
+### FIX-A: Frontend login response parsing (ALREADY FIXED)
+
+**Problem:** The old login code checked `if (data.user && data.token)` to validate the login response. After SEC-01 moved the JWT to an HttpOnly cookie, the response changed from `{ message, user, token }` to `{ message, user, csrfToken }`. The `data.token` field no longer exists, so the check was always falsy even though `data.user` was populated — causing the "Datos de usuario no encontrados" error on every successful login.
+
+**Status:** Already fixed in commit `6202a1c` (security update v3). The check was changed to `if (data.user)` and the role is now derived via `deriveRole(data.user.cuil)` instead of decoding the JWT token. No additional changes needed.
+
+**Files changed (prior commit):**
+- `src/FRONT/views/pages/Auth/login.tsx`
