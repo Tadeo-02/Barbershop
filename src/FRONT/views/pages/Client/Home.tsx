@@ -43,6 +43,8 @@ interface LoyaltyProgress {
   discountCycle?: number | null;
   turnsUntilNextDiscount?: number | null;
   discountProgress?: number | null;
+  discountTurnsRequired?: number | null;
+  discountTurnsCompleted?: number | null;
 }
 
 const MONTH_LABELS = [
