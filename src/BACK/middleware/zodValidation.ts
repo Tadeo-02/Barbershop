@@ -26,16 +26,16 @@ export const validateRequest = <
       if (!parsed.success) {
         errors.params = formatZodError(parsed.error);
       } else {
-        req.params = parsed.data as typeof req.params;
+        Object.assign(req.params, parsed.data);
       }
     }
-
     if (schemas.query) {
       const parsed = schemas.query.safeParse(req.query);
+
       if (!parsed.success) {
         errors.query = formatZodError(parsed.error);
       } else {
-        req.query = parsed.data as typeof req.query;
+        Object.assign(req.query, parsed.data);
       }
     }
 
