@@ -13,6 +13,8 @@ import {
 } from "../../middleware/deduplication";
 import { authMiddleware } from "../../middleware/authMiddleware";
 import { requireRole } from "../../middleware/roleMiddleware";
+import { validateRequest } from "../../middleware/zodValidation";
+import { z } from "zod";
 
 const router: Router = Router();
 
@@ -42,6 +44,20 @@ router.patch(
   userModificationLimiter,
   standardDeduplication,
   controller.reactivate,
+);
+
+const rentabilityQuerySchema = z.object({
+  month: z.string().regex(/^\d+$/, "month must be a numeric string"),
+  year: z.string().regex(/^\d+$/, "year must be a numeric string"),
+});
+
+router.get(
+  "/rentability",
+  authMiddleware,
+  requireRole("admin"),
+  userLimiter,
+  validateRequest({ query: rentabilityQuerySchema }),
+  controller.getRevenueByBranch,
 );
 
 const baseRouter = createRouter(controller, {

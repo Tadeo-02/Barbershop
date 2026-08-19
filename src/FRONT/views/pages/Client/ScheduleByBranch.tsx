@@ -44,21 +44,6 @@ const ScheduleByBranch = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Function to calculate horaHasta (30 minutes after horaDesde)
-  const calculateHoraHasta = (horaDesde: string): string => {
-    if (!horaDesde) return "";
-
-    const [hours, minutes] = horaDesde.split(":").map(Number);
-    const totalMinutes = hours * 60 + minutes + 30; // add 30 min
-
-    const newHours = Math.floor(totalMinutes / 60);
-    const newMinutes = totalMinutes % 60;
-
-    return `${newHours.toString().padStart(2, "0")}:${newMinutes
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
   useEffect(() => {
     console.log("Código from params:", codigo, "- Es barbero:", isBarbero);
 
@@ -212,15 +197,11 @@ const ScheduleByBranch = () => {
     const toastId = toast.loading("Creando Turno...");
 
     try {
-      // calculate horaHasta
-      const horaHasta = calculateHoraHasta(selectedHorario);
-
       console.log("Enviando POST a /turnos con datos:", {
         codCliente: user.codUsuario,
         codBarbero: codBarbero,
         fechaTurno: selectedFechaTurno,
         horaDesde: selectedHorario,
-        horaHasta: horaHasta,
         estado: "Programado",
       });
 
@@ -234,7 +215,7 @@ const ScheduleByBranch = () => {
           codBarbero: codBarbero,
           fechaTurno: selectedFechaTurno,
           horaDesde: selectedHorario,
-          horaHasta: horaHasta,
+          horaHasta: "",
           estado: "Programado",
         }),
       });

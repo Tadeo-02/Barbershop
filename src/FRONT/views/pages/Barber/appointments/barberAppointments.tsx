@@ -260,15 +260,6 @@ const BarberAppointments: React.FC = () => {
 
     const toastId = toast.loading("Modificando turno...");
 
-    // calculate horaHasta (30 min after)
-    const [hours, minutes] = data.horaDesde.split(":").map(Number);
-    const totalMinutes = hours * 60 + minutes + 30;
-    const newHours = Math.floor(totalMinutes / 60);
-    const newMinutes = totalMinutes % 60;
-    const horaHasta = `${newHours.toString().padStart(2, "0")}:${newMinutes
-      .toString()
-      .padStart(2, "0")}`;
-
     // Abort any previous submit
     const controller = renewSubmitAbort();
 
@@ -283,7 +274,7 @@ const BarberAppointments: React.FC = () => {
           body: JSON.stringify({
             fechaTurno: data.fechaTurno,
             horaDesde: data.horaDesde,
-            horaHasta: horaHasta,
+            horaHasta: "",
           }),
           signal: controller.signal,
         },

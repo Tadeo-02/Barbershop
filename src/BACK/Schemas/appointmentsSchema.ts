@@ -33,10 +33,10 @@ export const AppointmentSchema = z.object({
     .string()
     .min(1, "Hora desde es requerida")
     .regex(/^\d{2}:\d{2}$/, "Hora inválida. Formato HH:MM"),
-  horaHasta: z
-    .string()
-    .min(1, "Hora hasta es requerida")
-    .regex(/^\d{2}:\d{2}$/, "Hora inválida. Formato HH:MM"),
+  horaHasta: z.string().regex(
+      /^\d{2}:\d{2}$/,
+      "Hora inválida. Formato HH:MM",
+    ).optional(),
   estado: z
     .string()
     .min(1, "Estado es requerido")
