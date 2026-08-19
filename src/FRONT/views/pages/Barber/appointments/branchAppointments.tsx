@@ -465,7 +465,6 @@ const BranchAppointments: React.FC = () => {
   const [allCortes, setAllCortes] = useState<Haircut[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { renew: renewTurnosAbort, abort: abortTurnosAbort } =
     useAbortController();
@@ -485,22 +484,6 @@ const BranchAppointments: React.FC = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  useEffect(() => {
-    // give time to AuthContext to load from localStorage
-    const timer = setTimeout(() => {
-      setAuthChecked(true);
-
-      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
-        message: "Debes iniciar sesión como barbero para ver los turnos",
-        redirectTo: "/login",
-        requireSucursal: true,
-      })) {
-        return;
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, user, navigate]);
 
   const loadTurnos = async () => {
     if (!user) return;
@@ -535,11 +518,16 @@ const BranchAppointments: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!authChecked || !isAuthenticated || !user) return;
+    if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+      message: "Tu cuenta de barbero no tiene una sucursal asignada",
+      redirectTo: "/login",
+      requireSucursal: true,
+    })) {
+      return;
+    }
     void loadTurnos();
-
     return abortTurnosAbort;
-  }, [authChecked, isAuthenticated, user, navigate, abortTurnosAbort]);
+  }, [isAuthenticated, user, navigate, abortTurnosAbort]);
 
   // load all types of haircuts 
   useEffect(() => {

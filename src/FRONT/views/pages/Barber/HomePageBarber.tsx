@@ -31,28 +31,13 @@ const MONTH_LABELS = [
 
 const Home = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isAuthLoading, userType, user } = useAuth();
+  const { user } = useAuth();
   const [nextTurno, setNextTurno] = useState<AppointmentPartial | null>(null);
   const [loadingNextTurno, setLoadingNextTurno] = useState(false);
   const [hasCheckedNextTurno, setHasCheckedNextTurno] = useState(false);
-  const { renew: renewNextTurnoAbort, abort: abortNextTurnoAbort } =
-    useAbortController();
-
+  const { renew: renewNextTurnoAbort, abort: abortNextTurnoAbort } = useAbortController();
   const greetingName = user?.nombre?.trim();
   const greeting = greetingName ? `Hola, ${greetingName}!` : "Hola!";
-
-  useEffect(() => {
-    if (isAuthLoading) return;
-
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-
-    if (isAuthenticated && userType && userType !== "barber") {
-      navigate("/");
-    }
-  }, [isAuthLoading, isAuthenticated, userType, navigate]);
 
   useEffect(() => {
     const loadNextTurno = async () => {

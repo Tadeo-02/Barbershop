@@ -25,11 +25,9 @@ const BarberAppointments: React.FC = () => {
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [dateSort, setDateSort] = useState<"asc" | "desc">("desc");
-  const [authChecked, setAuthChecked] = useState(false);
   const [isLoadingTurnos, setIsLoadingTurnos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { renew: renewFetchAbort, abort: abortFetchAbort } =
-    useAbortController();
+  const { renew: renewFetchAbort, abort: abortFetchAbort } = useAbortController();
   const { renew: renewSubmitAbort } = useAbortController();
 
   // Zod schema for update payload (basic, mirrors backend expectations)
@@ -79,38 +77,18 @@ const BarberAppointments: React.FC = () => {
     }
   };
 
-  // first effect: check authentication and redirect if not authenticated
+
+  //load appointments once authenticated
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAuthChecked(true);
-
-      if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
-        message: "Debes iniciar sesión como barbero para ver tus turnos",
-        redirectTo: "/login",
-        requireSucursal: true,
-      })) {
-        return;
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, user, navigate]);
-
-
-  // second effect: load appointments once authenticated
-  useEffect(() => {
-    // dont load until verification of auth is done
-    if (!authChecked) return;
-
-    // if not authenticated or dont have codSucursal (isnt a barber), dont fetch
     if (!ensureAuthenticatedUser(isAuthenticated, user, navigate, {
+      message: "Tu cuenta de barbero no tiene una sucursal asignada",
+      redirectTo: "/login",
       requireSucursal: true,
     })) {
       return;
     }
 
     const codUsuario = user.codUsuario;
-
     const loadTurnos = async () => {
       const controller = renewFetchAbort();
       setIsLoadingTurnos(true);
@@ -149,7 +127,6 @@ const BarberAppointments: React.FC = () => {
     void loadTurnos();
     return abortFetchAbort;
   }, [
-    authChecked,
     isAuthenticated,
     user,
     navigate,
