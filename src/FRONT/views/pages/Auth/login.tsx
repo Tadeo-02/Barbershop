@@ -6,6 +6,8 @@ import { useAuth } from "../../components/user/AuthContext.tsx";
 import { useUserRedirect } from "../../components/useUserRedirect.ts";
 import toast from "react-hot-toast";
 
+const API_URL = import.meta.env.VITE_API_URL ?? "";
+
 function Login() {
   const [email, setEmail] = useState("");
   const [contraseña, setContraseña] = useState("");
@@ -16,7 +18,7 @@ function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/usuarios/login", {
+      const response = await fetch(`${API_URL}/usuarios/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, contraseña }),

@@ -1,7 +1,6 @@
 import { useAuth } from "../../components/user/AuthContext";
 import { useEffect, useState } from "react";
 import styles from "./ProfilePage.module.css";
-import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../lib/apiFetch";
 
