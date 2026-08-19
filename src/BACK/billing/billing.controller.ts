@@ -373,6 +373,7 @@ export const getBillingData = async (
       where: { codTurno },
       select: {
         codTurno: true,
+        codCliente: true,
         estado: true,
         precioTurno: true,
         metodoPago: true,
@@ -391,6 +392,15 @@ export const getBillingData = async (
       res.status(404).json({
         success: false,
         message: "Turno no encontrado",
+      });
+      return;
+    }
+
+    // a client can only access their own appointment's billing data. barbers and admins can access any.
+    if (req.user?.rol === "client" && req.user.codUsuario !== turno.codCliente) {
+      res.status(403).json({
+        success: false,
+        message: "Acceso denegado",
       });
       return;
     }
@@ -467,12 +477,30 @@ export const getReceiptPdf = async (
     const turno = await prisma.turno.findUnique({
       where: { codTurno },
       select: {
+        codCliente: true,
         cae: true,
         voucherNumber: true,
         tipoComprobante: true,
         puntoDeVenta: true,
       },
     });
+
+    if (!turno) {
+      res.status(404).json({
+        success: false,
+        message: "Turno no encontrado",
+      });
+      return;
+    }
+
+    // Un cliente solo puede ver el recibo de sus propios turnos
+    if (req.user?.rol === "client" && req.user.codUsuario !== turno.codCliente) {
+      res.status(403).json({
+        success: false,
+        message: "Acceso denegado",
+      });
+      return;
+    }
 
     if (turno?.cae && turno.voucherNumber) {
       // Serve full ARCA invoice PDF

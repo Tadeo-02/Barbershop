@@ -89,6 +89,15 @@ export const findByUserId = async (
   try {
     const { codUsuario } = req.params;
 
+    // a client or a barber can only consult their own appointments. admin can consult any
+    if (req.user?.rol !== "admin" && req.user?.codUsuario !== codUsuario) {
+      res.status(403).json({
+        success: false,
+        message: "Acceso denegado",
+      });
+      return;
+    }
+
     const turno = await model.findByUserId(codUsuario);
     const safeTurno = sanitizeOutput(AppointmentOutputSchema, turno);
 

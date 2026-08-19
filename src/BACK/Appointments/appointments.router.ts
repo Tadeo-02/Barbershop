@@ -113,7 +113,7 @@ router.get(
 router.get(
   "/user/:codUsuario",
   authMiddleware,
-  requireRole("client", "admin"),
+  requireRole("client", "admin", "barber"),
   userLimiter,
   validateRequest({ params: userParamsSchema }),
   controller.findByUserId,

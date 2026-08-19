@@ -133,7 +133,7 @@ router.get(
 router.get(
   "/datos-turno/:codTurno",
   authMiddleware,
-  requireRole("barber", "admin"),
+  requireRole("barber", "admin", "client"),
   userLimiter,
   validateRequest({ params: codTurnoParamSchema }),
   controller.getBillingData,
