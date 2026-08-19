@@ -93,7 +93,7 @@
   - [ ] Unificar usando el componente `src/FRONT/views/components/ProtectedRoute.tsx` en lugar de reimplementar la validación en cada página.
 
 ## 10. Lógica de negocio en el front
-- [ ] Mover lógica de negocio (cálculos de fechas, etc.) del front al backend/API.
+- [x] Mover lógica de negocio (cálculos de fechas, etc.) del front al backend/API.
   - Detectado en: `src/FRONT/views/components/Client/clientAppointments.tsx`
 
 ## 11. Organización de carpetas (páginas vs. componentes)
