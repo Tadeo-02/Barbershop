@@ -16,7 +16,6 @@ import {
 } from "../../../lib/passwordConstants";
 import { getPasswordMissing } from "../../../lib/passwordRules";
 
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
 import { parseBackendResponse } from "../../../lib/backendResponse";
 import type { Sucursal } from "../../../../types/branch";
 

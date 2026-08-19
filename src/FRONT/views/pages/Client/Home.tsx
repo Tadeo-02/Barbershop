@@ -3,7 +3,7 @@ import { FaCut, FaRegCalendarAlt, FaRegClock } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/user/AuthContext";
-import styles from "./Home.module.css";
+import styles from "./home.module.css";
 import { isAbortError, useAbortController } from "../../components/shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch";
 import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
