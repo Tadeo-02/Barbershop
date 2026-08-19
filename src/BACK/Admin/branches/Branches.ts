@@ -273,3 +273,73 @@ export const reactivate = async (codSucursal: string) => {
     throw new DatabaseError("Error al reactivar sucursal");
   }
 };
+
+export const getRevenueByBranch = async (month: number, year: number) => {
+  try {
+    const startOfMonth = new Date(year, month, 1);
+    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+    const turnos = await prisma.turno.findMany({
+      where: {
+        estado: "Cobrado",
+        precioTurno: { not: null },
+        fechaTurno: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      select: {
+        precioTurno: true,
+        codBarbero: true,
+      },
+    });
+
+    const barberoIds = [...new Set(turnos.map((t) => t.codBarbero))];
+    const barberos = await prisma.usuarios.findMany({
+      where: { codUsuario: { in: barberoIds } },
+      select: { codUsuario: true, codSucursal: true },
+    });
+
+    const barberoToSucursal = new Map(
+      barberos.map((b) => [b.codUsuario, b.codSucursal]),
+    );
+
+    const sucursalIds = [
+      ...new Set(
+        barberos.map((b) => b.codSucursal).filter(Boolean),
+      ),
+    ] as string[];
+    const sucursales = await prisma.sucursales.findMany({
+      where: { codSucursal: { in: sucursalIds } },
+      select: { codSucursal: true, nombre: true },
+    });
+
+    const revenueMap = new Map<string, number>();
+    for (const s of sucursales) {
+      revenueMap.set(s.codSucursal, 0);
+    }
+
+    for (const t of turnos) {
+      const codSucursal = barberoToSucursal.get(t.codBarbero);
+      if (!codSucursal) continue;
+      const precio = t.precioTurno ? Number(t.precioTurno) : 0;
+      const prev = revenueMap.get(codSucursal) || 0;
+      revenueMap.set(codSucursal, prev + (isNaN(precio) ? 0 : precio));
+    }
+
+    return Array.from(revenueMap.entries()).map(([codSucursal, total]) => {
+      const sucursal = sucursales.find((s) => s.codSucursal === codSucursal);
+      return {
+        codSucursal,
+        nombre: sucursal?.nombre || codSucursal,
+        totalRevenue: total,
+      };
+    });
+  } catch (error) {
+    console.error(
+      "Error calculating rentability:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    throw new DatabaseError("Error al calcular rentabilidad");
+  }
+};
