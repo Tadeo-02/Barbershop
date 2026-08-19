@@ -9,6 +9,14 @@ import {  useAbortController} from "../../../components/shared/useAbortControlle
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_PATTERN,
+} from "../../../lib/passwordConstants";
+import { getPasswordMissing } from "../../../lib/passwordRules";
+
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 import { parseBackendResponse } from "../../../lib/backendResponse";
 import type { Sucursal } from "../../../../types/branch";
 
@@ -35,11 +43,17 @@ const CreateBarbers: React.FC = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<CreateBarberForm>({
     resolver: createResolver(CreateBarberSchema),
     mode: "onBlur",
   });
 
+  const passwordValue = watch("contraseña") || "";
+  const passwordMissing = getPasswordMissing(passwordValue);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
   // load branches when the component mounts
@@ -227,17 +241,52 @@ const CreateBarbers: React.FC = () => {
           {/* password */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Contraseña:</label>
-            <input
-              className={styles.formInput}
-              type="password"
-              placeholder="********"
-              minLength={10}
-              maxLength={128}
-              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).+"
-              title="Mínimo 10 caracteres; debe incluir mayúsculas, minúsculas, números y símbolos"
-              required
-              {...register("contraseña")}
-            />
+            <div className={styles.inputWithIcon}>
+              <input
+                className={styles.formInput}
+                type={showPassword ? "text" : "password"}
+                placeholder="********"
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+                pattern={PASSWORD_PATTERN}
+                title={`Mínimo ${PASSWORD_MIN_LENGTH} caracteres; debe incluir mayúsculas, minúsculas, números y símbolos`}
+                required
+                {...register("contraseña")}
+              />
+              <button
+                type="button"
+                className={styles.inputIconButton}
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={
+                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                }
+                aria-pressed={showPassword}
+              >
+                <svg
+                  className={styles.inputIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+            {passwordValue && passwordMissing.length > 0 && (
+              <div className={styles.passwordHints}>
+                <strong>Falta:</strong>
+                <ul>
+                  {passwordMissing.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {errors["contraseña"] && (
               <div className={styles.errorMessage}>
                 {errors["contraseña"]?.message as string}
@@ -248,15 +297,42 @@ const CreateBarbers: React.FC = () => {
           {/* confirm password */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Confirmar contraseña:</label>
-            <input
-              className={styles.formInput}
-              type="password"
-              placeholder="********"
-              minLength={10}
-              maxLength={128}
-              required
-              {...register("confirmarContraseña")}
-            />
+            <div className={styles.inputWithIcon}>
+              <input
+                className={styles.formInput}
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="********"
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+                required
+                {...register("confirmarContraseña")}
+              />
+              <button
+                type="button"
+                className={styles.inputIconButton}
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                aria-label={
+                  showConfirmPassword
+                    ? "Ocultar contraseña"
+                    : "Mostrar contraseña"
+                }
+                aria-pressed={showConfirmPassword}
+              >
+                <svg
+                  className={styles.inputIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
             {errors.confirmarContraseña && (
               <div className={styles.errorMessage}>
                 {errors.confirmarContraseña.message as string}

@@ -12,6 +12,12 @@ import { fetchPendingAppointmentsCount } from "../../../components/Admin/pending
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_PATTERN,
+} from "../../../lib/passwordConstants";
+import { getPasswordMissing } from "../../../lib/passwordRules";
 import { parseBackendResponse } from "../../../lib/backendResponse";
 import type { Sucursal } from "../../../../types/branch";
 import type { UserResponse } from "../../../../types/user";
@@ -40,6 +46,7 @@ type UpdateBarberForm = z.infer<typeof UpdateBarberSchema>;
 const UpdateBarber: React.FC = () => {
   const { codUsuario } = useParams<{ codUsuario: string }>();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const [barbero, setBarbero] = useState<Barbero | null>(null);
   const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
     Sucursal[]
@@ -55,10 +62,14 @@ const UpdateBarber: React.FC = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<UpdateBarberForm>({
     resolver: createResolver(UpdateBarberSchema),
     mode: "onBlur",
   });
+
+  const passwordValue = watch("contraseña") || "";
+  const passwordMissing = getPasswordMissing(passwordValue);
 
   useEffect(() => {
     const controller = renewSucursalesAbort();
@@ -312,13 +323,52 @@ const UpdateBarber: React.FC = () => {
             <label className={styles.formLabel} htmlFor="contraseña">
               Contraseña:
             </label>
-            <input // todo: placeholder
-              className={styles.formInput}
-              type="password"
-              id="contraseña"
-              placeholder="Ingrese nueva contraseña o deje vacío para mantener la actual"
-              {...register("contraseña")}
-            />
+            <div className={styles.inputWithIcon}>
+              <input
+                className={styles.formInput}
+                type={showPassword ? "text" : "password"}
+                id="contraseña"
+                placeholder="Ingrese nueva contraseña o deje vacío para mantener la actual"
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+                pattern={PASSWORD_PATTERN}
+                title={`Mínimo ${PASSWORD_MIN_LENGTH} caracteres; debe incluir mayúsculas, minúsculas, números y símbolos`}
+                {...register("contraseña")}
+              />
+              <button
+                type="button"
+                className={styles.inputIconButton}
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={
+                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                }
+                aria-pressed={showPassword}
+              >
+                <svg
+                  className={styles.inputIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+            {passwordValue && passwordMissing.length > 0 && (
+              <div className={styles.passwordHints}>
+                <strong>Falta:</strong>
+                <ul>
+                  {passwordMissing.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {errors.contraseña && (
               <div className={styles.errorMessage}>
                 {errors.contraseña.message as string}

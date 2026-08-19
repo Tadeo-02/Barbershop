@@ -100,6 +100,13 @@ const MyProfile = () => {
 
   const displayUser = profile || { ...user, categoriaActual: null };
 
+  // Console.log cada vez que se renderiza
+  console.log("🔥 PROFILE DEBUG - Rendering with displayUser:", displayUser);
+  console.log(
+    "🔥 PROFILE DEBUG - displayUser.categoriaActual:",
+    displayUser.categoriaActual,
+  );
+
   return (
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Mi Perfil</h1>
