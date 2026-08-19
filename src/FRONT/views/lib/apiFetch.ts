@@ -1,11 +1,13 @@
 // lib/apiFetch.ts
+import { clearAuthStorage, getStoredAuthToken } from "./authStorage";
+
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 export async function apiFetch(
   path: string,
   options: RequestInit = {},
 ): Promise<Response> {
-  const token = localStorage.getItem("token");
+  const token = getStoredAuthToken();
 
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
@@ -17,7 +19,7 @@ export async function apiFetch(
   });
 
   if (res.status === 401) {
-    localStorage.clear();
+    clearAuthStorage();
     window.location.href = "/login";
   }
 

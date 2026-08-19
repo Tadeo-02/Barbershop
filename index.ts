@@ -49,10 +49,30 @@ app.use(
   }),
 );
 
-// 2. CORS - Configure allowed origins
+// 2. CORS - Configure allowed origins (comma-separated FRONTEND_URL)
+const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim());
+
+app.use((req, _res, next) => {
+  console.log(
+    "Incoming Origin:",
+    req.headers.origin,
+    "| Allowed:",
+    allowedOrigins,
+  );
+  next();
+});
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Vite default port
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -85,7 +105,7 @@ app.use("/usuarios", usersRouter);
 app.use("/tipoCortes", typeOfHaircutRouter);
 
 app.use("/sucursales", branchesRouter);
-// Ruta específica para login (with auth limiter)
+// apecific route for login (with auth limiter)
 app.post("/login", authLimiter, login);
 
 app.use("/turnos", appointmentsRouter);

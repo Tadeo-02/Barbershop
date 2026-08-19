@@ -34,44 +34,8 @@ body {
   padding-bottom: 5rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
-
-/* MOBILE FIRST: estilos base para móviles */
+/* MOBILE FIRSTs */
 [data-sonner-toaster] {
   top: 20% !important;
 }
@@ -82,7 +46,7 @@ body {
   padding: 12px 16px !important;
   margin: 0 15px !important;
   border-radius: 12px !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 10px 40px var(--shadow-lg) !important;
   text-align: center !important;
 }
 [data-sonner-toast] button {
@@ -91,7 +55,7 @@ body {
   min-width: 70px !important;
 }
 
-/* Para móviles muy pequeños */
+/* smaller screens */
 @media (max-width: 360px) {
   [data-sonner-toast] {
     min-width: 100px !important;
@@ -107,7 +71,7 @@ body {
   }
 }
 
-/* TABLET: estilos para pantallas medianas */
+/* TABLET */
 @media (min-width: 481px) {
   [data-sonner-toaster] {
     top: 25% !important;
@@ -121,7 +85,7 @@ body {
   }
 }
 
-/* DESKTOP: estilos para pantallas grandes */
+/* DESKTOP*/
 @media (min-width: 769px) {
   .mainContent {
     /* larger footer on desktop */
@@ -144,7 +108,7 @@ body {
   }
 }
 
-/* Fallback para navegadores que no soportan dvw */
+/* Fallback for browsers that don't support dvw */
 @supports not (width: 1dvw) {
   @media (min-width: 769px) {
     [data-sonner-toast] {

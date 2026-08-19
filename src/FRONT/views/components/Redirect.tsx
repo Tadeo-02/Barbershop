@@ -6,21 +6,32 @@ import { useUserRedirect } from "./useUserRedirect";
 
 // Componente para redirección automática basada en usuario autenticado
 export const AutoRedirect = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
   const { redirectUser } = useUserRedirect();
   const navigate = useNavigate();
   const location = useLocation();
   const [isRedirecting, setIsRedirecting] = React.useState(false);
 
   React.useEffect(() => {
+    if (isAuthLoading) return;
     if (!user) return;
     if (location.pathname === "/") {
       redirectUser(user);
     }
-  }, [user, location.pathname, redirectUser]);
+  }, [isAuthLoading, user, location.pathname, redirectUser]);
 
   React.useEffect(() => {
+    if (isAuthLoading) {
+      setIsRedirecting(false);
+      return;
+    }
+
     if (user) {
+      setIsRedirecting(false);
+      return;
+    }
+
+    if (isAuthenticated) {
       setIsRedirecting(false);
       return;
     }
@@ -40,7 +51,7 @@ export const AutoRedirect = () => {
     }
 
     setIsRedirecting(false);
-  }, [user, location.pathname, navigate]);
+  }, [isAuthLoading, isAuthenticated, user, location.pathname, navigate]);
 
   if (isRedirecting) {
     return (
@@ -57,13 +68,13 @@ export const AutoRedirect = () => {
                 cx="0"
                 cy="0"
                 r="18"
-                stroke="#e6e6e6"
+                stroke="var(--color-surface-light-25)"
                 strokeWidth="6"
                 fill="none"
               />
               <path
                 d="M18 0 A18 18 0 0 1 0 18"
-                stroke="#333"
+                stroke="var(--color-gray-600)"
                 strokeWidth="6"
                 strokeLinecap="round"
                 fill="none"
@@ -87,4 +98,3 @@ export const AutoRedirect = () => {
 
   return null;
 };
-

@@ -1,0 +1,198 @@
+.barbersContainer {
+    max-width: 100%;
+    margin: var(--space-5) 0;
+    padding: 15px;
+    background-color: var(--color-white);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px var(--shadow-sm);
+    animation: fadeIn 0.5s ease-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.branchInfo {
+    width: 100%;
+    text-align: center;
+    background: var(--color-surface-light-1);
+    border: 1px solid rgba(var(--color-primary-rgb), 0.08);
+    padding: var(--space-3) var(--space-4);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    box-shadow: 0 6px 18px rgba(var(--color-primary-rgb), 0.04);
+}
+
+.infoRow {
+    display: flex;
+    margin-bottom: 1rem;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    gap: 0.75rem;
+}
+
+
+.branchInfo h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--color-gray-800);
+    font-weight: 800;
+}
+
+.branchInfo p {
+    margin: 6px 0 0 0;
+    font-size: 0.9rem;
+    color: var(--color-gray-250);
+}
+
+.barberList {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+
+.barberItem {
+    background-color: var(--color-surface-light-1);
+    border: 1px solid var(--color-gray-100);
+    border-radius: 8px;
+    padding: var(--space-3);
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.barberItem:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 12px 32px rgba(var(--color-primary-rgb), 0.18), 0 2px 8px var(--shadow-sm);
+    background-color: var(--color-surface-light-3);
+    border-color: var(--color-primary);
+}
+
+.selected {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 12px 32px rgba(var(--color-primary-rgb), 0.18), 0 2px 8px var(--shadow-sm);
+    background-color: var(--color-surface-light-3);
+    border-color: var(--color-primary);
+}
+
+.barberItem:not(.selected):hover {
+    transform: none;
+    box-shadow: none;
+    background-color: var(--color-surface-light-1);
+    border: 1px solid var(--color-gray-100);
+    cursor: default;
+}
+
+.barberName {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-gray-700);
+}
+
+.barberPhone {
+    font-size: 0.9rem;
+    color: var(--color-gray-450);
+}
+
+.inlineActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 0.9rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--color-surface-light-7);
+}
+
+.inlineButton {
+    width: 100%;
+}
+
+.emptyState {
+    text-align: center;
+    padding: var(--space-7);
+    color: var(--color-gray-400);
+    font-size: 1rem;
+}
+
+@media (min-width: 769px) {
+    .barbersContainer {
+        max-width: 800px;
+        margin: var(--space-8) auto;
+        padding: var(--space-7);
+    }
+
+    .cardsRow {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 18px;
+    }
+
+    .cardsRow .branchInfo {
+        width: 50%;
+        margin-bottom: 0;
+    }
+
+    .barberItem {
+        padding: var(--space-5);
+        gap: var(--space-2);
+        margin-bottom: 15px;
+    }
+
+    .barberName {
+        padding: var(--space-8);
+        font-size: 1.1rem;
+    }
+
+    .inlineActions {
+        margin-top: 1.2rem;
+        padding-top: 1.2rem;
+    }
+
+    .inlineButton {
+        width: auto;
+        align-self: flex-start;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.backButton {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: none;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(var(--color-primary-rgb), 0.4);
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.5px;
+    outline: none;
+}
+
+.backButton:hover:not(:disabled) {
+    background: var(--color-blue-bright-2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--color-blue-bright-rgb), 0.3);
+}
+
+.backButton:disabled {
+    background: var(--color-gray-60);
+    color: var(--color-gray-500);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}

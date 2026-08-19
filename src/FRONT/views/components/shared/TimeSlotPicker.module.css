@@ -1,97 +1,97 @@
 .timeSlotContainer {
-  padding: 20px;
-  background: white;
+  padding: var(--space-5);
+  background: var(--color-white);
   border-radius: 8px;
 }
 
 .title {
   font-size: 1.5rem;
-  margin-bottom: 20px;
-  color: #333;
+  margin-bottom: var(--space-5);
+  color: var(--color-gray-600);
 }
 
 .loadingState,
 .errorState {
-  padding: 20px;
+  padding: var(--space-5);
   text-align: center;
   font-size: 1rem;
 }
 
 .errorState {
-  color: #dc3545;
+  color: var(--color-danger-alt-4);
 }
 
 .datePickerContainer {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .datePickerContainer label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   font-weight: 500;
-  color: #333;
+  color: var(--color-gray-600);
 }
 
 .datePicker {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-gray-60);
   border-radius: 4px;
   font-size: 1rem;
 }
 
-/* Contenedor de todos los horarios */
+/* Container for all time slots */
 .horariosContainer {
-  margin: 20px 0;
+  margin: var(--space-5) 0;
 }
 
-/* Grupo de horarios por período (Mañana, Tarde, Noche) */
+/* Group of time slots by period (Morning, Afternoon, Evening) */
 .horarioGroup {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .periodTitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2b6cb0;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e2e8f0;
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-gray-100);
 }
 
-/* Grid de 3 columnas para horarios */
+/* Three-column grid for time slots */
 .scheduleGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .emptyState {
-  padding: 20px;
+  padding: var(--space-5);
   text-align: center;
-  color: #666;
+  color: var(--color-gray-500);
   font-style: italic;
 }
 
 .scheduleItem {
   padding: 10px 6px;
-  background: #f8f9fa;
+  background: var(--color-surface-light-19);
   border: 2px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
   cursor: pointer;
   text-align: center;
 }
 
 .scheduleItem:hover {
-  background: #e9ecef;
-  border-color: #007bff;
+  background: var(--color-surface-light-24);
+  border-color: var(--color-blue-bright);
 }
 
 .scheduleItem.selected {
-  background: #007bff;
-  color: white;
-  border-color: #0056b3;
+  background: var(--color-blue-bright);
+  color: var(--color-white);
+  border-color: var(--color-blue-bright-2);
 }
 
 .scheduleHour {
@@ -102,12 +102,12 @@
 
 .confirmButton {
   width: 100%;
-  padding: 12px 24px;
-  margin-top: 20px;
-  background: #28a745;
-  color: white;
+  padding: var(--space-3) var(--space-6);
+  margin-top: var(--space-5);
+  background: var(--color-success-alt-2);
+  color: var(--color-white);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
@@ -115,24 +115,24 @@
 }
 
 .confirmButton:hover:not(:disabled) {
-  background: #218838;
+  background: var(--color-success-alt-3);
 }
 
 .confirmButton:disabled {
-  background: #6c757d;
+  background: var(--color-accent-gray-warm);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-/* DESKTOP: ajustes para pantallas grandes */
+/* DESKTOP*/
 @media (min-width: 769px) {
   .scheduleGrid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: var(--space-3);
   }
 
   .scheduleItem {
-    padding: 12px 8px;
+    padding: var(--space-3) var(--space-2);
   }
 
   .scheduleHour {

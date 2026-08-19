@@ -51,7 +51,7 @@ const MONTH_LABELS = [
 
 const Home = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, userType, user } = useAuth();
+  const { isAuthenticated, isAuthLoading, userType, user } = useAuth();
   const [nextTurno, setNextTurno] = useState<AppointmentPartial | null>(null);
   const [loadingNextTurno, setLoadingNextTurno] = useState(false);
   const [hasCheckedNextTurno, setHasCheckedNextTurno] = useState(false);
@@ -62,9 +62,9 @@ const Home = () => {
   const greeting = greetingName ? `Hola, ${greetingName}!` : "Hola!";
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
+    if (isAuthLoading) return;
 
-    if (!isAuthenticated && !savedUser) {
+    if (!isAuthenticated) {
       navigate("/login");
       return;
     }
@@ -72,7 +72,7 @@ const Home = () => {
     if (isAuthenticated && userType && userType !== "barber") {
       navigate("/");
     }
-  }, [isAuthenticated, userType, navigate]);
+  }, [isAuthLoading, isAuthenticated, userType, navigate]);
 
   useEffect(() => {
     const loadNextTurno = async () => {

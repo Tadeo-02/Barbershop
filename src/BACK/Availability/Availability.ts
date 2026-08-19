@@ -106,7 +106,7 @@ const cancelOverlappingTurnos = async (
   });
 };
 
-// funciones backend para Categorías
+//  backend functions for Categories
 export const store = async (
   codBarbero: string,
   fechaHoraDesde: string,
@@ -114,7 +114,7 @@ export const store = async (
   motivo: string,
 ) => {
   try {
-    // sanitizar de inputs
+    // sanitize inputs
     const sanitizedData = {
       codBarbero: sanitizeInput(codBarbero),
       fechaHoraDesde: sanitizeInput(fechaHoraDesde),
@@ -122,7 +122,7 @@ export const store = async (
       motivo: sanitizeInput(motivo),
     };
 
-    // validacion con zod
+    // validate with zod
     const validatedData = parseValidatedInput(
       AvailabilitySchema.omit({ codBloqueo: true }),
       sanitizedData,
@@ -130,7 +130,7 @@ export const store = async (
 
     console.log("Creating barber unavailability");
 
-    // convertir strings a DateTime objects para Prisma (forzar UTC para evitar shift horario)
+    // convert strings to DateTime objects for Prisma (forze UTC to avoid shift schedule)
     const fechaDesde = new Date(
       validatedData.fechaHoraDesde.replace(" ", "T") + ".000Z",
     );
@@ -176,7 +176,7 @@ export const store = async (
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    //  de errores de validación
+    //   validation errors
     if (error instanceof DatabaseError) {
       throw error;
     }
@@ -186,7 +186,7 @@ export const store = async (
       throw new DatabaseError(firstError.message);
     }
 
-    //  errores de DB
+    //  errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; message: string };
 
@@ -220,7 +220,7 @@ export const findAll = async () => {
 
 export const findById = async (codBloqueo: string) => {
   try {
-    // sanitizar y validar ID
+    // sanitize and validate ID
     const sanitizedCodBloqueo = sanitizeInput(codBloqueo);
 
     const bloqueo = await prisma.bloqueos_barbero.findUnique({
@@ -249,7 +249,7 @@ export const update = async (
   motivo: string,
 ) => {
   try {
-    // sanitizar datos
+    // sanitize data
     const sanitizedData = {
       codBloqueo: sanitizeInput(codBloqueo),
       codBarbero: sanitizeInput(codBarbero),
@@ -258,7 +258,7 @@ export const update = async (
       motivo: sanitizeInput(motivo),
     };
 
-    // validar (menos codBloqueo)
+    // validate (except codBloqueo)
     const validatedData = parseValidatedInput(
       AvailabilitySchema.omit({ codBloqueo: true }),
       {
@@ -269,7 +269,7 @@ export const update = async (
       },
     );
 
-    // convertir strings a DateTime objects para Prisma (forzar UTC para evitar shift horario)
+    // convert strings to DateTime objects for Prisma (forze UTC to avoid shift schedule)
     const fechaDesde = new Date(
       validatedData.fechaHoraDesde.replace(" ", "T") + ".000Z",
     );
@@ -325,12 +325,12 @@ export const update = async (
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // Manejo de errores de validación
+    // handle validation errors
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
-    // Manejo de errores de DB
+    // handle DB errors
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -353,10 +353,10 @@ export const update = async (
 
 export const destroy = async (codBloqueo: string) => {
   try {
-    // sanitizar y validar
+    // sanitize and validate
     const sanitizedCodBloqueo = sanitizeInput(codBloqueo);
 
-    // verificar que el bloqueo existe
+    // verify that the block exists
     const existingBloqueo = await prisma.bloqueos_barbero.findUnique({
       where: { codBloqueo: sanitizedCodBloqueo },
     });
@@ -365,7 +365,7 @@ export const destroy = async (codBloqueo: string) => {
 
     ensureNotFinished(existingBloqueo.fechaHoraHasta, "eliminar");
 
-    // eliminar bloqueo
+    // eliminate block
     const deletedBloqueo = await prisma.bloqueos_barbero.delete({
       where: { codBloqueo: sanitizedCodBloqueo },
     });
@@ -378,7 +378,7 @@ export const destroy = async (codBloqueo: string) => {
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // manejo de errores de DB
+    // handle DB errors
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 

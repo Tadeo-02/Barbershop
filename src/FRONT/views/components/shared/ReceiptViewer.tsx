@@ -55,7 +55,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
 
     const fetchData = async () => {
       try {
-        // 1. Obtener datos de facturación desde la DB
+        // 1. get billing data from the DB
         const metaResponse = await apiFetch(
           `/facturacion/datos-turno/${codTurno}`,
         );
@@ -71,7 +71,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
         const metaJson = await metaResponse.json();
         setBillingData(metaJson.data);
 
-        // 2. Obtener el PDF
+        // 2. get PDF
         const pdfResponse = await apiFetch(`/facturacion/recibo/${codTurno}`);
         if (!pdfResponse.ok) {
           const errorData = await readJsonSafely(pdfResponse);

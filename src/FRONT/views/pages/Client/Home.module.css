@@ -1,0 +1,493 @@
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--color-surface-light-18);
+  color: var(--color-gray-600);
+  margin: 0;
+  padding: 10px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.homeContainer {
+  max-width: 1000px;
+  margin: var(--space-5) auto;
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-6);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.welcomeSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.welcomeHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.welcomeText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.welcomeTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.welcomeSubtitle {
+  margin: 0;
+  color: var(--color-gray-40);
+}
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  font-size: 1rem;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease,
+    box-shadow 0.3s ease;
+  text-decoration: none;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 6px 15px rgba(var(--color-primary-rgb), 0.4);
+}
+
+.primaryButton:hover:not(:disabled) {
+  background-color: var(--color-blue-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(var(--color-primary-rgb), 0.5);
+}
+
+.buttonIcon {
+  font-size: 1.1rem;
+}
+
+.nextTurnoSection {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionTitleLight {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--color-gray-800);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--color-gray-800);
+}
+
+.linkButton {
+  background: var(--color-surface-light-8);
+  border: 1px solid var(--color-surface-light-13);
+  color: var(--color-primary);
+  border-radius: var(--radius-full);
+  padding: 0.4rem 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.linkButton:hover {
+  background: var(--color-surface-light-12);
+  transform: translateY(-1px);
+}
+
+.turnoCard {
+  background-color: var(--color-surface-light-1);
+  border: 1px solid var(--color-gray-100);
+  border-radius: 8px;
+  padding: var(--space-4);
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.turnoCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(var(--shadow-color), 0.05);
+}
+
+.turnoCardContent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.turnoDateBadge {
+  width: 88px;
+  min-width: 88px;
+  height: 88px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-100);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(var(--color-slate-rgb), 0.06);
+}
+
+.turnoDateMonth {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-gray-400);
+}
+
+.turnoDateDay {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--color-gray-800);
+  line-height: 1;
+}
+
+.turnoInfo {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.turnoInfoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.95rem;
+  color: var(--color-gray-700);
+}
+
+.turnoInfoLabel {
+  font-weight: 600;
+  color: var(--color-gray-450);
+  min-width: 80px;
+}
+
+.turnoInfoIcon {
+  font-size: 1rem;
+  color: var(--color-primary);
+}
+
+.turnoInfoText {
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+.turnoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.95rem;
+}
+
+.turnoLabel {
+  font-weight: 600;
+  color: var(--color-gray-450);
+  min-width: 100px;
+}
+
+.turnoValue {
+  color: var(--color-gray-700);
+}
+
+.cardEmpty {
+  margin: 0;
+  color: var(--color-gray-300);
+}
+
+.turnoActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+  width: 100%;
+  align-items: flex-end;
+}
+
+.turnoButton {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+}
+
+.turnoButton:disabled {
+  background-color: var(--color-gray-150);
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+.turnoButtonSubtle {
+  background-color: transparent;
+  color: var(--color-gray-400);
+  border: 1px solid var(--color-danger);
+  padding: var(--space-2) 14px;
+  font-size: 0.9rem;
+}
+
+.turnoButtonSubtle:hover:not(:disabled) {
+  background-color: var(--color-danger-bg-2);
+  border-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  transform: translateY(-1px);
+}
+
+.modalContainer {
+  text-align: center;
+}
+
+.modalTitle {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.modalButtons {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  align-items: center;
+}
+
+.buttonCancel {
+  background: var(--color-gray-400);
+  color: var(--color-white);
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  min-width: 120px;
+  transition: all 0.2s ease;
+}
+
+.buttonCancel:hover {
+  background: var(--color-gray-450);
+}
+
+.buttonConfirm {
+  background: var(--color-danger-bright);
+  color: var(--color-white);
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  min-width: 120px;
+  transition: all 0.2s ease;
+}
+
+.buttonConfirm:hover {
+  background: var(--color-danger);
+}
+
+.loyaltySection {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.badge {
+  background-color: var(--color-surface-light-8);
+  color: var(--color-primary);
+  font-weight: 600;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+}
+
+.loyaltyCard {
+  margin-top: var(--space-3);
+  background-color: var(--color-gray-25);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  border: 1px solid var(--color-gray-100);
+}
+
+.loyaltyDiscount {
+  margin: 0 0 var(--space-2) 0;
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.loyaltyRemaining {
+  margin: 0;
+  color: var(--color-gray-450);
+  font-size: 0.95rem;
+}
+
+.discountProgress {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-100);
+  box-shadow: 0 6px 16px rgba(var(--color-slate-rgb), 0.08);
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.progressBar {
+  margin: 10px 0 6px 0;
+  height: 14px;
+  background: linear-gradient(90deg, var(--color-gray-100), var(--color-surface-light-22));
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  box-shadow: inset 0 1px 4px rgba(var(--color-slate-rgb), 0.12);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-success-bright-2));
+  width: 0;
+  transition: width 0.35s ease;
+  box-shadow: 0 4px 10px rgba(var(--color-primary-rgb), 0.35);
+}
+
+.discountContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.discountTurns {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-gray-800);
+}
+
+.discountTurnsCount {
+  color: var(--color-black);
+  font-size: 1.4rem;
+}
+
+.discountDescription {
+  margin: 0;
+  color: var(--color-gray-300);
+  font-size: 0.95rem;
+}
+
+.progressPercentage {
+  margin: var(--space-2) 0 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.progressBar {
+  margin-top: var(--space-4);
+  height: 14px;
+  background: linear-gradient(90deg, var(--color-gray-100), var(--color-surface-light-22));
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  box-shadow: inset 0 1px 4px rgba(var(--color-slate-rgb), 0.12);
+}
+
+.progressMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: 0.85rem;
+  color: var(--color-gray-350);
+}
+
+.loyaltyHint {
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+  color: var(--color-gray-250);
+}
+
+.loyaltyMessage {
+  margin: 0;
+  color: var(--color-gray-250);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* DESKTOP*/
+@media (min-width: 769px) {
+  .homeContainer {
+    margin: 50px auto;
+    padding: var(--space-6);
+    gap: 32px;
+  }
+  .welcomeTitle {
+    font-size: 2rem;
+  }
+  .welcomeSubtitle {
+    font-size: 1.05rem;
+  }
+  .primaryButton {
+    width: auto;
+    padding: 1rem 1.8rem;
+  }
+  .turnoActions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  .turnoButton {
+    width: auto;
+    padding: var(--space-2) 18px;
+  }
+}

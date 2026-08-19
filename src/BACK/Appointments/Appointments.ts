@@ -6,7 +6,7 @@ import { getDiscountCycle, applyDiscountIfEligible } from "../lib/discount";
 import { assertEntityExists } from "../lib/entityChecks";
 import { parseValidatedInput } from "../lib/zodHelpers";
 
-// Umbrales configurables (pueden ser sobreescritos por env vars durante pruebas)
+// Configurable thresholds (can be overridden by environment variables during testing)
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
   process.env.INITIAL_TO_MEDIUM_DAYS || "30",
   10,
@@ -61,9 +61,10 @@ const extractBillingErrorInfo = (error: unknown): BillingErrorInfo => {
   return { message, code, afipCode, fullMessage };
 };
 
-// Helper function para generar horarios disponibles.
-// Ahora toma en cuenta también los bloqueos de barberos (`bloqueos`) y trata
-// los bloqueos como si fueran turnos (no mostrar horas bloqueadas).
+// Helper function to generate available time slots.
+// It now also takes into account barber blocks (`bloqueos`) and treats
+// blocks as appointments (blocked times are not displayed).
+
 const generateAvailableTimeSlots = (
   turnos: Array<{ codBarbero: string; horaDesde: Date }>,
   barberoId?: string,
@@ -85,7 +86,7 @@ const generateAvailableTimeSlots = (
       .toString()
       .padStart(2, "0")}:${((hora % 1) * 60).toString().padStart(2, "0")}`;
 
-    // Crear fecha/hora candidata en formato ISO UTC para comparar con bloqueos
+    // Create candidate date/time in ISO UTC format to compare with blocks.
     const candidateIso = fecha ? `${fecha}T${horaString}:00.000Z` : null;
     const candidateDate = candidateIso ? new Date(candidateIso) : null;
 
@@ -101,7 +102,7 @@ const generateAvailableTimeSlots = (
     };
 
     if (barberoId) {
-      // Caso: buscar disponibilidad para un barbero específico
+      // Case: search for availability for a specific barber.
       const turnoExistente = turnos.find((t) => {
         const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
         return t.codBarbero === barberoId && turnoHoraCorrecta === horaString;
@@ -113,7 +114,7 @@ const generateAvailableTimeSlots = (
         horasDisponibles.push({ hora: horaString });
       }
     } else if (barberos) {
-      // Caso: buscar horarios donde al menos UN barbero de la sucursal esté libre
+      // Case: search for time slots where at least one barber in the branch is free
       for (const barbero of barberos) {
         const turnoExistente = turnos.find((t) => {
           const turnoHoraCorrecta = t.horaDesde.toISOString().substring(11, 16);
@@ -127,7 +128,8 @@ const generateAvailableTimeSlots = (
 
         if (!turnoExistente && !bloqueado) {
           horasDisponibles.push({ hora: horaString });
-          break; // Una vez que encontramos un barbero libre para esa hora, mostrar la hora
+          break; // Once we find a barber available for that time, display the time.
+
         }
       }
     }
@@ -136,7 +138,7 @@ const generateAvailableTimeSlots = (
   return horasDisponibles;
 };
 
-// funciones backend
+//  backend functions
 export const store = async (
   codCliente: string,
   codBarbero: string,
@@ -146,7 +148,7 @@ export const store = async (
   estado: string,
 ) => {
   try {
-    // sanitizar inputs
+    // sanitize inputs
     const sanitizedData = {
       codCliente: sanitizeInput(codCliente),
       codBarbero: sanitizeInput(codBarbero),
@@ -156,14 +158,14 @@ export const store = async (
       estado: sanitizeInput(estado),
     };
 
-    // validación con zod - omitir codTurno para creación
+    // validate with zod - omit codTurno for creation
     const validatedData = parseValidatedInput(
       AppointmentSchema.omit({ codTurno: true }),
       sanitizedData,
     );
     console.log("Creating turno");
 
-    // convertir strings a Date objects para Prisma
+    // convert strings to Date objects for Prisma
     const fechaDate = new Date(`${sanitizedData.fechaTurno}T00:00:00.000Z`);
     const horaDesdeDate = new Date(
       `1970-01-01T${sanitizedData.horaDesde}:00.000Z`,
@@ -206,7 +208,7 @@ export const store = async (
       );
     }
 
-    // crear turno
+    // create appointment
     const turno = await prisma.turno.create({
       data: {
         codCliente: validatedData.codCliente,
@@ -225,7 +227,7 @@ export const store = async (
       "Error creating turno:",
       error instanceof Error ? error.message : "Unknown error",
     );
-    //manejo de errores de validacion
+    //handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
@@ -235,7 +237,7 @@ export const store = async (
       throw error;
     }
 
-    // Manejo de errores de DB (Prisma)
+    // handle errors of DB (Prisma)
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as {
         code: string;
@@ -284,7 +286,7 @@ export const findAll = async () => {
 
 export const findById = async (codTurno: string) => {
   try {
-    //sanitizar y validar
+    //sanitize and validate
     const sanitizedCodTurno = sanitizeInput(codTurno);
 
     const turno = await prisma.turno.findUnique({
@@ -307,10 +309,10 @@ export const findById = async (codTurno: string) => {
 
 export const findByUserId = async (codUsuario: string) => {
   try {
-    //sanitizar y validar
+    //sanitize and validate
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
 
-    // Buscar turnos donde el usuario es cliente o barbero
+    // find appointments where the user is a client or a barber
     const turnos = await prisma.turno.findMany({
       where: {
         OR: [
@@ -380,7 +382,7 @@ export const findByAvailableDate = async (
   codSucursal: string,
 ) => {
   try {
-    //sanitizar y validar
+    //sanitize and validate
     const sanitizedFechaTurno = sanitizeInput(fechaTurno);
     const sanitizedCodSucursal = sanitizeInput(codSucursal);
 
@@ -409,7 +411,7 @@ export const findByAvailableDate = async (
       where: { codSucursal: sanitizedCodSucursal },
     });
 
-    // También buscar bloqueos de los barberos en esa sucursal para la fecha
+    // Also search for barber blocks at that branch for the date.
     const fechaDate = new Date(sanitizedFechaTurno);
     const startOfDay = new Date(fechaDate);
     startOfDay.setUTCHours(0, 0, 0, 0);
@@ -425,7 +427,7 @@ export const findByAvailableDate = async (
       },
     });
 
-    // Usar la función helper (ahora con bloqueos)
+    // Use helper (with blocks considered))
     const horasDisponibles = generateAvailableTimeSlots(
       turnos,
       undefined,
@@ -468,7 +470,7 @@ export const findByBarberId = async (
       `Found ${turnos.length} existing appointments for barber ${sanitizedCodBarbero} on ${sanitizedFechaTurno}`,
     );
 
-    // Buscar bloqueos del barbero en esa fecha y pasarlos al helper
+    // Find the barber's blocks for that date and pass them to the helper.
     const fechaDate = new Date(sanitizedFechaTurno);
     const startOfDay = new Date(fechaDate);
     startOfDay.setUTCHours(0, 0, 0, 0);
@@ -483,7 +485,7 @@ export const findByBarberId = async (
       },
     });
 
-    // Usar la función helper (ahora considera bloqueos)
+    // Use helper (with blocks considered)
     const horasDisponibles = generateAvailableTimeSlots(
       turnos,
       sanitizedCodBarbero,
@@ -509,11 +511,11 @@ export const findByBarberId = async (
 
 export const findByBranchId = async (codSucursal: string) => {
   try {
-    //sanitizar y validar
+    //sanitize and validate
     const sanitizedCodSucursal = sanitizeInput(codSucursal);
 
-    // Equivalente a la consulta SQL con tabla temporal
-    // Buscar turnos programados donde el barbero pertenece a la sucursal especificada
+    // Equivalent to the SQL query with a temporary table
+    // Find scheduled appointments where the barber belongs to the specified branch.
     const turnos = await prisma.turno.findMany({
       where: {
         estado: "Programado",
@@ -562,11 +564,12 @@ export const findByBranchId = async (codSucursal: string) => {
 
 export const findPendingByBarberId = async (codBarbero: string) => {
   try {
-    // sanitizar y validar
+    // sanitize and validate
     const sanitizedCodBarbero = sanitizeInput(codBarbero);
 
-    // Buscar turnos programados (vigentes) donde el barbero es el especificado
-    // y la fecha del turno es igual o posterior a hoy
+
+    // Find scheduled (active) appointments where the barber is the specified one
+    // and the appointment date is equal to or later than today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -664,7 +667,7 @@ export const update = async (
   estado: string,
 ) => {
   try {
-    // sanitizar datos
+    // sanitize data
     const sanitizedData = {
       codTurno: sanitizeInput(codTurno),
       codCorte: sanitizeInput(codCorte),
@@ -694,15 +697,15 @@ export const update = async (
       },
     );
 
-    // Usar el codTurno sanitizado (no validado por Zod)
+    // Use the sanitized codTurno (not validated by Zod)
     const existingTurno = await prisma.turno.findUnique({
       where: { codTurno: sanitizedData.codTurno },
     });
 
     assertEntityExists(existingTurno, "Turno");
 
-    // convertir strings a tipos correctos para Prisma
-    const fechaDate = new Date(sanitizedData.fechaTurno); // Usar sanitized data
+    // convert strings to correct types for Prisma
+    const fechaDate = new Date(sanitizedData.fechaTurno); // Use sanitized data
     const horaDesdeDate = new Date(
       `1970-01-01T${sanitizedData.horaDesde}:00.000Z`,
     );
@@ -720,7 +723,7 @@ export const update = async (
       ? parseFloat(validatedData.precioTurno)
       : null;
 
-    // update turno usando codTurno sanitizado
+    // update appointment using sanitized codTurno
     const updatedTurno = await prisma.turno.update({
       where: { codTurno: sanitizedData.codTurno },
       data: {
@@ -744,13 +747,13 @@ export const update = async (
       error instanceof Error ? error.message : "Unknown error",
     );
 
-    // manejo de errores de validacion
+    // handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
 
-    // manejar errores de DB
+    // handle errors of DB
     //! Adaptar para turnos
     // if (error && typeof error === "object" && "code" in error) {
     //   const prismaError = error as { code: string };
@@ -779,20 +782,20 @@ export const updateAppointment = async (
   horaHasta: string,
 ) => {
   try {
-    // sanitizar y validar
+    // sanitize and validate
     const sanitizedCodTurno = sanitizeInput(codTurno);
     const sanitizedFechaTurno = sanitizeInput(fechaTurno);
     const sanitizedHoraDesde = sanitizeInput(horaDesde);
     const sanitizedHoraHasta = sanitizeInput(horaHasta);
 
-    // convertir strings a Date objects para Prisma
+    // convert strings to Date objects for Prisma
     const fechaDate = new Date(sanitizedFechaTurno);
     const horaDesdeDate = new Date(`1970-01-01T${sanitizedHoraDesde}:00.000Z`);
     const horaHastaDate = new Date(`1970-01-01T${sanitizedHoraHasta}:00.000Z`);
 
     console.log("🔍 Buscando turno para actualizar:", sanitizedCodTurno);
 
-    // Buscar el turno existente
+    // find existing appointment
     const existingTurno = await prisma.turno.findUnique({
       where: { codTurno: sanitizedCodTurno },
     });
@@ -801,7 +804,7 @@ export const updateAppointment = async (
 
     console.log("Turno encontrado, actualizando...");
 
-    // Actualizar el turno
+    // update appointment
     const updatedTurno = await prisma.turno.update({
       where: { codTurno: sanitizedCodTurno },
       data: {
@@ -820,13 +823,13 @@ export const updateAppointment = async (
     );
     console.error("Error completo:", error);
 
-    // manejo de errores de validacion
+    // handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
 
-    // manejar errores de DB
+    // handle errors of DB
     if (error instanceof DatabaseError) {
       throw error;
     }
@@ -842,12 +845,12 @@ export const checkoutAppointment = async (
   metodoPago?: string,
 ) => {
   try {
-    // sanitizar y validar
+    // sanitize and validate
     const sanitizedCodTurno = sanitizeInput(codTurno);
     const sanitizedCodCorte = sanitizeInput(codCorte);
     console.log("🔍 Buscando turno para checkout:", sanitizedCodTurno);
 
-    // Buscar el turno y verificar que esté en estado "Programado"
+    // find appointment and verify it's in "Programado" state
     const turnoExistente = await prisma.turno.findFirst({
       where: {
         codTurno: sanitizedCodTurno,
@@ -862,7 +865,7 @@ export const checkoutAppointment = async (
       );
     }
 
-    // Validar que el turno sea de hoy
+    // Validate that the appointment is for today
     const now = new Date();
     const fechaTurno = new Date(turnoExistente.fechaTurno);
 
@@ -874,7 +877,7 @@ export const checkoutAppointment = async (
       throw new DatabaseError("Solo se pueden cobrar turnos del día de hoy");
     }
 
-    // Combinar fecha del turno con hora desde para obtener el momento exacto de inicio
+    // Combine date of the appointment with the start time to get the exact start moment
     const horaDesde = turnoExistente.horaDesde;
     const [hours, minutes] = horaDesde
       .toISOString()
@@ -900,7 +903,7 @@ export const checkoutAppointment = async (
 
       const latestCategory = latestCv?.categorias ?? null;
 
-      // Calcular el descuento desde la última categoría vigente.      // Regla actualizada:
+      // Calculate the discount from the latest active category.      // Updated rule:
       let precioFinal = precioTurno;
 
       if (latestCv && latestCategory) {
@@ -932,7 +935,7 @@ export const checkoutAppointment = async (
         }
       }
 
-      // Actualizar el turno con el precio calculado
+      // Update the appointment with the calculated price
       const turnoUpdated = await tx.turno.update({
         where: { codTurno: sanitizedCodTurno },
         data: {
@@ -965,7 +968,7 @@ export const checkoutAppointment = async (
       const now = new Date();
 
       if (nombreCategoria === "Inicial") {
-        // Comprobar N días y N cortes (configurables) para promoción Inicial -> Medium
+        // check N days and N cuts for Initial -> Medium promotion
         const threshold = new Date(ultimaFechaInicio);
         threshold.setDate(threshold.getDate() + INITIAL_TO_MEDIUM_DAYS);
         if (now >= threshold && cobradoCount >= INITIAL_TO_MEDIUM_COUNT) {
@@ -1018,7 +1021,7 @@ export const checkoutAppointment = async (
       codCliente: turnoUpdated.codCliente,
     });
 
-    // Intentar facturación automática vía ARCA (no bloquea si falla)
+    // try automatic billing via ARCA (doesnt block if it fails)
     let facturacion = null;
     let facturacionError: string | null = null;
     let facturacionErrorCode: string | null = null;
@@ -1059,18 +1062,18 @@ export const checkoutAppointment = async (
     );
     console.error("Error completo:", error);
 
-    // manejo de errores de validacion
+    // handle validation errors
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
 
-    // manejar errores de DB
+    // handle DB errors
     if (error instanceof DatabaseError) {
       throw error;
     }
 
-    // Manejar errores específicos de Prisma
+    // handle specific Prisma errors
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; meta?: unknown };
       console.error("Prisma error code:", prismaError.code);
@@ -1086,15 +1089,15 @@ export const checkoutAppointment = async (
 
 export const cancelAppointment = async (codTurno: string) => {
   try {
-    // sanitizar y validar
+    // sanitize and validate
     const sanitizedCodTurno = sanitizeInput(codTurno);
 
-    // Calcular fecha de cancelación en el servidor
+    // Calculate cancelation date in the server
     const fechaDate = new Date();
 
     console.log("🔍 Buscando turno para cancelar:", sanitizedCodTurno);
 
-    // Primero verificar que el turno existe
+    // first verify that the appointment exists
     const turnoExistente = await prisma.turno.findUnique({
       where: {
         codTurno: sanitizedCodTurno,
@@ -1109,13 +1112,13 @@ export const cancelAppointment = async (codTurno: string) => {
 
     console.log("Turno encontrado, actualizando estado...");
 
-    // Actualizar el estado del turno
+    // update the state of the appointment
     const existingTurno = await prisma.turno.update({
       where: { codTurno: sanitizedCodTurno },
       data: { fechaCancelacion: fechaDate, estado: "Cancelado" },
     });
 
-    // Verificar si quien cancela es un cliente (no tiene codSucursal ni cuil)
+    // Verify if the person canceling is a client (doesn't have codSucursal or cuil)
     const cliente = await prisma.usuarios.findUnique({
       where: { codUsuario: existingTurno.codCliente },
       select: { codSucursal: true, cuil: true },
@@ -1123,30 +1126,30 @@ export const cancelAppointment = async (codTurno: string) => {
 
     const esCliente = cliente && !cliente.codSucursal && !cliente.cuil;
 
-    // Solo aplicar lógica de descenso si es cliente y canceló el mismo día
+    // only aply logic of downgrade if it is a client and canceled the same day
     if (
       esCliente &&
       existingTurno.fechaCancelacion == existingTurno.fechaTurno
     ) {
-      // Determinar el rango de fechas según el semestre actual
+      // Determine range of dates according to the current semester
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
-      const currentMonth = currentDate.getMonth() + 1; // getMonth() devuelve 0-11
+      const currentMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11
 
       let startDate: Date;
       let endDate: Date;
 
       if (currentMonth >= 1 && currentMonth <= 6) {
-        // Primer semestre (enero a junio)
-        startDate = new Date(currentYear, 0, 1); // 1 de enero
-        endDate = new Date(currentYear, 5, 30, 23, 59, 59); // 30 de junio
+        // first semester (january a june)
+        startDate = new Date(currentYear, 0, 1); // 1 january
+        endDate = new Date(currentYear, 5, 30, 23, 59, 59); // 30 june
       } else {
-        // Segundo semestre (julio a diciembre)
-        startDate = new Date(currentYear, 6, 1); // 1 de julio
-        endDate = new Date(currentYear, 11, 31, 23, 59, 59); // 31 de diciembre
+        // second semester (july a december)
+        startDate = new Date(currentYear, 6, 1); // 1 july
+        endDate = new Date(currentYear, 11, 31, 23, 59, 59); // 31 december
       }
 
-      // Contar turnos cancelados el mismo día del turno en el semestre actual
+      // count canceled appointments that were canceled on the same day as the appointment in the current semester
       const turnosCanceladosMismoDia = await prisma.turno.findMany({
         where: {
           codCliente: existingTurno.codCliente,
@@ -1177,9 +1180,9 @@ export const cancelAppointment = async (codTurno: string) => {
         `Cliente ${existingTurno.codCliente} tiene ${canceledSameDayCount} turnos cancelados el mismo día en el semestre actual`,
       );
 
-      // Si tiene 3 o más cancelaciones el mismo día, descender de categoría
+      // If they have 3 or more cancellations on the same day, downgrade their category.
       if (canceledSameDayCount >= 3) {
-        // Obtener la categoría vigente actual del cliente
+        // get the current active category of the client
         const categoriaVigenteActual = await prisma.categoria_vigente.findFirst(
           {
             where: { codCliente: existingTurno.codCliente },
@@ -1193,7 +1196,7 @@ export const cancelAppointment = async (codTurno: string) => {
             categoriaVigenteActual.categorias.nombreCategoria;
           let nuevaCategoriaNombre: string | null = null;
 
-          // Determinar la nueva categoría según la jerarquía
+          // determine the new category according to the hierarchy
           if (categoriaActual === "Premium") {
             nuevaCategoriaNombre = "Medium";
           } else if (categoriaActual === "Medium") {
@@ -1203,13 +1206,13 @@ export const cancelAppointment = async (codTurno: string) => {
           }
 
           if (nuevaCategoriaNombre) {
-            // Buscar la nueva categoría
+            // search for the new category
             const nuevaCategoria = await prisma.categoria.findFirst({
               where: { nombreCategoria: nuevaCategoriaNombre },
             });
 
             if (nuevaCategoria) {
-              // Crear el registro de la nueva categoría vigente
+              // Create the record for the new active category
               await prisma.categoria_vigente.create({
                 data: {
                   codCliente: existingTurno.codCliente,
@@ -1236,18 +1239,18 @@ export const cancelAppointment = async (codTurno: string) => {
     );
     console.error("Error completo:", error);
 
-    // manejo de errores de validacion
+    // handle  validation errors 
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
 
-    // manejar errores de DB
+    // handle database errors
     if (error instanceof DatabaseError) {
       throw error;
     }
 
-    // Manejar errores específicos de Prisma
+    // handle  specific Prisma errores
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; meta?: unknown };
       console.error("Prisma error code:", prismaError.code);
@@ -1263,7 +1266,7 @@ export const cancelAppointment = async (codTurno: string) => {
 
 export const markAsNoShow = async (codTurno: string) => {
   try {
-    // sanitizar y validar
+    // sanitize and validate
     const sanitizedCodTurno = sanitizeInput(codTurno);
 
     const turnoExistente = await prisma.turno.findUnique({
@@ -1275,7 +1278,7 @@ export const markAsNoShow = async (codTurno: string) => {
       throw new DatabaseError("Turno no encontrado");
     }
 
-    // Validar que el turno sea de hoy
+    // Validate that the appointment is for today
     const now = new Date();
     const fechaTurno = new Date(turnoExistente.fechaTurno);
 
@@ -1289,7 +1292,7 @@ export const markAsNoShow = async (codTurno: string) => {
       );
     }
 
-    // Combinar fecha del turno con hora hasta para obtener el momento exacto de finalización
+    // merge data of the appointment with the end time to get the exact moment of completion
     const horaHasta = turnoExistente.horaHasta;
     const [hours, minutes] = horaHasta
       .toISOString()
@@ -1306,7 +1309,7 @@ export const markAsNoShow = async (codTurno: string) => {
 
     console.log("Turno encontrado y validado, actualizando estado...");
 
-    // Actualizar el estado del turno a "No asistido"
+    // update the state of the appointment to "No asistido"
     const updatedTurno = await prisma.turno.update({
       where: { codTurno: sanitizedCodTurno },
       data: { estado: "No asistido" },
@@ -1314,7 +1317,7 @@ export const markAsNoShow = async (codTurno: string) => {
 
     console.log("Turno marcado como No asistido exitosamente");
 
-    // Determinar el rango de fechas según el semestre actual
+    // Determine range of dates according to the current semester
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1; // getMonth() devuelve 0-11
@@ -1323,16 +1326,16 @@ export const markAsNoShow = async (codTurno: string) => {
     let endDate: Date;
 
     if (currentMonth >= 1 && currentMonth <= 6) {
-      // Primer semestre (enero a junio)
-      startDate = new Date(currentYear, 0, 1); // 1 de enero
-      endDate = new Date(currentYear, 5, 30, 23, 59, 59); // 30 de junio
+      // first semester (january to june)
+      startDate = new Date(currentYear, 0, 1); // 1 january
+      endDate = new Date(currentYear, 5, 30, 23, 59, 59); // 30 june
     } else {
-      // Segundo semestre (julio a diciembre)
-      startDate = new Date(currentYear, 6, 1); // 1 de julio
-      endDate = new Date(currentYear, 11, 31, 23, 59, 59); // 31 de diciembre
+      // second semester (july to december)
+      startDate = new Date(currentYear, 6, 1); // 1 july
+      endDate = new Date(currentYear, 11, 31, 23, 59, 59); // 31 december
     }
 
-    // Contar turnos "No asistido" del cliente en el semestre actual
+    // Count "No asistido" appointments for the client in the current semester
     const noShowCount = await prisma.turno.count({
       where: {
         codCliente: updatedTurno.codCliente,
@@ -1348,7 +1351,8 @@ export const markAsNoShow = async (codTurno: string) => {
       `Cliente ${updatedTurno.codCliente} tiene ${noShowCount} turnos "No asistido" en el semestre actual`,
     );
 
-    // Si el cliente tiene 3 o más turnos "No asistido" en el semestre, asignar categoría "Vetado"
+    // If the customer has 3 or more "No-show" appointments in the semester, assign the "Vetado" category.
+
     if (noShowCount >= 3) {
       const categoriaVetado = await prisma.categoria.findFirst({
         where: { nombreCategoria: "Vetado" },
@@ -1377,18 +1381,18 @@ export const markAsNoShow = async (codTurno: string) => {
     );
     console.error("Error completo:", error);
 
-    // manejo de errores de validacion
+    // handle validation errors
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
 
-    // manejar errores de DB
+    // handle DB errors
     if (error instanceof DatabaseError) {
       throw error;
     }
 
-    // Manejar errores específicos de Prisma
+    // handle specific Prisma errors
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; meta?: unknown };
       console.error("Prisma error code:", prismaError.code);
@@ -1404,10 +1408,10 @@ export const markAsNoShow = async (codTurno: string) => {
 
 export const destroy = async (codTurno: string) => {
   try {
-    // sanitizar y validar
+    // sanitize and validate
     const sanitizedCodTurno = sanitizeInput(codTurno);
 
-    // verificar que el turno existe
+    // verify that the appointment exists
     const existingTurno = await prisma.turno.findUnique({
       where: { codTurno: sanitizedCodTurno },
     });
@@ -1416,7 +1420,7 @@ export const destroy = async (codTurno: string) => {
       throw new DatabaseError("Turno no encontrado");
     }
 
-    // delete turno
+    // delete appointment
     const deletedTurno = await prisma.turno.delete({
       where: { codTurno: sanitizedCodTurno },
     });
