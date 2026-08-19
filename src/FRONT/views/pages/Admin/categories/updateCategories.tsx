@@ -9,6 +9,7 @@ import { useAbortController } from "../../../components/shared/useAbortControlle
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import { parseBackendResponse } from "../../../lib/backendResponse";
 
 const UpdateCategorySchema = CategorySchema.omit({
   codCategoria: true,
@@ -43,23 +44,30 @@ const UpdateCategories: React.FC = () => {
           signal: controller.signal,
         });
 
-        if (response.ok) {
-          const data = await response.json();
+        const parsed = await parseBackendResponse<{
+          nombreCategoria?: string;
+          descCategoria?: string;
+          descuentoCorte?: number;
+          descuentoProducto?: number;
+        }>(response);
+
+        if (parsed.ok) {
           // set form values
           reset({
-            nombreCategoria: data.nombreCategoria || "",
-            descCategoria: data.descCategoria || "",
-            descuentoCorte: data.descuentoCorte ?? 0,
-            descuentoProducto: data.descuentoProducto ?? 0,
+            nombreCategoria: parsed.data?.nombreCategoria || "",
+            descCategoria: parsed.data?.descCategoria || "",
+            descuentoCorte: parsed.data?.descuentoCorte ?? 0,
+            descuentoProducto: parsed.data?.descuentoProducto ?? 0,
           });
           toast.dismiss(toastId);
         } else if (response.status === 404) {
           toast.error("Categoría no encontrada", { id: toastId });
           navigate("/Admin/CategoriesPage");
         } else {
-          toast.error("Error al cargar los datos de la categoría", {
-            id: toastId,
-          });
+          toast.error(
+            parsed.message || "Error al cargar los datos de la categoría",
+            { id: toastId },
+          );
         }
       } catch (err: unknown) {
         if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
@@ -86,12 +94,16 @@ const UpdateCategories: React.FC = () => {
         signal: controller.signal,
       });
 
-      await res.json();
-      if (res.ok) {
-        toast.success("Categoría actualizada exitosamente", { id: toastId });
+      const parsed = await parseBackendResponse(res);
+      if (parsed.ok) {
+        toast.success(parsed.message || "Categoría actualizada exitosamente", {
+          id: toastId,
+        });
         navigate("/Admin/CategoriesPage");
       } else {
-        toast.error("Error al actualizar categoría", { id: toastId });
+        toast.error(parsed.message || "Error al actualizar categoría", {
+          id: toastId,
+        });
       }
     } catch (err: unknown) {
       if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {

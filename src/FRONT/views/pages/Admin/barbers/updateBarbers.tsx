@@ -12,6 +12,7 @@ import { fetchPendingAppointmentsCount } from "../../../components/Admin/pending
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import { parseBackendResponse } from "../../../lib/backendResponse";
 import type { Sucursal } from "../../../../types/branch";
 import type { UserResponse } from "../../../../types/user";
 
@@ -181,18 +182,16 @@ const UpdateBarber: React.FC = () => {
         body: JSON.stringify(datosParaBackend),
         signal: controller.signal,
       });
+      const parsed = await parseBackendResponse(response);
 
-      const responseData = await response.json();
-      console.log("🔍 Debug - Response data:", responseData);
-
-      if (response.ok) {
+      if (parsed.ok) {
         toast.success(
-          responseData.message || "Barbero actualizado exitosamente",
+          parsed.message || "Barbero actualizado exitosamente",
           { id: toastId, duration: 2000 },
         );
         navigate("/Admin/BarbersPage");
       } else {
-        toast.error(responseData.message || "Error al actualizar barbero", {
+        toast.error(parsed.message || "Error al actualizar barbero", {
           id: toastId,
           duration: 2000,
         });

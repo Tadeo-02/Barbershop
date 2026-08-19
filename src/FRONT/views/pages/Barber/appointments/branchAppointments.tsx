@@ -609,8 +609,10 @@ const BranchAppointments: React.FC = () => {
       });
 
       if (response.ok) {
-        const resData = await response.json();
-        const cae = resData.data?.CAE || "OK";
+        const resData = await readJsonSafely<{ data?: { CAE?: string } }>(
+          response,
+        );
+        const cae = resData?.data?.CAE || "OK";
         toast.success("Factura generada exitosamente", {
           id: toastId,
           duration: 2000,

@@ -45,7 +45,7 @@ function Login() {
       } else {
         toast.error(parsed.message || "Error de login");
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     } catch (error) {
       if (handleAbortOrConnectionError(error, undefined, "Error de conexión")) {
         return;
