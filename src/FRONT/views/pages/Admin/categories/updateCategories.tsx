@@ -4,6 +4,7 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   isAbortError,
@@ -11,14 +12,14 @@ import {
 } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
 
-const CategorySchema = z.object({
-  nombreCategoria: z.string().min(1, "Nombre requerido"),
-  descCategoria: z.string().min(10, "Descripción requerida"),
-  descuentoCorte: z.number().min(0, "Mínimo 0").max(100, "Máximo 100"),
-  descuentoProducto: z.number().min(0, "Mínimo 0").max(100, "Máximo 100"),
+const UpdateCategorySchema = CategorySchema.pick({
+  nombreCategoria: true,
+  descCategoria: true,
+  descuentoCorte: true,
+  descuentoProducto: true,
 });
 
-type CategoryForm = z.infer<typeof CategorySchema>;
+type CategoryForm = z.infer<typeof UpdateCategorySchema>;
 
 const UpdateCategories: React.FC = () => {
   const { codCategoria } = useParams<{ codCategoria: string }>();
@@ -33,7 +34,7 @@ const UpdateCategories: React.FC = () => {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CategoryForm>({
-    resolver: zodResolver(CategorySchema),
+    resolver: zodResolver(UpdateCategorySchema),
     mode: "onBlur",
   });
 

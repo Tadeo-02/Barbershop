@@ -5,17 +5,7 @@ import {
   setSessionUser,
 } from "../../lib/authStorage";
 import type { UserRole } from "../../lib/roles";
-
-interface User {
-  codUsuario: string;
-  dni: string;
-  cuil: string | null;
-  codSucursal: string | null;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  email: string;
-}
+import type { User } from "../../../types/user";
 
 interface AuthContextType {
   user: User | null;

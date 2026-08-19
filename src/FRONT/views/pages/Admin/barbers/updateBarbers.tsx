@@ -4,11 +4,9 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   UserBaseSchemaExport,
-  UserSchema,
 } from "../../../../../BACK/Schemas/usersSchema";
 import {
   isAbortError,
@@ -16,10 +14,8 @@ import {
 } from "../../../components/shared/useAbortController";
 import { fetchPendingAppointmentsCount } from "../../../components/Admin/pendingAppointments";
 import { apiFetch } from "../../../lib/apiFetch";
-
-type Barbero = z.infer<typeof UserSchema> & { codUsuario: string };
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+import type { Sucursal } from "../../../../types/branch";
+import type { UserResponse } from "../../../../types/user";
 
 const UpdateBarberSchema = UserBaseSchemaExport.extend({
   contraseña: z.string().optional(),
@@ -43,7 +39,7 @@ type UpdateBarberForm = z.infer<typeof UpdateBarberSchema>;
 const UpdateBarber: React.FC = () => {
   const { codUsuario } = useParams<{ codUsuario: string }>();
   const navigate = useNavigate();
-  const [barbero, setBarbero] = useState<Barbero | null>(null);
+  const [barbero, setBarbero] = useState<UserResponse | null>(null);
   const [sucursalesDisponibles, setSucursalesDisponibles] = useState<
     Sucursal[]
   >([]);

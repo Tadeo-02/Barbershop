@@ -4,7 +4,6 @@ import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserBaseSchemaExport } from "../../../../../BACK/Schemas/usersSchema";
 import {
@@ -12,8 +11,7 @@ import {
   useAbortController,
 } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+import type { Sucursal } from "../../../../types/branch";
 
 const CreateBarberSchema = UserBaseSchemaExport.extend({
   confirmarContraseña: z

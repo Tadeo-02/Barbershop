@@ -4,15 +4,10 @@ import styles from "./typeOfHaircut.module.css";
 import { showConfirmActionToast } from "../../../components/Admin/confirmActionToast";
 import { changeEntityStatus } from "../../../components/Admin/entityStatus";
 import { apiFetch } from "../../../lib/apiFetch";
-
-interface TipoCorte {
-  codCorte: string;
-  nombreCorte: string;
-  valorBase: number;
-}
+import type { Haircut } from "../../../../types/haircut";
 
 const IndexTypeOfHaircut = () => {
-  const [tipoCortes, setTipoCortes] = useState<TipoCorte[]>([]);
+  const [tipoCortes, setTipoCortes] = useState<Haircut[]>([]);
   const [loading, setLoading] = useState(true); // loading inicial
 
   useEffect(() => {

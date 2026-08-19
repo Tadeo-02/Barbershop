@@ -8,27 +8,7 @@ import {
   useAbortController,
 } from "../../components/shared/useAbortController.ts";
 import { apiFetch } from "../../lib/apiFetch";
-
-interface AppointmentPartial {
-  codTurno: string;
-  fechaTurno: string;
-  horaDesde: string;
-  horaHasta: string;
-  estado: string;
-  usuarios_turnos_codClienteTousuarios?: {
-    nombre: string;
-    apellido: string;
-  };
-  usuarios_turnos_codBarberoTousuarios?: {
-    nombre: string;
-    apellido: string;
-    sucursales?: {
-      nombre: string;
-      calle: string;
-      altura: number;
-    } | null;
-  };
-}
+import type { AppointmentPartial } from "../../../types/appointment";
 
 const MONTH_LABELS = [
   "Ene",

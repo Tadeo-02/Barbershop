@@ -13,21 +13,14 @@ import {
   useAbortController,
 } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
-
-// (legacy per-item form state removed — CheckoutForm keeps its own state for each appointment, so we don't need to manage it here)
-
-interface Cut {
-  codCorte: string;
-  nombreCorte: string;
-  valorBase: number;
-}
+import type { Haircut } from "../../../../types/haircut";
 
 // --- CheckoutForm component: Wraps the payment form with react-hook-form + Zod. ---
 const CheckoutForm: React.FC<{
   codTurno: string;
   codCliente: string;
   initial: { codCorte: string; precioTurno: number; metodoPago: string };
-  allCortes: Cut[];
+  allCortes: Haircut[];
   onCompleted: () => Promise<void>;
 }> = ({ codTurno, codCliente, initial, allCortes, onCompleted }) => {
   const navigate = useNavigate();
@@ -470,7 +463,7 @@ const CheckoutForm: React.FC<{
 const BranchAppointments: React.FC = () => {
   const { user, isAuthenticated, isAuthLoading } = useAuth();
   const [turnos, setTurnos] = useState<AppointmentFull[]>([]);
-  const [allCortes, setAllCortes] = useState<Cut[]>([]);
+  const [allCortes, setAllCortes] = useState<Haircut[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);

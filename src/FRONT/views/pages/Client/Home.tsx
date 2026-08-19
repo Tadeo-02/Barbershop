@@ -9,40 +9,8 @@ import {
   useAbortController,
 } from "../../components/shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch";
-
-interface AppointmentSummary {
-  codTurno: string;
-  fechaTurno: string;
-  horaDesde: string;
-  horaHasta: string;
-  estado: string;
-  usuarios_turnos_codBarberoTousuarios?: {
-    nombre: string;
-    apellido: string;
-    sucursales?: {
-      nombre: string;
-      calle: string;
-      altura: number;
-    } | null;
-  };
-}
-
-interface LoyaltyProgress {
-  currentCategory: string;
-  currentDiscount: number;
-  nextCategory: string | null;
-  countCurrent: number | null;
-  countRequired: number | null;
-  daysCurrent: number | null;
-  daysRequired: number | null;
-  progress: number | null;
-  isMaxCategory: boolean;
-  discountCycle?: number | null;
-  turnsUntilNextDiscount?: number | null;
-  discountProgress?: number | null;
-  discountTurnsRequired?: number | null;
-  discountTurnsCompleted?: number | null;
-}
+import type { AppointmentSummary } from "../../../types/appointment";
+import type { LoyaltyProgress } from "../../../types/user";
 
 const MONTH_LABELS = [
   "Ene",

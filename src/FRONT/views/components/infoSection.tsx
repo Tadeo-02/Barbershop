@@ -1,16 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import styles from "./infoSection.module.css";
 import toast from "react-hot-toast";
-import { z } from "zod";
 import { BranchWithIdSchema } from "../../../BACK/Schemas/branchesSchema";
 import { apiFetch } from "../lib/apiFetch";
-
-
-
-// Infer the TypeScript type from the schema
-//! Frontend validation with Zod schema
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+import type { Sucursal } from "../../types/branch";
 
 const InfoSection: React.FC = () => {
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);

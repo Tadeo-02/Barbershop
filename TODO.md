@@ -102,9 +102,9 @@
 - [x] Revisar toda la carpeta `components` y mover las páginas a `pages`, dejando en `components` solo piezas reutilizables.
 
 ## 12. Duplicación de tipos/interfaces
-- [ ] Revisar todas las definiciones de interfaces del proyecto (ej. `Appointment`) y unificar en un solo lugar (ej. `src/FRONT/types/` o similar).
+- [x] Revisar todas las definiciones de interfaces del proyecto (ej. `Appointment`) y unificar en un solo lugar (ej. `src/FRONT/types/` o similar).
   - Detectado en: `src/FRONT/views/components/Client/scheduleByBranch.tsx` y otros archivos de Client/Barber.
-- [ ] Auditar el resto de las entidades (Usuario, Categoría, Turno, etc.) por posibles duplicados de tipos.
+- [x] Auditar el resto de las entidades (Usuario, Categoría, Turno, etc.) por posibles duplicados de tipos.
 
 ## 13. Duplicación de funciones utilitarias
 - [ ] Centralizar funciones repetidas como `formatDate` (y otras similares) en un único módulo de utilidades (`utils/`).

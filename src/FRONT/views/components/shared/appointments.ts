@@ -1,47 +1,9 @@
-export interface AppointmentFull {
-  codTurno: string;
-  codBarbero: string;
-  codCorte?: string;
-  codCliente: string;
-  fechaTurno: string;
-  horaDesde: string;
-  horaHasta: string;
-  precioTurno?: number;
-  metodoPago?: string;
-  estado: string;
-  usuarios_turnos_codBarberoTousuarios?: {
-    codUsuario: string;
-    nombre: string;
-    apellido: string;
-    telefono?: string;
-    email?: string;
-    codSucursal?: string | null;
-    sucursales?: {
-      codSucursal: string;
-      nombre: string;
-      calle?: string;
-      altura?: number;
-    } | null;
-  };
-  usuarios_turnos_codClienteTousuarios?: {
-    codUsuario: string;
-    nombre: string;
-    apellido: string;
-    telefono?: string;
-    email?: string;
-  };
-  tipos_corte?: {
-    codCorte: string;
-    nombreCorte: string;
-    valorBase: number;
-  } | null;
-}
+import type {
+  AppointmentFull,
+  AppointmentDateLike,
+} from "../../../types/appointment";
 
-
-export interface AppointmentDateLike {
-  fechaTurno: string;
-  horaDesde: string;
-}
+export type { AppointmentFull, AppointmentDateLike };
 
 export const unwrapAppointments = <T>(data: unknown): T[] => {
   if (Array.isArray(data)) return data as T[];

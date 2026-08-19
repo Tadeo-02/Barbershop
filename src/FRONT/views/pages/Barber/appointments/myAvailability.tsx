@@ -16,14 +16,7 @@ import {
   useAbortController,
 } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
-
-interface Availability {
-  codBloqueo: string;
-  codBarbero: string;
-  fechaHoraDesde: string | Date;
-  fechaHoraHasta: string | Date;
-  motivo: string;
-}
+import type { Availability } from "../../../../types/availability";
 
 interface MyAvailabilityProps {
   refreshKey?: number;

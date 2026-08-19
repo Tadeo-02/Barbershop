@@ -2,16 +2,12 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./categories.module.css";
 import toast from "react-hot-toast";
-import { CategorySchema } from "../../../../../BACK/Schemas/categoriesSchema";
-import type { z } from "zod";
 import { apiFetch } from "../../../lib/apiFetch";
-
-// Infer the type from the existing BACKEND schema and map it to the names used by the frontend
-type Categoria = z.infer<typeof CategorySchema>;
+import type { Category } from "../../../../types/category";
 
 const ShowCategories = () => {
   const { codCategoria } = useParams();
-  const [categoria, setCategoria] = useState<Categoria | null>(null);
+  const [categoria, setCategoria] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const handleBack = () => {

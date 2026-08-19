@@ -7,7 +7,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   BranchSchema,
-  BranchWithIdSchema,
 } from "../../../../../BACK/Schemas/branchesSchema";
 import {
   isAbortError,
@@ -15,8 +14,7 @@ import {
 } from "../../../components/shared/useAbortController";
 import { getResponseMessage, readJsonSafely } from "../../../components/Admin/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
-
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+import type { Sucursal } from "../../../../types/branch";
 
 const UpdateBranchSchema = BranchSchema.extend({});
 type UpdateBranchForm = z.infer<typeof UpdateBranchSchema>;
