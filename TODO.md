@@ -92,9 +92,9 @@
   - Detectado en: `src/FRONT/views/components/Client/clientAppointments.tsx`
 
 ## 11. Organización de carpetas (páginas vs. componentes)
-- [ ] Separar páginas de componentes reutilizables: actualmente hay archivos en `components` que en realidad son páginas.
+- [x] Separar páginas de componentes reutilizables: actualmente hay archivos en `components` que en realidad son páginas.
   - Ejemplo: `src/FRONT/views/components/Client/clientAppointments.tsx` debería vivir en `pages`, no en `components`.
-- [ ] Revisar toda la carpeta `components` y mover las páginas a `pages`, dejando en `components` solo piezas reutilizables.
+- [x] Revisar toda la carpeta `components` y mover las páginas a `pages`, dejando en `components` solo piezas reutilizables.
 
 ## 12. Duplicación de tipos/interfaces
 - [ ] Revisar todas las definiciones de interfaces del proyecto (ej. `Appointment`) y unificar en un solo lugar (ej. `src/FRONT/types/` o similar).
