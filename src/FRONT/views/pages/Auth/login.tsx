@@ -34,15 +34,15 @@ function Login() {
         return;
       }
       if (response.ok) {
-        if (data.user) {
-          const role = deriveRole(data.user.cuil);
-          login(data.user, role);
-          redirectUser(data.user, data.message || "Login exitoso");
+        if (parsed.data?.user) {
+          const role = deriveRole(parsed.data.user.cuil);
+          login(parsed.data.user, role);
+          redirectUser(parsed.data.user, parsed.message || "Login exitoso");
         } else {
           toast.error("Datos de usuario no encontrados");
         }
       } else {
-        toast.error(data?.message || "Error de login");
+        toast.error(parsed.message || "Error de login");
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
