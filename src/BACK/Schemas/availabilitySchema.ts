@@ -17,7 +17,9 @@ export const AvailabilitySchema = z.object({
       /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]) (?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/,
       "Fecha o hora inválida. Formato YYYY-MM-DD HH:MM:SS",
     ),
-  motivo: z.string().max(250, "Motivo no puede tener más de 250 caracteres"),
+  motivo: z.string()
+    .min(1, "Motivo es requerido")
+    .max(250, "Motivo no puede tener más de 250 caracteres"),
 });
 
 const AvailabilityResponseBaseSchema = z.object({
