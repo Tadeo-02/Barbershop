@@ -10,6 +10,7 @@ import {  useAbortController} from "../../../components/shared/useAbortControlle
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import { parseBackendResponse } from "../../../lib/backendResponse";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -87,10 +88,10 @@ const CreateBarbers: React.FC = () => {
         signal: controller.signal,
       });
 
-      const responseData = await response.json();
+      const parsed = await parseBackendResponse(response);
 
-      if (response.ok) {
-        toast.success(responseData.message || "Barbero creado exitosamente", {
+      if (parsed.ok) {
+        toast.success(parsed.message || "Barbero creado exitosamente", {
           id: toastId,
           duration: 4000,
         });
@@ -100,7 +101,7 @@ const CreateBarbers: React.FC = () => {
           navigate("/Admin/BarbersPage");
         }, 2000);
       } else {
-        toast.error(responseData.message || "Error al crear barbero", {
+        toast.error(parsed.message || "Error al crear barbero", {
           id: toastId,
         });
       }

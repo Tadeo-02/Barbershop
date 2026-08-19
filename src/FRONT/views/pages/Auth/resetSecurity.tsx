@@ -10,6 +10,7 @@ import {
 import { apiFetch } from "../../lib/apiFetch";
 import { getPasswordMissing } from "../../lib/passwordRules";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import { parseBackendResponse } from "../../lib/backendResponse";
 
 const ResetSecurity: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -46,13 +47,13 @@ const ResetSecurity: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: cleanEmail }),
       });
-      const data = await res.json();
-      if (res.ok) {
+      const parsed = await parseBackendResponse(res);
+      if (parsed.ok) {
         toast.success(
-          data.message || "Si el email existe, enviamos un enlace para restablecer la contraseña.",
+          parsed.message || "Si el email existe, enviamos un enlace para restablecer la contraseña.",
         );
       } else {
-        toast.error(data.message || "Error al solicitar restablecimiento");
+        toast.error(parsed.message || "Error al solicitar restablecimiento");
       }
     } catch (err) {
       if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
@@ -84,12 +85,12 @@ const ResetSecurity: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: cleanToken, nuevaContraseña }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(data.message || "Contraseña actualizada");
+      const parsed = await parseBackendResponse(res);
+      if (parsed.ok) {
+        toast.success(parsed.message || "Contraseña actualizada");
         setTimeout(() => navigate("/login"), 1500);
       } else {
-        toast.error(data?.message || "Error al actualizar");
+        toast.error(parsed.message || "Error al actualizar");
       }
     } catch (err) {
       if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {

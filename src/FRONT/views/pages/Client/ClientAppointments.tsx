@@ -11,6 +11,7 @@ import {
   unwrapAppointments,
 } from "../../components/shared/appointments";
 import { apiFetch } from "../../lib/apiFetch.ts";
+import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../lib/authUtils";
 
@@ -140,7 +141,7 @@ const ClientAppointments: React.FC = () => {
       });
 
       if (response.ok) {
-        await response.json();
+        await readJsonSafely(response);
         toast.success("Turno cancelado correctamente", {
           id: toastId,
           duration: 2000,
@@ -157,9 +158,10 @@ const ClientAppointments: React.FC = () => {
       } else if (response.status === 404) {
         toast.error("Turno no encontrado", { id: toastId, duration: 2000 });
       } else {
-        const errorData = await response.json();
+        const errorData = await readJsonSafely(response);
         console.error("Error response:", errorData);
-        toast.error(errorData.message || "Error al cancelar el turno", {
+        toast.error(getResponseMessage(errorData, "Error al cancelar el turno")??
+          "Error al cancelar el turno", {
           id: toastId,
           duration: 2000,
         });

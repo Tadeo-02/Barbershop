@@ -59,7 +59,7 @@
 - [ ] Quitar rutas de prueba de `src/FRONT/views/App.tsx` (o protegerlas para que no estén disponibles en producción).
 
 ## 6. Login / manejo de respuestas HTTP
-- [ ] `src/FRONT/views/components/login/login.tsx`: revisar por qué se usa
+- [x] `src/FRONT/views/components/login/login.tsx`: revisar por qué se usa
   ```ts
   const text = await response.text();
   ```
@@ -68,6 +68,10 @@
   const text = await response.json();
   ```
   y corregir según corresponda.
+
+Es intencional, y está bien ya que response.json() explota (SyntaxError: Unexpected end of JSON input) si el body viene vacío o no es JSON válido. Sucede con: un 204, un proxy/load balancer devolviendo un body vacío en un 502/504, un error de servidor que no llega a armar el JSON, etc.
+
+Si login.tsx usara response.json() directo, esos casos tirarían una excepción no controlada que caería en el catch genérico de handleSubmit, y el usuario vería siempre "Error de conexión" sin importar qué pasó realmente. Con .text() + JSON.parse() envuelto en su propio try/catch, la app puede devolver mensajes específicos ("El servidor no devolvió respuesta.", "Respuesta inválida del servidor") en vez de un mensaje genérico.
 
 ## 7. Logging
 - [ ] Eliminar el uso excesivo de `console.log` en el front.

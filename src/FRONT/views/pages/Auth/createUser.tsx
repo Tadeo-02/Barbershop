@@ -16,6 +16,7 @@ import { useAbortController } from "../../components/shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch.ts";
 import { createResolver } from "../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import { parseBackendResponse } from "../../lib/backendResponse";
 
 //! we use zods schema to validate fields
 // Extend schema for form with password confirmation
@@ -76,12 +77,11 @@ const CreateUser: React.FC = () => {
         signal: controller.signal,
       });
 
-      // 3. Direct JSON parsing (cleaner than text + parse)
-      const responseData = await response.json();
+      const parsed = await parseBackendResponse(response);
 
-      if (response.ok) {
+      if (parsed.ok) {
         // success
-        toast.success(responseData.message || "Usuario creado exitosamente", {
+        toast.success(parsed.message || "Usuario creado exitosamente", {
           id: toastId,
           duration: 4000,
         });
@@ -94,7 +94,7 @@ const CreateUser: React.FC = () => {
         }, 2000);
       } else {
         //  BACKEND ERROR (Ex: DNI duplicated)
-        toast.error(responseData.message || "Error al crear usuario", {
+        toast.error(parsed.message || "Error al crear usuario", {
           id: toastId,
         });
       }

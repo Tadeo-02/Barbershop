@@ -8,6 +8,7 @@ import { deriveRole } from "../../lib/roles.ts";
 import toast from "react-hot-toast";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
+import type { User } from "../../components/user/AuthContext.tsx";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -44,7 +45,7 @@ function Login() {
       } else {
         toast.error(parsed.message || "Error de login");
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     } catch (error) {
       if (handleAbortOrConnectionError(error, undefined, "Error de conexión")) {
         return;
