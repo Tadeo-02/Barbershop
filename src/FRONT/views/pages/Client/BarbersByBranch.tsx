@@ -34,21 +34,6 @@ const BarbersByBranch = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // function to calculate horaHasta (30 minutes after)
-  const calculateHoraHasta = (horaDesde: string): string => {
-    if (!horaDesde) return "";
-
-    const [hours, minutes] = horaDesde.split(":").map(Number);
-    const totalMinutes = hours * 60 + minutes + 30; // add 30 min
-
-    const newHours = Math.floor(totalMinutes / 60);
-    const newMinutes = totalMinutes % 60;
-
-    return `${newHours.toString().padStart(2, "0")}:${newMinutes
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
   // Format a received date (posible 'YYYY-MM-DD' or with 'T') to 'DD/MM/AAAA'
   const formatFecha = (fecha?: string | null): string => {
     if (!fecha) return "";
@@ -211,15 +196,11 @@ const BarbersByBranch = () => {
 
     const toastId = toast.loading("Creando Turno...");
     try {
-      // calculate horaHasta
-      const horaHasta = calculateHoraHasta(horaDesde);
-
       console.log("Enviando POST a /turnos con datos:", {
         codCliente: user.codUsuario,
         codBarbero: selectedBarber,
         fechaTurno: fechaTurno,
         horaDesde: horaDesde,
-        horaHasta: horaHasta,
         estado: "Programado",
       });
 
@@ -233,7 +214,7 @@ const BarbersByBranch = () => {
           codBarbero: selectedBarber,
           fechaTurno: fechaTurno,
           horaDesde: horaDesde,
-          horaHasta: horaHasta,
+          horaHasta: "",
           estado: "Programado",
         }),
       });

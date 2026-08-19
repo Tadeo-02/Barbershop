@@ -1,7 +1,6 @@
 import { useAuth } from "../../components/user/AuthContext";
 import { useEffect, useState } from "react";
 import styles from "./ProfilePage.module.css";
-import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../lib/apiFetch";
 
@@ -122,19 +121,6 @@ const MyProfile = () => {
 
   const displayUser = profile || { ...user, categoriaActual: null };
 
-  // Console.log every time it renders to debug the profile data
-  console.log("🔥 PROFILE DEBUG - Rendering with displayUser:", displayUser);
-  console.log(
-    "🔥 PROFILE DEBUG - displayUser.categoriaActual:",
-    displayUser.categoriaActual,
-  );
-
-  const initialQuestion =
-    "preguntaSeguridad" in displayUser
-      ? ((displayUser as UserProfile & { preguntaSeguridad?: string | null })
-          .preguntaSeguridad ?? null)
-      : null;
-
   return (
     <div className={styles.formContainer}>
       <h1 className={styles.pageTitle}>Mi Perfil</h1>
@@ -179,122 +165,9 @@ const MyProfile = () => {
             </div>
           </div>
         </div>
-
-        <div className={styles.profileSection}>
-          <h3>Pregunta de seguridad</h3>
-          {displayUser && (
-            <SecurityQuestionForm
-              key={initialQuestion ?? ""}
-              codUsuario={displayUser.codUsuario}
-              initialQuestion={initialQuestion}
-            />
-          )}
-        </div>
       </div>
     </div>
   );
 };
 
 export default MyProfile;
-
-// Small subcomponent to set/update security question and answer
-const SecurityQuestionForm: React.FC<{
-  codUsuario: string;
-  initialQuestion?: string | null;
-}> = ({ codUsuario, initialQuestion = null }) => {
-  const { user } = useAuth();
-  const [pregunta, setPregunta] = useState<string>(initialQuestion || "");
-  const [respuesta, setRespuesta] = useState<string>("");
-  const [loading, setLoading] = useState(false);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanPregunta = pregunta.trim();
-    const cleanRespuesta = respuesta.trim();
-    if (!cleanPregunta || !cleanRespuesta) {
-      toast.error("Pregunta y respuesta son requeridas");
-      return;
-    }
-    if (!user) {
-      toast.error("Usuario no autenticado");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await apiFetch(`/usuarios/${codUsuario}/security-question`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-id": user.codUsuario,
-        },
-        body: JSON.stringify({
-          preguntaSeguridad: cleanPregunta,
-          respuestaSeguridad: cleanRespuesta,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(data.message || "Pregunta actualizada");
-        setRespuesta("");
-      } else {
-        toast.error(data.message || "Error al actualizar");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Error de conexión");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={submit} className={styles.securityForm}>
-      <label className={styles.securityLabel} htmlFor="security-pregunta">
-        Pregunta:
-      </label>
-      <select
-        id="security-pregunta"
-        className={styles.securitySelect}
-        value={pregunta}
-        onChange={(e) => setPregunta(e.target.value)}
-        required
-      >
-        <option value="">-- Seleccione una pregunta --</option>
-        <option value="¿Cuál es el nombre de tu primera mascota?">
-          ¿Cuál es el nombre de tu primera mascota?
-        </option>
-        <option value="¿Cuál es el nombre de la calle donde creciste?">
-          ¿Cuál es el nombre de la calle donde creciste?
-        </option>
-        <option value="¿Cuál es el nombre de tu libro favorito?">
-          ¿Cuál es el nombre de tu libro favorito?
-        </option>
-      </select>
-      <label className={styles.securityLabel} htmlFor="security-respuesta">
-        Respuesta:
-      </label>
-      <input
-        id="security-respuesta"
-        className={styles.securityInput}
-        type="text"
-        value={respuesta}
-        onChange={(e) => setRespuesta(e.target.value)}
-        required
-        maxLength={100}
-      />
-      <div className={styles.securityActions}>
-        <button
-          type="submit"
-          className={styles.securityButton}
-          disabled={loading}
-        >
-          {loading
-            ? "Guardando..."
-            : initialQuestion
-              ? "Actualizar"
-              : "Guardar"}
-        </button>
-      </div>
-    </form>
-  );
-};

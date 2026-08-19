@@ -111,6 +111,43 @@ export const findByUserId = async (
   }
 };
 
+export const findNextByUserId = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { codUsuario } = req.params;
+
+    if (!codUsuario) {
+      res.status(400).json({
+        success: false,
+        message: "codUsuario es requerido",
+      });
+      return;
+    }
+
+    const turno = await model.findNextByUserId(codUsuario);
+    if (!turno) {
+      res.status(200).json({
+        success: true,
+        data: null,
+      });
+      return;
+    }
+    const safeTurno = sanitizeOutput(AppointmentOutputSchema, turno);
+
+    res.status(200).json({
+      success: true,
+      data: safeTurno,
+    });
+  } catch (error: unknown) {
+    res.status(500).json({
+      success: false,
+      message: getErrorMessage(error, "Error al buscar próximo turno del cliente"),
+    });
+  }
+};
+
 export const findByBranchId = async (
   req: Request,
   res: Response,

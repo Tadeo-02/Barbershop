@@ -1,4 +1,6 @@
-type UserRole = "client" | "barber" | "admin";
+import { type UserRole, ROLE_VALUES } from "./roles";
+
+export type { UserRole } from "./roles";
 
 export interface AuthTokenPayload {
   codUsuario: string;
@@ -7,8 +9,8 @@ export interface AuthTokenPayload {
   exp?: number;
 }
 
-const AUTH_TOKEN_KEY = "token";
-const LEGACY_AUTH_KEYS = ["user", "userType"];
+const SESSION_USER_KEY = "auth_user";
+const LEGACY_AUTH_KEYS = ["user", "userType", "token"];
 
 function clearLegacyAuthStorage(): void {
   LEGACY_AUTH_KEYS.forEach((key) => {
@@ -17,79 +19,40 @@ function clearLegacyAuthStorage(): void {
   });
 }
 
-function decodeBase64Url(value: string): string {
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = normalized.padEnd(
-    normalized.length + ((4 - (normalized.length % 4)) % 4),
-    "=",
-  );
-  return atob(padded);
+export interface SessionUser {
+  codUsuario: string;
+  codSucursal: string | null;
+  rol: UserRole;
 }
 
-export function decodeAuthToken(token: string): AuthTokenPayload | null {
+export function getSessionUser(): SessionUser | null {
   try {
-    const payload = token.split(".")[1];
-    if (!payload) return null;
-    const parsed = JSON.parse(
-      decodeBase64Url(payload),
-    ) as Partial<AuthTokenPayload>;
-
+    const raw = sessionStorage.getItem(SESSION_USER_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<SessionUser>;
     if (
       typeof parsed.codUsuario !== "string" ||
-      !["client", "barber", "admin"].includes(parsed.rol ?? "")
+      !ROLE_VALUES.includes((parsed.rol ?? "") as UserRole)
     ) {
+      sessionStorage.removeItem(SESSION_USER_KEY);
       return null;
     }
-
     return {
       codUsuario: parsed.codUsuario,
       codSucursal: parsed.codSucursal ?? null,
       rol: parsed.rol as UserRole,
-      exp: parsed.exp,
     };
   } catch {
+    sessionStorage.removeItem(SESSION_USER_KEY);
     return null;
   }
 }
 
-export function isTokenExpired(payload: AuthTokenPayload): boolean {
-  return typeof payload.exp === "number" && payload.exp * 1000 < Date.now();
-}
-
-export function getStoredAuthToken(): string | null {
-  try {
-    const token =
-      sessionStorage.getItem(AUTH_TOKEN_KEY) ??
-      localStorage.getItem(AUTH_TOKEN_KEY);
-
-    if (!token) return null;
-
-    const payload = decodeAuthToken(token);
-    if (!payload || isTokenExpired(payload)) {
-      clearAuthStorage();
-      return null;
-    }
-
-    if (!sessionStorage.getItem(AUTH_TOKEN_KEY)) {
-      sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-    }
-
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    clearLegacyAuthStorage();
-    return token;
-  } catch {
-    return null;
-  }
-}
-
-export function setStoredAuthToken(token: string): void {
-  sessionStorage.setItem(AUTH_TOKEN_KEY, token);
-  localStorage.removeItem(AUTH_TOKEN_KEY);
-  clearLegacyAuthStorage();
+export function setSessionUser(user: SessionUser): void {
+  sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
 }
 
 export function clearAuthStorage(): void {
-  sessionStorage.removeItem(AUTH_TOKEN_KEY);
-  localStorage.removeItem(AUTH_TOKEN_KEY);
+  sessionStorage.removeItem(SESSION_USER_KEY);
   clearLegacyAuthStorage();
 }

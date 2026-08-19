@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   clearAuthStorage,
-  decodeAuthToken,
-  getStoredAuthToken,
-  isTokenExpired,
-  setStoredAuthToken,
+  getSessionUser,
+  setSessionUser,
 } from "../../lib/authStorage";
+import type { UserRole } from "../../lib/roles";
 
 export interface User {
   codUsuario: string;
@@ -20,9 +19,8 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  userType: "client" | "barber" | "admin" | null;
-  token: string | null;
-  login: (userData: User, token: string) => void;
+  userType: UserRole | null;
+  login: (userData: User, userRole: UserRole) => void;
   logout: () => void;
   isAuthenticated: boolean;
   isAuthLoading: boolean;
@@ -31,56 +29,38 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
-function getRoleFromToken(token: string | null) {
-  if (!token) return null;
-  return decodeAuthToken(token)?.rol ?? null;
-}
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [token, setToken] = useState<string | null>(() =>
-    getStoredAuthToken(),
-  );
   const [user, setUser] = useState<User | null>(null);
-  const [userType, setUserType] = useState<
-    "client" | "barber" | "admin" | null
-  >(() => getRoleFromToken(getStoredAuthToken()));
-  const [isAuthLoading, setIsAuthLoading] = useState(() => !!token);
+  const [userType, setUserType] = useState<UserRole | null>(() => {
+    return getSessionUser()?.rol ?? null;
+  });
+  const [isAuthLoading, setIsAuthLoading] = useState(() => {
+    return !!getSessionUser();
+  });
 
   useEffect(() => {
-    if (!token) {
+    const session = getSessionUser();
+    if (!session) {
       setUser(null);
       setUserType(null);
       setIsAuthLoading(false);
       return;
     }
 
-    const payload = decodeAuthToken(token);
-    if (!payload || isTokenExpired(payload)) {
-      clearAuthStorage();
-      setToken(null);
-      setUser(null);
-      setUserType(null);
-      setIsAuthLoading(false);
-      return;
-    }
-
-    if (user?.codUsuario === payload.codUsuario) {
-      setUserType(payload.rol);
+    if (user?.codUsuario === session.codUsuario) {
+      setUserType(session.rol);
       setIsAuthLoading(false);
       return;
     }
 
     let isCurrent = true;
-    setUserType(payload.rol);
+    setUserType(session.rol);
     setIsAuthLoading(true);
 
-    fetch(`${API_URL}/usuarios/profiles/${payload.codUsuario}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+    fetch(`${API_URL}/usuarios/profiles/${session.codUsuario}`, {
+      credentials: "include",
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -92,11 +72,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (!isCurrent) return;
         setUser((data?.data ?? data?.user ?? data) as User);
       })
-      .catch((error) => {
+      .catch(() => {
         if (!isCurrent) return;
-        console.warn("No se pudo restaurar la sesión", error);
         clearAuthStorage();
-        setToken(null);
         setUser(null);
         setUserType(null);
       })
@@ -107,40 +85,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       isCurrent = false;
     };
-  }, [token, user?.codUsuario]);
+  }, [user?.codUsuario]);
 
-  const login = (userData: User, newToken: string) => {
-    const payload = decodeAuthToken(newToken);
-    if (!payload || isTokenExpired(payload)) {
-      clearAuthStorage();
-      setUser(null);
-      setUserType(null);
-      setToken(null);
-      setIsAuthLoading(false);
-      return;
-    }
-
+  const login = (userData: User, userRole: UserRole) => {
     setUser(userData);
-    setUserType(payload.rol);
-    setToken(newToken);
+    setUserType(userRole);
     setIsAuthLoading(false);
 
-    try {
-      setStoredAuthToken(newToken);
-    } catch (e) {
-      console.warn("No se pudo guardar el token de sesión", e);
-    }
+    setSessionUser({
+      codUsuario: userData.codUsuario,
+      codSucursal: userData.codSucursal,
+      rol: userRole,
+    });
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     setUserType(null);
-    setToken(null);
     setIsAuthLoading(false);
+    clearAuthStorage();
+
     try {
-      clearAuthStorage();
-    } catch (e) {
-      console.warn("No se pudo remover la sesión", e);
+      await fetch(`${API_URL}/usuarios/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // Logout cookie clearing is best-effort
     }
   };
 
@@ -149,10 +120,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         user,
         userType,
-        token,
         login,
         logout,
-        isAuthenticated: !!token,
+        isAuthenticated: !!userType,
         isAuthLoading,
       }}
     >

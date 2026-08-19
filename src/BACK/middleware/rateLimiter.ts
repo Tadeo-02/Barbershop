@@ -1,18 +1,15 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { Request } from "express";
 
 /**
 * Key generator for authenticated users
-* Uses the user ID from the x-user-id header, with a fallback to a constant
+* Uses req.user.codUsuario (set by authMiddleware) with an IP fallback
   */
 const userIdKeyGenerator = (req: Request): string => {
-  const userId = req.header("x-user-id");
-  if (userId) {
-    return `user:${userId}`;
+  if (req.user?.codUsuario) {
+    return `user:${req.user.codUsuario}`;
   }
-  // Fallback to unknown if there is no user ID (this should not happen on authenticated routes)
-// We don't use the IP here because this rate limiter is for authenticated users.
-  return "user:unknown";
+  return ipKeyGenerator(req.ip ?? "unknown");
 };
 
 /**

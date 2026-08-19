@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import styles from "./login.module.css";
 import {
@@ -12,17 +12,28 @@ import { getPasswordMissing } from "../../lib/passwordRules";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 
 const ResetSecurity: React.FC = () => {
-  const [step, setStep] = useState<"email" | "answer" | "password">("email");
+  const [searchParams] = useSearchParams();
+  const tokenFromUrl = searchParams.get("token");
+
+  const [step, setStep] = useState<"email" | "password">(
+    tokenFromUrl ? "password" : "email",
+  );
   const [email, setEmail] = useState("");
-  const [pregunta, setPregunta] = useState<string | null>(null);
-  const [respuesta, setRespuesta] = useState("");
+  const [token, setToken] = useState(tokenFromUrl ?? "");
   const [nuevaContraseña, setNuevaContraseña] = useState("");
   const [confirmarContraseña, setConfirmarContraseña] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
-  const askQuestion = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (tokenFromUrl) {
+      setToken(tokenFromUrl);
+      setStep("password");
+    }
+  }, [tokenFromUrl]);
+
+  const requestReset = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim();
     if (!cleanEmail) {
@@ -30,51 +41,18 @@ const ResetSecurity: React.FC = () => {
       return;
     }
     try {
-      const res = await apiFetch(
-        `/usuarios/security-question/${encodeURIComponent(cleanEmail)}`,
-      );
-      const data = await res.json();
-      if (res.ok) {
-        if (data.pregunta) {
-          setPregunta(data.pregunta);
-          setStep("answer");
-        } else {
-          toast.error("No se encontró pregunta para ese correo");
-        }
-      } else {
-        toast.error(data.message || "Error al obtener la pregunta");
-      }
-    } catch (err) {
-      if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
-        return;
-      }
-      console.error(err);
-    }
-  };
-
-  const submitAnswer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanEmail = email.trim();
-    const cleanRespuesta = respuesta.trim();
-    if (!cleanEmail || !cleanRespuesta) {
-      toast.error("Email y respuesta son requeridos");
-      return;
-    }
-    try {
-      const res = await apiFetch(`/usuarios/verify-security-answer`, {
+      const res = await apiFetch("/usuarios/password-reset/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: cleanEmail,
-          respuestaSeguridad: cleanRespuesta,
-        }),
+        body: JSON.stringify({ email: cleanEmail }),
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(data.message || "Respuesta verificada");
-        setStep("password");
+        toast.success(
+          data.message || "Si el email existe, enviamos un enlace para restablecer la contraseña.",
+        );
       } else {
-        toast.error(data?.message || "Error al verificar la respuesta");
+        toast.error(data.message || "Error al solicitar restablecimiento");
       }
     } catch (err) {
       if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
@@ -86,10 +64,9 @@ const ResetSecurity: React.FC = () => {
 
   const submitNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanEmail = email.trim();
-    const cleanRespuesta = respuesta.trim();
-    if (!cleanEmail || !cleanRespuesta) {
-      toast.error("Email y respuesta son requeridos");
+    const cleanToken = token.trim();
+    if (!cleanToken) {
+      toast.error("Token inválido");
       return;
     }
     const missing = getPasswordMissing(nuevaContraseña);
@@ -102,14 +79,10 @@ const ResetSecurity: React.FC = () => {
       return;
     }
     try {
-      const res = await apiFetch(`/usuarios/reset-password`, {
+      const res = await apiFetch("/usuarios/password-reset/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: cleanEmail,
-          respuestaSeguridad: cleanRespuesta,
-          nuevaContraseña,
-        }),
+        body: JSON.stringify({ token: cleanToken, nuevaContraseña }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -132,7 +105,7 @@ const ResetSecurity: React.FC = () => {
         <div className="row">
           <div className="col-12">
             {step === "email" && (
-              <form className={styles.form} onSubmit={askQuestion}>
+              <form className={styles.form} onSubmit={requestReset}>
                 <h1>Recuperar contraseña</h1>
                 <label>Correo electrónico:</label>
                 <input
@@ -144,33 +117,9 @@ const ResetSecurity: React.FC = () => {
                 />
                 <p>
                   <button type="submit" className="btn btn-primary">
-                    Siguiente
+                    Enviar enlace
                   </button>
                   <button type="button" onClick={() => navigate("/login")}>
-                    Volver
-                  </button>
-                </p>
-              </form>
-            )}
-
-            {step === "answer" && (
-              <form className={styles.form} onSubmit={submitAnswer}>
-                <h1>Responder pregunta</h1>
-                <p>
-                  <strong>{pregunta}</strong>
-                </p>
-                <label>Respuesta:</label>
-                <input
-                  type="text"
-                  required
-                  value={respuesta}
-                  onChange={(e) => setRespuesta(e.target.value)}
-                />
-                <p>
-                  <button type="submit" className="btn btn-primary">
-                    Verificar respuesta
-                  </button>
-                  <button type="button" onClick={() => setStep("email")}>
                     Volver
                   </button>
                 </p>
@@ -180,6 +129,19 @@ const ResetSecurity: React.FC = () => {
             {step === "password" && (
               <form className={styles.form} onSubmit={submitNewPassword}>
                 <h1>Nueva contraseña</h1>
+
+                {!tokenFromUrl && (
+                  <>
+                    <label>Token de restablecimiento:</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Pegá el token de tu email"
+                      value={token}
+                      onChange={(e) => setToken(e.target.value)}
+                    />
+                  </>
+                )}
 
                 <label>Nueva contraseña:</label>
                 <div className={styles.inputWithIcon}>
@@ -272,7 +234,7 @@ const ResetSecurity: React.FC = () => {
                   <button type="submit" className="btn btn-primary">
                     Cambiar contraseña
                   </button>
-                  <button type="button" onClick={() => setStep("answer")}>
+                  <button type="button" onClick={() => setStep("email")}>
                     Volver
                   </button>
                 </p>

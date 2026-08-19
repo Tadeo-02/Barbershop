@@ -12,7 +12,10 @@ import {
   standardDeduplication,
 } from "../../middleware/deduplication";
 import { authMiddleware } from "../../middleware/authMiddleware";
+import { csrfProtection } from "../../middleware/csrf";
 import { requireRole } from "../../middleware/roleMiddleware";
+import { validateRequest } from "../../middleware/zodValidation";
+import { z } from "zod";
 
 const router: Router = Router();
 
@@ -29,6 +32,7 @@ router.get(
 router.patch(
   "/:codSucursal/deactivate",
   authMiddleware,
+  csrfProtection,
   requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -38,10 +42,25 @@ router.patch(
 router.patch(
   "/:codSucursal/reactivate",
   authMiddleware,
+  csrfProtection,
   requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
   controller.reactivate,
+);
+
+const rentabilityQuerySchema = z.object({
+  month: z.string().regex(/^\d+$/, "month must be a numeric string"),
+  year: z.string().regex(/^\d+$/, "year must be a numeric string"),
+});
+
+router.get(
+  "/rentability",
+  authMiddleware,
+  requireRole("admin"),
+  userLimiter,
+  validateRequest({ query: rentabilityQuerySchema }),
+  controller.getRevenueByBranch,
 );
 
 const baseRouter = createRouter(controller, {
@@ -55,6 +74,7 @@ const baseRouter = createRouter(controller, {
     // POST / — only admin creates branches
     create: [
       authMiddleware,
+      csrfProtection,
       requireRole("admin"),
       userModificationLimiter,
       strictDeduplication,
@@ -63,6 +83,7 @@ const baseRouter = createRouter(controller, {
     // PUT /:id — only admin edits
     update: [
       authMiddleware,
+      csrfProtection,
       requireRole("admin"),
       userModificationLimiter,
       standardDeduplication,
@@ -71,6 +92,7 @@ const baseRouter = createRouter(controller, {
     // DELETE /:id — only admin deletes
     delete: [
       authMiddleware,
+      csrfProtection,
       requireRole("admin"),
       userModificationLimiter,
       standardDeduplication,

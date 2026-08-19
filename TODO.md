@@ -20,7 +20,12 @@
 - [x] Implementar **JWT** para autenticación y validación de las APIs.
 - [x] Usar JWT (o similar) para validar roles en cada endpoint, no solo en el front.
 - [x] Revisar el manejo básico de tokens de autenticación: JWT emitido en login, validado por middleware, enviado desde el frontend y limpiado ante expiración/401.
-  - Pendiente opcional de hardening: evaluar refresh tokens, revocación server-side, invalidación al desactivar/vetar usuarios y cookies `HttpOnly`.
+  - [x] JWT almacenado en cookie HttpOnly (no accesible por JS/XSS).
+  - [x] CSRF protection implementado (double-submit cookie pattern).
+  - [x] JWT signing algorithm pinned a HS256 explícitamente.
+  - [x] Startup check que falla rápido si falta JWT_SECRET.
+  - Pendiente: refresh tokens con revocación server-side.
+  - Pendiente: invalidación de JWT al desactivar/vetar usuarios.
 - [x] **Pregunta de seguridad**: no debe tratarse como un segundo password sin verificación adicional.
   - [x] Implementar envío de email con token para validar que el usuario controla ese email y usar recuperación por token.
   - [x] Documentar/comunicar al usuario que la pregunta de seguridad no reemplaza un password fuerte, para evitar que la subestime.
@@ -73,8 +78,8 @@
 
 ## 8. Almacenamiento de datos sensibles (localStorage)
 - [x] Evitar guardar todos los datos personales del usuario en `localStorage`.
-  - LISTO: se centralizó el acceso en `src/FRONT/views/lib/authStorage.ts`; `AuthContext` persiste solo el JWT, deriva rol/código desde el payload y rehidrata el perfil desde `/usuarios/profiles/:codUsuario`.
-  - Ajuste adicional: el JWT se guarda en `sessionStorage` para reducir la persistencia del token en el navegador y evitar dejar información sensible en `localStorage`.
+  - LISTO: se centralizó el acceso en `src/FRONT/views/lib/authStorage.ts`; `AuthContext` persiste solo metadata de sesión (userId + role) en `sessionStorage`, deriva rol desde el login response y rehidrata el perfil desde `/usuarios/profiles/:codUsuario`.
+  - LISTO: el JWT se almacena en cookie HttpOnly (no accesible por JavaScript), eliminando el riesgo de robo via XSS.
 - [x] Verificar y **eliminar el guardado del password en `localStorage`**, aunque esté encriptado (no es una práctica segura).
   - LISTO: no se encontró persistencia de password/contraseña en `localStorage`; también se eliminó el guardado del objeto `user` y `userType`.
   - Detectado en: `src/FRONT/views/pages/Barber/HomePageBarber.tsx`
@@ -89,7 +94,7 @@
   - [ ] Unificar usando el componente `src/FRONT/views/components/ProtectedRoute.tsx` en lugar de reimplementar la validación en cada página.
 
 ## 10. Lógica de negocio en el front
-- [ ] Mover lógica de negocio (cálculos de fechas, etc.) del front al backend/API.
+- [x] Mover lógica de negocio (cálculos de fechas, etc.) del front al backend/API.
   - Detectado en: `src/FRONT/views/components/Client/clientAppointments.tsx`
 
 ## 11. Organización de carpetas (páginas vs. componentes)

@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { FaCut, FaRegCalendarAlt, FaRegClock } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../user/AuthContext";
+import { useAuth } from "../../components/user/AuthContext";
 import styles from "./home.module.css";
-import { isAbortError, useAbortController } from "../../shared/useAbortController";
-import { apiFetch } from "../../../lib/apiFetch";
-import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
-import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import { isAbortError, useAbortController } from "../../components/shared/useAbortController";
+import { apiFetch } from "../../lib/apiFetch";
+import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
+import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import {
   getTurnoDateTime,
   unwrapAppointments,
@@ -180,7 +180,7 @@ const Home = () => {
     };
   };
 
-  useEffect(() => {
+useEffect(() => {
     const loadNextTurno = async () => {
       if (!user?.codUsuario) {
         setNextTurno(null);
@@ -234,6 +234,7 @@ const Home = () => {
     return abortNextTurnoAbort;
   }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
 
+
   useEffect(() => {
     const loadLoyaltyProgress = async () => {
       if (!user?.codUsuario) {
@@ -277,30 +278,11 @@ const Home = () => {
   const currentDiscount = loyaltyProgress?.currentDiscount ?? null;
 
   const remainingTurns = loyaltyProgress?.turnsUntilNextDiscount ?? null;
-  const discountTurnsRequired = (() => {
-    if (typeof loyaltyProgress?.discountCycle !== "number") return null;
-    return Math.max(loyaltyProgress.discountCycle - 1, 0);
-  })();
-  const discountTurnsCompleted = (() => {
-    if (discountTurnsRequired === null || remainingTurns === null) return null;
-    return Math.min(
-      Math.max(discountTurnsRequired - remainingTurns, 0),
-      discountTurnsRequired,
-    );
-  })();
-  const discountProgressPercent = (() => {
-    if (
-      discountTurnsRequired !== null &&
-      discountTurnsRequired > 0 &&
-      discountTurnsCompleted !== null
-    ) {
-      const pct = Math.round(
-        (discountTurnsCompleted / discountTurnsRequired) * 100,
-      );
-      return Number.isFinite(pct) ? pct : null;
-    }
-    return null;
-  })();
+  const discountTurnsRequired = loyaltyProgress?.discountTurnsRequired ?? null;
+  const discountTurnsCompleted = loyaltyProgress?.discountTurnsCompleted ?? null;
+  const discountProgressPercent = loyaltyProgress?.discountProgress != null
+    ? Math.round(loyaltyProgress.discountProgress * 100)
+    : null;
 
   const isInitialCategory =
     loyaltyProgress?.currentCategory?.trim().toLowerCase() === "inicial";

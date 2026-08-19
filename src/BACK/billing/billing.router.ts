@@ -12,6 +12,7 @@ import {
   CreateVoucherSchema,
 } from "../Schemas/billingSchema";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { csrfProtection } from "../middleware/csrf";
 import { requireRole } from "../middleware/roleMiddleware";
 
 const router: Router = Router();
@@ -40,6 +41,7 @@ const codTurnoParamSchema = z.object({ codTurno: z.string().min(1) });
 router.post(
   "/comprobante",
   authMiddleware,
+  csrfProtection,
   requireRole("barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -51,6 +53,7 @@ router.post(
 router.post(
   "/facturar-turno",
   authMiddleware,
+  csrfProtection,
   requireRole("barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -133,7 +136,7 @@ router.get(
 router.get(
   "/datos-turno/:codTurno",
   authMiddleware,
-  requireRole("barber", "admin", "client"),
+  requireRole("client", "barber", "admin"),
   userLimiter,
   validateRequest({ params: codTurnoParamSchema }),
   controller.getBillingData,

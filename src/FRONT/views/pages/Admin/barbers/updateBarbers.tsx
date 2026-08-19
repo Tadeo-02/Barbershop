@@ -148,7 +148,7 @@ const UpdateBarber: React.FC = () => {
       try {
         const pendingCount = await fetchPendingAppointmentsCount(
           "barber",
-          codUsuario,
+          codUsuario!,
         );
 
         if (pendingCount > 0) {

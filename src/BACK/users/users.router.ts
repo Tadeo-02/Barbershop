@@ -6,7 +6,6 @@ import {
   authLimiter,
   sensitiveLimiter,
   userModificationLimiter,
-  userSensitiveLimiter,
   userLimiter,
 } from "../middleware/rateLimiter";
 import {
@@ -24,6 +23,7 @@ import {
 } from "../Schemas/usersSchema";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { requireRole } from "../middleware/roleMiddleware";
+import { csrfProtection } from "../middleware/csrf";
 
 const router: Router = Router();
 
@@ -61,13 +61,19 @@ const requireAdminForStaffUser: RequestHandler = (req, res, next) => {
     return;
   }
 
-  authMiddleware(req, res, (authError?: unknown) => {
-    if (authError) {
-      next(authError);
+  csrfProtection(req, res, (csrfError?: unknown) => {
+    if (csrfError || res.headersSent) {
       return;
     }
 
-    requireRole("admin")(req, res, next);
+    authMiddleware(req, res, (authError?: unknown) => {
+      if (authError) {
+        next(authError);
+        return;
+      }
+
+      requireRole("admin")(req, res, next);
+    });
   });
 };
 
@@ -83,6 +89,9 @@ router.post(
   validateRequest({ body: loginRequestSchema }),
   controller.login,
 );
+
+// Logout endpoint - clears auth and CSRF cookies
+router.post("/logout", controller.logout);
 
 // Email verification and password reset endpoints - IP-based limiting
 router.post(
@@ -186,6 +195,7 @@ router.get(
 router.patch(
   "/:codUsuario/deactivate",
   authMiddleware,
+  csrfProtection,
   requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -195,25 +205,12 @@ router.patch(
 router.patch(
   "/:codUsuario/reactivate",
   authMiddleware,
+  csrfProtection,
   requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
   validateRequest({ params: codUsuarioParamSchema }),
   controller.reactivate,
-);
-
-// Security question update - sensitive operation for authenticated users
-router.patch(
-  "/:codUsuario/security-question",
-  authMiddleware,
-  requireRole("client", "barber", "admin"),
-  userSensitiveLimiter,
-  strictDeduplication,
-  validateRequest({
-    params: codUsuarioParamSchema,
-    body: securityQuestionBodySchema,
-  }),
-  controller.updateSecurityQuestion,
 );
 
 // apply base routes (GET, POST, PUT, DELETE genéricas)
@@ -230,6 +227,7 @@ const baseRouter = createRouter(controller, {
     create: [validateRequest({ body: UserSchema })],
     update: [
       authMiddleware,
+      csrfProtection,
       requireRole("admin"),
       validateRequest({
         params: codUsuarioParamSchema,
@@ -238,6 +236,7 @@ const baseRouter = createRouter(controller, {
     ],
     delete: [
       authMiddleware,
+      csrfProtection,
       requireRole("admin"),
       validateRequest({ params: codUsuarioParamSchema }),
     ],

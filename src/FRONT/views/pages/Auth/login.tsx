@@ -4,9 +4,12 @@ import { PASSWORD_MAX_LENGTH } from "../../lib/passwordConstants.ts";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../components/user/AuthContext.tsx";
 import { useUserRedirect } from "../../components/useUserRedirect.ts";
+import { deriveRole } from "../../lib/roles.ts";
 import toast from "react-hot-toast";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
+
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -18,8 +21,9 @@ function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/login", {
+      const response = await fetch(`${API_URL}/usuarios/login`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, contraseña }),
       });
@@ -29,17 +33,17 @@ function Login() {
         toast.error(parsed.message);
         return;
       }
-
-        // use context to handle login
-        // login.tsx — this is the only thing that changes inside handleSubmit
-        if (data.user && data.token) {
-          // verify that the token arrived
-          login(data.user, data.token); // <-- before: login(data.user)
+      if (response.ok) {
+        if (data.user) {
+          const role = deriveRole(data.user.cuil);
+          login(data.user, role);
           redirectUser(data.user, data.message || "Login exitoso");
         } else {
-          console.log("Login failed, server response:", parsed.raw);
-          toast.error(parsed.message || "Error de login");
+          toast.error("Datos de usuario no encontrados");
         }
+      } else {
+        toast.error(data?.message || "Error de login");
+      }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       if (handleAbortOrConnectionError(error, undefined, "Error de conexión")) {

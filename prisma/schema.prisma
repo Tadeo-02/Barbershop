@@ -74,26 +74,24 @@ model tipos_corte {
 }
 
 model usuarios {
-  codUsuario                         String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  dni                                String              @db.VarChar(8)
-  cuil                               String?             @db.VarChar(13)
-  codSucursal                        String?             @db.VarChar(36)
-  nombre                             String              @db.VarChar(50)
-  apellido                           String              @db.VarChar(50)
-  telefono                           String              @db.VarChar(20)
-  email                              String              @unique(map: "email") @db.VarChar(50)
-  contrase_a                         String              @map("contraseña") @db.VarChar(60)
-  preguntaSeguridad                  String?             @db.VarChar(255)
-  respuestaSeguridad                 String?             @db.VarChar(255)
-  activo                             Boolean             @default(true)
-  emailVerificado                    Boolean             @default(true)
+  codUsuario                         String                      @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  dni                                String                      @db.VarChar(8)
+  cuil                               String?                     @db.VarChar(13)
+  codSucursal                        String?                     @db.VarChar(36)
+  nombre                             String                      @db.VarChar(50)
+  apellido                           String                      @db.VarChar(50)
+  telefono                           String                      @db.VarChar(20)
+  email                              String                      @unique(map: "email") @db.VarChar(50)
+  contrase_a                         String                      @map("contraseña") @db.VarChar(60)
+  activo                             Boolean                     @default(true)
+  emailVerificado                    Boolean                     @default(true)
   bloqueos_barbero                   bloqueos_barbero[]
   categoria_vigente                  categoria_vigente[]
   email_verification_tokens          email_verification_tokens[]
   password_reset_tokens              password_reset_tokens[]
-  turnos_turnos_codBarberoTousuarios Turno[]             @relation("turnos_codBarberoTousuarios")
-  turnos_turnos_codClienteTousuarios Turno[]             @relation("turnos_codClienteTousuarios")
-  sucursales                         sucursales?         @relation(fields: [codSucursal], references: [codSucursal], onDelete: Restrict, onUpdate: Restrict, map: "fk_barbero_sucursal")
+  turnos_turnos_codBarberoTousuarios Turno[]                     @relation("turnos_codBarberoTousuarios")
+  turnos_turnos_codClienteTousuarios Turno[]                     @relation("turnos_codClienteTousuarios")
+  sucursales                         sucursales?                 @relation(fields: [codSucursal], references: [codSucursal], onDelete: Restrict, onUpdate: Restrict, map: "fk_barbero_sucursal")
 
   @@index([codSucursal], map: "codSucursal")
 }

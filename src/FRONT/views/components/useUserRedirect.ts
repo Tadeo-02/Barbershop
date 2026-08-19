@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { deriveRole } from "../lib/roles";
 
 type RedirectUser = {
   cuil: string | null;
@@ -12,8 +13,7 @@ export const useUserRedirect = () => {
 
   const redirectUser = React.useCallback(
     (user: RedirectUser, message?: string) => {
-      const userType =
-        user.cuil === "1" ? "admin" : user.cuil ? "barber" : "client";
+      const userType = deriveRole(user.cuil);
       const target =
         userType === "admin"
           ? "/Admin/HomePageAdmin"

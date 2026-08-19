@@ -12,6 +12,7 @@ import {
   standardDeduplication,
 } from "../middleware/deduplication";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { csrfProtection } from "../middleware/csrf";
 import { requireRole } from "../middleware/roleMiddleware";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
@@ -42,13 +43,14 @@ const checkoutBodySchema = z.object({
 const updateAppointmentBodySchema = z.object({
   fechaTurno: z.string().min(1),
   horaDesde: z.string().min(1),
-  horaHasta: z.string().min(1),
+  horaHasta: z.string().min(1).optional(),
 });
 
 
 router.post(
   "/",
   authMiddleware,
+  csrfProtection,
   requireRole("client", "admin"), 
   userModificationLimiter,
   strictDeduplication,
@@ -73,6 +75,7 @@ const baseRouter = createRouter(controller, {
     ],
     create: [
       authMiddleware,
+      csrfProtection,
       requireRole("client", "admin"),
       userModificationLimiter,
       strictDeduplication,
@@ -80,6 +83,7 @@ const baseRouter = createRouter(controller, {
     ],
     update: [
       authMiddleware,
+      csrfProtection,
       requireRole("barber", "admin"),
       userModificationLimiter,
       standardDeduplication,
@@ -90,6 +94,7 @@ const baseRouter = createRouter(controller, {
     ],
     delete: [
       authMiddleware,
+      csrfProtection,
       requireRole("admin"), // only admin can delete physically
       userModificationLimiter,
       standardDeduplication,
@@ -112,11 +117,21 @@ router.get(
 );
 
 // ─── CUSTOMER QUERIES ────────────────────────────────────────────────────────
-// A customer can only view THEIR appointments — ownership validation is handled in the controller.
+// Next appointment: must be defined BEFORE /user/:codUsuario to avoid route conflict
+router.get(
+  "/user/:codUsuario/next",
+  authMiddleware,
+  requireRole("client", "barber", "admin"),
+  userLimiter,
+  validateRequest({ params: userParamsSchema }),
+  controller.findNextByUserId,
+);
+
+// A user can only view THEIR appointments — ownership validation is handled in the controller.
 router.get(
   "/user/:codUsuario",
   authMiddleware,
-  requireRole("client", "admin", "barber"),
+  requireRole("client", "barber", "admin"),
   userLimiter,
   validateRequest({ params: userParamsSchema }),
   controller.findByUserId,
@@ -165,6 +180,7 @@ router.get(
 router.put(
   "/:codTurno/cancel",
   authMiddleware,
+  csrfProtection,
   requireRole("client", "barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -176,6 +192,7 @@ router.put(
 router.put(
   "/:codTurno/checkout",
   authMiddleware,
+  csrfProtection,
   requireRole("barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -190,6 +207,7 @@ router.put(
 router.put(
   "/:codTurno/update",
   authMiddleware,
+  csrfProtection,
   requireRole("client", "barber", "admin"),
   userModificationLimiter,
   standardDeduplication,
@@ -204,6 +222,7 @@ router.put(
 router.put(
   "/:codTurno/no-show",
   authMiddleware,
+  csrfProtection,
   requireRole("barber", "admin"),
   userModificationLimiter,
   standardDeduplication,

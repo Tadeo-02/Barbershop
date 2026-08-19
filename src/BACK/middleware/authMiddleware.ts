@@ -1,11 +1,12 @@
-// middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import type { Rol } from "../lib/roles";
+import { AUTH_COOKIE } from "../lib/cookieConfig";
 
 interface JwtPayload {
   codUsuario: string;
   codSucursal: string | null;
-  rol: "admin" | "barber" | "client";
+  rol: Rol;
 }
 
 export function authMiddleware(
@@ -13,16 +14,26 @@ export function authMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  const authHeader = req.headers.authorization;
+  let token: string | undefined;
 
-  if (!authHeader?.startsWith("Bearer ")) {
+  const cookieToken = req.cookies?.[AUTH_COOKIE] as string | undefined;
+  if (cookieToken) {
+    token = cookieToken;
+  } else {
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    }
+  }
+
+  if (!token) {
     return res.status(401).json({ message: "Token requerido" });
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    const payload = jwt.verify(token, process.env.JWT_SECRET!, {
+      algorithms: ["HS256"],
+    }) as JwtPayload;
     req.user = payload;
     next();
   } catch {

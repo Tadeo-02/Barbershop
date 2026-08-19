@@ -1,5 +1,4 @@
-// lib/apiFetch.ts
-import { clearAuthStorage, getStoredAuthToken } from "./authStorage";
+import { clearAuthStorage } from "./authStorage";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -7,13 +6,17 @@ export async function apiFetch(
   path: string,
   options: RequestInit = {},
 ): Promise<Response> {
-  const token = getStoredAuthToken();
+  const csrfToken = document.cookie
+    .split("; ")
+    .find((c) => c.startsWith("csrf_token="))
+    ?.split("=")[1];
 
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
       ...options.headers,
     },
   });

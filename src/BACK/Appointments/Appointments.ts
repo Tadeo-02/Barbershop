@@ -144,7 +144,7 @@ export const store = async (
   codBarbero: string,
   fechaTurno: string,
   horaDesde: string,
-  horaHasta: string,
+  horaHasta: string | undefined,
   estado: string,
 ) => {
   try {
@@ -154,9 +154,18 @@ export const store = async (
       codBarbero: sanitizeInput(codBarbero),
       fechaTurno: sanitizeInput(fechaTurno),
       horaDesde: sanitizeInput(horaDesde),
-      horaHasta: sanitizeInput(horaHasta),
+      horaHasta: horaHasta ? sanitizeInput(horaHasta) : "",
       estado: sanitizeInput(estado),
     };
+
+    // Auto-calculate horaHasta (+30 min) when not provided
+    if (!sanitizedData.horaHasta) {
+      const [h, m] = sanitizedData.horaDesde.split(":").map(Number);
+      const totalMin = h * 60 + m + 30;
+      const newH = Math.floor(totalMin / 60);
+      const newM = totalMin % 60;
+      sanitizedData.horaHasta = `${newH.toString().padStart(2, "0")}:${newM.toString().padStart(2, "0")}`;
+    }
 
     // validate with zod - omit codTurno for creation
     const validatedData = parseValidatedInput(
@@ -170,6 +179,7 @@ export const store = async (
     const horaDesdeDate = new Date(
       `1970-01-01T${sanitizedData.horaDesde}:00.000Z`,
     );
+
     const horaHastaDate = new Date(
       `1970-01-01T${sanitizedData.horaHasta}:00.000Z`,
     );
@@ -304,6 +314,89 @@ export const findById = async (codTurno: string) => {
       error instanceof Error ? error.message : "Unknown error",
     );
     throw new DatabaseError("Error al buscar turno");
+  }
+};
+
+export const findNextByUserId = async (codUsuario: string) => {
+  try {
+    const sanitizedCodUsuario = sanitizeInput(codUsuario);
+    const now = new Date();
+
+    const turno = await prisma.turno.findFirst({
+      where: {
+        AND: [
+          {
+            OR: [
+              { codCliente: sanitizedCodUsuario },
+              { codBarbero: sanitizedCodUsuario },
+            ],
+          },
+          { estado: "Programado" },
+          {
+            OR: [
+              { fechaTurno: { gt: now } },
+              {
+                fechaTurno: { equals: now },
+                horaDesde: { gte: now },
+              },
+            ],
+          },
+        ],
+      },
+      include: {
+        usuarios_turnos_codBarberoTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            email: true,
+            codSucursal: true,
+            sucursales: {
+              select: {
+                codSucursal: true,
+                nombre: true,
+                calle: true,
+                altura: true,
+              },
+            },
+          },
+        },
+        usuarios_turnos_codClienteTousuarios: {
+          select: {
+            codUsuario: true,
+            nombre: true,
+            apellido: true,
+            telefono: true,
+            email: true,
+          },
+        },
+        tipos_corte: {
+          select: {
+            codCorte: true,
+            nombreCorte: true,
+            valorBase: true,
+          },
+        },
+      },
+      orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
+    });
+
+    console.log(
+      `Found next turno for user ${sanitizedCodUsuario}: ${turno?.codTurno ?? "none"}`,
+    );
+
+    return turno ?? null;
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    console.error(
+      "Error finding next turno:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    throw new DatabaseError("Error al buscar próximo turno");
   }
 };
 
@@ -779,18 +872,28 @@ export const updateAppointment = async (
   codTurno: string,
   fechaTurno: string,
   horaDesde: string,
-  horaHasta: string,
+  horaHasta?: string,
 ) => {
   try {
     // sanitize and validate
     const sanitizedCodTurno = sanitizeInput(codTurno);
     const sanitizedFechaTurno = sanitizeInput(fechaTurno);
     const sanitizedHoraDesde = sanitizeInput(horaDesde);
-    const sanitizedHoraHasta = sanitizeInput(horaHasta);
+    let sanitizedHoraHasta = horaHasta ? sanitizeInput(horaHasta) : "";
+
+    // Auto-calculate horaHasta (+30 min) when not provided
+    if (!sanitizedHoraHasta) {
+      const [h, m] = sanitizedHoraDesde.split(":").map(Number);
+      const totalMin = h * 60 + m + 30;
+      const newH = Math.floor(totalMin / 60);
+      const newM = totalMin % 60;
+      sanitizedHoraHasta = `${newH.toString().padStart(2, "0")}:${newM.toString().padStart(2, "0")}`;
+    }
 
     // convert strings to Date objects for Prisma
     const fechaDate = new Date(sanitizedFechaTurno);
     const horaDesdeDate = new Date(`1970-01-01T${sanitizedHoraDesde}:00.000Z`);
+
     const horaHastaDate = new Date(`1970-01-01T${sanitizedHoraHasta}:00.000Z`);
 
     console.log("🔍 Buscando turno para actualizar:", sanitizedCodTurno);

@@ -77,7 +77,11 @@ function App() {
                   </div>
                 }
               />
-              <Route path="/Client/Home" element={<Home />}></Route>
+              <Route path="/Client/Home" element={
+                <ProtectedRoute allowedRoles={["client"]}>
+                  <Home />
+                </ProtectedRoute>
+              }></Route>
               {/* Rutas del cliente para navegación por sucursales y barberos */}
 
               <Route
@@ -95,15 +99,18 @@ function App() {
               />
               <Route
                 path="/client/appointments"
-                element={<ClientAppointments />}
+                element={
+                  <ProtectedRoute allowedRoles={["client"]}>
+                    <ClientAppointments />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/client/appointments/recibo/:codTurno"
                 element={
-                  <ReceiptViewer
-                    backRoute="/client/appointments"
-                    backLabel="Volver a mis turnos"
-                  />
+                  <ProtectedRoute allowedRoles={["client"]}>
+                    <ReceiptViewer />
+                  </ProtectedRoute>
                 }
               />
               <Route path="/branches" element={<Branches />} />
@@ -177,7 +184,11 @@ function App() {
                 }
               />
 
-              <Route path="/client/profile" element={<ProfilePage />} />
+              <Route path="/client/profile" element={
+                <ProtectedRoute allowedRoles={["client"]}>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
               {/* Rutas de administración protegidas */}
               <Route //! ADMIN
                 path="/Admin/HomePageAdmin"
