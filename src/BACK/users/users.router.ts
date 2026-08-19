@@ -24,6 +24,7 @@ import {
 import { authMiddleware } from "../middleware/authMiddleware";
 import { requireRole } from "../middleware/roleMiddleware";
 import { csrfProtection } from "../middleware/csrf";
+import { CSRF_COOKIE } from "../lib/cookieConfig";
 
 const router: Router = Router();
 
@@ -179,6 +180,7 @@ router.get(
       res.json({
         success: true,
         data: userWithCategory,
+        csrfToken: req.cookies?.[CSRF_COOKIE] ?? null,
       });
     } catch (error) {
       console.error("Error getting user profile with category:", error);

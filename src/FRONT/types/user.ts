@@ -42,3 +42,9 @@ export interface UserProfile extends User {
     fechaInicio: string;
   } | null;
 }
+
+export interface ProfileHydrationResponse {
+  success: boolean;
+  data: UserProfile;
+  csrfToken?: string;
+}

@@ -228,3 +228,19 @@ The pattern worked in local development because both frontend and backend run on
 - `src/FRONT/views/lib/apiFetch.ts`
 - `src/FRONT/views/pages/Auth/login.tsx`
 - `src/FRONT/views/components/user/AuthContext.tsx`
+
+---
+
+### FIX-G: CSRF token loss on page refresh / new tab (HIGH)
+
+**Problem:** FIX-F stored the CSRF token in a module-level JS variable. This variable is lost on page refresh, tab close/reopen, or hard navigation. The `access_token` HttpOnly cookie survives the refresh, so `AuthContext.tsx` successfully re-hydrates the session via `GET /usuarios/profiles/:codUsuario`. The user appears logged in with no error, but the in-memory `csrfToken` is `null` — the next mutation fails with `403 CSRF token missing`.
+
+**Changes:**
+- `users.router.ts`: The `GET /usuarios/profiles/:codUsuario` endpoint now reads the existing `csrf_token` cookie (already set, `httpOnly: false`) via `req.cookies` and returns it in the response body as `csrfToken`. No token regeneration — just echoes the existing value to keep the double-submit comparison valid.
+- `AuthContext.tsx`: In `loadProfile()`, extracts `csrfToken` from the hydration response and calls `setCsrfToken()` to populate the in-memory variable.
+- `types/user.ts`: Added `ProfileHydrationResponse` interface (separate from `UserProfile` to keep auth hydration concerns out of the canonical user type used by 7+ other callers).
+
+**Files changed:**
+- `src/BACK/users/users.router.ts`
+- `src/FRONT/views/components/user/AuthContext.tsx`
+- `src/FRONT/types/user.ts`
