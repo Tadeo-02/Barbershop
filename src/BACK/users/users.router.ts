@@ -90,6 +90,11 @@ router.post(
 // Logout endpoint - clears auth and CSRF cookies
 router.post("/logout", controller.logout);
 
+// Refresh endpoint - exchange valid refresh token for new access + refresh tokens
+// No authMiddleware or csrfProtection — refresh token possession IS the auth proof.
+// Rate-limited to prevent brute-force.
+router.post("/refresh", authLimiter, controller.refresh);
+
 // Email verification and password reset endpoints - IP-based limiting
 router.post(
   "/email-verification/request",

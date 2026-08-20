@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 import { billAppointment } from "../billing/Billing";
 import { getDiscountCycle, applyDiscountIfEligible } from "../lib/discount";
+import { revokeRefreshTokens } from "../users/Users";
 import { assertEntityExists } from "../lib/entityChecks";
 import { parseValidatedInput } from "../lib/zodHelpers";
 import logger from "../lib/logger";
@@ -1276,7 +1277,13 @@ export const cancelAppointment = async (codTurno: string) => {
                 },
               });
 
-              logger.info("Client demoted category");
+              if (nuevaCategoriaNombre === "Vetado") {
+                await revokeRefreshTokens(existingTurno.codCliente);
+              }
+              logger.info(
+                { codCliente: existingTurno.codCliente, categoriaActual, nuevaCategoriaNombre },
+                "Client demoted category",
+              ); 
             }
           }
         }
@@ -1418,7 +1425,12 @@ export const markAsNoShow = async (codTurno: string) => {
           },
         });
 
-        logger.info("Category 'Vetado' assigned to client");
+        await revokeRefreshTokens(updatedTurno.codCliente);
+
+        logger.info(
+          { codCliente: updatedTurno.codCliente },
+          "Category 'Vetado' assigned to client",
+        );
       }
     }
 

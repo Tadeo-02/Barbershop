@@ -24,8 +24,8 @@
   - [x] CSRF protection implementado (double-submit cookie pattern).
   - [x] JWT signing algorithm pinned a HS256 explícitamente.
   - [x] Startup check que falla rápido si falta JWT_SECRET.
-  - Pendiente: refresh tokens con revocación server-side.
-  - Pendiente: invalidación de JWT al desactivar/vetar usuarios.
+  - [x] Refresh tokens con revocación server-side.
+  - [x] Invalidación de JWT al desactivar/vetar usuarios.
   - [x] **Pregunta de seguridad**: no debe tratarse como un segundo password sin verificación adicional.
   - [x] Implementar envío de email con token para validar que el usuario controla ese email y usar recuperación por token.
   - [x] Documentar/comunicar al usuario que la pregunta de seguridad no reemplaza un password fuerte, para evitar que la subestime.

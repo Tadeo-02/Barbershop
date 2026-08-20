@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { prisma } from "../base/Base";
 import type { Rol } from "../lib/roles";
 import { AUTH_COOKIE } from "../lib/cookieConfig";
 
@@ -24,8 +25,26 @@ export function authMiddleware(
     const payload = jwt.verify(token, process.env.JWT_SECRET!, {
       algorithms: ["HS256"],
     }) as JwtPayload;
-    req.user = payload;
-    next();
+
+    prisma.usuarios
+      .findUnique({
+        where: { codUsuario: payload.codUsuario },
+        select: { activo: true },
+      })
+      .then((user) => {
+        if (!user || !user.activo) {
+          return res
+            .status(401)
+            .json({ message: "Token inválido o expirado" });
+        }
+        req.user = payload;
+        next();
+      })
+      .catch(() => {
+        return res
+          .status(500)
+          .json({ message: "Error interno del servidor" });
+      });
   } catch {
     return res.status(401).json({ message: "Token inválido o expirado" });
   }

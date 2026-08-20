@@ -1103,3 +1103,70 @@ export const resetPasswordByToken = async (
     }),
   ]);
 };
+
+// ========================
+// Refresh Token Management
+// ========================
+
+const REFRESH_TOKEN_TTL_DAYS = parseInt(
+  process.env.REFRESH_TOKEN_TTL_DAYS || "7",
+  10,
+);
+
+export const createRefreshToken = async (
+  codUsuario: string,
+): Promise<{ rawToken: string; expiresAt: Date }> => {
+  const rawToken = createRawToken();
+  const tokenHash = hashToken(rawToken);
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_TTL_DAYS);
+
+  await prisma.refresh_tokens.create({
+    data: {
+      userId: codUsuario,
+      tokenHash,
+      expiresAt,
+    },
+  });
+
+  return { rawToken, expiresAt };
+};
+
+export const validateRefreshToken = async (
+  rawToken: string,
+): Promise<{ codUsuario: string } | null> => {
+  const tokenHash = hashToken(rawToken);
+  const now = new Date();
+
+  const row = await prisma.refresh_tokens.findFirst({
+    where: {
+      tokenHash,
+      revokedAt: null,
+      expiresAt: { gt: now },
+    },
+    select: { userId: true },
+  });
+
+  return row ? { codUsuario: row.userId } : null;
+};
+
+export const revokeRefreshTokens = async (codUsuario: string): Promise<void> => {
+  await prisma.refresh_tokens.updateMany({
+    where: {
+      userId: codUsuario,
+      revokedAt: null,
+    },
+    data: {
+      revokedAt: new Date(),
+    },
+  });
+};
+
+export const cleanupRefreshTokens = async (): Promise<void> => {
+  const now = new Date();
+  await prisma.refresh_tokens.deleteMany({
+    where: {
+      OR: [{ expiresAt: { lt: now } }, { revokedAt: { not: null } }],
+    },
+  });
+};
