@@ -8,6 +8,7 @@ import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { apiFetch } from "../../../lib/apiFetch";
 import type { Barbero } from "../../../../types/barber";
 import type { Sucursal } from "../../../../types/branch";
+import logger from "../../../lib/logger";
 
 const IndexBarbers = () => {
   const [barberos, setBarberos] = useState<Barbero[]>([]);
@@ -33,11 +34,11 @@ const IndexBarbers = () => {
             // parsed data comes from backend and doesn't include contraseña (password)
             setBarberos(parsed.data);
           } else {
-            console.error(
+            logger.error(
               "Barberos invalidos - Schema validation error:",
               parsed.error,
             );
-            console.error(
+            logger.error(
               "Error details:",
               JSON.stringify(parsed.error, null, 2),
             );
@@ -64,7 +65,7 @@ const IndexBarbers = () => {
             );
             setSucursales(sucursalesMap);
           } else {
-            console.error("Sucursales invalidas:", parsedSuc.error);
+            logger.error("Sucursales invalidas:", parsedSuc.error);
             toast.error("Datos de sucursales inválidos");
             setSucursales({});
           }
@@ -72,7 +73,7 @@ const IndexBarbers = () => {
           toast.error("Error al cargar las sucursales");
         }
       } catch (error) {
-        console.error("Error al obtener datos:", error);
+        logger.error("Error al obtener datos:", error);
         toast.error("Error al cargar los datos");
       } finally {
         setLoading(false);

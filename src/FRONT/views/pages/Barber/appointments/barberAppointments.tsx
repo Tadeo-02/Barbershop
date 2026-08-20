@@ -17,6 +17,7 @@ import { apiFetch } from "../../../lib/apiFetch.ts";
 import { getResponseMessage, readJsonSafely, unwrapArray } from "../../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../../lib/authUtils";
+import logger from "../../lib/logger";
 
 const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -96,8 +97,8 @@ const BarberAppointments: React.FC = () => {
           signal: controller.signal,
         });
 
-        console.log("Response status:", res.status);
-        console.log("Response headers:", res.headers.get("content-type"));
+        logger.debug("Response status:", res.status);
+        logger.debug("Response headers:", res.headers.get("content-type"));
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -106,14 +107,14 @@ const BarberAppointments: React.FC = () => {
         const data = await readJsonSafely(res);
         const turnosArray = unwrapArray<AppointmentFull>(data);
 
-        console.log("Turnos array procesado:", turnosArray);
+        logger.debug("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
       } catch (error: unknown) {
         if (handleAbortOrConnectionError(error, undefined, "Error de conexión con el servidor")) {
-          console.log("Fetch aborted for turnos");
+          logger.debug("Fetch aborted for turnos");
           return;
         }
-        console.error("Error fetching appointments:", error);
+        logger.error("Error fetching appointments:", error);
         setTurnos([]);
       } finally {
         setIsLoadingTurnos(false);
@@ -200,7 +201,7 @@ const BarberAppointments: React.FC = () => {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
         const errorData = await readJsonSafely(response);
-        console.error("Error response:", errorData);
+        logger.error("Error response:", errorData);
         toast.error(
           getResponseMessage(errorData, "Error al cancelar el turno") ??
             "Error al cancelar el turno",
@@ -209,10 +210,10 @@ const BarberAppointments: React.FC = () => {
       }
     } catch (error: unknown) {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
-        console.log("Cancel request aborted");
+        logger.debug("Cancel request aborted");
         return;
       }
-      console.error("Error en la solicitud:", error);
+      logger.error("Error en la solicitud:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -295,11 +296,11 @@ const BarberAppointments: React.FC = () => {
       }
     } catch (error: unknown) {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
-        console.log("Update request aborted");
+        logger.debug("Update request aborted");
         return;
       }
 
-      console.error("Error modificando turno:", error);
+      logger.error("Error modificando turno:", error);
     }
   };
 

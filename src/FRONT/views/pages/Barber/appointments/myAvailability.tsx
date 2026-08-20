@@ -16,6 +16,7 @@ import {
   useAbortController,
 } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch";
+import logger from "../../../lib/logger";
 import { getResponseMessage, readJsonSafely, unwrapArray } from "../../../lib/apiResponse";
 import type { Availability } from "../../../../types/availability";
 
@@ -72,7 +73,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
         setAvailability(filtered);
       } catch (error: unknown) {
         if (isAbortError(error)) return;
-        console.error("Error fetching availability:", error);
+        logger.error("Error fetching availability:", error);
         setAvailability([]);
       } finally {
         setIsLoading(false);
@@ -163,7 +164,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
         return;
       }
 
-      console.error("Error canceling availability:", error);
+      logger.error("Error canceling availability:", error);
       toast.error("Error de conexion", { id: toastId });
     } finally {
       setIsSubmitting(false);
@@ -268,7 +269,7 @@ const MyAvailability: React.FC<MyAvailabilityProps> = ({ refreshKey = 0 }) => {
         return;
       }
 
-      console.error("Error updating availability:", error);
+      logger.error("Error updating availability:", error);
       toast.error("Error de conexion", { id: toastId });
     } finally {
       setIsSubmitting(false);

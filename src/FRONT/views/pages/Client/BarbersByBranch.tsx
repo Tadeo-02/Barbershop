@@ -10,6 +10,7 @@ import { parseBackendResponse } from "../../lib/backendResponse";
 import type { Barbero } from "../../../types/barber";
 import type { Sucursal } from "../../../types/branch";
 import { formatDateSafe } from "../../utils/dateUtils";
+import logger from "../../lib/logger";
 
 const BarbersByBranch = () => {
   const params = useParams();
@@ -40,8 +41,8 @@ const BarbersByBranch = () => {
       : `/usuarios/branch/${codSucursal}`;
     const sucursalEndpoint = `/sucursales/${codSucursal}`;
 
-      console.log("Fetching barbers from endpoint:", barberosEndpoint);
-      console.log("Fetching sucursal from endpoint:", sucursalEndpoint);
+      logger.debug("Fetching barbers from endpoint:", barberosEndpoint);
+      logger.debug("Fetching sucursal from endpoint:", sucursalEndpoint);
 
       try {
         const [resBarberos, resSucursal] = await Promise.all([
@@ -60,7 +61,7 @@ const BarbersByBranch = () => {
           !contentTypeBarberos.includes("application/json")
         ) {
           const text = await resBarberos.text();
-          console.error(
+          logger.error(
             "Expected JSON for barberos but received:",
             text.substring(0, 100),
           );
@@ -75,7 +76,7 @@ const BarbersByBranch = () => {
           !contentTypeSucursal.includes("application/json")
         ) {
           const text = await resSucursal.text();
-          console.error(
+          logger.error(
             "Expected JSON for sucursal but received:",
             text.substring(0, 100),
           );
@@ -94,7 +95,7 @@ const BarbersByBranch = () => {
         const sucObj = Array.isArray(suc) ? suc[0] || null : suc || null;
         setSucursal(sucObj);
       } catch (error) {
-        console.error("Error al obtener datos:", error);
+        logger.error("Error al obtener datos:", error);
         setError(error instanceof Error ? error.message : "Error desconocido");
         setBarberos([]);
         setSucursal(null);
@@ -152,7 +153,7 @@ const BarbersByBranch = () => {
 
     const toastId = toast.loading("Creando Turno...");
     try {
-      console.log("Enviando POST a /turnos con datos:", {
+      logger.debug("Enviando POST a /turnos con datos:", {
         codCliente: user.codUsuario,
         codBarbero: selectedBarber,
         fechaTurno: fechaTurno,
@@ -174,10 +175,10 @@ const BarbersByBranch = () => {
         }),
       });
 
-      console.log("Response status:", response.status);
+      logger.debug("Response status:", response.status);
 
       const parsed = await parseBackendResponse<{ message?: string }>(response);
-      console.log("Respuesta cruda del backend:", parsed.raw);
+      logger.debug("Respuesta cruda del backend:", parsed.raw);
 
       if (!parsed.ok && parsed.message) {
         toast.error(parsed.message, { id: toastId });
@@ -214,7 +215,7 @@ const BarbersByBranch = () => {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
         return;
       }
-      console.error("Error en handleSubmit:", error);
+      logger.error("Error en handleSubmit:", error);
     }
   };
 

@@ -4,6 +4,7 @@ import styles from "./branches.module.css";
 import { useEntityActivation } from "../../../components/Admin/useEntityActivation";
 import { apiFetch } from "../../../lib/apiFetch";
 import type { Sucursal } from "../../../../types/branch";
+import logger from "../../../lib/logger";
 
 const IndexBranches = () => {
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
@@ -16,7 +17,7 @@ const IndexBranches = () => {
         const data = await res.json();
         setSucursales(data);
       } catch (error) {
-        console.error("Error al obtener sucursales:", error);
+        logger.error("Error al obtener sucursales:", error);
       } finally {
         setLoading(false);
       }

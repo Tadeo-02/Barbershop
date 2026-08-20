@@ -10,6 +10,7 @@ import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import { parseBackendResponse } from "../../../lib/backendResponse";
+import logger from "../../../lib/logger";
 
 const UpdateCategorySchema = CategorySchema.omit({
   codCategoria: true,
@@ -73,7 +74,7 @@ const UpdateCategories: React.FC = () => {
         if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
           return;
         }
-        console.error("Error fetching categoria:", err);
+        logger.error("Error fetching categoria:", err);
       }
     };
 
@@ -109,7 +110,7 @@ const UpdateCategories: React.FC = () => {
       if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
         return;
       }
-      console.error("Error updating categoria:", err);
+      logger.error("Error updating categoria:", err);
     }
   };
 

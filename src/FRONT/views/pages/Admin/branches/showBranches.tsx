@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { apiFetch } from "../../../lib/apiFetch";
 import type { Sucursal } from "../../../../types/branch";
 import type { Barbero } from "../../../../types/barber";
+import logger from "../../../lib/logger";
 
 const ShowBranches = () => {
   const { codSucursal } = useParams();
@@ -47,7 +48,7 @@ const ShowBranches = () => {
 
         setBarberos(soloBarberos);
       } catch (err) {
-        console.error("Error al obtener datos de sucursal o barberos:", err);
+        logger.error("Error al obtener datos de sucursal o barberos:", err);
         toast.error("Error al cargar los datos de la sucursal o barberos");
       } finally {
         setLoading(false);

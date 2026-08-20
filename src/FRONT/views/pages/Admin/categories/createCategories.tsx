@@ -11,6 +11,7 @@ import {
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import logger from "../../../lib/logger";
 
 const CreateCategorySchema = CategorySchema.pick({
   nombreCategoria: true,
@@ -68,7 +69,7 @@ const CreateCategories: React.FC = () => {
       if (handleAbortOrConnectionError(err, toastId, "Error de conexión con el servidor")) {
         return;
       }
-      console.error("Error en handleSubmit:", err);
+      logger.error("Error en handleSubmit:", err);
     }
   };
 

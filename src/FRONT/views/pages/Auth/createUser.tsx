@@ -17,6 +17,7 @@ import { apiFetch } from "../../lib/apiFetch.ts";
 import { createResolver } from "../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
+import logger from "../../lib/logger";
 
 //! we use zods schema to validate fields
 // Extend schema for form with password confirmation
@@ -102,7 +103,7 @@ const CreateUser: React.FC = () => {
       if (handleAbortOrConnectionError(error, toastId, "No se pudo conectar con el servidor")) {
         return;
       }
-      console.error("Error en handleSubmit:", error);
+      logger.error("Error en handleSubmit:", error);
     }
   };
 

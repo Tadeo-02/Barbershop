@@ -2,6 +2,7 @@ import toast from "react-hot-toast";
 import { showConfirmActionToast } from "./confirmActionToast";
 import { changeEntityStatus } from "./entityStatus";
 import { fetchPendingAppointmentsCount } from "./pendingAppointments";
+import logger from "../../lib/logger";
 
 type PendingScope = "barber" | "branch";
 type Gender = "masculine" | "feminine";
@@ -56,7 +57,7 @@ export function useEntityActivation({
           return;
         }
       } catch (error) {
-        console.error("Error checking pending appointments:", error);
+        logger.error("Error checking pending appointments:", error);
         toast.error("Error al verificar turnos pendientes", {
           duration: 4000,
         });

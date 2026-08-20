@@ -10,6 +10,7 @@ import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import logger from "../../../lib/logger";
 
 type CreateTypeForm = z.infer<typeof HaircutSchema>;
 
@@ -58,7 +59,7 @@ const CreateTypeOfHaircut: React.FC = () => {
       if (handleAbortOrConnectionError(err, toastId, "Error de conexión con el servidor")) {
         return;
       }
-      console.error("Error en handleSubmit:", err);
+      logger.error("Error en handleSubmit:", err);
     }
   };
 

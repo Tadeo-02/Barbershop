@@ -5,6 +5,7 @@ import { showConfirmActionToast } from "../../../components/Admin/confirmActionT
 import { changeEntityStatus } from "../../../components/Admin/entityStatus";
 import { apiFetch } from "../../../lib/apiFetch";
 import type { Haircut } from "../../../../types/haircut";
+import logger from "../../../lib/logger";
 
 const IndexTypeOfHaircut = () => {
   const [tipoCortes, setTipoCortes] = useState<Haircut[]>([]);
@@ -17,7 +18,7 @@ const IndexTypeOfHaircut = () => {
         const data = await res.json();
         setTipoCortes(data);
       } catch (error) {
-        console.error("Error al obtener tipos de corte:", error);
+        logger.error("Error al obtener tipos de corte:", error);
       } finally {
         setLoading(false);
       }

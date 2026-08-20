@@ -60,4 +60,4 @@ No configuration needed for the frontend.
 ## Files
 
 - Backend logger: `src/BACK/lib/logger.ts`
-- Frontend logger: `src/FRONT/views/lib/logger.ts` (to be created)
+- Frontend logger: `src/FRONT/views/lib/logger.ts`

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "./ProfilePage.module.css";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../lib/apiFetch";
+import logger from "../../lib/logger";
 import type { UserProfile } from "../../../types/user";
 
 const MyProfile = () => {
@@ -21,7 +22,7 @@ const MyProfile = () => {
         );
 
         if (!response.ok) {
-          console.warn(
+          logger.warn(
             "Response not ok, using fallback data",
           );
           setProfile({ ...user, categoriaActual: null });
@@ -38,14 +39,14 @@ const MyProfile = () => {
 
             setProfile(data);
           } else {
-            console.warn(
+            logger.warn(
               "No profile data received, using fallback",
             );
             setProfile({ ...user, categoriaActual: null });
           }
         }
       } catch (error) {
-        console.error("Error al obtener el perfil:", error);
+        logger.error("Error al obtener el perfil:", error);
         setProfile({ ...user, categoriaActual: null });
       } finally {
         setLoading(false);

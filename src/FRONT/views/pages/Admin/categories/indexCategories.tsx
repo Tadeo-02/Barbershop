@@ -7,6 +7,7 @@ import { changeEntityStatus } from "../../../components/Admin/entityStatus";
 import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import type { Category } from "../../../../types/category";
+import logger from "../../../lib/logger";
 
 const CATEGORY_RANK = ["Vetado", "Inicial", "Medium", "Premium"] as const;
 const PROTECTED_CATEGORY_NAMES = ["Inicial"] as const;
@@ -83,7 +84,7 @@ const IndexCategories = () => {
         const data = await res.json();
         setCategorias(data);
       } catch (error) {
-        console.error("Error al obtener categorias:", error);
+        logger.error("Error al obtener categorias:", error);
         toast.error("Error al cargar las categorías", { duration: 2000 });
       } finally {
         setLoading(false);
@@ -123,7 +124,7 @@ const IndexCategories = () => {
 
       showDeleteOptions(context);
     } catch (error) {
-      console.error("Error al obtener clientes de la categoria:", error);
+      logger.error("Error al obtener clientes de la categoria:", error);
       toast.error("No se pudo obtener los clientes de la categoría", {
         duration: 2000,
       });

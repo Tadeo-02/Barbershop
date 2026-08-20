@@ -7,6 +7,7 @@ import type { AvailabilityFormValues } from "../../../components/Barber/Availabi
 import { useAbortController } from "../../../components/shared/useAbortController";
 import { apiFetch } from "../../../lib/apiFetch.ts";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import logger from "../../../lib/logger";
 
 const BarberAvailability: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -60,9 +61,9 @@ const BarberAvailability: React.FC = () => {
       }
 
       if (err instanceof Error) {
-        console.error("Error registrando ausencia:", err.message);
+        logger.error("Error registrando ausencia:", err.message);
       } else {
-        console.error("Error registrando ausencia:", err);
+        logger.error("Error registrando ausencia:", err);
       }
     } finally {
       setIsSubmitting(false);

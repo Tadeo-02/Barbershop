@@ -8,6 +8,7 @@ import { apiFetch } from "../../lib/apiFetch.ts";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../lib/authUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
+import logger from "../../lib/logger";
 import type { Sucursal } from "../../../types/branch";
 import type { Barbero } from "../../../types/barber";
 
@@ -57,7 +58,7 @@ const ScheduleByBranch = () => {
           const contentType = sucursalResponse.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
             const text = await sucursalResponse.text();
-            console.error(
+            logger.error(
               "Expected JSON for sucursal but received:",
               text.substring(0, 100),
             );
@@ -85,7 +86,7 @@ const ScheduleByBranch = () => {
           const contentType = barberoResponse.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
             const text = await barberoResponse.text();
-            console.error(
+            logger.error(
               "Expected JSON for barbero but received:",
               text.substring(0, 200),
             );
@@ -118,7 +119,7 @@ const ScheduleByBranch = () => {
               !sucursalContentType.includes("application/json")
             ) {
               const text = await sucursalFromBarberResponse.text();
-              console.error(
+              logger.error(
                 "Expected JSON for sucursal but received:",
                 text.substring(0, 100),
               );
@@ -134,7 +135,7 @@ const ScheduleByBranch = () => {
           }
         }
       } catch (err) {
-        console.error("Error cargando información de horario:", err);
+        logger.error("Error cargando información de horario:", err);
       } finally {
         setLoading(false);
       }
@@ -178,7 +179,7 @@ const ScheduleByBranch = () => {
     const toastId = toast.loading("Creando Turno...");
 
     try {
-      console.log("Enviando POST a /turnos con datos:", {
+      logger.debug("Enviando POST a /turnos con datos:", {
         codCliente: user.codUsuario,
         codBarbero: codBarbero,
         fechaTurno: selectedFechaTurno,
@@ -200,7 +201,7 @@ const ScheduleByBranch = () => {
         }),
       });
 
-      console.log("Response status:", response.status);
+      logger.debug("Response status:", response.status);
 
       const parsed = await parseBackendResponse<{ message?: string }>(response);
 
@@ -238,7 +239,7 @@ const ScheduleByBranch = () => {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
         return;
       }
-      console.error("Error en handleSubmit:", error);
+      logger.error("Error en handleSubmit:", error);
     }
   };
 

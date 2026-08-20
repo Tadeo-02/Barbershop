@@ -19,6 +19,7 @@ import {
 } from "../../../lib/passwordConstants";
 import { getPasswordMissing } from "../../../lib/passwordRules";
 import { parseBackendResponse } from "../../../lib/backendResponse";
+import logger from "../../../lib/logger";
 import type { Sucursal } from "../../../../types/branch";
 import type { UserResponse } from "../../../../types/user";
 
@@ -87,7 +88,7 @@ const UpdateBarber: React.FC = () => {
         if (handleAbortOrConnectionError(error, undefined, "Error de conexión")) {
           return;
         }
-        console.error("Error fetching sucursales:", error);
+        logger.error("Error fetching sucursales:", error);
       }
     };
 
@@ -134,7 +135,7 @@ const UpdateBarber: React.FC = () => {
         if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
           return;
         }
-        console.error("Fetch error:", error);
+        logger.error("Fetch error:", error);
       }
     };
 
@@ -168,7 +169,7 @@ const UpdateBarber: React.FC = () => {
           return;
         }
       } catch (error) {
-        console.error("Error checking pending appointments:", error);
+        logger.error("Error checking pending appointments:", error);
         toast.error("Error al verificar turnos pendientes");
         return;
       }
@@ -210,7 +211,7 @@ const UpdateBarber: React.FC = () => {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
         return;
       }
-      console.error("Submit error:", error);
+      logger.error("Submit error:", error);
     }
   };
 
