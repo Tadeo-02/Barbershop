@@ -188,10 +188,10 @@ describe("UserSchema — CUIL refinements", () => {
   it("rejects a CUIL with an invalid format", () => {
     const result = UserSchema.safeParse({
       ...validUser,
-      cuil: "20123456781",
+      cuil: "20-12345",
     });
     expect(messages(result)).toContain(
-      "CUIL inválido. Formato requerido: XX-XXXXXXXX-X",
+      "CUIL inválido. Formato requerido: XX-XXXXXXXX-X o 11 dígitos",
     );
   });
 

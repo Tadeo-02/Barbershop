@@ -52,11 +52,11 @@ describe("AppointmentSchema — required fields", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects when horaHasta is missing", () => {
+  it("accepts when horaHasta is missing (auto-calculated in backend)", () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { horaHasta: _, ...rest } = validAppointment;
     const result = AppointmentSchema.safeParse(rest);
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("rejects when estado is missing", () => {

@@ -1107,7 +1107,7 @@ export const checkoutAppointment = async (
     }
 
     return {
-      ...turnoExistente,
+      ...turnoUpdated,
       facturacion,
       facturacionError,
       facturacionErrorCode,

@@ -238,8 +238,6 @@ export const store = async (
 
       logger.info("Client created with initial category assigned");
     }
-    const userType =
-      cuilValue === "1" ? "admin" : cuilValue ? "barber" : "client";
     logger.info("User created successfully");
     return usuario;
   } catch (error) {
