@@ -66,7 +66,7 @@ const UpdateBranches: React.FC = () => {
         if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
           return;
         }
-        console.error("🔍 Debug - Fetch error:", error);
+        console.error("Fetch error:", error);
       }
     };
 
@@ -108,7 +108,7 @@ const UpdateBranches: React.FC = () => {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
         return;
       }
-      console.error("🔍 Debug - Submit error:", error);
+      console.error("Submit error:", error);
     }
   };
 
