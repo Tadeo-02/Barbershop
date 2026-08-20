@@ -1,16 +1,16 @@
 // import { useState } from "react";
 import "./App.css";
-// Componentes Generales
+// General Components
 import Login from "./pages/Auth/login.tsx";
 import CreateUser from "./pages/Auth/createUser.tsx";
 import ResetSecurity from "./pages/Auth/resetSecurity.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { Toaster } from "react-hot-toast"; //libreria toaster para alerts
+import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./components/user/AuthContext.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
-import { AutoRedirect } from "./components/Redirect.tsx"; // puede ser que no haga falta
+import { AutoRedirect } from "./components/Redirect.tsx";
 import LandingPage from "./pages/LandingPage.tsx";
 
 // Client
@@ -61,33 +61,19 @@ function App() {
             <AutoRedirect />
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              {/* Ruta temporal para testing */}
-              <Route
-                path="/test"
-                element={
-                  <div
-                    style={{
-                      padding: "20px",
-                      background: "red",
-                      color: "white",
-                    }}
-                  >
-                    TEST ROUTE WORKING
-                  </div>
-                }
-              />
-              <Route path="/Client/Home" element={
+      
+              <Route path="/client/home" element={
                 <ProtectedRoute allowedRoles={["client"]}>
                   <Home />
                 </ProtectedRoute>
               }></Route>
-              {/* Rutas del cliente para navegación por sucursales y barberos */}
+              {/* client routes to navigation by branches and barbers */}
 
               <Route
                 path="/barbers/:codBarbero/appointments"
                 element={<ScheduleByBranch />}
               />
-              {/* Selección de horario primero */}
+              {/* select schedule first */}
               <Route
                 path="/branches/:codSucursal/schedule"
                 element={<ScheduleByBranch />}
@@ -118,19 +104,15 @@ function App() {
                 element={<BarbersByBranch />}
               />
               <Route
-                path="/branches/:codSucursal/schedule"
-                element={<ScheduleByBranch />}
-              />
-              <Route
                 path="/branches/:codSucursal/schedule/:fechaTurno/:horaDesde/barbers"
                 element={<BarbersByBranch />}
               />
-              {/* Vista de categorias para todos los usuarios (puede definirse para cliente pero da igual)*/}
+              {/* list of categories */}
               <Route
                 path="/categorias/:codCategoria"
                 element={<ShowCategories />}
               />
-              {/* Rutas protegidas por tipo de usuario */}
+              {/* protected routes for every type of user */}
               <Route //! BARBER
                 path="/Barber/HomePageBarber"
                 element={
@@ -188,7 +170,7 @@ function App() {
                   <ProfilePage />
                 </ProtectedRoute>
               } />
-              {/* Rutas de administración protegidas */}
+              {/* protected routes for Admin */}
               <Route //! ADMIN
                 path="/Admin/HomePageAdmin"
                 element={
@@ -198,7 +180,7 @@ function App() {
                 }
               />
 
-              {/* Admin - Categorías */}
+              {/* Admin - categories */}
               <Route
                 path="/Admin/CategoriesPage"
                 element={
@@ -232,7 +214,7 @@ function App() {
                 }
               />
 
-              {/* Admin - Barberos */}
+              {/* Admin - Barbers */}
               <Route
                 path="/Admin/BarbersPage"
                 element={
@@ -266,7 +248,7 @@ function App() {
                 }
               />
 
-              {/* Admin - Sucursales */}
+              {/* Admin - Branches */}
               <Route
                 path="/Admin/BranchesPage"
                 element={
@@ -300,7 +282,7 @@ function App() {
                 }
               />
 
-              {/* Admin - Tipos de corte */}
+              {/* Admin - Types of Haircuts */}
               <Route
                 path="/Admin/HaircutTypesPage"
                 element={
@@ -326,7 +308,7 @@ function App() {
                 }
               />
 
-              {/* Admin - Clientes */}
+              {/* Admin - Clients */}
               <Route
                 path="/Admin/ClientsPage"
                 element={
@@ -335,7 +317,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
+              {/* Admin - Rentability by Branch */}
               <Route
                 path="/Admin/RentabilityByBranch"
                 element={
@@ -344,16 +326,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Rutas de Login y Signup */}
+              {/* Login and Signup */}
               <Route path="/login" element={<Login />} />
               <Route path="/signUp" element={<CreateUser />} />
               <Route path="/changePassword" element={<ResetSecurity />} />
-              <Route path="/" element={<AutoRedirect />} />
-              {/* con el '*' indico que tiene rutas anidadas*/}
+              {/*  '*' indicates that it has nested routes */}
             </Routes>
           </main>
           <Footer />
-          {/* Alerts de Toaster */}
+          {/*  Toaster Alerts */}
           <Toaster
             toastOptions={{
               duration: 4000,
@@ -382,7 +363,6 @@ function App() {
               },
             }}
             containerStyle={{
-              // Subido más - de 40% a 35%
               top: "55%",
               left: "50%",
               transform: "translate(-50%, -50%)",

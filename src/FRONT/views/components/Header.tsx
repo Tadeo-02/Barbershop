@@ -261,7 +261,7 @@ function Header() {
                         </li>
                         <li className={styles.menuItem}>
                           <Link
-                            to="/Barber/myAppointments"
+                            to="/Barber/MyAppointments"
                             onClick={closeMenu}
                             className={styles.menuLink}
                           >
