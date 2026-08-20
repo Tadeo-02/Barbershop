@@ -240,7 +240,7 @@ export const store = async (
     }
     const userType =
       cuilValue === "1" ? "admin" : cuilValue ? "barber" : "client";
-    logger.info("User created successfully");
+    logger.info({ userType }, "User created successfully");
     return usuario;
   } catch (error) {
     logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error creating user");
