@@ -1,5 +1,6 @@
 import * as model from "./Users";
 import { BaseController } from "../base/base.controller";
+import logger from "../lib/logger";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { randomBytes } from "crypto";
@@ -64,7 +65,7 @@ class UsersController extends BaseController<
 
   store = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log("store endpoint called. Body:", req.body);
+      logger.debug({ body: req.body }, "store endpoint called");
       const {
         dni,
         nombre,
@@ -124,7 +125,7 @@ class UsersController extends BaseController<
         user: safeUser,
       });
     } catch (error) {
-      console.error("Error creating user:", error);
+      logger.error({ error }, "Error creating user");
       this.handleError(error, res);
     }
   };
@@ -175,7 +176,7 @@ class UsersController extends BaseController<
         user: safeUser,
       });
     } catch (error) {
-      console.error("Error updating user:", error);
+      logger.error({ error }, "Error updating user");
       this.handleError(error, res);
     }
   };
@@ -388,7 +389,7 @@ export const requestEmailVerification = async (
         "Si el email existe y necesita verificación, enviamos un enlace para activar la cuenta.",
     });
   } catch (error) {
-    console.error("Error requesting email verification:", error);
+    logger.error({ error }, "Error requesting email verification");
     res.status(500).json({
       success: false,
       message: getErrorMessage(error, "Error interno del servidor"),
@@ -441,7 +442,7 @@ export const requestPasswordReset = async (
         "Si el email existe en el sistema, enviamos un enlace para restablecer la contraseña.",
     });
   } catch (error) {
-    console.error("Error requesting password reset:", error);
+    logger.error({ error }, "Error requesting password reset");
     res.status(500).json({
       success: false,
       message: getErrorMessage(error, "Error interno del servidor"),

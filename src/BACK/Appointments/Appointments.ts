@@ -5,6 +5,7 @@ import { billAppointment } from "../billing/Billing";
 import { getDiscountCycle, applyDiscountIfEligible } from "../lib/discount";
 import { assertEntityExists } from "../lib/entityChecks";
 import { parseValidatedInput } from "../lib/zodHelpers";
+import logger from "../lib/logger";
 
 // Configurable thresholds (can be overridden by environment variables during testing)
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
@@ -172,7 +173,7 @@ export const store = async (
       AppointmentSchema.omit({ codTurno: true }),
       sanitizedData,
     );
-    console.log("Creating turno");
+    logger.info("Creating turno");
 
     // convert strings to Date objects for Prisma
     const fechaDate = new Date(`${sanitizedData.fechaTurno}T00:00:00.000Z`);
@@ -230,12 +231,12 @@ export const store = async (
       },
     });
 
-    console.log("Turno created successfully");
+    logger.info("Turno created successfully");
     return [turno];
   } catch (error) {
-    console.error(
-      "Error creating turno:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error creating turno",
     );
     //handle errors of validation
     if (error instanceof z.ZodError) {
@@ -276,19 +277,19 @@ export const store = async (
 
 export const findAll = async () => {
   try {
-    console.log("Fetching all turnos with Prisma");
+    logger.info("Fetching all turnos");
 
     const turnos = await prisma.turno.findMany({
       orderBy: { fechaTurno: "desc" },
     });
 
-    console.log(`Retrieved ${turnos.length} turnos`);
-    console.log(turnos);
+    logger.info({ count: turnos.length }, "Retrieved turnos");
+    logger.debug({ turnos }, "Turnos data");
     return turnos;
   } catch (error) {
-    console.error(
-      "Error fetching turnos:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching turnos",
     );
     throw new DatabaseError("Error al obtener lista de turnos");
   }
@@ -309,9 +310,9 @@ export const findById = async (codTurno: string) => {
       throw error;
     }
 
-    console.error(
-      "Error finding turno:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding turno",
     );
     throw new DatabaseError("Error al buscar turno");
   }
@@ -382,9 +383,7 @@ export const findNextByUserId = async (codUsuario: string) => {
       orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
     });
 
-    console.log(
-      `Found next turno for user ${sanitizedCodUsuario}: ${turno?.codTurno ?? "none"}`,
-    );
+    logger.info("Found next turno for user");
 
     return turno ?? null;
   } catch (error) {
@@ -392,9 +391,9 @@ export const findNextByUserId = async (codUsuario: string) => {
       throw error;
     }
 
-    console.error(
-      "Error finding next turno:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding next turno",
     );
     throw new DatabaseError("Error al buscar próximo turno");
   }
@@ -452,9 +451,7 @@ export const findByUserId = async (codUsuario: string) => {
       orderBy: [{ fechaTurno: "desc" }, { horaDesde: "desc" }],
     });
 
-    console.log(
-      `Found ${turnos.length} turnos for user ${sanitizedCodUsuario}`,
-    );
+    logger.info({ count: turnos.length }, "Found turnos for user");
 
     return turnos;
   } catch (error) {
@@ -462,9 +459,9 @@ export const findByUserId = async (codUsuario: string) => {
       throw error;
     }
 
-    console.error(
-      "Error finding turno:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding turno",
     );
     throw new DatabaseError("Error al buscar turno");
   }
@@ -535,9 +532,9 @@ export const findByAvailableDate = async (
       throw error;
     }
 
-    console.error(
-      "Error finding appointments:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding appointments",
     );
     throw new DatabaseError("Error al buscar turnos");
   }
@@ -560,9 +557,7 @@ export const findByBarberId = async (
       },
     });
 
-    console.log(
-      `Found ${turnos.length} existing appointments for barber ${sanitizedCodBarbero} on ${sanitizedFechaTurno}`,
-    );
+    logger.info({ count: turnos.length }, "Found existing appointments for barber");
 
     // Find the barber's blocks for that date and pass them to the helper.
     const fechaDate = new Date(sanitizedFechaTurno);
@@ -588,16 +583,16 @@ export const findByBarberId = async (
       bloqueos,
     );
 
-    console.log(`Found ${horasDisponibles.length} available slots for barber`);
+    logger.info({ count: horasDisponibles.length }, "Found available slots for barber");
     return horasDisponibles;
   } catch (error) {
     if (error instanceof DatabaseError) {
       throw error;
     }
 
-    console.error(
-      "Error finding turnos:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding turnos",
     );
     throw new DatabaseError("Error al buscar turnos");
   }
@@ -639,18 +634,16 @@ export const findByBranchId = async (codSucursal: string) => {
       orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
     });
 
-    console.log(
-      `Found ${turnos.length} scheduled appointments for branch ${sanitizedCodSucursal}`,
-    );
+    logger.info({ count: turnos.length }, "Found scheduled appointments for branch");
     return turnos;
   } catch (error) {
     if (error instanceof DatabaseError) {
       throw error;
     }
 
-    console.error(
-      "Error finding sucursal:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding sucursal",
     );
     throw new DatabaseError("Error al buscar sucursal");
   }
@@ -687,18 +680,16 @@ export const findPendingByBarberId = async (codBarbero: string) => {
       orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
     });
 
-    console.log(
-      `Found ${pendingAppointments.length} pending appointments for barber ${sanitizedCodBarbero}`,
-    );
+    logger.info({ count: pendingAppointments.length }, "Found pending appointments for barber");
     return pendingAppointments;
   } catch (error) {
     if (error instanceof DatabaseError) {
       throw error;
     }
 
-    console.error(
-      "Error finding pending appointments:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding pending appointments",
     );
     throw new DatabaseError("Error al buscar turnos pendientes del barbero");
   }
@@ -731,18 +722,16 @@ export const findPendingByBranchId = async (codSucursal: string) => {
       orderBy: [{ fechaTurno: "asc" }, { horaDesde: "asc" }],
     });
 
-    console.log(
-      `Found ${pendingAppointments.length} pending appointments for branch ${sanitizedCodSucursal}`,
-    );
+    logger.info({ count: pendingAppointments.length }, "Found pending appointments for branch");
     return pendingAppointments;
   } catch (error) {
     if (error instanceof DatabaseError) {
       throw error;
     }
 
-    console.error(
-      "Error finding pending appointments by branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding pending appointments by branch",
     );
     throw new DatabaseError("Error al buscar turnos pendientes de la sucursal");
   }
@@ -833,12 +822,12 @@ export const update = async (
       },
     });
 
-    console.log("Turno updated successfully");
+    logger.info("Turno updated successfully");
     return updatedTurno;
   } catch (error) {
-    console.error(
-      "Error updating turno:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error updating turno",
     );
 
     // handle errors of validation
@@ -883,7 +872,7 @@ export const updateAppointment = async (
 
     const horaHastaDate = new Date(`1970-01-01T${sanitizedHoraHasta}:00.000Z`);
 
-    console.log("🔍 Buscando turno para actualizar:", sanitizedCodTurno);
+    logger.debug({ codTurno: sanitizedCodTurno }, "Searching turno to update");
 
     // find existing appointment
     const existingTurno = await prisma.turno.findUnique({
@@ -892,7 +881,7 @@ export const updateAppointment = async (
 
     assertEntityExists(existingTurno, "Turno");
 
-    console.log("Turno encontrado, actualizando...");
+    logger.debug("Turno found, updating...");
 
     // update appointment
     const updatedTurno = await prisma.turno.update({
@@ -904,14 +893,14 @@ export const updateAppointment = async (
       },
     });
 
-    console.log("Turno actualizado exitosamente");
+    logger.info("Turno updated successfully");
     return updatedTurno;
   } catch (error) {
-    console.error(
-      "Error actualizando turno:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error updating turno",
     );
-    console.error("Error completo:", error);
+    logger.error({ error }, "Full error details");
 
     // handle errors of validation
     if (error instanceof z.ZodError) {
@@ -938,7 +927,7 @@ export const checkoutAppointment = async (
     // sanitize and validate
     const sanitizedCodTurno = sanitizeInput(codTurno);
     const sanitizedCodCorte = sanitizeInput(codCorte);
-    console.log("🔍 Buscando turno para checkout:", sanitizedCodTurno);
+    logger.debug({ codTurno: sanitizedCodTurno }, "Searching turno for checkout");
 
     // find appointment and verify it's in "Programado" state
     const turnoExistente = await prisma.turno.findFirst({
@@ -949,7 +938,7 @@ export const checkoutAppointment = async (
     });
 
     if (!turnoExistente) {
-      console.log("Turno no encontrado o no está en estado Programado");
+      logger.info("Turno not found or not in Programado state");
       throw new DatabaseError(
         "Turno no encontrado o no está en estado Programado",
       );
@@ -963,7 +952,7 @@ export const checkoutAppointment = async (
     const appointmentDateUTC = fechaTurno.toISOString().substring(0, 10);
 
     if (appointmentDateUTC > todayUTC) {
-      console.log("El turno no corresponde a la fecha de hoy");
+      logger.info("Turno date does not match today");
       throw new DatabaseError("Solo se pueden cobrar turnos del día de hoy");
     }
 
@@ -976,7 +965,7 @@ export const checkoutAppointment = async (
     fechaTurno.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
 
     if (fechaTurno > now) {
-      console.log("El turno aún no ha comenzado");
+      logger.info("Turno has not started yet");
       throw new DatabaseError(
         "No se puede cobrar un turno que aún no ha comenzado",
       );
@@ -1019,9 +1008,7 @@ export const checkoutAppointment = async (
 
         if (applied) {
           precioFinal = appliedPrice;
-          console.log(
-            `Aplicando descuento de ${latestCategory.descuentoCorte}% - Precio original: ${precioTurno}, Precio final: ${precioFinal}`,
-          );
+          logger.info("Applying discount");
         }
       }
 
@@ -1037,9 +1024,7 @@ export const checkoutAppointment = async (
       });
 
       if (!latestCv) {
-        console.warn(
-          `No categoria_vigente encontrada para cliente ${codCliente}`,
-        );
+        logger.warn("No categoria_vigente found for client");
         return { turnoUpdated };
       }
 
@@ -1073,11 +1058,9 @@ export const checkoutAppointment = async (
                 ultimaFechaInicio: new Date(),
               },
             });
-            console.log(`Cliente ${codCliente} promovido a Medium`);
+            logger.info("Client promoted to Medium");
           } else {
-            console.warn(
-              "Categoría 'Medium' no encontrada en la tabla categorias",
-            );
+            logger.warn("Category 'Medium' not found");
           }
         }
       } else if (nombreCategoria === "Medium") {
@@ -1095,21 +1078,16 @@ export const checkoutAppointment = async (
                 ultimaFechaInicio: new Date(),
               },
             });
-            console.log(`Cliente ${codCliente} promovido a Premium`);
+            logger.info("Client promoted to Premium");
           } else {
-            console.warn(
-              "Categoría 'Premium' no encontrada en la tabla categorias",
-            );
+            logger.warn("Category 'Premium' not found");
           }
         }
       }
       return { turnoUpdated };
     });
 
-    console.log("Turno cobrado exitosamente", {
-      codTurno: sanitizedCodTurno,
-      codCliente: turnoUpdated.codCliente,
-    });
+    logger.info("Turno charged successfully");
 
     // try automatic billing via ARCA (doesnt block if it fails)
     let facturacion = null;
@@ -1118,24 +1096,13 @@ export const checkoutAppointment = async (
     let facturacionErrorAfipCode: string | null = null;
     try {
       facturacion = await billAppointment(sanitizedCodTurno);
-      console.log("✅ Factura ARCA generada automáticamente", {
-        CAE: facturacion.CAE,
-        voucherNumber: facturacion.voucher_number,
-      });
+      logger.info("ARCA invoice generated automatically");
     } catch (billingError: unknown) {
       const errorInfo = extractBillingErrorInfo(billingError);
       facturacionError = errorInfo.fullMessage;
       facturacionErrorCode = errorInfo.code ?? null;
       facturacionErrorAfipCode = errorInfo.afipCode ?? null;
-      console.warn(
-        "⚠️ No se pudo generar factura ARCA automáticamente. Se puede facturar manualmente desde /facturacion/facturar-turno",
-        {
-          codTurno: sanitizedCodTurno,
-          message: errorInfo.message,
-          code: errorInfo.code,
-          afipCode: errorInfo.afipCode,
-        },
-      );
+      logger.warn("Could not generate ARCA invoice automatically");
     }
 
     return {
@@ -1146,11 +1113,11 @@ export const checkoutAppointment = async (
       facturacionErrorAfipCode,
     };
   } catch (error) {
-    console.error(
-      "Error cobrando turno:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error charging turno",
     );
-    console.error("Error completo:", error);
+    logger.error({ error }, "Full error details");
 
     // handle validation errors
     if (error instanceof z.ZodError) {
@@ -1166,7 +1133,7 @@ export const checkoutAppointment = async (
     // handle specific Prisma errors
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; meta?: unknown };
-      console.error("Prisma error code:", prismaError.code);
+      logger.debug({ prismaCode: prismaError.code }, "Prisma error code");
 
       if (prismaError.code === "P2025") {
         throw new DatabaseError("Turno no encontrado");
@@ -1185,7 +1152,7 @@ export const cancelAppointment = async (codTurno: string) => {
     // Calculate cancelation date in the server
     const fechaDate = new Date();
 
-    console.log("🔍 Buscando turno para cancelar:", sanitizedCodTurno);
+    logger.debug({ codTurno: sanitizedCodTurno }, "Searching turno to cancel");
 
     // first verify that the appointment exists
     const turnoExistente = await prisma.turno.findUnique({
@@ -1196,11 +1163,11 @@ export const cancelAppointment = async (codTurno: string) => {
     });
 
     if (!turnoExistente) {
-      console.log("Turno no encontrado");
+      logger.info("Turno not found");
       throw new DatabaseError("Turno no encontrado");
     }
 
-    console.log("Turno encontrado, actualizando estado...");
+    logger.debug("Turno found, updating state...");
 
     // update the state of the appointment
     const existingTurno = await prisma.turno.update({
@@ -1266,9 +1233,7 @@ export const cancelAppointment = async (codTurno: string) => {
         );
       }).length;
 
-      console.log(
-        `Cliente ${existingTurno.codCliente} tiene ${canceledSameDayCount} turnos cancelados el mismo día en el semestre actual`,
-      );
+      logger.info("Client has same-day cancellations in semester");
 
       // If they have 3 or more cancellations on the same day, downgrade their category.
       if (canceledSameDayCount >= 3) {
@@ -1311,23 +1276,21 @@ export const cancelAppointment = async (codTurno: string) => {
                 },
               });
 
-              console.log(
-                `Cliente ${existingTurno.codCliente} descendió de ${categoriaActual} a ${nuevaCategoriaNombre}`,
-              );
+              logger.info("Client demoted category");
             }
           }
         }
       }
     }
 
-    console.log("Turno cancelado exitosamente");
+    logger.info("Turno cancelled successfully");
     return existingTurno;
   } catch (error) {
-    console.error(
-      "Error cancelando turno:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error cancelling turno",
     );
-    console.error("Error completo:", error);
+    logger.error({ error }, "Full error details");
 
     // handle  validation errors 
     if (error instanceof z.ZodError) {
@@ -1343,7 +1306,7 @@ export const cancelAppointment = async (codTurno: string) => {
     // handle  specific Prisma errores
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; meta?: unknown };
-      console.error("Prisma error code:", prismaError.code);
+      logger.debug({ prismaCode: prismaError.code }, "Prisma error code");
 
       if (prismaError.code === "P2025") {
         throw new DatabaseError("Turno no encontrado");
@@ -1364,7 +1327,7 @@ export const markAsNoShow = async (codTurno: string) => {
     });
 
     if (!turnoExistente) {
-      console.log("Turno no encontrado");
+      logger.info("Turno not found");
       throw new DatabaseError("Turno no encontrado");
     }
 
@@ -1376,7 +1339,7 @@ export const markAsNoShow = async (codTurno: string) => {
     const appointmentDateUTC = fechaTurno.toISOString().substring(0, 10);
 
     if (appointmentDateUTC !== todayUTC) {
-      console.log("El turno no corresponde a la fecha de hoy");
+      logger.info("Turno date does not match today");
       throw new DatabaseError(
         "Solo se pueden marcar como no asistido los turnos del día de hoy",
       );
@@ -1391,13 +1354,13 @@ export const markAsNoShow = async (codTurno: string) => {
     fechaTurno.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
 
     if (fechaTurno > now) {
-      console.log("El turno aún no ha finalizado");
+      logger.info("Turno has not finished yet");
       throw new DatabaseError(
         "No se puede marcar como no asistido un turno que aún no ha finalizado",
       );
     }
 
-    console.log("Turno encontrado y validado, actualizando estado...");
+    logger.debug("Turno found and validated, updating state...");
 
     // update the state of the appointment to "No asistido"
     const updatedTurno = await prisma.turno.update({
@@ -1405,7 +1368,7 @@ export const markAsNoShow = async (codTurno: string) => {
       data: { estado: "No asistido" },
     });
 
-    console.log("Turno marcado como No asistido exitosamente");
+    logger.info("Turno marked as No-show successfully");
 
     // Determine range of dates according to the current semester
     const currentDate = new Date();
@@ -1437,9 +1400,7 @@ export const markAsNoShow = async (codTurno: string) => {
       },
     });
 
-    console.log(
-      `Cliente ${updatedTurno.codCliente} tiene ${noShowCount} turnos "No asistido" en el semestre actual`,
-    );
+    logger.info("Client has no-show count in semester");
 
     // If the customer has 3 or more "No-show" appointments in the semester, assign the "Vetado" category.
 
@@ -1457,19 +1418,17 @@ export const markAsNoShow = async (codTurno: string) => {
           },
         });
 
-        console.log(
-          `Categoría "Vetado" asignada exitosamente al cliente ${updatedTurno.codCliente}`,
-        );
+        logger.info("Category 'Vetado' assigned to client");
       }
     }
 
     return updatedTurno;
   } catch (error) {
-    console.error(
-      "Error marcando turno como No asistido:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error marking turno as no-show",
     );
-    console.error("Error completo:", error);
+    logger.error({ error }, "Full error details");
 
     // handle validation errors
     if (error instanceof z.ZodError) {
@@ -1485,7 +1444,7 @@ export const markAsNoShow = async (codTurno: string) => {
     // handle specific Prisma errors
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; meta?: unknown };
-      console.error("Prisma error code:", prismaError.code);
+      logger.debug({ prismaCode: prismaError.code }, "Prisma error code");
 
       if (prismaError.code === "P2025") {
         throw new DatabaseError("Turno no encontrado");
@@ -1515,12 +1474,12 @@ export const destroy = async (codTurno: string) => {
       where: { codTurno: sanitizedCodTurno },
     });
 
-    console.log("Turno deleted successfully");
+    logger.info("Turno deleted successfully");
     return deletedTurno;
   } catch (error) {
-    console.error(
-      "Error deleting turno:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error deleting turno",
     );
 
     if (error instanceof DatabaseError) {

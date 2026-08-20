@@ -19,6 +19,7 @@ import {
 } from "../lib/barberBusinessRules";
 import { assertEntityExists } from "../lib/entityChecks";
 import { parseValidatedInput } from "../lib/zodHelpers";
+import logger from "../lib/logger";
 
 const INITIAL_TO_MEDIUM_DAYS = parseInt(
   process.env.INITIAL_TO_MEDIUM_DAYS || "30",
@@ -187,7 +188,7 @@ export const store = async (
     // validation with zod
     const validatedData = parseValidatedInput(UserSchema, sanitizedData);
 
-    console.log("Creating user");
+    logger.info("Creating user");
 
    // Encrypt the password after sanitization.
     const hashedPassword = await hashPassword(validatedData.contraseña);
@@ -235,17 +236,14 @@ export const store = async (
         },
       });
 
-      console.log("Client created with initial category assigned");
+      logger.info("Client created with initial category assigned");
     }
     const userType =
       cuilValue === "1" ? "admin" : cuilValue ? "barber" : "client";
-    console.log(`${userType} created successfully`);
+    logger.info("User created successfully");
     return usuario;
   } catch (error) {
-    console.error(
-      "Error creating user:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error creating user");
 
     // handle errors of validation
     if (error instanceof z.ZodError) {
@@ -295,7 +293,7 @@ export const findAll = async (userType?: "client" | "barber") => {
   //specify type of user to display.
 
   try {
-    console.log(`Fetching all ${userType} with Prisma`);
+    logger.info("Fetching all users");
 
     if (userType === "client") {
       const usuarios = await prisma.usuarios.findMany({
@@ -368,7 +366,7 @@ export const findAll = async (userType?: "client" | "barber") => {
         };
       });
 
-      console.log(`Retrieved ${usuariosConResumen.length} ${userType}`);
+      logger.info({ count: usuariosConResumen.length }, "Retrieved users");
       return usuariosConResumen;
     }
 
@@ -391,52 +389,38 @@ export const findAll = async (userType?: "client" | "barber") => {
       orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
     });
 
-    console.log(`Retrieved ${usuarios.length} ${userType}`);
+    logger.info({ count: usuarios.length }, "Retrieved users");
     return usuarios;
   } catch (error) {
-    console.error(
-      `Error fetching ${userType}:`,
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error fetching users");
     throw new DatabaseError("Error al obtener lista de usuarios");
   }
 };
 
 export const findById = async (codUsuario: string) => {
   try {
-    console.log("🔍 Debug - findById called with:", codUsuario);
+    logger.debug({ codUsuario }, "findById called");
 
     const sanitizedCodUsuario = sanitizeInput(codUsuario);
-    console.log("🔍 Debug - sanitized codUsuario:", sanitizedCodUsuario);
+    logger.debug({ sanitizedCodUsuario }, "Sanitized codUsuario");
 
     const usuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedCodUsuario },
     });
 
-    console.log("🔍 Debug - User found:", usuario ? "YES" : "NO");
+    logger.debug({ found: !!usuario }, "User lookup result");
     if (usuario) {
-      console.log("🔍 Debug - User data:", {
-        codUsuario: usuario.codUsuario,
-        dni: usuario.dni,
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        email: usuario.email,
-        telefono: usuario.telefono,
-        cuil: usuario.cuil,
-      });
+      logger.debug({ codUsuario: usuario.codUsuario }, "User data");
     }
 
     return usuario;
   } catch (error) {
-    console.error("🔍 Debug - findById error:", error);
+    logger.debug({ error }, "findById error");
     if (error instanceof DatabaseError) {
       throw error;
     }
 
-    console.error(
-      "Error finding user:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error finding user");
     throw new DatabaseError("Error al buscar usuario");
   }
 };
@@ -483,10 +467,7 @@ export const findByIdWithCategory = async (codUsuario: string) => {
       throw error;
     }
 
-    console.error(
-      "Error finding user with category:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error finding user with category");
     throw new DatabaseError("Error al buscar usuario con categoría");
   }
 };
@@ -507,10 +488,7 @@ export const findByBranchId = async (codSucursal: string) => {
       throw error;
     }
 
-    console.error(
-      "Error finding users by branch ID:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error finding users by branch ID");
     throw new DatabaseError("Error al buscar usuarios por sucursal");
   }
 };
@@ -558,10 +536,7 @@ export const findBySchedule = async (
     if (error instanceof DatabaseError) {
       throw error;
     }
-    console.error(
-      "Error finding available barbers:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error finding available barbers");
     throw new DatabaseError("Error al buscar barberos disponibles");
   }
 };
@@ -584,8 +559,8 @@ interface UpdateUserParams {
 
 export const update = async (codUsuario: string, params: UpdateUserParams) => {
   try {
-    console.log("🔍 Debug - Raw codUsuario received:", codUsuario);
-    console.log("🔍 Debug - Raw codUsuario type:", typeof codUsuario);
+    logger.debug({ codUsuario }, "Raw codUsuario received");
+    logger.debug({ codUsuarioType: typeof codUsuario }, "Raw codUsuario type");
 
     // Sanitize data
     const sanitizedData = {
@@ -624,28 +599,17 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       codSucursal: sanitizedData.codSucursal,
     });
 
-    console.log(
-      "🔍 Debug - Looking for user with codUsuario:",
-      sanitizedData.codUsuario,
-    );
+    logger.debug({ codUsuario: sanitizedData.codUsuario }, "Looking for user");
 
     // Verify that the user exists
     const existingUsuario = await prisma.usuarios.findUnique({
       where: { codUsuario: sanitizedData.codUsuario },
     });
 
-    console.log(
-      "🔍 Debug - Query result:",
-      existingUsuario ? "FOUND" : "NOT FOUND",
-    );
+    logger.debug({ found: !!existingUsuario }, "Query result");
 
     if (existingUsuario) {
-      console.log("🔍 Debug - Found user data:", {
-        codUsuario: existingUsuario.codUsuario,
-        dni: existingUsuario.dni,
-        nombre: existingUsuario.nombre,
-        email: existingUsuario.email,
-      });
+      logger.debug({ codUsuario: existingUsuario.codUsuario }, "Found user data");
     }
 
     assertEntityExists(existingUsuario, "Usuario");
@@ -709,13 +673,10 @@ export const update = async (codUsuario: string, params: UpdateUserParams) => {
       data: updateData,
     });
 
-    console.log("Usuario updated successfully");
+    logger.info("Usuario updated successfully");
     return updatedUsuario;
   } catch (error) {
-    console.error(
-      "Error updating user:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error updating user");
 
     // handle errors of validation
     if (error instanceof z.ZodError) {
@@ -789,13 +750,10 @@ export const destroy = async (codUsuario: string) => {
       data: { activo: false },
     });
 
-    console.log("Usuario deactivated successfully");
+    logger.info("Usuario deactivated successfully");
     return updatedUsuario;
   } catch (error) {
-    console.error(
-      "Error deleting user:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error deleting user");
 
     // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
@@ -852,13 +810,10 @@ export const reactivate = async (codUsuario: string) => {
       data: { activo: true },
     });
 
-    console.log("Usuario reactivated successfully");
+    logger.info("Usuario reactivated successfully");
     return reactivatedUsuario;
   } catch (error) {
-    console.error(
-      "Error reactivating user:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error reactivating user");
 
     // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
@@ -889,7 +844,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
     // validate with zod
     const validatedData = parseValidatedInput(LoginSchema, sanitizedData);
 
-    console.log("Validating user login for email:", validatedData.email);
+    logger.info("Validating user login");
 
     // find user only by email (NOT by contraseña)
     const usuario = await prisma.usuarios.findFirst({
@@ -900,7 +855,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
     });
 
     if (!usuario) {
-      console.log("Login failed: No user found with provided email");
+      logger.info("Login failed: No user found with provided email");
       throw new DatabaseError("Email o contraseña incorrectos");
     }
 
@@ -911,7 +866,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
     );
 
     if (!isPasswordValid) {
-      console.log("Login failed: Invalid password");
+      logger.info("Login failed: Invalid password");
       throw new DatabaseError("Email o contraseña incorrectos");
     }
 
@@ -919,13 +874,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
       throw new DatabaseError("Email no verificado", "EMAIL_NOT_VERIFIED");
     }
 
-    console.log("User login validated successfully for user:", {
-      codUsuario: usuario.codUsuario,
-      email: usuario.email,
-      cuil: usuario.cuil,
-      userType:
-        usuario.cuil === "1" ? "admin" : usuario.cuil ? "barber" : "client",
-    });
+    logger.info({ codUsuario: usuario.codUsuario }, "User login validated successfully");
 
     // verify if the user is a client and has category "Vetado"
     const esCliente = !usuario.cuil || usuario.cuil === null;
@@ -938,7 +887,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
       });
 
       if (categoriaVigente?.categorias.nombreCategoria === "Vetado") {
-        console.log("Login denied: User is vetoed");
+        logger.info("Login denied: User is vetoed");
         throw new DatabaseError(
           "Usuario vetado. No puede acceder al sistema. Contacte al administrador.",
         );
@@ -950,10 +899,7 @@ export const validateLogin = async (email: string, contraseña: string) => {
     const { contrase_a, ...userWithoutPassword } = usuario;
     return userWithoutPassword;
   } catch (error) {
-    console.error(
-      "Error validating login:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.error({ error: error instanceof Error ? error.message : "Unknown error" }, "Error validating login");
 
     // handle errors of validation
     if (error instanceof z.ZodError) {

@@ -1,4 +1,5 @@
 import "dotenv/config"; // Load environment variables from .env
+import logger from "./src/BACK/lib/logger";
 import express from "express";
 import methodOverride from "method-override";
 import path from "path";
@@ -128,7 +129,7 @@ app.use(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: express.NextFunction,
   ) => {
-    console.error("Error:", err);
+    logger.error({ error: err }, "Error");
     res.status(500).json({ message: "Internal Server Error" });
   },
 );
@@ -136,5 +137,8 @@ app.use(
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  logger.info(
+    { port: PORT, nodeEnv: process.env.NODE_ENV || "development" },
+    "Server running",
+  );
 });

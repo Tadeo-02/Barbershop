@@ -1,4 +1,5 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
+import logger from "../../lib/logger";
 import { z } from "zod";
 import { BranchSchema } from "../../Schemas/branchesSchema";
 import {
@@ -18,7 +19,7 @@ export const store = async (nombre: string, calle: string, altura: number) => {
       altura: Number(altura),
     };
     const validateData = parseValidatedInput(BranchSchema, sanitizedData);
-    console.log("Creating branch");
+    logger.info("Creating branch");
     // create branch using the correct Prisma model
     const branch = await prisma.sucursales.create({
       data: {
@@ -27,12 +28,12 @@ export const store = async (nombre: string, calle: string, altura: number) => {
         altura: validateData.altura,
       },
     });
-    console.log("Branch created successfully");
+    logger.info("Branch created successfully");
     return branch;
   } catch (error) {
-    console.error(
-      "Error creating branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error creating branch",
     );
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
@@ -54,12 +55,12 @@ export const findAll = async () => {
       where: { activo: 1 },
       orderBy: { codSucursal: "asc" },
     });
-    console.log(`Retrieved ${branches.length} branches`);
+    logger.info({ count: branches.length }, "Retrieved branches");
     return branches;
   } catch (error) {
-    console.error(
-      "Error fetching branches:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching branches",
     );
     throw new DatabaseError("Error interno del servidor");
   }
@@ -70,12 +71,12 @@ export const findAllIncludingInactive = async () => {
     const branches = await prisma.sucursales.findMany({
       orderBy: { codSucursal: "asc" },
     });
-    console.log(`Retrieved ${branches.length} branches (all)`);
+    logger.info({ count: branches.length }, "Retrieved branches (all)");
     return branches;
   } catch (error) {
-    console.error(
-      "Error fetching branches (all):",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching branches (all)",
     );
     throw new DatabaseError("Error interno del servidor");
   }
@@ -92,9 +93,9 @@ export const findById = async (codSucursal: string) => {
     if (error instanceof DatabaseError) {
       throw error;
     }
-    console.error(
-      "Error fetching branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching branch",
     );
     throw new DatabaseError("Error al buscar sucursal");
   }
@@ -130,12 +131,12 @@ export const update = async (
         altura: validateData.altura,
       },
     });
-    console.log("Branch updated successfully");
+    logger.info("Branch updated successfully");
     return branch;
   } catch (error) {
-    console.error(
-      "Error updating branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error updating branch",
     );
     // handle errors of validation
     if (error instanceof z.ZodError) {
@@ -209,12 +210,12 @@ export const destroy = async (codSucursal: string) => {
       where: { codSucursal: sanitizedCodSucursal },
       data: { activo: 0 },
     });
-    console.log("Branch deactivated successfully");
+    logger.info("Branch deactivated successfully");
     return deletedBranch;
   } catch (error) {
-    console.error(
-      "Error deleting branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error deleting branch",
     );
 
     // handle errors of DB
@@ -257,12 +258,12 @@ export const reactivate = async (codSucursal: string) => {
       where: { codSucursal: sanitizedCodSucursal },
       data: { activo: 1 },
     });
-    console.log("Branch reactivated successfully");
+    logger.info("Branch reactivated successfully");
     return reactivatedBranch;
   } catch (error) {
-    console.error(
-      "Error reactivating branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error reactivating branch",
     );
 
     // handle errors of DB
@@ -344,9 +345,9 @@ export const getRevenueByBranch = async (month: number, year: number) => {
       };
     });
   } catch (error) {
-    console.error(
-      "Error calculating rentability:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error calculating rentability",
     );
     throw new DatabaseError("Error al calcular rentabilidad");
   }

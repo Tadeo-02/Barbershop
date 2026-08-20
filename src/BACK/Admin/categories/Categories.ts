@@ -1,4 +1,5 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
+import logger from "../../lib/logger";
 import { z } from "zod";
 import { CategorySchema } from "../../Schemas/categoriesSchema";
 import { assertEntityExists } from "../../lib/entityChecks";
@@ -37,7 +38,7 @@ export const store = async (
       sanitizedData,
     );
 
-    console.log("Creating categoria");
+    logger.info("Creating categoria");
 
     // create category using the correct Prisma model
     const categoria = await prisma.categoria.create({
@@ -49,12 +50,12 @@ export const store = async (
       },
     });
 
-    console.log("Categoria created successfully");
+    logger.info("Categoria created successfully");
     return categoria;
   } catch (error) {
-    console.error(
-      "Error creating categoria:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error creating categoria",
     );
 
     //  handle validation errors
@@ -78,18 +79,18 @@ export const store = async (
 
 export const findAll = async () => {
   try {
-    console.log("Fetching all categorias with Prisma");
+    logger.info("Fetching all categorias");
 
     const categorias = await prisma.categoria.findMany({
       orderBy: { nombreCategoria: "asc" },
     });
 
-    console.log(`Retrieved ${categorias.length} categorias`);
+    logger.info({ count: categorias.length }, "Retrieved categorias");
     return categorias;
   } catch (error) {
-    console.error(
-      "Error fetching categorias:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching categorias",
     );
     throw new DatabaseError("Error al obtener lista de categorías");
   }
@@ -110,9 +111,9 @@ export const findById = async (codCategoria: string) => {
       throw error;
     }
 
-    console.error(
-      "Error finding categoria:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding categoria",
     );
     throw new DatabaseError("Error al buscar categoría");
   }
@@ -164,12 +165,12 @@ export const update = async (
       },
     });
 
-    console.log("Categoria updated successfully");
+    logger.info("Categoria updated successfully");
     return updatedCategoria;
   } catch (error) {
-    console.error(
-      "Error updating categoria:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error updating categoria",
     );
 
     // handle errors of validation
@@ -225,12 +226,12 @@ export const destroy = async (codCategoria: string) => {
       where: { codCategoria: sanitizedCodCategoria },
     });
 
-    console.log("Categoria deleted successfully");
+    logger.info("Categoria deleted successfully");
     return deletedCategoria;
   } catch (error) {
-    console.error(
-      "Error deleting categoria:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error deleting categoria",
     );
 
     // handle errors of DB
@@ -364,9 +365,9 @@ export const listClientsForCategory = async (codCategoria: string) => {
       throw error;
     }
 
-    console.error(
-      "Error listing clients for category:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error listing clients for category",
     );
     throw new DatabaseError("Error al obtener clientes de la categoría");
   }
@@ -512,9 +513,9 @@ export const destroyWithClientReassignment = async (
       reassignedCount: reassignmentData.length,
     };
   } catch (error) {
-    console.error(
-      "Error deleting categoria with reassignment:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error deleting categoria with reassignment",
     );
 
     if (error instanceof DatabaseError) {
