@@ -17,7 +17,7 @@ import { getResponseMessage, readJsonSafely, unwrapArray } from "../../../lib/ap
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../../lib/authUtils";
 import type { Haircut } from "../../../../types/haircut";
-import logger from "../../lib/logger";
+import logger from "../../../lib/logger";
 
 // (legacy per-item form state removed — CheckoutForm keeps its own state for each appointment, so we don't need to manage it here)
 

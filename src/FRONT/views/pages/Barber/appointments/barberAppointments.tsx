@@ -17,7 +17,7 @@ import { apiFetch } from "../../../lib/apiFetch.ts";
 import { getResponseMessage, readJsonSafely, unwrapArray } from "../../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../../lib/authUtils";
-import logger from "../../lib/logger";
+import logger from "../../../lib/logger";
 
 const BarberAppointments: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
