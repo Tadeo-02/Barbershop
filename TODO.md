@@ -6,7 +6,7 @@
   - LISTO: Revisar comentarios mezclados en inglés/castellano en todo el repo.
 
 ## 2. Código muerto / comentado
-- [ ] Eliminar código comentado que ya no se usa (confunde a quien lee el código).
+- [x] Eliminar código comentado que ya no se usa (confunde a quien lee el código).
   - `src/BACK/main.controller.ts`:
     ```
     //const index = (req: Request, res: Response) => {
@@ -56,7 +56,7 @@
 - [x] Usar `async/await` de forma consistente para simplificar el manejo de promesas.
 
 ## 5. Rutas y entornos
-- [ ] Quitar rutas de prueba de `src/FRONT/views/App.tsx` (o protegerlas para que no estén disponibles en producción).
+- [x] Quitar rutas de prueba de `src/FRONT/views/App.tsx` (o protegerlas para que no estén disponibles en producción).
 
 ## 6. Login / manejo de respuestas HTTP
 - [x] `src/FRONT/views/components/login/login.tsx`: revisar por qué se usa

@@ -183,14 +183,7 @@ const CheckoutForm: React.FC<{
             (t) => (
               <div className={styles.modalContainer}>
                 <p className={styles.modalTitle}>Turno cobrado con éxito</p>
-                {/* <p className={styles.modalDescription}>
-                  <span style={{ color: "var(--color-warning-alt)" }}>
-                    Factura pendiente
-                    {facturacionError ? `: ${facturacionError}` : ""}
-                  </span>
-                  <br />
-                  Podés facturar manualmente desde el botón "Facturar (ARCA)"
-                </p> */}
+ 
                 <div className={styles.modalButtons}>
                   <button
                     onClick={() => toast.dismiss(t.id)}
