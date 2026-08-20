@@ -1,4 +1,5 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base"; // importamos todo desde Base
+import logger from "../../lib/logger";
 import { z } from "zod";
 import { assertEntityExists } from "../../lib/entityChecks";
 import { parseValidatedInput } from "../../lib/zodHelpers";
@@ -29,7 +30,7 @@ export const store = async (nombreCorte: string, valorBase: string) => {
     // validate with zod
     const validatedData = parseValidatedInput(TypeOfHaircutSchema, sanitizedData);
 
-    console.log("Creating tipo de corte");
+    logger.info("Creating tipo de corte");
 
     // create haircut
     const tipoCorte = await prisma.tipos_corte.create({
@@ -39,12 +40,12 @@ export const store = async (nombreCorte: string, valorBase: string) => {
       },
     });
 
-    console.log("Tipo de corte created successfully");
+    logger.info("Tipo de corte created successfully");
     return tipoCorte;
   } catch (error) {
-    console.error(
-      "Error creating tipo de corte:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error creating tipo de corte",
     );
     //handle errors of validation
     if (error instanceof z.ZodError) {
@@ -57,19 +58,18 @@ export const store = async (nombreCorte: string, valorBase: string) => {
 
 export const findAll = async () => {
   try {
-    console.log("Fetching all types of haircuts with Prisma");
+    logger.info("Fetching all types of haircuts");
 
     const tipoCorte = await prisma.tipos_corte.findMany({
       orderBy: [{ nombreCorte: "asc" }],
     });
 
-    console.log(`Retrieved ${tipoCorte.length} tipos de corte`);
-    console.log(tipoCorte);
+    logger.info({ count: tipoCorte.length }, "Retrieved tipos de corte");
     return tipoCorte;
   } catch (error) {
-    console.error(
-      "Error fetching tipos de corte:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching tipos de corte",
     );
     throw new DatabaseError("Error al obtener lista de tipos de corte");
   }
@@ -90,9 +90,9 @@ export const findById = async (codTipoCorte: string) => {
       throw error;
     }
 
-    console.error(
-      "Error finding tipo de corte:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding tipo de corte",
     );
     throw new DatabaseError("Error al buscar tipo de corte");
   }
@@ -132,12 +132,12 @@ export const update = async (
       },
     });
 
-    console.log("Tipo de corte updated successfully");
+    logger.info("Tipo de corte updated successfully");
     return updatedTipoCorte;
   } catch (error) {
-    console.error(
-      "Error updating tipo de corte:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error updating tipo de corte",
     );
 
     // handle errors of validation
@@ -171,12 +171,12 @@ export const destroy = async (codCorte: string) => {
       where: { codCorte: sanitizedCodCorte },
     });
 
-    console.log("Tipo de corte deleted successfully");
+    logger.info("Tipo de corte deleted successfully");
     return deletedTipoCorte;
   } catch (error) {
-    console.error(
-      "Error deleting tipo de corte:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error deleting tipo de corte",
     );
 
     if (error instanceof DatabaseError) {

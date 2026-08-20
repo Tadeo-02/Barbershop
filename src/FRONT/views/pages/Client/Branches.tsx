@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Branches.module.css";
 import { apiFetch } from "../../lib/apiFetch";
+import logger from "../../lib/logger";
 import type { Sucursal } from "../../../types/branch";
 
 
@@ -18,7 +19,7 @@ const IndexBranches = () => {
         const data = await res.json();
         setBranches(data);
       } catch (error) {
-        console.error("Error al obtener sucursales:", error);
+        logger.error("Error al obtener sucursales:", error);
       } finally {
         setLoading(false);
       }

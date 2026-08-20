@@ -8,6 +8,7 @@ import {
   useAbortController,
 } from "../../components/shared/useAbortController.ts";
 import { apiFetch } from "../../lib/apiFetch";
+import logger from "../../lib/logger";
 import { unwrapArray } from "../../lib/apiResponse";
 import { getTurnoDateTime } from "../../components/shared/appointments";
 import type { AppointmentPartial } from "../../../types/appointment";
@@ -68,7 +69,7 @@ const Home = () => {
         setNextTurno(upcoming[0]?.turno ?? null);
       } catch (error) {
         if (isAbortError(error)) return;
-        console.error("Error fetching next appointment:", error);
+        logger.error("Error fetching next appointment:", error);
         setNextTurno(null);
       } finally {
         setLoadingNextTurno(false);

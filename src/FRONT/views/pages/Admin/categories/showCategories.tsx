@@ -4,6 +4,7 @@ import styles from "./categories.module.css";
 import toast from "react-hot-toast";
 import { apiFetch } from "../../../lib/apiFetch";
 import type { Category } from "../../../../types/category";
+import logger from "../../../lib/logger";
 
 const ShowCategories = () => {
   const { codCategoria } = useParams();
@@ -31,7 +32,7 @@ const ShowCategories = () => {
         const data = await res.json();
         setCategoria(data);
       } catch (err) {
-        console.error("Error al obtener la categoría:", err);
+        logger.error("Error al obtener la categoría:", err);
         toast.error("Error al cargar los datos de la categoría");
       } finally {
         setLoading(false);

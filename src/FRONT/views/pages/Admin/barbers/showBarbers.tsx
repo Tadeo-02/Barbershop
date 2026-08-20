@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import styles from "./barbers.module.css";
 import toast from "react-hot-toast";
 import { apiFetch } from "../../../lib/apiFetch";
+import logger from "../../../lib/logger";
 import type { Sucursal } from "../../../../types/branch";
 import type { UserResponse } from "../../../../types/user";
 
@@ -32,16 +33,16 @@ const ShowBarbers = () => {
               const sucursalData = await sucursalResponse.json();
               setSucursal(sucursalData);
             } else {
-              console.error("Error al obtener la sucursal");
+              logger.error("Error al obtener la sucursal");
               toast.error("Error al cargar los datos de la sucursal");
             }
           }
         } else {
-          console.error("Error al obtener el barbero");
+          logger.error("Error al obtener el barbero");
           toast.error("Error al cargar los datos del barbero");
         }
       } catch (err) {
-        console.error("Error al obtener datos:", err);
+        logger.error("Error al obtener datos:", err);
         toast.error("Error al cargar los datos");
       } finally {
         setLoading(false);

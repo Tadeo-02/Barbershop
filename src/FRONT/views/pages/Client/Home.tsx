@@ -8,6 +8,7 @@ import { isAbortError, useAbortController } from "../../components/shared/useAbo
 import { apiFetch } from "../../lib/apiFetch";
 import { getResponseMessage, readJsonSafely, unwrapArray } from "../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
+import logger from "../../lib/logger";
 import { getTurnoDateTime } from "../../components/shared/appointments";
 import type { AppointmentSummary } from "../../../types/appointment";
 import type { LoyaltyProgress } from "../../../types/user";
@@ -107,7 +108,7 @@ const Home = () => {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
         return;
       }
-      console.error("Error en la solicitud:", error);
+      logger.error("Error en la solicitud:", error);
     } finally {
       setIsCancelling(false);
     }
@@ -156,7 +157,7 @@ useEffect(() => {
         setNextTurno(upcoming[0]?.turno ?? null);
       } catch (error) {
         if (isAbortError(error)) return;
-        console.error("Error fetching next appointment:", error);
+        logger.error("Error fetching next appointment:", error);
         setNextTurno(null);
       } finally {
         setLoadingNextTurno(false);
@@ -194,7 +195,7 @@ useEffect(() => {
         setLoyaltyProgress(profile?.loyaltyProgress ?? null);
       } catch (error) {
         if (isAbortError(error)) return;
-        console.error("Error fetching loyalty progress:", error);
+        logger.error("Error fetching loyalty progress:", error);
         setLoyaltyProgress(null);
       } finally {
         setLoadingLoyalty(false);

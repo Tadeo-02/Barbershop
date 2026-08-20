@@ -3,6 +3,7 @@ import styles from "./infoSection.module.css";
 import toast from "react-hot-toast";
 import { BranchWithIdSchema } from "../../../BACK/Schemas/branchesSchema";
 import { apiFetch } from "../lib/apiFetch";
+import logger from "../lib/logger";
 import type { Sucursal } from "../../types/branch";
 
 const InfoSection: React.FC = () => {
@@ -29,7 +30,7 @@ const InfoSection: React.FC = () => {
               const validated = BranchWithIdSchema.parse(sucursal);
               validatedSucursales.push(validated);
             } catch (validationError) {
-              console.error(
+              logger.error(
                 "Invalid sucursal data:",
                 sucursal,
                 validationError,
@@ -43,7 +44,7 @@ const InfoSection: React.FC = () => {
           toast.error("Error al cargar las sucursales");
         }
       } catch (error) {
-        console.error("Error al obtener datos:", error);
+        logger.error("Error al obtener datos:", error);
         toast.error("Error al cargar los datos");
       } finally {
         setLoadingSucursales(false);

@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import styles from "./TimeSlotPicker.module.css";
 import { apiFetch } from "../../lib/apiFetch.ts";
 import { unwrapArray } from "../../lib/apiResponse";
+import logger from "../../lib/logger";
 
 interface Horario {
   hora: string;
@@ -83,7 +84,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
         const contentType = res.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
           const text = await res.text();
-          console.error("Expected JSON but received:", text.substring(0, 100));
+          logger.error("Expected JSON but received:", text.substring(0, 100));
           throw new Error("El servidor no devolvió datos JSON válidos");
         }
 
@@ -94,7 +95,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 
         setHorarios(horariosData);
       } catch (error) {
-        console.error("Error fetching horarios:", error);
+        logger.error("Error fetching horarios:", error);
         setError(error instanceof Error ? error.message : "Error al obtener horarios");
       } finally {
         setLoading(false);

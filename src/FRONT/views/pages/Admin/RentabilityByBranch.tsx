@@ -3,6 +3,7 @@ import styles from "./HomePageAdmin.module.css";
 import localStyles from "./RentabilityByBranch.module.css";
 import toast from "react-hot-toast";
 import { apiFetch } from "../../lib/apiFetch";
+import logger from "../../lib/logger";
 
 interface RevenueEntry {
   codSucursal: string;
@@ -44,7 +45,7 @@ const RentabilityByBranch = () => {
         const json = await res.json();
         setRevenueData(json?.data ?? json ?? []);
       } catch (error) {
-        console.error(error);
+        logger.error(error);
         toast.error(
           "No se pudieron cargar los datos de rentabilidad.",
         );

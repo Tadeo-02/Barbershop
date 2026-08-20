@@ -13,6 +13,7 @@ import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import type { Sucursal } from "../../../../types/branch";
+import logger from "../../../lib/logger";
 
 const UpdateBranchSchema = BranchSchema.extend({});
 type UpdateBranchForm = z.infer<typeof UpdateBranchSchema>;
@@ -66,7 +67,7 @@ const UpdateBranches: React.FC = () => {
         if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
           return;
         }
-        console.error("Fetch error:", error);
+        logger.error("Fetch error:", error);
       }
     };
 
@@ -108,7 +109,7 @@ const UpdateBranches: React.FC = () => {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión")) {
         return;
       }
-      console.error("Submit error:", error);
+      logger.error("Submit error:", error);
     }
   };
 

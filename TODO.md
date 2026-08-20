@@ -75,7 +75,7 @@ Si login.tsx usara response.json() directo, esos casos tirarían una excepción 
 
 ## 7. Logging
 - [x] Eliminar el uso excesivo de `console.log` en el front.
-- [ ] Crear un **logger** centralizado que permita:
+- [x] Crear un **logger** centralizado que permita:
   - Definir niveles de logging (debug, info, warn, error).
   - Bajar el nivel de logging en producción.
   - Redireccionar logs a un servidor de logs sin exponerlos al usuario final.

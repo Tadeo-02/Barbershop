@@ -11,6 +11,7 @@ import { getResponseMessage, readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
+import logger from "../../../lib/logger";
 
 const CreateBranchSchema = BranchSchema.extend({});
 
@@ -73,7 +74,7 @@ const CreateBranches: React.FC = () => {
       if (handleAbortOrConnectionError(error, toastId, "No se pudo conectar con el servidor")) {
         return;
       }
-      console.error("Error en handleSubmit:", error);
+      logger.error("Error en handleSubmit:", error);
     }
   };
 

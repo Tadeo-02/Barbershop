@@ -11,6 +11,7 @@ import { apiFetch } from "../../lib/apiFetch";
 import { getPasswordMissing } from "../../lib/passwordRules";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
+import logger from "../../lib/logger";
 
 const ResetSecurity: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -59,7 +60,7 @@ const ResetSecurity: React.FC = () => {
       if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
         return;
       }
-      console.error(err);
+      logger.error(err);
     }
   };
 
@@ -96,7 +97,7 @@ const ResetSecurity: React.FC = () => {
       if (handleAbortOrConnectionError(err, undefined, "Error de conexión")) {
         return;
       }
-      console.error(err);
+      logger.error(err);
     }
   };
 

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
+import logger from "../lib/logger";
 import { z } from "zod";
 import { AvailabilitySchema } from "../Schemas/availabilitySchema";
 import { assertEntityExists } from "../lib/entityChecks";
@@ -128,7 +129,7 @@ export const store = async (
       sanitizedData,
     );
 
-    console.log("Creating barber unavailability");
+    logger.info("Creating barber unavailability");
 
     // convert strings to DateTime objects for Prisma (forze UTC to avoid shift schedule)
     const fechaDesde = new Date(
@@ -168,12 +169,12 @@ export const store = async (
       return createdBloqueo;
     });
 
-    console.log("Barber unavailability created successfully");
+    logger.info("Barber unavailability created successfully");
     return bloqueo;
   } catch (error) {
-    console.error(
-      "Error creating barber unavailability:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error creating barber unavailability",
     );
 
     //   validation errors
@@ -201,18 +202,18 @@ export const store = async (
 
 export const findAll = async () => {
   try {
-    console.log("Fetching all unavailabilities with Prisma");
+    logger.info("Fetching all unavailabilities");
 
     const unavailabilities = await prisma.bloqueos_barbero.findMany({
       orderBy: { fechaHoraDesde: "asc" },
     });
 
-    console.log(`Retrieved ${unavailabilities.length} unavailabilities`);
+    logger.info({ count: unavailabilities.length }, "Retrieved unavailabilities");
     return unavailabilities;
   } catch (error) {
-    console.error(
-      "Error fetching unavailabilities:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching unavailabilities",
     );
     throw new DatabaseError("Error al obtener lista de bloqueos");
   }
@@ -233,9 +234,9 @@ export const findById = async (codBloqueo: string) => {
       throw error;
     }
 
-    console.error(
-      "Error finding unavailability:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding unavailability",
     );
     throw new DatabaseError("Error al buscar bloqueo");
   }
@@ -317,12 +318,12 @@ export const update = async (
       return updated;
     });
 
-    console.log("Bloqueo updated successfully");
+    logger.info("Bloqueo updated successfully");
     return updatedBloqueo;
   } catch (error) {
-    console.error(
-      "Error updating bloqueo:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error updating bloqueo",
     );
 
     // handle validation errors
@@ -370,12 +371,12 @@ export const destroy = async (codBloqueo: string) => {
       where: { codBloqueo: sanitizedCodBloqueo },
     });
 
-    console.log("Bloqueo deleted successfully");
+    logger.info("Bloqueo deleted successfully");
     return deletedBloqueo;
   } catch (error) {
-    console.error(
-      "Error deleting bloqueo:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error deleting bloqueo",
     );
 
     // handle DB errors

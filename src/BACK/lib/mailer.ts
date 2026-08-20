@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import logger from "./logger";
 
 type SendMailParams = {
   to: string;
@@ -13,10 +14,7 @@ const resend = process.env.RESEND_API_KEY
 
 export const sendMail = async ({ to, subject, text, html }: SendMailParams) => {
   if (!resend) {
-    console.warn("Email transport not configured. Skipping email send.", {
-      to,
-      subject,
-    });
+    logger.warn({ to, subject }, "Email transport not configured. Skipping email send.");
     return;
   }
 

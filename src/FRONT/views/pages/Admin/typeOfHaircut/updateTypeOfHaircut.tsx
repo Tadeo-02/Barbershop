@@ -11,6 +11,7 @@ import { apiFetch } from "../../../lib/apiFetch";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import type { Haircut } from "../../../../types/haircut";
+import logger from "../../../lib/logger";
 
 type TypeForm = z.infer<typeof HaircutSchema>;
 
@@ -72,7 +73,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
         if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
           return;
         }
-        console.error("Error fetching tipo de corte:", err);
+        logger.error("Error fetching tipo de corte:", err);
       }
     };
 
@@ -111,7 +112,7 @@ const UpdateTypeOfHaircut: React.FC = () => {
       if (handleAbortOrConnectionError(err, toastId, "Error de conexión")) {
         return;
       }
-      console.error("Error modificando Tipo de Corte:", err);
+      logger.error("Error modificando Tipo de Corte:", err);
     }
   };
 

@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import { apiFetch } from "../../lib/apiFetch";
 import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
+import logger from "../../lib/logger";
 
 type ChangeEntityStatusOptions = {
   endpoint: string;
@@ -50,7 +51,7 @@ export const changeEntityStatus = async ({
       getResponseMessage(errorData, genericErrorMessage) ?? genericErrorMessage;
     toast.error(message, { id: toastId, duration });
   } catch (error) {
-    console.error("Error en la solicitud:", error);
+    logger.error("Error en la solicitud:", error);
     toast.error(networkErrorMessage, { id: toastId, duration });
   }
 };

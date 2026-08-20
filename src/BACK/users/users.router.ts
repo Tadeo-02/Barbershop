@@ -1,6 +1,7 @@
 import * as controller from "./users.controller";
 import createRouter from "../base/base.router";
 import { findByIdWithCategory } from "./Users";
+import logger from "../lib/logger";
 import { RequestHandler, Router } from "express";
 import {
   authLimiter,
@@ -183,7 +184,7 @@ router.get(
         csrfToken: req.cookies?.[CSRF_COOKIE] ?? null,
       });
     } catch (error) {
-      console.error("Error getting user profile with category:", error);
+      logger.error({ error }, "Error getting user profile with category");
       res.status(500).json({
         success: false,
         message:

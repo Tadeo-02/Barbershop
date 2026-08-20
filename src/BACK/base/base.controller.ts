@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { DatabaseError } from "./Base";
+import logger from "../lib/logger";
 import { sanitizeOutput } from "../middleware/zodValidation";
 import {
   createErrorResponse,
@@ -108,9 +109,9 @@ export abstract class BaseController<T, TCreateArgs extends unknown[] = unknown[
   };
 
   protected handleError(error: unknown, res: Response) {
-    console.error(
-      `Error in ${this.entityName}:`,
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      `Error in ${this.entityName}`,
     );
 
     if (error instanceof DatabaseError) {

@@ -17,6 +17,7 @@ import { getResponseMessage, readJsonSafely, unwrapArray } from "../../../lib/ap
 import { handleAbortOrConnectionError } from "../../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../../lib/authUtils";
 import type { Haircut } from "../../../../types/haircut";
+import logger from "../../../lib/logger";
 
 // (legacy per-item form state removed — CheckoutForm keeps its own state for each appointment, so we don't need to manage it here)
 
@@ -64,21 +65,21 @@ const CheckoutForm: React.FC<{
               isThisTurnEligible:
                 userData.loyaltyProgress?.isThisTurnEligible ?? null,
             });
-            console.log(
+            logger.debug(
               `Categoría cargada: ${userData.categoriaActual.nombreCategoria} - Descuento: ${userData.categoriaActual.descuentoCorte}%`,
             );
           } else {
-            console.warn("Sin categoría actual para el cliente");
+            logger.warn("Sin categoría actual para el cliente");
             setDescuentoInfo({
               descuento: 0,
               nombreCategoria: "Sin categoría",
             });
           }
         } else {
-          console.error("Error en respuesta:", res.status);
+          logger.error("Error en respuesta:", res.status);
         }
       } catch (error) {
-        console.error("Error cargando categoría:", error);
+        logger.error("Error cargando categoría:", error);
       } finally {
         loadedClientRef.current = codCliente;
         setLoadingCategoria(false);
@@ -233,10 +234,10 @@ const CheckoutForm: React.FC<{
       }
     } catch (error: unknown) {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión al finalizar el turno")) {
-        console.log("Checkout request aborted");
+        logger.debug("Checkout request aborted");
         return;
       }
-      console.error("Fetch error:", error);
+      logger.error("Fetch error:", error);
     }
   };
 
@@ -491,8 +492,8 @@ const BranchAppointments: React.FC = () => {
       const endpoint = `/turnos/branch/${user.codSucursal}`;
       const res = await apiFetch(endpoint, { signal: controller.signal });
 
-      console.log("Response status:", res.status);
-      console.log("Response headers:", res.headers.get("content-type"));
+      logger.debug("Response status:", res.status);
+      logger.debug("Response headers:", res.headers.get("content-type"));
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -503,10 +504,10 @@ const BranchAppointments: React.FC = () => {
 
     } catch (error: unknown) {
       if (isAbortError(error)) {
-        console.log("Fetch aborted for branch turnos");
+        logger.debug("Fetch aborted for branch turnos");
         return;
       }
-      console.error("Error fetching appointments:", error);
+      logger.error("Error fetching appointments:", error);
       setTurnos([]);
     } finally {
       setLoading(false);
@@ -534,7 +535,7 @@ const BranchAppointments: React.FC = () => {
         const res = await apiFetch("/tipoCortes", {
           signal: controller.signal,
         });
-        console.log("Response status cortes:", res.status);
+        logger.debug("Response status cortes:", res.status);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -542,7 +543,7 @@ const BranchAppointments: React.FC = () => {
         setAllCortes(unwrapArray<Haircut>(data, ["data"]));
       } catch (error: unknown) {
         if (isAbortError(error)) return;
-        console.error("Error fetching cuts:", error);
+        logger.error("Error fetching cuts:", error);
         toast.error("Error al cargar tipos de corte");
       }
     };
@@ -652,7 +653,7 @@ const BranchAppointments: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error("Error facturando:", error);
+      logger.error("Error facturando:", error);
       toast.error("Error de red al generar factura", {
         id: toastId,
         duration: 3000,
@@ -729,7 +730,7 @@ const BranchAppointments: React.FC = () => {
         toast.error("Turno no encontrado", { id: toastId });
       } else {
         const errorData = await readJsonSafely(response);
-        console.error("Error response:", errorData);
+        logger.error("Error response:", errorData);
         toast.error(
           getResponseMessage(
             errorData,
@@ -742,10 +743,10 @@ const BranchAppointments: React.FC = () => {
       }
     } catch (error: unknown) {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión al marcar turno como No asistido")) {
-        console.log("No-show request aborted");
+        logger.debug("No-show request aborted");
         return;
       }
-      console.error("Fetch error:", error);
+      logger.error("Fetch error:", error);
     } finally {
       setIsSubmitting(false);
     }

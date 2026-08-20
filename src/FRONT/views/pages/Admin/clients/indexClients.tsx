@@ -7,6 +7,7 @@ import type { Category } from "../../../../types/category";
 import type { CategorySummary } from "../../../../types/category";
 import { formatDateISO } from "../../../utils/dateUtils";
 import {unwrapArray} from "../../../lib/apiResponse";
+import logger from "../../../lib/logger";
 
 interface Cliente {
   codUsuario: string;
@@ -52,7 +53,7 @@ const IndexClients = () => {
         if (!response.ok) {
           const errorData = await readJsonSafely(response);
           const text = JSON.stringify(errorData ?? {});
-          console.error("/usuarios error body:", text);
+          logger.error("/usuarios error body:", text);
           throw new Error(`HTTP ${response.status} - ${text}`);
         }
         const data = await response.json();
@@ -66,7 +67,7 @@ const IndexClients = () => {
           ),
         );
       } catch (error) {
-        console.error("Error fetching clients:", error);
+        logger.error("Error fetching clients:", error);
         toast.error("Error al cargar los clientes");
         setClientes([]);
       } finally {
@@ -95,7 +96,7 @@ const IndexClients = () => {
       setProfilesCache((prev) => ({ ...prev, [codUsuario]: profile }));
       return profile;
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      logger.error("Error fetching profile:", error);
       toast.error("No se pudo obtener el perfil");
       return null;
     }
@@ -119,7 +120,7 @@ const IndexClients = () => {
         if (!res.ok) {
           const errorData = await readJsonSafely(res);
           const text = JSON.stringify(errorData ?? {});
-          console.error("/categorias error body:", text);
+          logger.error("/categorias error body:", text);
           throw new Error(`HTTP ${res.status} - ${text}`);
         }
         const json = await res.json();
@@ -127,7 +128,7 @@ const IndexClients = () => {
           unwrapArray<Category>(json).filter(isCategoria);
         setCategorias(categoriasData);
       } catch (error) {
-        console.error("Error fetching categorias:", error);
+        logger.error("Error fetching categorias:", error);
       }
     };
 

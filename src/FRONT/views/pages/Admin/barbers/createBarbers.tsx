@@ -17,6 +17,7 @@ import {
 import { getPasswordMissing } from "../../../lib/passwordRules";
 import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { parseBackendResponse } from "../../../lib/backendResponse";
+import logger from "../../../lib/logger";
 
 type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
@@ -74,7 +75,7 @@ const CreateBarbers: React.FC = () => {
         if (handleAbortOrConnectionError(error, undefined, "Error de conexión al cargar sucursales")) {
           return;
         }
-        console.error("Error fetching sucursales:", error);
+        logger.error("Error fetching sucursales:", error);
       }
     };
 
@@ -121,7 +122,7 @@ const CreateBarbers: React.FC = () => {
       if (handleAbortOrConnectionError(error, toastId, "Error de conexión con el servidor")) {
         return;
       }
-      console.error("Error en onSubmit:", error);
+      logger.error("Error en onSubmit:", error);
     }
   };
 
