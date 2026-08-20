@@ -5,15 +5,6 @@ import type {
 
 export type { AppointmentFull, AppointmentDateLike };
 
-export const unwrapAppointments = <T>(data: unknown): T[] => {
-  if (Array.isArray(data)) return data as T[];
-  if (data && typeof data === "object" && "data" in data) {
-    const nested = (data as { data?: unknown }).data;
-    if (Array.isArray(nested)) return nested as T[];
-  }
-  return [];
-};
-
 export const buildTurnoDateTime = (
   fechaTurno: string,
   horaDesde: string,

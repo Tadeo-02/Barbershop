@@ -4,10 +4,10 @@ import barberStyles from "./ClientAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import type { AppointmentFull } from "../../components/shared/appointments";
-import { sortTurnosByDateTime, unwrapAppointments,} from "../../components/shared/appointments";
+import { sortTurnosByDateTime,} from "../../components/shared/appointments";
 import { formatDate, formatTime,} from "../../utils/dateUtils";
 import { apiFetch } from "../../lib/apiFetch.ts";
-import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
+import { getResponseMessage, readJsonSafely, unwrapArray } from "../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
 import { ensureAuthenticatedUser } from "../../lib/authUtils";
 
@@ -55,7 +55,7 @@ const ClientAppointments: React.FC = () => {
 
         const data = await res.json();
         console.log("Turnos data:", data);
-        const turnosArray = unwrapAppointments<AppointmentFull>(data);
+        const turnosArray = unwrapArray<AppointmentFull>(data);
 
         console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);

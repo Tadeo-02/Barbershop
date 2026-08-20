@@ -6,6 +6,7 @@ import { apiFetch } from "../../../lib/apiFetch";
 import type { Category } from "../../../../types/category";
 import type { CategorySummary } from "../../../../types/category";
 import { formatDateISO } from "../../../utils/dateUtils";
+import {unwrapArray} from "../../../lib/apiResponse";
 
 interface Cliente {
   codUsuario: string;
@@ -27,12 +28,6 @@ type ClienteProfile = Cliente;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
-
-const getDataArray = <T,>(value: unknown): T[] => {
-  if (Array.isArray(value)) return value as T[];
-  if (isRecord(value) && Array.isArray(value.data)) return value.data as T[];
-  return [];
-};
 
 const isCategoria = (value: unknown): value is Category =>
   isRecord(value) &&
@@ -61,7 +56,7 @@ const IndexClients = () => {
           throw new Error(`HTTP ${response.status} - ${text}`);
         }
         const data = await response.json();
-        const clientesData = getDataArray<Cliente>(data);
+        const clientesData = unwrapArray<Cliente>(data);
 
         setClientes(clientesData);
         setVisibleClients(clientesData);
@@ -129,7 +124,7 @@ const IndexClients = () => {
         }
         const json = await res.json();
         const categoriasData =
-          getDataArray<Category>(json).filter(isCategoria);
+          unwrapArray<Category>(json).filter(isCategoria);
         setCategorias(categoriasData);
       } catch (error) {
         console.error("Error fetching categorias:", error);

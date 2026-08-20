@@ -6,12 +6,9 @@ import { useAuth } from "../../components/user/AuthContext";
 import styles from "./home.module.css";
 import { isAbortError, useAbortController } from "../../components/shared/useAbortController";
 import { apiFetch } from "../../lib/apiFetch";
-import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
+import { getResponseMessage, readJsonSafely, unwrapArray } from "../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
-import {
-  getTurnoDateTime,
-  unwrapAppointments,
-} from "../../components/shared/appointments";
+import { getTurnoDateTime } from "../../components/shared/appointments";
 import type { AppointmentSummary } from "../../../types/appointment";
 import type { LoyaltyProgress } from "../../../types/user";
 import { formatTime, getDateBadge} from "../../utils/dateUtils";
@@ -140,7 +137,7 @@ useEffect(() => {
         }
 
         const data = await res.json();
-        const turnosArray = unwrapAppointments<AppointmentSummary>(data);
+        const turnosArray = unwrapArray<AppointmentSummary>(data);
 
         const now = new Date();
         const upcoming = turnosArray

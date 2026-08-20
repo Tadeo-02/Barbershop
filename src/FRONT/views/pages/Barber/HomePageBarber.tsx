@@ -8,10 +8,8 @@ import {
   useAbortController,
 } from "../../components/shared/useAbortController.ts";
 import { apiFetch } from "../../lib/apiFetch";
-import {
-  getTurnoDateTime,
-  unwrapAppointments,
-} from "../../components/shared/appointments";
+import { unwrapArray } from "../../lib/apiResponse";
+import { getTurnoDateTime } from "../../components/shared/appointments";
 import type { AppointmentPartial } from "../../../types/appointment";
 import {
   formatTime,
@@ -51,7 +49,7 @@ const Home = () => {
         }
 
         const data = await res.json();
-        const turnosArray = unwrapAppointments<AppointmentPartial>(data);
+        const turnosArray = unwrapArray<AppointmentPartial>(data);
 
         const now = new Date();
         const upcoming = turnosArray

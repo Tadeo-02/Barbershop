@@ -1,15 +1,10 @@
 import { apiFetch } from "../../lib/apiFetch";
-import { readJsonSafely } from "../../lib/apiResponse";
+import { readJsonSafely, unwrapArray } from "../../lib/apiResponse";
 
 type PendingScope = "barber" | "branch";
 
 type PendingResponse = {
   data?: unknown;
-};
-
-const getPendingList = (payload: PendingResponse | null): unknown[] => {
-  if (!payload || !Array.isArray(payload.data)) return [];
-  return payload.data;
 };
 
 export const fetchPendingAppointmentsCount = async (
@@ -23,6 +18,6 @@ export const fetchPendingAppointmentsCount = async (
   }
 
   const payload = await readJsonSafely<PendingResponse>(response);
-  const pendingList = getPendingList(payload);
+  const pendingList = unwrapArray(payload?.data ?? []);
   return pendingList.length;
 };
