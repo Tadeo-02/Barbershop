@@ -27,12 +27,6 @@ const BarbersByBranch = () => {
 
   useEffect(() => {
     const loadBarbersAndBranch = async () => {
-      console.log(
-        "codSucursal from params:",
-        codSucursal,
-        "- Selecciono el horario:",
-        isHorario,
-      );
 
       if (!codSucursal) {
         setError("No se encontró el código de sucursal");

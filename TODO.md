@@ -16,17 +16,17 @@
   - Revisar el resto del proyecto en busca de bloques similares y eliminarlos.
 
 ## 3. Seguridad — Backend
-- [x] Implementar **validación de usuario y roles** en el backend (actualmente no hay).
-- [x] Implementar **JWT** para autenticación y validación de las APIs.
-- [x] Usar JWT (o similar) para validar roles en cada endpoint, no solo en el front.
-- [x] Revisar el manejo básico de tokens de autenticación: JWT emitido en login, validado por middleware, enviado desde el frontend y limpiado ante expiración/401.
+  - [x] Implementar **validación de usuario y roles** en el backend (actualmente no hay).
+  - [x] Implementar **JWT** para autenticación y validación de las APIs.
+  - [x] Usar JWT (o similar) para validar roles en cada endpoint, no solo en el front.
+  - [x] Revisar el manejo básico de tokens de autenticación: JWT emitido en login, validado por middleware, enviado desde el frontend y limpiado ante expiración/401.
   - [x] JWT almacenado en cookie HttpOnly (no accesible por JS/XSS).
   - [x] CSRF protection implementado (double-submit cookie pattern).
   - [x] JWT signing algorithm pinned a HS256 explícitamente.
   - [x] Startup check que falla rápido si falta JWT_SECRET.
   - Pendiente: refresh tokens con revocación server-side.
   - Pendiente: invalidación de JWT al desactivar/vetar usuarios.
-- [x] **Pregunta de seguridad**: no debe tratarse como un segundo password sin verificación adicional.
+  - [x] **Pregunta de seguridad**: no debe tratarse como un segundo password sin verificación adicional.
   - [x] Implementar envío de email con token para validar que el usuario controla ese email y usar recuperación por token.
   - [x] Documentar/comunicar al usuario que la pregunta de seguridad no reemplaza un password fuerte, para evitar que la subestime.
 
@@ -74,7 +74,7 @@ Es intencional, y está bien ya que response.json() explota (SyntaxError: Unexpe
 Si login.tsx usara response.json() directo, esos casos tirarían una excepción no controlada que caería en el catch genérico de handleSubmit, y el usuario vería siempre "Error de conexión" sin importar qué pasó realmente. Con .text() + JSON.parse() envuelto en su propio try/catch, la app puede devolver mensajes específicos ("El servidor no devolvió respuesta.", "Respuesta inválida del servidor") en vez de un mensaje genérico.
 
 ## 7. Logging
-- [ ] Eliminar el uso excesivo de `console.log` en el front.
+- [x] Eliminar el uso excesivo de `console.log` en el front.
 - [ ] Crear un **logger** centralizado que permita:
   - Definir niveles de logging (debug, info, warn, error).
   - Bajar el nivel de logging en producción.
@@ -118,8 +118,7 @@ Si login.tsx usara response.json() directo, esos casos tirarían una excepción 
 - [x] Crear variables CSS (o tokens de diseño) para:
   - Colores
   - Espaciados
-  - Tamaños
-    que se repiten en toda la app, en lugar de hardcodearlos en cada componente.
+  - Tamaños que se repiten en toda la app, en lugar de hardcodearlos en cada componente.
 
 ## 15. Hook reutilizable para AbortController
 - [x] Crear un hook custom (ej. `useAbortableEffect` / `useAbortController`) para reutilizar la lógica de cancelación de requests al salir de la página.

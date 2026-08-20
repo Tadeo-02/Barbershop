@@ -54,10 +54,8 @@ const ClientAppointments: React.FC = () => {
         }
 
         const data = await res.json();
-        console.log("Turnos data:", data);
         const turnosArray = unwrapArray<AppointmentFull>(data);
 
-        console.log("Turnos array procesado:", turnosArray);
         setTurnos(turnosArray);
       } catch (error) {
         console.error("Error fetching appointments:", error);

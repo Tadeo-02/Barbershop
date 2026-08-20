@@ -104,8 +104,6 @@ const BarberAppointments: React.FC = () => {
         }
 
         const data = await readJsonSafely(res);
-
-        console.log("Turnos data:", data);
         const turnosArray = unwrapArray<AppointmentFull>(data);
 
         console.log("Turnos array procesado:", turnosArray);

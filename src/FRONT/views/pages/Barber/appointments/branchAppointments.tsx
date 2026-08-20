@@ -53,7 +53,7 @@ const CheckoutForm: React.FC<{
         if (res.ok) {
           const responseData = await res.json();
           const userData = responseData.data || responseData;
-          console.log("🔍 Datos del usuario con categoría:", userData);
+
           if (userData.categoriaActual) {
             setDescuentoInfo({
               descuento: userData.categoriaActual.descuentoCorte || 0,
@@ -65,10 +65,10 @@ const CheckoutForm: React.FC<{
                 userData.loyaltyProgress?.isThisTurnEligible ?? null,
             });
             console.log(
-              `✅ Categoría cargada: ${userData.categoriaActual.nombreCategoria} - Descuento: ${userData.categoriaActual.descuentoCorte}%`,
+              `Categoría cargada: ${userData.categoriaActual.nombreCategoria} - Descuento: ${userData.categoriaActual.descuentoCorte}%`,
             );
           } else {
-            console.warn("❌ Sin categoría actual para el cliente");
+            console.warn("Sin categoría actual para el cliente");
             setDescuentoInfo({
               descuento: 0,
               nombreCategoria: "Sin categoría",

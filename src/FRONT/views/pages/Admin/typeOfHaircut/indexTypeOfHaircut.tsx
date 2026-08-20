@@ -16,7 +16,6 @@ const IndexTypeOfHaircut = () => {
         const res = await apiFetch("/tipoCortes");
         const data = await res.json();
         setTipoCortes(data);
-        console.log("Tipos de corte recibidos:", data);
       } catch (error) {
         console.error("Error al obtener tipos de corte:", error);
       } finally {

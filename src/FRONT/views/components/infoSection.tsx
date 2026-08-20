@@ -12,7 +12,6 @@ const InfoSection: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Cargar sucursales
         const [sucursalesResponse] = await Promise.all([
           apiFetch("/sucursales"),
         ]);
@@ -24,7 +23,6 @@ const InfoSection: React.FC = () => {
             : sucursalesData?.data || [];
 
           // Validate each sucursal against the schema
-          //! Parsing es otra validacion frontend de la libreria zod
           const validatedSucursales: Sucursal[] = [];
           for (const sucursal of list) {
             try {
@@ -41,7 +39,6 @@ const InfoSection: React.FC = () => {
           }
 
           setSucursales(validatedSucursales);
-          console.log("Sucursales recibidas:", validatedSucursales);
         } else {
           toast.error("Error al cargar las sucursales");
         }

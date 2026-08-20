@@ -37,7 +37,6 @@ const ScheduleByBranch = () => {
 
   useEffect(() => {
     const loadScheduleInfo = async () => {
-      console.log("Código from params:", codigo, "- Es barbero:", isBarbero);
 
       if (!codigo) {
         setLoading(false);
@@ -204,7 +203,6 @@ const ScheduleByBranch = () => {
       console.log("Response status:", response.status);
 
       const parsed = await parseBackendResponse<{ message?: string }>(response);
-      console.log("Respuesta cruda del backend:", parsed.raw);
 
       if (!parsed.ok && parsed.message) {
         toast.error(parsed.message, { id: toastId });

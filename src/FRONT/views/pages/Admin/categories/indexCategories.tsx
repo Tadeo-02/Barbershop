@@ -82,7 +82,6 @@ const IndexCategories = () => {
         const res = await apiFetch("/categorias");
         const data = await res.json();
         setCategorias(data);
-        console.log("Categorías existentes:", data);
       } catch (error) {
         console.error("Error al obtener categorias:", error);
         toast.error("Error al cargar las categorías", { duration: 2000 });

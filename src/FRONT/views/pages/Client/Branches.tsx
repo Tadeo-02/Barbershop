@@ -17,7 +17,6 @@ const IndexBranches = () => {
         const res = await apiFetch("/sucursales");
         const data = await res.json();
         setBranches(data);
-        console.log("Sucursales recibidas:", data);
       } catch (error) {
         console.error("Error al obtener sucursales:", error);
       } finally {

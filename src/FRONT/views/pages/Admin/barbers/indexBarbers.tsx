@@ -25,7 +25,6 @@ const IndexBarbers = () => {
 
         if (barberosResponse.ok) {
           const barberosData = await barberosResponse.json();
-          console.log("Raw data from API:", barberosData);
 
         // Validate and parse using the derived schema.
 
@@ -33,7 +32,6 @@ const IndexBarbers = () => {
           if (parsed.success) {
             // parsed data comes from backend and doesn't include contraseña (password)
             setBarberos(parsed.data);
-            console.log("Barberos recibidos:", parsed.data);
           } else {
             console.error(
               "Barberos invalidos - Schema validation error:",
@@ -65,7 +63,6 @@ const IndexBarbers = () => {
               {},
             );
             setSucursales(sucursalesMap);
-            console.log("Sucursales recibidas:", parsedSuc.data);
           } else {
             console.error("Sucursales invalidas:", parsedSuc.error);
             toast.error("Datos de sucursales inválidos");

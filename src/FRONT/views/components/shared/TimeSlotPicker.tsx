@@ -73,8 +73,6 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
         ? `/turnos/barber/${codigo}/${fechaTurno}`
         : `/turnos/available/${fechaTurno}/${codigo}`;
 
-      console.log("Llamando a endpoint:", endpoint);
-
       try {
         const res = await apiFetch(endpoint);
 
