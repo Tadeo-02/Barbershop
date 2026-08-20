@@ -210,9 +210,8 @@ router.patch(
   controller.reactivate,
 );
 
-// apply base routes (GET, POST, PUT, DELETE genéricas)
+// apply base routes (generic GET, POST, PUT, DELETE)
 const baseRouter = createRouter(controller, {
-  create: "/create",
   idParam: "codUsuario",
   updatePath: "/update",
   middleware: {

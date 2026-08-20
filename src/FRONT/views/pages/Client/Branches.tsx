@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./Branches.module.css";
 import { apiFetch } from "../../lib/apiFetch";
 import type { Sucursal } from "../../../types/branch";
-// import toast from "react-hot-toast";
+
 
 const IndexBranches = () => {
   const navigate = useNavigate();

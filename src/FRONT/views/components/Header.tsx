@@ -6,7 +6,6 @@ import styles from "./header.module.css";
 import { isAbortError, useAbortController } from "./shared/useAbortController";
 import { apiFetch } from "../lib/apiFetch";
 import { readJsonSafely } from "../lib/apiResponse";
-// import logoBarber from "../../public/images/logoBarber.png";
 
 function Header() {
   const [open, setOpen] = useState(false);

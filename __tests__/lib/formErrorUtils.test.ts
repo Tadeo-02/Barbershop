@@ -3,7 +3,7 @@ import {
   extractMessageValue,
   normalizeFormErrors,
   normalizeMessage,
-} from "../../src/FRONT/views/lib/formErrorUtils";
+} from "../../src/FRONT/views/utils/formErrorUtils";
 
 describe("normalizeMessage", () => {
   it("trims and keeps a valid message", () => {

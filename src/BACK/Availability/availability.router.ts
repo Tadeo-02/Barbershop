@@ -38,7 +38,6 @@ router.post(
 
 // Create base router for other CRUD operations
 const baseRouter = createRouter(controller, {
-  create: "/create",
   idParam: "codBloqueo",
   updatePath: "/update",
   middleware: {

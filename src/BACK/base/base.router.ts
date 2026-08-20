@@ -1,7 +1,6 @@
 import express from "express";
 import { Router, RequestHandler } from "express";
 export interface ControllerHandlers {
-  create: RequestHandler;
   store: RequestHandler;
   index: RequestHandler;
   show: RequestHandler;
@@ -11,7 +10,6 @@ export interface ControllerHandlers {
 }
 
 export interface RouterConfig {
-  create: string;
   idParam: string;
   updatePath: string;
   globalMiddleware?: RequestHandler[]; 
@@ -26,7 +24,6 @@ export interface RouterConfig {
 const createRouter = (
   controller: ControllerHandlers,
   config: RouterConfig = {
-    create: "/create",
     idParam: "id",
     updatePath: "/update",
   },
@@ -44,7 +41,6 @@ const createRouter = (
   };
 
   // Read operations (no middleware by default)
-  router.get(config.create, ...applyMiddleware("read"), controller.create);
   router.get("/", ...applyMiddleware("read"), controller.index);
   router.get(
     `/:${config.idParam}`,

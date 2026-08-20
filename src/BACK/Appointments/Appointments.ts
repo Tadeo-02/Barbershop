@@ -847,20 +847,6 @@ export const update = async (
       throw new DatabaseError(firstError.message);
     }
 
-    // handle errors of DB
-    //! Adaptar para turnos
-    // if (error && typeof error === "object" && "code" in error) {
-    //   const prismaError = error as { code: string };
-
-    //   if (prismaError.code === "P2002") {
-    //     throw new DatabaseError("El nuevo CUIL ya existe en el sistema");
-    //   }
-
-    //   if (prismaError.code === "P2025") {
-    //     throw new DatabaseError("Turno no encontrado");
-    //   }
-    // }
-
     if (error instanceof DatabaseError) {
       throw error;
     }
@@ -1536,22 +1522,6 @@ export const destroy = async (codTurno: string) => {
       "Error deleting turno:",
       error instanceof Error ? error.message : "Unknown error",
     );
-
-    // manejo de errores de DB
-    //! Adaptar para turnos
-    // if (error && typeof error === "object" && "code" in error) {
-    //   const prismaError = error as { code: string };
-
-    //   if (prismaError.code === "P2025") {
-    //     throw new DatabaseError("Turno no encontrado");
-    //   }
-
-    //   if (prismaError.code === "P2003") {
-    //     throw new DatabaseError(
-    //       "No se puede eliminar: el barbero tiene turnos asociados"
-    //     );
-    //   }
-    // }
 
     if (error instanceof DatabaseError) {
       throw error;

@@ -5,7 +5,7 @@
  * Run with: node test-security.js
  */
 
-const BASE_URL = "http://localhost:3001"; // Adjust if your server runs on different port
+const BASE_URL = "http://localhost:3001"; 
 
 // Test data
 const validTestUser = {

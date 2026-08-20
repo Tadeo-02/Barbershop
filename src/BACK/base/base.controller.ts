@@ -7,11 +7,7 @@ import {
   createNotFoundResponse,
 } from "../lib/backendResponse";
 // manejo universal de los distintos datos que llegan del front
-export abstract class BaseController<
-  T,
-  TCreateArgs extends unknown[] = unknown[],
-  TUpdateArgs extends unknown[] = unknown[],
-> {
+export abstract class BaseController<T, TCreateArgs extends unknown[] = unknown[], TUpdateArgs extends unknown[] = unknown[],> {
   protected abstract model: {
     store: (...args: TCreateArgs) => Promise<T | T[]>;
     findAll: () => Promise<T[]>;
@@ -28,12 +24,6 @@ export abstract class BaseController<
     if (!this.responseSchema) return data;
     return sanitizeOutput(this.responseSchema, data);
   }
-  // paths are generated according to the parameters that arrive (component name and id)
-  create = (_req: Request, res: Response) => {
-    res.render(
-      `/src/FRONT/views/components/${this.entityName}/create${this.entityName}`,
-    );
-  };
 
   store = async (req: Request, res: Response) => {
     // handling of general errors on generic structure 

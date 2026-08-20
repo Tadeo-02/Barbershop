@@ -16,8 +16,6 @@ const getTomorrowDate = () => {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
   tomorrow.setHours(0, 0, 0, 0); // Start of tomorrow
-  // console.log("Hoy:", today.toDateString());
-  // console.log("Mañana (minDate):", tomorrow.toDateString());
   return tomorrow;
 };
 

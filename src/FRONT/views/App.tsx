@@ -1,4 +1,3 @@
-// import { useState } from "react";
 import "./App.css";
 // General Components
 import Login from "./pages/Auth/login.tsx";

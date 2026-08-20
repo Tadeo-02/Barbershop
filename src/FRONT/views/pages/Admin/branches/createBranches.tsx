@@ -18,9 +18,6 @@ type CreateBranchFormData = z.infer<typeof CreateBranchSchema>;
 
 const CreateBranches: React.FC = () => {
   const navigate = useNavigate();
-  {
-    /*add img?*/
-  }
   const { renew: renewSubmitAbort } = useAbortController();
 
   const {
@@ -55,7 +52,6 @@ const CreateBranches: React.FC = () => {
         "Error al crear sucursal";
 
       if (response.ok) {
-        // ÉXITO
         toast.success(responseMessage || "Sucursal creada exitosamente", {
           id: toastId,
           duration: 2000,
