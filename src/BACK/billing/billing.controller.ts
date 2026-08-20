@@ -1,23 +1,12 @@
 import type { Request, Response } from "express";
 import * as model from "./Billing";
-import {
-  CreateVoucherSchema,
-  BillAppointmentSchema,
-} from "../Schemas/billingSchema";
+import { CreateVoucherSchema, BillAppointmentSchema } from "../Schemas/billingSchema";
 import { AFIP_PUNTO_VENTA, VOUCHER_TYPES } from "./afipConfig";
 import { prisma } from "../base/Base";
-import {
-  gatherInvoiceData,
-  generateInvoicePdf,
-  gatherReceiptData,
-  generateReceiptPdf,
-} from "./invoicePdf";
-import {
-  createDataResponse,
-  createErrorResponse,
-  createValidationErrorResponse,
-  getErrorMessage,
-} from "../lib/backendResponse";
+import { gatherInvoiceData, generateInvoicePdf, gatherReceiptData, generateReceiptPdf} from "./invoicePdf";
+import { createDataResponse, createErrorResponse, createValidationErrorResponse, getErrorMessage} from "../lib/backendResponse";
+import { denyIfNotOwner } from "../lib/entityChecks";
+
 
 const getErrorCode = (error: unknown): string | undefined => {
   if (error && typeof error === "object" && "code" in error) {
@@ -37,12 +26,12 @@ const serverError = (message: string) =>
   createErrorResponse(message, "server_error");
 
 // ============================================================
-// Controller de Facturación Electrónica - ARCA
+// Controller of electronic billing - ARCA
 // ============================================================
 
 /**
  * POST /facturacion/comprobante
- * Crear un comprobante (factura) manualmente.
+ * Create a receipt (bill) manually.
  */
 export const createVoucher = async (
   req: Request,
@@ -72,7 +61,7 @@ export const createVoucher = async (
 
 /**
  * POST /facturacion/facturar-turno
- * Facturar un turno completado (automática o manualmente desde botón).
+ * Bill an appointment for a completed appointment (automatically or manually from a button).
  */
 export const billAppointment = async (
   req: Request,
@@ -128,7 +117,7 @@ export const billAppointment = async (
 
 /**
  * GET /facturacion/ultimo-comprobante/:tipoComprobante?
- * Obtener número del último comprobante.
+ * get the number of the last voucher.
  */
 export const getLastVoucher = async (
   req: Request,
@@ -163,7 +152,7 @@ export const getLastVoucher = async (
 
 /**
  * GET /facturacion/comprobante/:numeroComprobante/:tipoComprobante?
- * Obtener información de un comprobante ya emitido.
+ * get information of an already issued voucher.
  */
 export const getVoucherInfo = async (
   req: Request,
@@ -212,7 +201,7 @@ export const getVoucherInfo = async (
 
 /**
  * GET /facturacion/tipos-comprobante
- * Obtener tipos de comprobantes disponibles.
+ * get types of vouchers available.
  */
 export const getVoucherTypes = async (
   _req: Request,
@@ -231,7 +220,7 @@ export const getVoucherTypes = async (
 
 /**
  * GET /facturacion/tipos-documento
- * Obtener tipos de documentos disponibles.
+ * get types of documents available.
  */
 export const getDocumentTypes = async (
   _req: Request,
@@ -250,7 +239,7 @@ export const getDocumentTypes = async (
 
 /**
  * GET /facturacion/tipos-alicuota
- * Obtener tipos de alícuotas de IVA disponibles.
+ * get types of IVA aliquots available.
  */
 export const getAliquotTypes = async (
   _req: Request,
@@ -269,7 +258,7 @@ export const getAliquotTypes = async (
 
 /**
  * GET /facturacion/estado-servidor
- * Verificar estado del servidor de ARCA.
+ * verify the status of the ARCA server.
  */
 export const getServerStatus = async (
   _req: Request,
@@ -288,7 +277,7 @@ export const getServerStatus = async (
 
 /**
  * GET /facturacion/puntos-venta
- * Obtener puntos de venta disponibles.
+ * get available sales points.
  */
 export const getSalesPoints = async (
   _req: Request,
@@ -307,7 +296,7 @@ export const getSalesPoints = async (
 
 /**
  * GET /facturacion/pdf/:codTurno/:voucherNumber/:tipoComprobante?
- * Generar y descargar PDF de una factura ya emitida.
+ * genete and download the PDF of an already issued invoice.
  */
 export const getInvoicePdf = async (
   req: Request,
@@ -360,7 +349,7 @@ export const getInvoicePdf = async (
 
 /**
  * GET /facturacion/datos-turno/:codTurno
- * Obtener datos de facturación de un turno desde la DB (sin llamar a ARCA).
+ * get billing data of an appointment from the DB (without calling ARCA).
  */
 export const getBillingData = async (
   req: Request,
@@ -397,13 +386,7 @@ export const getBillingData = async (
     }
 
     // a client can only access their own appointment's billing data. barbers and admins can access any.
-    if (req.user?.rol === "client" && req.user.codUsuario !== turno.codCliente) {
-      res.status(403).json({
-        success: false,
-        message: "Acceso denegado",
-      });
-      return;
-    }
+    if (denyIfNotOwner(res, req.user, turno.codCliente)) return;
 
     // Voucher type names
     const voucherTypeNames: Record<number, string> = {
@@ -463,8 +446,8 @@ export const getBillingData = async (
 
 /**
  * GET /facturacion/recibo/:codTurno
- * Generar PDF: factura ARCA completa si el turno tiene datos de facturación,
- * o recibo simple si no fue facturado por ARCA.
+ * Generate PDF:  ARCA bill complete if the appointment has billing data,
+ * or receipt if it was not billed by ARCA.
  */
 export const getReceiptPdf = async (
   req: Request,
@@ -493,14 +476,8 @@ export const getReceiptPdf = async (
       return;
     }
 
-    // Un cliente solo puede ver el recibo de sus propios turnos
-    if (req.user?.rol === "client" && req.user.codUsuario !== turno.codCliente) {
-      res.status(403).json({
-        success: false,
-        message: "Acceso denegado",
-      });
-      return;
-    }
+    //  a client can only see the receipt of their own appointments
+    if (denyIfNotOwner(res, req.user, turno.codCliente)) return;
 
     if (turno?.cae && turno.voucherNumber) {
       // Serve full ARCA invoice PDF

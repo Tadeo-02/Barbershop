@@ -1,4 +1,6 @@
 import { DatabaseError } from "../base/Base";
+import type { Response } from "express";
+import type { Rol } from "./roles";
 
 export const hasValue = (value: unknown): boolean => {
   if (value === null || value === undefined) return false;
@@ -44,4 +46,19 @@ export function assertEntityExistsWithCode<T>(
     const suffix = code ? ` con el código ${code}` : "";
     throw new DatabaseError(`${entityName}${suffix} no encontrado`);
   }
+};
+
+export const denyIfNotOwner = (
+  res: Response,
+  user: { rol: Rol; codUsuario: string } | undefined,
+  ownerId: string,
+): boolean => {
+  if (user?.rol === "client" && user.codUsuario !== ownerId) {
+    res.status(403).json({
+      success: false,
+      message: "Acceso denegado",
+    });
+    return true;
+  }
+  return false;
 };
