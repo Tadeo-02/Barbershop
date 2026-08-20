@@ -128,7 +128,11 @@ const CheckoutForm: React.FC<{
       });
 
       if (response.ok) {
-        const resData = await readJsonSafely<any>(response);
+        const resData = await readJsonSafely<{
+          data?: {
+            facturacion?: { CAE?: string; voucher_number?: string };
+          };
+        }>(response);
         const facturacion = resData?.data?.facturacion;
         if (facturacion?.CAE && facturacion?.voucher_number) {
           toast.success("Turno cobrado y facturado", {
@@ -494,7 +498,7 @@ const BranchAppointments: React.FC = () => {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
-      const data = await readJsonSafely<any>(res);
+      const data = await readJsonSafely<{ data?: AppointmentFull[] }>(res);
       setTurnos(unwrapArray<AppointmentFull>(data, ["data"]));
 
     } catch (error: unknown) {
@@ -534,7 +538,7 @@ const BranchAppointments: React.FC = () => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        const data = await readJsonSafely<any>(res);
+        const data = await readJsonSafely<{ data?: Haircut[] }>(res);
         setAllCortes(unwrapArray<Haircut>(data, ["data"]));
       } catch (error: unknown) {
         if (isAbortError(error)) return;

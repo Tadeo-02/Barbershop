@@ -245,7 +245,7 @@ const CreateUser: React.FC = () => {
                     </ul>
                   </div>
                 )}
-                {errors.contraseña && (
+                {errors.contraseña && passwordMissing.length === 0 && (
                   <p style={{ color: "red", fontSize: "0.875rem" }}>
                     {errors.contraseña.message}
                   </p>

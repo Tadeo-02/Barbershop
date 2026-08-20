@@ -15,9 +15,10 @@ import {
   PASSWORD_PATTERN,
 } from "../../../lib/passwordConstants";
 import { getPasswordMissing } from "../../../lib/passwordRules";
-
+import { BranchWithIdSchema } from "../../../../../BACK/Schemas/branchesSchema";
 import { parseBackendResponse } from "../../../lib/backendResponse";
-import type { Sucursal } from "../../../../types/branch";
+
+type Sucursal = z.infer<typeof BranchWithIdSchema>;
 
 const CreateBarberSchema = UserBaseSchemaExport.extend({
   confirmarContraseña: z
@@ -286,7 +287,7 @@ const CreateBarbers: React.FC = () => {
                 </ul>
               </div>
             )}
-            {errors["contraseña"] && (
+            {errors["contraseña"] && passwordMissing.length === 0 && (
               <div className={styles.errorMessage}>
                 {errors["contraseña"]?.message as string}
               </div>

@@ -77,9 +77,9 @@ function Header() {
           setClientCategory("Sin categoría");
           return;
         }
-        const data = await readJsonSafely<any>(response);
-        const profile = data?.success && data.data ? data.data : data;
-        const category = profile?.categoriaActual?.nombreCategoria;
+        const data = await readJsonSafely(response);
+        const profile = (data as { data?: { categoriaActual?: { nombreCategoria?: string } } })?.data ?? data;
+        const category = (profile as { categoriaActual?: { nombreCategoria?: string } })?.categoriaActual?.nombreCategoria;
         setClientCategory(category || "Sin categoría");
       } catch (error: unknown) {
         if (isAbortError(error)) return;
