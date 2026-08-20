@@ -13,21 +13,10 @@ import {
   unwrapAppointments,
 } from "../../components/shared/appointments";
 import type { AppointmentPartial } from "../../../types/appointment";
-
-const MONTH_LABELS = [
-  "Ene",
-  "Feb",
-  "Mar",
-  "Abr",
-  "May",
-  "Jun",
-  "Jul",
-  "Ago",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dic",
-];
+import {
+  formatTime,
+  getDateBadge,
+} from "../../utils/dateUtils";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -93,25 +82,6 @@ const Home = () => {
     return abortNextTurnoAbort;
   }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
 
-  const formatTime = (timeString: string): string => {
-    const date = new Date(timeString);
-    const hours = date.getUTCHours().toString().padStart(2, "0");
-    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
-
-  const getDateBadge = (dateString: string) => {
-    const [year, month, day] = dateString.split("T")[0].split("-");
-    const monthIndex = Number(month);
-    const monthLabel =
-      monthIndex >= 1 && monthIndex <= 12 ? MONTH_LABELS[monthIndex - 1] : "";
-    const dayLabel = day ? String(Number(day)) : "";
-    return {
-      monthLabel,
-      dayLabel,
-      fullDate: year && month && day ? `${day}/${month}/${year}` : "",
-    };
-  };
 
   const handleVerTurnos = () => {
     navigate("/Barber/BranchAppointments");

@@ -10,7 +10,7 @@ import {
   getDateParts,
   isAvailabilityEnded,
   normalizeDateInput,
-} from "../../../components/shared/availabilityDateUtils";
+} from "../../../utils/availabilityDateUtils";
 import {
   isAbortError,
   useAbortController,

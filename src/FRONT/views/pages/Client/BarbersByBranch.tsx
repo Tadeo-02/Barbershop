@@ -9,6 +9,7 @@ import { ensureAuthenticatedUser } from "../../lib/authUtils";
 import { parseBackendResponse } from "../../lib/backendResponse";
 import type { Barbero } from "../../../types/barber";
 import type { Sucursal } from "../../../types/branch";
+import { formatDateSafe } from "../../utils/dateUtils";
 
 const BarbersByBranch = () => {
   const params = useParams();
@@ -23,35 +24,6 @@ const BarbersByBranch = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  // Format a received date (posible 'YYYY-MM-DD' or with 'T') to 'DD/MM/AAAA'
-  const formatFecha = (fecha?: string | null): string => {
-    if (!fecha) return "";
-    let f = fecha;
-    // if it comes with time (ISO), we take only the date
-    if (f.includes("T")) f = f.split("T")[0];
-
-    if (f.includes("-")) {
-      const parts = f.split("-");
-      if (parts.length === 3) {
-        const [year, month, day] = parts;
-        return `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${year}`;
-      }
-    }
-
-    if (f.includes("/")) return f; // already formatted
-
-    // Fallback: try to parse with Date
-    const d = new Date(f);
-    if (!isNaN(d.getTime())) {
-      const day = String(d.getDate()).padStart(2, "0");
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
-    }
-
-    return fecha; // if not posible to format, return original
-  };
 
   useEffect(() => {
     const loadBarbersAndBranch = async () => {
@@ -270,7 +242,7 @@ const BarbersByBranch = () => {
           <div className={styles.branchInfo}>
             <h3>Horario </h3>
             <p>
-              {formatFecha(fechaTurno)} - {horaDesde}
+              {formatDateSafe(fechaTurno)} - {horaDesde}
             </p>
           </div>
         )}

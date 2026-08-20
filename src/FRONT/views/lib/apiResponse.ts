@@ -1,4 +1,4 @@
-import { extractMessageValue } from "./formErrorUtils";
+import { extractMessageValue } from "../utils/formErrorUtils";
 
 export const getResponseMessage = (
   data: unknown,

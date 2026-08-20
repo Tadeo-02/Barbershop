@@ -112,7 +112,7 @@ Si login.tsx usara response.json() directo, esos casos tirarían una excepción 
 - [x] Auditar el resto de las entidades (Usuario, Categoría, Turno, etc.) por posibles duplicados de tipos.
 
 ## 13. Duplicación de funciones utilitarias
-- [ ] Centralizar funciones repetidas como `formatDate` (y otras similares) en un único módulo de utilidades (`utils/`).
+- [x] Centralizar funciones repetidas como `formatDate` (y otras similares) en un único módulo de utilidades (`utils/`).
 
 ## 14. CSS
 - [x] Crear variables CSS (o tokens de diseño) para:

@@ -5,6 +5,7 @@ import { readJsonSafely } from "../../../lib/apiResponse";
 import { apiFetch } from "../../../lib/apiFetch";
 import type { Category } from "../../../../types/category";
 import type { CategorySummary } from "../../../../types/category";
+import { formatDateISO } from "../../../utils/dateUtils";
 
 interface Cliente {
   codUsuario: string;
@@ -37,20 +38,6 @@ const isCategoria = (value: unknown): value is Category =>
   isRecord(value) &&
   typeof value.codCategoria === "string" &&
   typeof value.nombreCategoria === "string";
-
-const formatDateOnly = (d?: string | Date | null): string => {
-  if (!d) return "-";
-  if (typeof d === "string") {
-    // handle ISO or 'YYYY-MM-DD HH:MM:SS' formats
-    if (d.includes("T")) return d.split("T")[0];
-    return d.split(" ")[0];
-  }
-  try {
-    return new Date(d).toISOString().split("T")[0];
-  } catch {
-    return String(d);
-  }
-};
 
 const IndexClients = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -260,7 +247,7 @@ const IndexClients = () => {
                         </p>
                         <p>
                           <strong>Fecha inicio categoría:</strong>{" "}
-                          {formatDateOnly(
+                          {formatDateISO(
                             profilesCache[cliente.codUsuario].categoriaActual
                               ?.fechaInicio,
                           )}
@@ -353,7 +340,7 @@ const IndexClients = () => {
                                 </p>
                                 <p>
                                   <strong>Fecha inicio categoría:</strong>{" "}
-                                  {formatDateOnly(
+                                  {formatDateISO(
                                     profilesCache[cliente.codUsuario]
                                       .categoriaActual?.fechaInicio,
                                   )}

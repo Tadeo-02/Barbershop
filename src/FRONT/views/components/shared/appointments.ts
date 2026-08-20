@@ -51,14 +51,3 @@ export const sortTurnosByDateTime = <T extends AppointmentDateLike>(
     ? leftDate.getTime() - rightDate.getTime()
     : rightDate.getTime() - leftDate.getTime();
 };
-export const formatDate = (dateString: string): string => {
-  const [year, month, day] = dateString.split("T")[0].split("-");
-  return `${day}/${month}/${year}`;
-};
-
-export const formatTime = (timeString: string): string => {
-  const date = new Date(timeString);
-  const hours = date.getUTCHours().toString().padStart(2, "0");
-  const minutes = date.getUTCMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
-};

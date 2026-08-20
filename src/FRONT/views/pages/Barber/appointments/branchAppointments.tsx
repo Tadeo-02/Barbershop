@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { z } from "zod";
 import type { AppointmentFull } from "../../../components/shared/appointments";
-import { formatDate, formatTime } from "../../../components/shared/appointments";
+import { formatDate, formatTime } from "../../../utils/dateUtils";
 import {
   isAbortError,
   useAbortController,

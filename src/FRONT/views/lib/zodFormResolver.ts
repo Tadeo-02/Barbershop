@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { normalizeFormErrors } from "./formErrorUtils";
+import { normalizeFormErrors } from "../utils/formErrorUtils";
 
 type ZodResolverSchema = Parameters<typeof zodResolver>[0];
 

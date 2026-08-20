@@ -5,12 +5,8 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import TimeSlotPicker from "../../../components/shared/TimeSlotPicker";
 import type { AppointmentFull } from "../../../components/shared/appointments";
-import {
-  formatDate,
-  formatTime,
-  sortTurnosByDateTime,
-  unwrapAppointments,
-} from "../../../components/shared/appointments";
+import {sortTurnosByDateTime, unwrapAppointments,} from "../../../components/shared/appointments";
+import {formatDate, formatTime,} from "../../../utils/dateUtils";
 import { useForm } from "react-hook-form";
 import { createResolver } from "../../../lib/zodFormResolver";
 import { z } from "zod";

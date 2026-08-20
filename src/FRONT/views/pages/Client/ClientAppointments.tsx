@@ -4,12 +4,8 @@ import barberStyles from "./ClientAppointments.module.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import type { AppointmentFull } from "../../components/shared/appointments";
-import {
-  formatDate,
-  formatTime,
-  sortTurnosByDateTime,
-  unwrapAppointments,
-} from "../../components/shared/appointments";
+import { sortTurnosByDateTime, unwrapAppointments,} from "../../components/shared/appointments";
+import { formatDate, formatTime,} from "../../utils/dateUtils";
 import { apiFetch } from "../../lib/apiFetch.ts";
 import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
 import { handleAbortOrConnectionError } from "../../lib/toastUtils";
