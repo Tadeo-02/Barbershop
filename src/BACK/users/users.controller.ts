@@ -19,10 +19,8 @@ import {
   UserResponseSchema,
 } from "../Schemas/usersSchema";
 import {
-  createDataResponse,
   createErrorResponse,
   createValidationErrorResponse,
-  createUnauthorizedResponse,
   getErrorMessage,
 } from "../lib/backendResponse";
 import {
@@ -271,7 +269,6 @@ class UsersController extends BaseController<
     } catch (error) {
       const errorMessage = getErrorMessage(error, "Error interno del servidor");
       let statusCode = 500;
-      let code: string | undefined;
 
       if (errorMessage.includes("incorrectos")) {
         statusCode = 401;
@@ -282,7 +279,6 @@ class UsersController extends BaseController<
         (error as { code: string }).code === "EMAIL_NOT_VERIFIED"
       ) {
         statusCode = 403;
-        code = "EMAIL_NOT_VERIFIED";
       }
 
       res.status(statusCode).json(

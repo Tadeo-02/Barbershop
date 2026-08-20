@@ -11,7 +11,6 @@ import {
 describe("passwordRequirements", () => {
   describe("minLength rule", () => {
     it("fails when password is shorter than the minimum", () => {
-      const short = "A1a!".slice(0, PASSWORD_MIN_LENGTH - 1);
       const rule = passwordRequirements.find((r) => r.key === "minLength")!;
       expect(rule.test("Ab1!efg")).toBe(false);
     });
