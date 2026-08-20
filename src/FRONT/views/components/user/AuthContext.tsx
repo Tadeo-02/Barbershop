@@ -4,7 +4,7 @@ import {
   getSessionUser,
   setSessionUser,
 } from "../../lib/authStorage";
-import { clearCsrfToken, setCsrfToken } from "../../lib/apiFetch";
+import { clearCsrfToken, setCsrfToken, apiFetch } from "../../lib/apiFetch";
 import type { UserRole } from "../../lib/roles";
 import type { User, ProfileHydrationResponse } from "../../../types/user";
 
@@ -52,9 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const loadProfile = async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/usuarios/profiles/${session.codUsuario}`,
-          { credentials: "include" },
+        const res = await apiFetch(
+          `/usuarios/profiles/${session.codUsuario}`,
         );
 
         if (!res.ok) {

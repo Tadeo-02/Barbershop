@@ -89,6 +89,7 @@ model usuarios {
   categoria_vigente                  categoria_vigente[]
   email_verification_tokens          email_verification_tokens[]
   password_reset_tokens              password_reset_tokens[]
+  refresh_tokens                     refresh_tokens[]
   turnos_turnos_codBarberoTousuarios Turno[]                     @relation("turnos_codBarberoTousuarios")
   turnos_turnos_codClienteTousuarios Turno[]                     @relation("turnos_codClienteTousuarios")
   sucursales                         sucursales?                 @relation(fields: [codSucursal], references: [codSucursal], onDelete: Restrict, onUpdate: Restrict, map: "fk_barbero_sucursal")
@@ -126,16 +127,19 @@ model password_reset_tokens {
   @@map("password_reset_tokens")
 }
 
-model token_blacklist {
-  id            Int                     @id @default(autoincrement())
-  token         String                  @db.VarChar(500)
-  userId        String                  @db.VarChar(50)
-  reason        token_blacklist_reason? @default(logout)
-  blacklistedAt DateTime?               @default(now()) @db.DateTime(0)
-  expiresAt     DateTime                @db.DateTime(0)
+model refresh_tokens {
+  id        String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  userId    String    @db.VarChar(36)
+  tokenHash String    @db.VarChar(64)
+  expiresAt DateTime  @db.DateTime(0)
+  revokedAt DateTime? @db.DateTime(0)
+  createdAt DateTime  @default(now()) @db.DateTime(0)
+  usuarios  usuarios  @relation(fields: [userId], references: [codUsuario], onDelete: Cascade, onUpdate: Restrict)
 
-  @@index([expiresAt], map: "idx_expires")
-  @@index([token], map: "idx_token")
+  @@index([userId], map: "idx_refresh_tokens_user")
+  @@index([tokenHash], map: "idx_refresh_tokens_hash")
+  @@index([expiresAt], map: "idx_refresh_tokens_expires")
+  @@map("refresh_tokens")
 }
 
 model bloqueos_barbero {
@@ -149,8 +153,4 @@ model bloqueos_barbero {
   @@index([codBarbero], map: "codBarbero")
 }
 
-enum token_blacklist_reason {
-  logout
-  security
-  expired
-}
+

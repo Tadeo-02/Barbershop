@@ -8,10 +8,13 @@ import { deriveRole } from "../lib/roles";
 import {
   AUTH_COOKIE,
   CSRF_COOKIE,
+  REFRESH_COOKIE,
   authCookieOptions,
   csrfCookieOptions,
   clearCookieOptions,
   clearCsrfCookieOptions,
+  refreshCookieOptions,
+  clearRefreshCookieOptions,
 } from "../lib/cookieConfig";
 import {
   BarberResponseSchema,
@@ -29,7 +32,8 @@ import {
   sendMail,
 } from "../lib/mailer";
 
-const TOKEN_MAX_AGE_MS = 8 * 60 * 60 * 1000; // 8 hours
+const TOKEN_MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
+const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 type UserEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type UserCreateArgs = Parameters<typeof model.store>;
@@ -198,6 +202,7 @@ class UsersController extends BaseController<
     const { codUsuario } = req.params;
     try {
       const result = await model.deactivate(codUsuario);
+      await model.revokeRefreshTokens(codUsuario);
       const safeUser = sanitizeOutput(UserResponseSchema, result);
       res.status(200).json({
         message: "Usuario dado de baja correctamente",
@@ -253,13 +258,21 @@ class UsersController extends BaseController<
           rol,
         },
         jwtSecret,
-        { algorithm: "HS256", expiresIn: "8h" },
+        { algorithm: "HS256", expiresIn: "15m" },
       );
 
       const csrfToken = randomBytes(32).toString("hex");
+      const { rawToken: refreshToken } = await model.createRefreshToken(
+        safeUser.codUsuario,
+      );
 
       res.cookie(AUTH_COOKIE, token, authCookieOptions(TOKEN_MAX_AGE_MS));
       res.cookie(CSRF_COOKIE, csrfToken, csrfCookieOptions(TOKEN_MAX_AGE_MS));
+      res.cookie(
+        REFRESH_COOKIE,
+        refreshToken,
+        refreshCookieOptions(REFRESH_TOKEN_MAX_AGE_MS),
+      );
 
       res.status(200).json({
         message: "Login exitoso",
@@ -290,10 +303,108 @@ class UsersController extends BaseController<
     }
   }
 
-  async logout(_req: Request, res: Response): Promise<void> {
+  async logout(req: Request, res: Response): Promise<void> {
+    const refreshTokenValue = req.cookies?.[REFRESH_COOKIE] as
+      | string
+      | undefined;
+    if (refreshTokenValue) {
+      const payload = await model.validateRefreshToken(refreshTokenValue);
+      if (payload) {
+        await model.revokeRefreshTokens(payload.codUsuario);
+      }
+    }
+
     res.cookie(AUTH_COOKIE, "", clearCookieOptions);
     res.cookie(CSRF_COOKIE, "", clearCsrfCookieOptions);
+    res.cookie(REFRESH_COOKIE, "", clearRefreshCookieOptions);
     res.status(200).json({ message: "Sesión cerrada" });
+  }
+
+  async refresh(req: Request, res: Response): Promise<void> {
+    try {
+      const refreshTokenValue = req.cookies?.[REFRESH_COOKIE] as
+        | string
+        | undefined;
+
+      if (!refreshTokenValue) {
+        res.status(401).json(
+          createErrorResponse("Refresh token requerido", "unauthorized"),
+        );
+        return;
+      }
+
+      const payload = await model.validateRefreshToken(refreshTokenValue);
+
+      if (!payload) {
+        res.cookie(REFRESH_COOKIE, "", clearRefreshCookieOptions);
+        res.status(401).json(
+          createErrorResponse(
+            "Refresh token inválido o expirado",
+            "unauthorized",
+          ),
+        );
+        return;
+      }
+
+      await model.revokeRefreshTokens(payload.codUsuario);
+
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        res.status(500).json(
+          createErrorResponse("JWT_SECRET no configurado", "server_error"),
+        );
+        return;
+      }
+
+      const usuario = await model.findById(payload.codUsuario);
+      if (!usuario || !usuario.activo) {
+        res.cookie(AUTH_COOKIE, "", clearCookieOptions);
+        res.cookie(CSRF_COOKIE, "", clearCsrfCookieOptions);
+        res.status(401).json(
+          createErrorResponse("Usuario inactivo", "unauthorized"),
+        );
+        return;
+      }
+
+      const rol = deriveRole(usuario.cuil);
+
+      const newAccessToken = jwt.sign(
+        {
+          codUsuario: payload.codUsuario,
+          codSucursal: usuario.codSucursal ?? null,
+          rol,
+        },
+        jwtSecret,
+        { algorithm: "HS256", expiresIn: "15m" },
+      );
+
+      const { rawToken: newRefreshToken } =
+        await model.createRefreshToken(payload.codUsuario);
+
+      const csrfToken = randomBytes(32).toString("hex");
+
+      res.cookie(
+        AUTH_COOKIE,
+        newAccessToken,
+        authCookieOptions(TOKEN_MAX_AGE_MS),
+      );
+      res.cookie(CSRF_COOKIE, csrfToken, csrfCookieOptions(TOKEN_MAX_AGE_MS));
+      res.cookie(
+        REFRESH_COOKIE,
+        newRefreshToken,
+        refreshCookieOptions(REFRESH_TOKEN_MAX_AGE_MS),
+      );
+
+      res.status(200).json({
+        message: "Token refrescado",
+        csrfToken,
+      });
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      res.status(500).json(
+        createErrorResponse("Error interno del servidor", "server_error"),
+      );
+    }
   }
 }
 
@@ -360,6 +471,7 @@ export const login = usersController.login.bind(usersController);
 export const logout = usersController.logout.bind(usersController);
 export const deactivate = usersController.deactivate.bind(usersController);
 export const reactivate = usersController.reactivate.bind(usersController);
+export const refresh = usersController.refresh.bind(usersController);
 
 export const requestEmailVerification = async (
   req: Request,

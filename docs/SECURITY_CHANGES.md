@@ -136,6 +136,56 @@ Items checked off in `TODO.md`:
 
 ---
 
+### SEC-08: Refresh tokens with server-side revocation + deactivation/ban invalidation (HIGH)
+
+**Problem:** Two related security gaps shared a root cause (long-lived, unrevocable JWTs):
+1. No refresh tokens existed — the single JWT lived for 8 hours. A captured/leaked token stayed usable for up to 8h post-logout.
+2. Deactivating or banning ("Vetado") a user only blocked login — existing JWTs remained fully valid for up to 8h because `authMiddleware` only verified signature+expiration, never checked user status.
+
+**Solution:** Short-lived access token (15 min) + rotating refresh token (7 days) + DB-backed revocation list. One coherent mechanism solves both problems.
+
+**Changes:**
+
+*Backend:*
+- `prisma/schema.prisma`: Removed dead `token_blacklist` model and `token_blacklist_reason` enum (never migrated, never used, stored raw tokens). Added `refresh_tokens` model (SHA-256 hashed tokens, UUID id, cascade delete, indexed on userId/tokenHash/expiresAt).
+- `prisma/migrations/20260820_refresh_tokens/migration.sql`: New migration that drops `token_blacklist` + enum and creates `refresh_tokens` table.
+- `src/BACK/lib/cookieConfig.ts`: Added `REFRESH_COOKIE`, `refreshCookieOptions`, `clearRefreshCookieOptions` — same cross-site settings as access token (SameSite=None+Secure+Partitioned in production).
+- `src/BACK/users/Users.ts`: Added `createRefreshToken`, `validateRefreshToken`, `revokeRefreshTokens`, `cleanupRefreshTokens` — follows the same SHA-256 hash pattern as email_verification_tokens and password_reset_tokens.
+- `src/BACK/users/users.controller.ts`:
+  - Access token TTL reduced from 8h to 15m.
+  - Login now issues a refresh token (7-day HttpOnly cookie) alongside the access token.
+  - Logout now revokes refresh tokens server-side + clears refresh cookie.
+  - Deactivate now revokes refresh tokens immediately.
+  - New `refresh` endpoint: validates refresh token, rotates it (revokes old, issues new), issues new access token, returns CSRF token in body. No authMiddleware or csrfProtection (refresh token possession IS the auth proof).
+- `src/BACK/users/users.router.ts`: Added `POST /refresh` route (authLimiter, no csrfProtection).
+- `src/BACK/middleware/authMiddleware.ts`: After JWT verification, now queries `usuarios.activo` to immediately reject tokens for deactivated users.
+- `src/BACK/Appointments/Appointments.ts`: Both "Vetado" assignment paths (category downgrade on cancellation + no-show threshold) now call `revokeRefreshTokens` to immediately invalidate the user's session.
+
+*Frontend:*
+- `src/FRONT/views/lib/apiFetch.ts`: On 401 (excluding login/refresh endpoints), silently attempts `POST /usuarios/refresh` before giving up. Shared in-flight promise prevents concurrent refresh storms. If refresh succeeds, retries the original request once. If refresh fails, clears session and redirects to login.
+- `src/FRONT/views/components/user/AuthContext.tsx`: Hydration now uses `apiFetch` instead of raw `fetch()`, benefiting from the same silent refresh logic.
+
+**Security properties preserved:**
+- All cookie security (SameSite, Secure, HttpOnly, Partitioned) unchanged for existing and new cookies.
+- CSRF double-submit pattern unchanged.
+- Rate limiting on /refresh via authLimiter.
+
+**Files changed:**
+- `prisma/schema.prisma`
+- `prisma/migrations/20260820_refresh_tokens/migration.sql` (new)
+- `src/BACK/lib/cookieConfig.ts`
+- `src/BACK/users/Users.ts`
+- `src/BACK/users/users.controller.ts`
+- `src/BACK/users/users.router.ts`
+- `src/BACK/middleware/authMiddleware.ts`
+- `src/BACK/Appointments/Appointments.ts`
+- `src/FRONT/views/lib/apiFetch.ts`
+- `src/FRONT/views/components/user/AuthContext.tsx`
+- `TODO.md`
+- `docs/SECURITY_CHANGES.md`
+
+---
+
 ## 2026-08-19 — Production fixes: trust proxy, CSRF on registration, login response fix
 
 ### FIX-B: Express `trust proxy` setting (HIGH)

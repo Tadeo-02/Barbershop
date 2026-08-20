@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AppointmentSchema } from "../Schemas/appointmentsSchema";
 import { billAppointment } from "../billing/Billing";
 import { getDiscountCycle, applyDiscountIfEligible } from "../lib/discount";
+import { revokeRefreshTokens } from "../users/Users";
 import { assertEntityExists } from "../lib/entityChecks";
 import { parseValidatedInput } from "../lib/zodHelpers";
 
@@ -1311,6 +1312,10 @@ export const cancelAppointment = async (codTurno: string) => {
                 },
               });
 
+              if (nuevaCategoriaNombre === "Vetado") {
+                await revokeRefreshTokens(existingTurno.codCliente);
+              }
+
               console.log(
                 `Cliente ${existingTurno.codCliente} descendió de ${categoriaActual} a ${nuevaCategoriaNombre}`,
               );
@@ -1456,6 +1461,8 @@ export const markAsNoShow = async (codTurno: string) => {
             ultimaFechaInicio: new Date(),
           },
         });
+
+        await revokeRefreshTokens(updatedTurno.codCliente);
 
         console.log(
           `Categoría "Vetado" asignada exitosamente al cliente ${updatedTurno.codCliente}`,
