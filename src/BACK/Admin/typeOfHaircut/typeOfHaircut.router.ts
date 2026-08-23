@@ -14,6 +14,7 @@ import { csrfProtection } from "../../middleware/csrf";
 import { requireRole } from "../../middleware/roleMiddleware";
 
 const router: Router = createRouter(controller, {
+  create: "/create",
   idParam: "codCorte",
   updatePath: "/update",
   middleware: {

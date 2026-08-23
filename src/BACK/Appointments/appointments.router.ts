@@ -63,6 +63,7 @@ router.post(
 // (the specific routes below are used instead), but they are protected as well.
 
 const baseRouter = createRouter(controller, {
+  create: "/create",
   idParam: "codTurno",
   updatePath: "/update",
   middleware: {

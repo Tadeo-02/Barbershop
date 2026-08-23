@@ -26,6 +26,7 @@ router.get(
 );
 
 const baseRouter = createRouter(controller, {
+  create: "/create",
   idParam: "codCategoria",
   updatePath: "/update",
   middleware: {

@@ -64,6 +64,7 @@ router.get(
 );
 
 const baseRouter = createRouter(controller, {
+  create: "/create",
   idParam: "codSucursal",
   updatePath: "/update",
   middleware: {

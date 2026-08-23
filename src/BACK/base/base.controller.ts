@@ -26,6 +26,13 @@ export abstract class BaseController<T, TCreateArgs extends unknown[] = unknown[
     return sanitizeOutput(this.responseSchema, data);
   }
 
+
+  create = (_req: Request, res: Response) => {
+    res.render(
+      `/src/FRONT/views/components/${this.entityName}/create${this.entityName}`,
+    );
+  };
+
   store = async (req: Request, res: Response) => {
     // handling of general errors on generic structure 
     try {
