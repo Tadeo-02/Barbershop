@@ -922,7 +922,7 @@ const buildTokenExpiry = (minutes: number) => {
 const clearVerificationTokensForUser = async (codUsuario: string) => {
   await prisma.email_verification_tokens.deleteMany({
     where: {
-      userId: codUsuario,
+      codUsuario,
       consumedAt: null,
     },
   });
@@ -931,7 +931,7 @@ const clearVerificationTokensForUser = async (codUsuario: string) => {
 const clearResetTokensForUser = async (codUsuario: string) => {
   await prisma.password_reset_tokens.deleteMany({
     where: {
-      userId: codUsuario,
+      codUsuario,
       consumedAt: null,
     },
   });
@@ -961,7 +961,7 @@ export const createEmailVerificationTokenByUserId = async (codUsuario: string) =
   await clearVerificationTokensForUser(user.codUsuario);
   await prisma.email_verification_tokens.create({
     data: {
-      userId: user.codUsuario,
+      codUsuario: user.codUsuario,
       tokenHash,
       expiresAt,
     },
@@ -1017,7 +1017,7 @@ export const verifyEmailByToken = async (token: string) => {
 
   await prisma.$transaction([
     prisma.usuarios.update({
-      where: { codUsuario: verificationToken.userId },
+      where: { codUsuario: verificationToken.codUsuario },
       data: { emailVerificado: true },
     }),
     prisma.email_verification_tokens.update({
@@ -1053,7 +1053,7 @@ export const createPasswordResetTokenByEmail = async (email: string) => {
   await clearResetTokensForUser(user.codUsuario);
   await prisma.password_reset_tokens.create({
     data: {
-      userId: user.codUsuario,
+      codUsuario: user.codUsuario,
       tokenHash,
       expiresAt,
     },
@@ -1092,7 +1092,7 @@ export const resetPasswordByToken = async (
 
   await prisma.$transaction([
     prisma.usuarios.update({
-      where: { codUsuario: resetToken.userId },
+      where: { codUsuario: resetToken.codUsuario },
       data: { contrase_a: hashedPassword },
     }),
     prisma.password_reset_tokens.update({
@@ -1121,7 +1121,7 @@ export const createRefreshToken = async (
 
   await prisma.refresh_tokens.create({
     data: {
-      userId: codUsuario,
+      codUsuario,
       tokenHash,
       expiresAt,
     },
@@ -1142,16 +1142,16 @@ export const validateRefreshToken = async (
       revokedAt: null,
       expiresAt: { gt: now },
     },
-    select: { userId: true },
+    select: { codUsuario: true },
   });
 
-  return row ? { codUsuario: row.userId } : null;
+  return row ? { codUsuario: row.codUsuario } : null;
 };
 
 export const revokeRefreshTokens = async (codUsuario: string): Promise<void> => {
   await prisma.refresh_tokens.updateMany({
     where: {
-      userId: codUsuario,
+      codUsuario,
       revokedAt: null,
     },
     data: {
