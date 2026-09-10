@@ -12,6 +12,7 @@ import type {
   CreateVoucherInput,
   VoucherResponse,
 } from "../Schemas/billingSchema";
+import { getErrorMessage } from "../lib/backendResponse";
 
 type AfipCatalogItem = Record<string, unknown>;
 type AfipVoucherInfo = Record<string, unknown>;
@@ -39,9 +40,6 @@ type AfipVoucherPayload = {
   FchVtoPago?: number;
   Iva?: Array<{ Id: number; BaseImp: number; Importe: number }>;
 };
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 const ARGENTINA_TIMEZONE = "America/Argentina/Buenos_Aires";
 

@@ -1,34 +1,26 @@
 import { prisma, DatabaseError, sanitizeInput } from "../../base/Base";
+import logger from "../../lib/logger";
 import { z } from "zod";
-import {BranchSchema} from "../../Schemas/branchesSchema";
+import { BranchSchema } from "../../Schemas/branchesSchema";
+import {
+  assertNoPendingAppointments,
+  PendingAppointmentsError,
+} from "../../lib/barberBusinessRules";
+import { assertEntityExists } from "../../lib/entityChecks";
+import { parseValidatedInput } from "../../lib/zodHelpers";
 
-// const BranchSchema = z.object({
-//   nombre: z
-//     .string()
-//     .min(2, "Nombre debe tener al menos 2 caracteres")
-//     .max(100, "Nombre no puede tener más de 100 caracteres"),
-//   calle: z
-//     .string()
-//     .min(2, "Calle debe tener al menos 2 caracteres")
-//     .max(100, "Calle no puede tener más de 100 caracteres"),
-//   altura: z
-//     .number()
-//     .min(1, "Altura debe ser mayor a 0")
-//     .max(10000, "Altura no puede ser mayor a 10000"),
-// });
-
-// funciones backend para Sucursales
+// backend functions
 export const store = async (nombre: string, calle: string, altura: number) => {
   try {
-    // sanitizar de inputs
+    // sanitize inputs
     const sanitizedData = {
       nombre: sanitizeInput(nombre),
       calle: sanitizeInput(calle),
       altura: Number(altura),
     };
-    const validateData = BranchSchema.parse(sanitizedData);
-    console.log("Creating branch");
-    // crear branch usando el modelo correcto de Prisma
+    const validateData = parseValidatedInput(BranchSchema, sanitizedData);
+    logger.info("Creating branch");
+    // create branch using the correct Prisma model
     const branch = await prisma.sucursales.create({
       data: {
         nombre: validateData.nombre,
@@ -36,12 +28,12 @@ export const store = async (nombre: string, calle: string, altura: number) => {
         altura: validateData.altura,
       },
     });
-    console.log("Branch created successfully");
+    logger.info("Branch created successfully");
     return branch;
   } catch (error) {
-    console.error(
-      "Error creating branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error creating branch",
     );
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
@@ -63,12 +55,12 @@ export const findAll = async () => {
       where: { activo: 1 },
       orderBy: { codSucursal: "asc" },
     });
-    console.log(`Retrieved ${branches.length} branches`);
+    logger.info({ count: branches.length }, "Retrieved branches");
     return branches;
   } catch (error) {
-    console.error(
-      "Error fetching branches:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching branches",
     );
     throw new DatabaseError("Error interno del servidor");
   }
@@ -79,12 +71,12 @@ export const findAllIncludingInactive = async () => {
     const branches = await prisma.sucursales.findMany({
       orderBy: { codSucursal: "asc" },
     });
-    console.log(`Retrieved ${branches.length} branches (all)`);
+    logger.info({ count: branches.length }, "Retrieved branches (all)");
     return branches;
   } catch (error) {
-    console.error(
-      "Error fetching branches (all):",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching branches (all)",
     );
     throw new DatabaseError("Error interno del servidor");
   }
@@ -101,9 +93,9 @@ export const findById = async (codSucursal: string) => {
     if (error instanceof DatabaseError) {
       throw error;
     }
-    console.error(
-      "Error fetching branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching branch",
     );
     throw new DatabaseError("Error al buscar sucursal");
   }
@@ -122,7 +114,7 @@ export const update = async (
       calle: sanitizeInput(calle),
       altura: Number(altura),
     };
-    const validateData = BranchSchema.parse({
+    const validateData = parseValidatedInput(BranchSchema, {
       nombre: sanitizedData.nombre,
       calle: sanitizedData.calle,
       altura: sanitizedData.altura,
@@ -130,9 +122,7 @@ export const update = async (
     const existingBranch = await prisma.sucursales.findUnique({
       where: { codSucursal: sanitizedData.codSucursal },
     });
-    if (!existingBranch) {
-      throw new DatabaseError("No existe una sucursal con ese código");
-    }
+    assertEntityExists(existingBranch, "Sucursal");
     const branch = await prisma.sucursales.update({
       where: { codSucursal: sanitizedData.codSucursal },
       data: {
@@ -141,19 +131,19 @@ export const update = async (
         altura: validateData.altura,
       },
     });
-    console.log("Branch updated successfully");
+    logger.info("Branch updated successfully");
     return branch;
   } catch (error) {
-    console.error(
-      "Error updating branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error updating branch",
     );
-    // Manejo de errores de validación
+    // handle errors of validation
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
-    // Manejo de errores de DB
+    // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -180,9 +170,7 @@ export const destroy = async (codSucursal: string) => {
     const existingBranch = await prisma.sucursales.findUnique({
       where: { codSucursal: sanitizedCodSucursal },
     });
-    if (!existingBranch) {
-      throw new DatabaseError("No existe una sucursal con ese código");
-    }
+    assertEntityExists(existingBranch, "Sucursal");
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -206,25 +194,31 @@ export const destroy = async (codSucursal: string) => {
       },
     });
 
-    if (pendingCount > 0) {
-      throw new DatabaseError(
-        `No se puede desactivar: hay ${pendingCount} turno(s) pendiente(s)`
+    try {
+      assertNoPendingAppointments(
+        pendingCount,
+        `No se puede desactivar: hay ${pendingCount} turno(s) pendiente(s)`,
       );
+    } catch (error) {
+      if (error instanceof PendingAppointmentsError) {
+        throw new DatabaseError(error.message);
+      }
+      throw error;
     }
 
     const deletedBranch = await prisma.sucursales.update({
       where: { codSucursal: sanitizedCodSucursal },
       data: { activo: 0 },
     });
-    console.log("Branch deactivated successfully");
+    logger.info("Branch deactivated successfully");
     return deletedBranch;
   } catch (error) {
-    console.error(
-      "Error deleting branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error deleting branch",
     );
 
-    // manejo de errores de DB
+    // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -264,14 +258,15 @@ export const reactivate = async (codSucursal: string) => {
       where: { codSucursal: sanitizedCodSucursal },
       data: { activo: 1 },
     });
-    console.log("Branch reactivated successfully");
+    logger.info("Branch reactivated successfully");
     return reactivatedBranch;
   } catch (error) {
-    console.error(
-      "Error reactivating branch:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error reactivating branch",
     );
 
+    // handle errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -285,5 +280,75 @@ export const reactivate = async (codSucursal: string) => {
     }
 
     throw new DatabaseError("Error al reactivar sucursal");
+  }
+};
+
+export const getRevenueByBranch = async (month: number, year: number) => {
+  try {
+    const startOfMonth = new Date(year, month, 1);
+    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+    const turnos = await prisma.turno.findMany({
+      where: {
+        estado: "Cobrado",
+        precioTurno: { not: null },
+        fechaTurno: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      select: {
+        precioTurno: true,
+        codBarbero: true,
+      },
+    });
+
+    const barberoIds = [...new Set(turnos.map((t) => t.codBarbero))];
+    const barberos = await prisma.usuarios.findMany({
+      where: { codUsuario: { in: barberoIds } },
+      select: { codUsuario: true, codSucursal: true },
+    });
+
+    const barberoToSucursal = new Map(
+      barberos.map((b) => [b.codUsuario, b.codSucursal]),
+    );
+
+    const sucursalIds = [
+      ...new Set(
+        barberos.map((b) => b.codSucursal).filter(Boolean),
+      ),
+    ] as string[];
+    const sucursales = await prisma.sucursales.findMany({
+      where: { codSucursal: { in: sucursalIds } },
+      select: { codSucursal: true, nombre: true },
+    });
+
+    const revenueMap = new Map<string, number>();
+    for (const s of sucursales) {
+      revenueMap.set(s.codSucursal, 0);
+    }
+
+    for (const t of turnos) {
+      const codSucursal = barberoToSucursal.get(t.codBarbero);
+      if (!codSucursal) continue;
+      const precio = t.precioTurno ? Number(t.precioTurno) : 0;
+      const prev = revenueMap.get(codSucursal) || 0;
+      revenueMap.set(codSucursal, prev + (isNaN(precio) ? 0 : precio));
+    }
+
+    return Array.from(revenueMap.entries()).map(([codSucursal, total]) => {
+      const sucursal = sucursales.find((s) => s.codSucursal === codSucursal);
+      return {
+        codSucursal,
+        nombre: sucursal?.nombre || codSucursal,
+        totalRevenue: total,
+      };
+    });
+  } catch (error) {
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error calculating rentability",
+    );
+    throw new DatabaseError("Error al calcular rentabilidad");
   }
 };

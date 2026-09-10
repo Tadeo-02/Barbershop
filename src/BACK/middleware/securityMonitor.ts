@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import logger from "../lib/logger";
 
 interface SecurityEvent {
   timestamp: Date;
@@ -50,16 +51,16 @@ export function logSecurityEvent(
 
   switch (type) {
     case "rate_limit":
-      console.warn(`⚠️  ${logMessage}`);
+      logger.warn({ logMessage }, "Security event: rate_limit");
       break;
     case "duplicate_request":
-      console.warn(`⚠️  ${logMessage}`);
+      logger.warn({ logMessage }, "Security event: duplicate_request");
       break;
     case "auth_failure":
-      console.error(`🚨 ${logMessage}`);
+      logger.error({ logMessage }, "Security event: auth_failure");
       break;
     case "validation_error":
-      console.log(`ℹ️  ${logMessage}`);
+      logger.info({ logMessage }, "Security event: validation_error");
       break;
   }
 }

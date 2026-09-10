@@ -1,118 +1,65 @@
 import { useEffect, useState } from "react";
 import { FaCut, FaRegClock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../components/login/AuthContext.tsx";
+import { useAuth } from "../../components/user/AuthContext.tsx";
 import styles from "./HomePageBarber.module.css";
-
-interface Appointment {
-  codTurno: string;
-  fechaTurno: string;
-  horaDesde: string;
-  horaHasta: string;
-  estado: string;
-  usuarios_turnos_codClienteTousuarios?: {
-    nombre: string;
-    apellido: string;
-  };
-  usuarios_turnos_codBarberoTousuarios?: {
-    nombre: string;
-    apellido: string;
-    sucursales?: {
-      nombre: string;
-      calle: string;
-      altura: number;
-    } | null;
-  };
-}
-
-const MONTH_LABELS = [
-  "Ene",
-  "Feb",
-  "Mar",
-  "Abr",
-  "May",
-  "Jun",
-  "Jul",
-  "Ago",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dic",
-];
+import {
+  isAbortError,
+  useAbortController,
+} from "../../components/shared/useAbortController.ts";
+import { apiFetch } from "../../lib/apiFetch";
+import logger from "../../lib/logger";
+import { unwrapArray } from "../../lib/apiResponse";
+import { getTurnoDateTime } from "../../components/shared/appointments";
+import type { AppointmentPartial } from "../../../types/appointment";
+import {
+  formatTime,
+  getDateBadge,
+} from "../../utils/dateUtils";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, userType, user } = useAuth();
-  const [nextTurno, setNextTurno] = useState<Appointment | null>(null);
+  const { user } = useAuth();
+  const [nextTurno, setNextTurno] = useState<AppointmentPartial | null>(null);
   const [loadingNextTurno, setLoadingNextTurno] = useState(false);
   const [hasCheckedNextTurno, setHasCheckedNextTurno] = useState(false);
-
+  const { renew: renewNextTurnoAbort, abort: abortNextTurnoAbort } = useAbortController();
   const greetingName = user?.nombre?.trim();
   const greeting = greetingName ? `Hola, ${greetingName}!` : "Hola!";
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
+    const loadNextTurno = async () => {
+      if (!user?.codUsuario) {
+        setNextTurno(null);
+        setLoadingNextTurno(false);
+        setHasCheckedNextTurno(true);
+        return;
+      }
 
-    if (!isAuthenticated && !savedUser) {
-      navigate("/login");
-      return;
-    }
+      const controller = renewNextTurnoAbort();
+      setHasCheckedNextTurno(false);
+      setLoadingNextTurno(true);
 
-    if (isAuthenticated && userType && userType !== "barber") {
-      navigate("/");
-    }
-  }, [isAuthenticated, userType, navigate]);
+      try {
+        const res = await apiFetch(`/turnos/user/${user.codUsuario}`, {
+          signal: controller.signal,
+        });
 
-  useEffect(() => {
-    if (!user?.codUsuario) {
-      setNextTurno(null);
-      setLoadingNextTurno(false);
-      setHasCheckedNextTurno(true);
-      return;
-    }
-
-    const controller = new AbortController();
-    setHasCheckedNextTurno(false);
-    setLoadingNextTurno(true);
-
-    fetch(`/turnos/user/${user.codUsuario}`, { signal: controller.signal })
-      .then(async (res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
-        let turnosArray: Appointment[] = [];
 
-        if (data && data.success && Array.isArray(data.data)) {
-          turnosArray = data.data;
-        } else if (Array.isArray(data)) {
-          turnosArray = data;
-        }
+        const data = await res.json();
+        const turnosArray = unwrapArray<AppointmentPartial>(data);
 
         const now = new Date();
         const upcoming = turnosArray
           .map((turno) => {
-            const datePart = turno.fechaTurno.split("T")[0];
-            const [year, month, day] = datePart
-              .split("-")
-              .map((value) => Number(value));
-            const startTime = new Date(turno.horaDesde);
-
-            if (!year || !month || !day || Number.isNaN(startTime.getTime())) {
-              return null;
-            }
-
-            const hours = startTime.getUTCHours();
-            const minutes = startTime.getUTCMinutes();
-            return {
-              turno,
-              dateTime: new Date(year, month - 1, day, hours, minutes, 0, 0),
-            };
+            const dateTime = getTurnoDateTime(turno);
+            return dateTime ? { turno, dateTime } : null;
           })
           .filter(
-            (item): item is { turno: Appointment; dateTime: Date } =>
+            (item): item is { turno: AppointmentPartial; dateTime: Date } =>
               !!item &&
               item.turno.estado === "Programado" &&
               item.dateTime >= now,
@@ -120,39 +67,20 @@ const Home = () => {
           .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
 
         setNextTurno(upcoming[0]?.turno ?? null);
-      })
-      .catch((error) => {
-        if (error?.name === "AbortError") return;
-        console.error("Error fetching next appointment:", error);
+      } catch (error) {
+        if (isAbortError(error)) return;
+        logger.error("Error fetching next appointment:", error);
         setNextTurno(null);
-      })
-      .finally(() => {
+      } finally {
         setLoadingNextTurno(false);
         setHasCheckedNextTurno(true);
-      });
-
-    return () => controller.abort();
-  }, [user?.codUsuario]);
-
-  const formatTime = (timeString: string): string => {
-    const date = new Date(timeString);
-    const hours = date.getUTCHours().toString().padStart(2, "0");
-    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
-
-  const getDateBadge = (dateString: string) => {
-    const [year, month, day] = dateString.split("T")[0].split("-");
-    const monthIndex = Number(month);
-    const monthLabel =
-      monthIndex >= 1 && monthIndex <= 12 ? MONTH_LABELS[monthIndex - 1] : "";
-    const dayLabel = day ? String(Number(day)) : "";
-    return {
-      monthLabel,
-      dayLabel,
-      fullDate: year && month && day ? `${day}/${month}/${year}` : "",
+      }
     };
-  };
+
+    void loadNextTurno();
+    return abortNextTurnoAbort;
+  }, [user?.codUsuario, renewNextTurnoAbort, abortNextTurnoAbort]);
+
 
   const handleVerTurnos = () => {
     navigate("/Barber/BranchAppointments");

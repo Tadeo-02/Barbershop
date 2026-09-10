@@ -1,21 +1,28 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "./login/AuthContext.tsx";
+import { useAuth } from "./user/AuthContext.tsx";
+import type { UserRole } from "../lib/roles";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles: ("client" | "barber" | "admin")[];
+  allowedRoles: UserRole[];
 }
 
 function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, userType, isAuthenticated } = useAuth();
+  const { userType, isAuthenticated, isAuthLoading } = useAuth();
 
-  // Si no está autenticado, redirigir al login
+  if (isAuthLoading) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>Cargando...</div>
+    );
+  }
+
+  // if not authenticated, redirect to login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Si no tiene el rol adecuado, redirigir a página no autorizada
+  // wrong role, redirect to unauthorized page
   if (userType && !allowedRoles.includes(userType)) {
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
@@ -27,7 +34,7 @@ function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
     );
   }
 
-  // Si está autenticado y tiene el rol correcto, mostrar el contenido
+  // if authenticated and has the correct role, show the content
   return <>{children}</>;
 }
 

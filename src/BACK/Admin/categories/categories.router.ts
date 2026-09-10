@@ -9,12 +9,21 @@ import {
   strictDeduplication,
   standardDeduplication,
 } from "../../middleware/deduplication";
+import { authMiddleware } from "../../middleware/authMiddleware";
+import { csrfProtection } from "../../middleware/csrf";
+import { requireRole } from "../../middleware/roleMiddleware";
 
 const router: Router = Router();
 
-// Rutas específicas deben ir antes de las rutas genéricas
+// Specific routes must come before generic routes.
 // Read operations - standard user limiting
-router.get("/:codCategoria/clients", userLimiter, controller.listClients);
+router.get(
+  "/:codCategoria/clients",
+  authMiddleware,
+  requireRole("admin"),
+  userLimiter,
+  controller.listClients,
+);
 
 const baseRouter = createRouter(controller, {
   create: "/create",
@@ -22,9 +31,27 @@ const baseRouter = createRouter(controller, {
   updatePath: "/update",
   middleware: {
     read: [userLimiter],
-    create: [userModificationLimiter, strictDeduplication],
-    update: [userModificationLimiter, standardDeduplication],
-    delete: [userModificationLimiter, standardDeduplication],
+    create: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("admin"),
+      userModificationLimiter,
+      strictDeduplication,
+    ],
+    update: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("admin"),
+      userModificationLimiter,
+      standardDeduplication,
+    ],
+    delete: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("admin"),
+      userModificationLimiter,
+      standardDeduplication,
+    ],
   },
 });
 

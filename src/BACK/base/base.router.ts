@@ -11,10 +11,10 @@ export interface ControllerHandlers {
 }
 
 export interface RouterConfig {
-  create: string;
+  create: "/create",
   idParam: string;
   updatePath: string;
-  // Optional middleware for different operation types
+  globalMiddleware?: RequestHandler[]; 
   middleware?: {
     create?: RequestHandler[];
     update?: RequestHandler[];
@@ -22,22 +22,25 @@ export interface RouterConfig {
     read?: RequestHandler[];
   };
 }
-// creacion de router general
+// General router creation.
 const createRouter = (
   controller: ControllerHandlers,
   config: RouterConfig = {
-    create: "/create",
     idParam: "id",
+    create: "/create",
     updatePath: "/update",
   },
 ): Router => {
   const router = express.Router();
 
-  // Helper to apply middleware array or empty array
   const applyMiddleware = (
     type: keyof NonNullable<RouterConfig["middleware"]>,
   ) => {
-    return config.middleware?.[type] || [];
+    // Global first, then the operation-specific one.
+    return [
+      ...(config.globalMiddleware || []),
+      ...(config.middleware?.[type] || []),
+    ];
   };
 
   // Read operations (no middleware by default)

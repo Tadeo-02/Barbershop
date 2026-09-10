@@ -1,18 +1,6 @@
 import styles from './footer.module.css';
 
 function Footer() {
-  // const styles: React.CSSProperties = {
-  //   position: "absolute",
-  //   left: 0,
-  //   right: 0,
-  //   bottom: 0,
-  //   height: "4rem",
-  //   backgroundColor: "#1f2937",
-  //   color: "white",
-  //   paddingTop: "1rem",
-  //   paddingBottom: "1rem",
-  //   textAlign: "center",
-  // }
 
   return (
     <footer className={styles.footer} >

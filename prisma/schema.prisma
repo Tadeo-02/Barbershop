@@ -74,37 +74,72 @@ model tipos_corte {
 }
 
 model usuarios {
-  codUsuario                         String              @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  dni                                String              @db.VarChar(8)
-  cuil                               String?             @db.VarChar(13)
-  codSucursal                        String?             @db.VarChar(36)
-  nombre                             String              @db.VarChar(50)
-  apellido                           String              @db.VarChar(50)
-  telefono                           String              @db.VarChar(20)
-  email                              String              @unique(map: "email") @db.VarChar(50)
-  contrase_a                         String              @map("contraseña") @db.VarChar(60)
-  preguntaSeguridad                  String?             @db.VarChar(255)
-  respuestaSeguridad                 String?             @db.VarChar(255)
-  activo                             Boolean             @default(true)
+  codUsuario                         String                      @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  dni                                String                      @db.VarChar(8)
+  cuil                               String?                     @db.VarChar(13)
+  codSucursal                        String?                     @db.VarChar(36)
+  nombre                             String                      @db.VarChar(50)
+  apellido                           String                      @db.VarChar(50)
+  telefono                           String                      @db.VarChar(20)
+  email                              String                      @unique(map: "email") @db.VarChar(50)
+  contrase_a                         String                      @map("contraseña") @db.VarChar(60)
+  activo                             Boolean                     @default(true)
+  emailVerificado                    Boolean                     @default(true)
   bloqueos_barbero                   bloqueos_barbero[]
   categoria_vigente                  categoria_vigente[]
-  turnos_turnos_codBarberoTousuarios Turno[]             @relation("turnos_codBarberoTousuarios")
-  turnos_turnos_codClienteTousuarios Turno[]             @relation("turnos_codClienteTousuarios")
-  sucursales                         sucursales?         @relation(fields: [codSucursal], references: [codSucursal], onDelete: Restrict, onUpdate: Restrict, map: "fk_barbero_sucursal")
+  email_verification_tokens          email_verification_tokens[]
+  password_reset_tokens              password_reset_tokens[]
+  refresh_tokens                     refresh_tokens[]
+  turnos_turnos_codBarberoTousuarios Turno[]                     @relation("turnos_codBarberoTousuarios")
+  turnos_turnos_codClienteTousuarios Turno[]                     @relation("turnos_codClienteTousuarios")
+  sucursales                         sucursales?                 @relation(fields: [codSucursal], references: [codSucursal], onDelete: Restrict, onUpdate: Restrict, map: "fk_barbero_sucursal")
 
   @@index([codSucursal], map: "codSucursal")
 }
 
-model token_blacklist {
-  id            Int                     @id @default(autoincrement())
-  token         String                  @db.VarChar(500)
-  userId        String                  @db.VarChar(50)
-  reason        token_blacklist_reason? @default(logout)
-  blacklistedAt DateTime?               @default(now()) @db.DateTime(0)
-  expiresAt     DateTime                @db.DateTime(0)
+model email_verification_tokens {
+  id         String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codUsuario String    @db.VarChar(36)
+  tokenHash  String    @db.VarChar(64)
+  expiresAt  DateTime  @db.DateTime(0)
+  consumedAt DateTime? @db.DateTime(0)
+  createdAt  DateTime  @default(now()) @db.DateTime(0)
+  usuarios   usuarios  @relation(fields: [codUsuario], references: [codUsuario], onDelete: Cascade, onUpdate: Restrict, map: "email_verification_tokens_userId_fkey")
 
-  @@index([expiresAt], map: "idx_expires")
-  @@index([token], map: "idx_token")
+  @@index([codUsuario], map: "idx_email_verification_user")
+  @@index([tokenHash], map: "idx_email_verification_hash")
+  @@index([expiresAt], map: "idx_email_verification_expires")
+  @@map("email_verification_tokens")
+}
+
+model password_reset_tokens {
+  id         String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codUsuario String    @db.VarChar(36)
+  tokenHash  String    @db.VarChar(64)
+  expiresAt  DateTime  @db.DateTime(0)
+  consumedAt DateTime? @db.DateTime(0)
+  createdAt  DateTime  @default(now()) @db.DateTime(0)
+  usuarios   usuarios  @relation(fields: [codUsuario], references: [codUsuario], onDelete: Cascade, onUpdate: Restrict, map: "password_reset_tokens_userId_fkey")
+
+  @@index([codUsuario], map: "idx_password_reset_user")
+  @@index([tokenHash], map: "idx_password_reset_hash")
+  @@index([expiresAt], map: "idx_password_reset_expires")
+  @@map("password_reset_tokens")
+}
+
+model refresh_tokens {
+  id         String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  codUsuario String    @db.VarChar(36)
+  tokenHash  String    @db.VarChar(64)
+  expiresAt  DateTime  @db.DateTime(0)
+  revokedAt  DateTime? @db.DateTime(0)
+  createdAt  DateTime  @default(now()) @db.DateTime(0)
+  usuarios   usuarios  @relation(fields: [codUsuario], references: [codUsuario], onDelete: Cascade, onUpdate: Restrict, map: "refresh_tokens_userId_fkey")
+
+  @@index([codUsuario], map: "idx_refresh_tokens_user")
+  @@index([tokenHash], map: "idx_refresh_tokens_hash")
+  @@index([expiresAt], map: "idx_refresh_tokens_expires")
+  @@map("refresh_tokens")
 }
 
 model bloqueos_barbero {
@@ -116,10 +151,4 @@ model bloqueos_barbero {
   usuarios       usuarios @relation(fields: [codBarbero], references: [codUsuario], onUpdate: Restrict, map: "fk_bloqueos_barbero_usuario")
 
   @@index([codBarbero], map: "codBarbero")
-}
-
-enum token_blacklist_reason {
-  logout
-  security
-  expired
 }

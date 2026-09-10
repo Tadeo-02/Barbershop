@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "./login/AuthContext.tsx";
+import { useAuth } from "./user/AuthContext.tsx";
 import styles from "./header.module.css";
-// import logoBarber from "../../public/images/logoBarber.png";
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === "AbortError") ||
-  (error instanceof Error && error.name === "AbortError");
+import { isAbortError, useAbortController } from "./shared/useAbortController";
+import { apiFetch } from "../lib/apiFetch";
+import { readJsonSafely } from "../lib/apiResponse";
 
 function Header() {
   const [open, setOpen] = useState(false);
@@ -15,6 +13,8 @@ function Header() {
   const navigate = useNavigate();
   const [clientCategory, setClientCategory] = useState<string | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const { renew: renewCategoryAbort, abort: abortCategoryAbort } =
+    useAbortController();
 
   const closeMenu = () => {
     setOpen((prev) => {
@@ -40,10 +40,10 @@ function Header() {
     closeMenu();
     navigate("/");
   };
-  //determino tipo de usuario
+  //determine user type
   const getHomeRoute = () => {
     if (!isAuthenticated) {
-      return "/"; // Si no está autenticado, ir a landingPage
+      return "/"; // if not authenticated, go to landingPage
     }
 
     switch (userType) {
@@ -64,19 +64,22 @@ function Header() {
       return;
     }
 
-    const controller = new AbortController();
+    const controller = renewCategoryAbort();
     const loadCategory = async () => {
       try {
-        const response = await fetch(`/usuarios/profiles/${user.codUsuario}`, {
-          signal: controller.signal,
-        });
+        const response = await apiFetch(
+          `/usuarios/profiles/${user.codUsuario}`,
+          {
+            signal: controller.signal,
+          },
+        );
         if (!response.ok) {
           setClientCategory("Sin categoría");
           return;
         }
-        const data = await response.json().catch(() => null);
-        const profile = data?.success && data.data ? data.data : data;
-        const category = profile?.categoriaActual?.nombreCategoria;
+        const data = await readJsonSafely(response);
+        const profile = (data as { data?: { categoriaActual?: { nombreCategoria?: string } } })?.data ?? data;
+        const category = (profile as { categoriaActual?: { nombreCategoria?: string } })?.categoriaActual?.nombreCategoria;
         setClientCategory(category || "Sin categoría");
       } catch (error: unknown) {
         if (isAbortError(error)) return;
@@ -85,8 +88,14 @@ function Header() {
     };
 
     void loadCategory();
-    return () => controller.abort();
-  }, [isAuthenticated, userType, user?.codUsuario]);
+    return abortCategoryAbort;
+  }, [
+    isAuthenticated,
+    userType,
+    user?.codUsuario,
+    renewCategoryAbort,
+    abortCategoryAbort,
+  ]);
   return (
     <nav>
       <div className={styles.header}>
@@ -101,16 +110,16 @@ function Header() {
           </Link>
         </div>
 
-        {/* título  */}
+        {/* title  */}
         <div className={styles.titleContainer}>
-          {/* estilos para que se vean una encima de la otra en móvil, lado a lado en desktop */}
+          {/* styles: one on top of the other on mobile, side by side on desktop */}
           <h1 className={styles.title}>Mechas</h1>
           <h1 className={`${styles.title} ${styles.titleSecond}`}>
             Barbershop
           </h1>
         </div>
 
-        {/* boton a la derecha */}
+        {/* right button */}
         <div className={styles.menuButton}>
           <button
             className={styles.button}
@@ -251,7 +260,7 @@ function Header() {
                         </li>
                         <li className={styles.menuItem}>
                           <Link
-                            to="/Barber/myAppointments"
+                            to="/Barber/MyAppointments"
                             onClick={closeMenu}
                             className={styles.menuLink}
                           >
@@ -326,9 +335,9 @@ function Header() {
       {open && (
         <div
           className={styles.overlay}
-            onClick={closeMenu}
+          onClick={closeMenu}
           onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") closeMenu();
+            if (e.key === "Enter" || e.key === " ") closeMenu();
           }}
           role="button"
           tabIndex={0}

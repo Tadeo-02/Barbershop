@@ -1,36 +1,10 @@
 import React, { useEffect, useState, useMemo } from "react";
 import styles from "./infoSection.module.css";
 import toast from "react-hot-toast";
-import { z } from "zod";
 import { BranchWithIdSchema } from "../../../BACK/Schemas/branchesSchema";
-
-/*
-1) Schema Zod (BranchWithIdSchema); validación del contrato de datos entre backend y frontend,
-   evita que datos mal formados rompan la UI y mantiene integridad de datos en tiempo de ejecución.
-2) z.infer<typeof BranchWithIdSchema>; tipado fuerte a partir del schema,
-   evita desync entre tipos de TypeScript y la validación real de los datos.
-3) Validación individual por item (parse por sucursal);
-   permite descartar entradas inválidas sin fallar toda la operación (fail-soft UI).
-4) Manejo de errores de validación con logging;
-   mejora la observabilidad de errores y facilita detectar inconsistencias del backend.
-5) Fallback seguro de respuesta (Array.isArray || response.data);
-   previene crashes si el backend cambia la forma del payload.
-6) useState separado (sucursales / loadingSucursales);
-   permite estados claros: loading, empty y success, mejorando la UX y la mantenibilidad.
-7) useEffect con fetch único;
-   carga controlada de datos al montar el componente, sin efectos secundarios innecesarios.
-8) useMemo para renderizado de tarjetas;
-   evita re-renders innecesarios y deja explícita la dependencia del render en el estado sucursales.
-9) Estados de UI explícitos (loading / empty / success);
-   previene estados inconsistentes y mejora la experiencia del usuario ante fallos o datos vacíos.
-10) Componente read-only (sin mutaciones);
-    reduce superficie de errores, elimina problemas de concurrencia y no requiere locks de frontend.
-*/
-
-
-// Infer the TypeScript type from the schema
-//! Validacion frontend con schema zod
-type Sucursal = z.infer<typeof BranchWithIdSchema>;
+import { apiFetch } from "../lib/apiFetch";
+import logger from "../lib/logger";
+import type { Sucursal } from "../../types/branch";
 
 const InfoSection: React.FC = () => {
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
@@ -39,8 +13,9 @@ const InfoSection: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Cargar sucursales
-        const [sucursalesResponse] = await Promise.all([fetch("/sucursales")]);
+        const [sucursalesResponse] = await Promise.all([
+          apiFetch("/sucursales"),
+        ]);
 
         if (sucursalesResponse.ok) {
           const sucursalesData = await sucursalesResponse.json();
@@ -49,14 +24,13 @@ const InfoSection: React.FC = () => {
             : sucursalesData?.data || [];
 
           // Validate each sucursal against the schema
-          //! Parsing es otra validacion frontend de la libreria zod
           const validatedSucursales: Sucursal[] = [];
           for (const sucursal of list) {
             try {
-              const validated = BranchWithIdSchema.parse(sucursal); 
+              const validated = BranchWithIdSchema.parse(sucursal);
               validatedSucursales.push(validated);
             } catch (validationError) {
-              console.error(
+              logger.error(
                 "Invalid sucursal data:",
                 sucursal,
                 validationError,
@@ -66,12 +40,11 @@ const InfoSection: React.FC = () => {
           }
 
           setSucursales(validatedSucursales);
-          console.log("Sucursales recibidas:", validatedSucursales);
         } else {
           toast.error("Error al cargar las sucursales");
         }
       } catch (error) {
-        console.error("Error al obtener datos:", error);
+        logger.error("Error al obtener datos:", error);
         toast.error("Error al cargar los datos");
       } finally {
         setLoadingSucursales(false);

@@ -1,0 +1,196 @@
+/* ============================================================
+   DESIGN TOKENS
+   Variables CSS centralizadas: colores, espaciados y tamaños.
+   Se importa una sola vez a nivel global (index.css) y se usa
+   var(--token) en los .module.css en lugar de valores hardcodeados.
+   ============================================================ */
+
+:root {
+  /* ---------- Colores de marca / acento ---------- */
+  --color-primary: #2b6cb0;
+  --color-primary-light: #93c5fd;
+  --color-primary-hover: #4299e1;
+  --color-accent-blue: #3498db;
+  --color-accent-green: #2ecc71;
+
+  /* ---------- Colores de estado ---------- */
+  --color-success: #38a169;
+  --color-danger: #c53030;
+  --color-warning: #dd6b20;
+
+  /* ---------- Escala de grises / neutros ---------- */
+  --color-gray-950: #1a202c;
+  --color-gray-900: #111827;
+  --color-gray-850: #2c3e50;
+  --color-gray-800: #1f2937;
+  --color-gray-750: #374151;
+  --color-gray-700: #2d3748;
+  --color-gray-650: #404855;
+  --color-gray-600: #333333;
+  --color-gray-500: #666666;
+  --color-gray-450: #4a5568;
+  --color-gray-400: #718096;
+  --color-gray-350: #64748b;
+  --color-gray-300: #6b7280;
+  --color-gray-250: #475569;
+  --color-gray-200: #e5e7eb;
+  --color-gray-150: #cbd5e0;
+  --color-gray-125: #a0aec0;
+  --color-gray-100: #e2e8f0;
+  --color-gray-75: #dddddd;
+  --color-gray-60: #cccccc;
+  --color-gray-50: #f3f4f6;
+  --color-gray-45: #aaaaaa;
+  --color-gray-40: #8a8a8a;
+  --color-gray-30: #555555;
+  --color-gray-25: #f8fafc;
+  --color-gray-20: #363636;
+
+  /* ---------- Fondos y superficies oscuras (header/footer) ---------- */
+  --color-surface-dark-900: #00152b;
+  --color-surface-dark-800: #002041;
+  --color-surface-dark-700: #00024b;
+
+  /* ---------- Colores adicionales (superficies claras) ---------- */
+  --color-surface-light-1: #f0f4f8;
+  --color-surface-light-2: #e6eef6;
+  --color-surface-light-3: #e3eafc;
+  --color-surface-light-4: #e6f4ff;
+  --color-surface-light-5: #eef2f6;
+  --color-surface-light-6: #e5eaf0;
+  --color-surface-light-7: #d7e1ee;
+  --color-surface-light-8: #e6f0ff;
+  --color-surface-light-9: #e6eef8;
+  --color-surface-light-10: #e6edf3;
+  --color-surface-light-11: #e3e9ef;
+  --color-surface-light-12: #d7e7ff;
+  --color-surface-light-13: #c8dcff;
+  --color-surface-light-14: #cbd5f5;
+  --color-surface-light-15: #fbfdff;
+  --color-surface-light-16: #f9fafb;
+  --color-surface-light-17: #f9f9f9;
+  --color-surface-light-18: #f8f8f8;
+  --color-surface-light-19: #f8f9fa;
+  --color-surface-light-20: #f0f0f0;
+  --color-surface-light-21: #f7fafc;
+  --color-surface-light-22: #edf2f7;
+  --color-surface-light-23: #ecf0f1;
+  --color-surface-light-24: #e9ecef;
+  --color-surface-light-25: #e6e6e6;
+  --color-surface-light-26: #d5dce3;
+
+  /* ---------- Verdes (éxito) ---------- */
+  --color-success-dark: #22543d;
+  --color-success-mid: #2f855a;
+  --color-success-mid-2: #276749;
+  --color-success-bright: #48bb78;
+  --color-success-bright-2: #38b2ac;
+  --color-success-alt: #27ae60;
+  --color-success-alt-2: #28a745;
+  --color-success-alt-3: #218838;
+  --color-success-alt-4: #059669;
+  --color-success-alt-5: #10b981;
+  --color-success-bg: #c6f6d5;
+
+  /* ---------- Rojos (error/peligro) ---------- */
+  --color-danger-bright: #e53e3e;
+  --color-danger-mid: #9b2c2c;
+  --color-danger-dark: #742a2a;
+  --color-danger-bg: #fed7d7;
+  --color-danger-bg-2: #fff5f5;
+  --color-danger-bg-3: #ffebee;
+  --color-danger-bg-4: #ffcdd2;
+  --color-danger-alt: #e74c3c;
+  --color-danger-alt-2: #ef4444;
+  --color-danger-alt-3: #f56565;
+  --color-danger-alt-4: #dc3545;
+  --color-danger-alt-5: #d32f2f;
+  --color-danger-pure: #ff2600;
+  --color-danger-pure-2: #fffb00;
+  --color-error-red: #b00020;
+  --color-link-red: #ff0000;
+
+  /* ---------- Azules (info / enlaces / foco) ---------- */
+  --color-blue-dark: #2c5282;
+  --color-blue-mid: #3182ce;
+  --color-blue-bright: #007bff;
+  --color-blue-bright-2: #0056b3;
+  --color-blue-bright-3: #3b82f6;
+  --color-blue-bright-4: #1e2ce9;
+  --color-blue-soft: #bee3f8;
+
+  /* ---------- Naranjas (advertencia) ---------- */
+  --color-warning-dark: #c05621;
+  --color-warning-alt: #e67e22;
+  --color-warning-alt-2: #ed8936;
+  --color-warning-alt-3: #f3aa21;
+
+  /* ---------- Colores fuera de la paleta (usos puntuales/decorativos) ---------- */
+  --color-accent-pink: #b83280;
+  --color-accent-purple: #8b00e9;
+  --color-accent-lime: #30aa00;
+  --color-accent-teal: #2980b9;
+  --color-accent-slate: #0f172a;
+  --color-accent-gray-warm: #6c757d;
+
+  /* ---------- Blancos / negro ---------- */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* ---------- Color de borde ---------- */
+  --border-color: rgba(255, 255, 255, 0.15);
+
+  /* ---------- Equivalentes RGB (para usar dentro de rgba()) ---------- */
+  --shadow-color: 0, 0, 0;
+  --color-primary-rgb: 43, 108, 176;
+  --color-primary-hover-rgb: 66, 153, 225;
+  --color-success-rgb: 56, 161, 105;
+  --color-danger-rgb: 197, 48, 48;
+  --color-warning-rgb: 221, 107, 32;
+  --color-slate-rgb: 15, 23, 42;
+  --color-gray-800-rgb: 31, 41, 55;
+  --color-gray-900-rgb: 17, 24, 39;
+  --color-teal-rgb: 52, 152, 219;
+  --color-white-rgb: 252, 252, 252;
+  --color-navy-rgb: 2, 6, 23;
+  --color-slate-800-rgb: 16, 24, 40;
+  --color-navy-light-rgb: 15, 45, 75;
+  --color-navy-dark-rgb: 11, 18, 32;
+  --color-surface-dark-900-rgb: 0, 21, 43;
+  --color-blue-bright-rgb: 0, 123, 255;
+
+  /* ---------- Sombras genéricas (a partir de negro) ---------- */
+  --shadow-sm: 0 1px 3px rgba(var(--shadow-color), 0.08);
+  --shadow-md: 0 4px 12px rgba(var(--shadow-color), 0.1);
+  --shadow-lg: 0 10px 40px rgba(var(--shadow-color), 0.15);
+
+  /* Foco / sombras en color primario (botones, inputs, etc) */
+
+  /* ---------- Espaciados (escala base 4px) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 30px;
+  --space-8: 40px;
+
+  /* ---------- Tamaños de fuente ---------- */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 26px;
+  --font-size-3xl: 35px;
+
+  /* ---------- Radios de borde ---------- */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --radius-full: 999px;
+
+  /* ---------- Transiciones ---------- */
+  --transition-fast: 0.25s;
+}

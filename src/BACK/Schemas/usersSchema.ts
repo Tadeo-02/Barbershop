@@ -5,13 +5,13 @@ export const PASSWORD_MIN_LENGTH = 10;
 export const PASSWORD_MAX_LENGTH = 128;
 export const PASSWORD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)/;
 export const PASSWORD_PATTERN = `(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*\\W).{${PASSWORD_MIN_LENGTH},${PASSWORD_MAX_LENGTH}}`;
-export const PHONE_REGEX = /^\+?[\d\s()\-]{6,20}$/;
-// Función para validar CUIL (acepta formato con guiones o 11 dígitos sin guiones)
+export const PHONE_REGEX = /^\+?[\d\s()-]{6,20}$/;
+// Function to validate CUIL (accepts format with hyphens or 11 digits without hyphens)
 const validateCUIL = (cuil: string, dni: string): boolean => {
   if (!cuil) return false;
   const digits = String(cuil).replace(/\D/g, "");
   if (!/^\d{11}$/.test(digits)) return false;
-  // Extraer los 8 dígitos centrales que corresponden al DNI
+  // Extract the 8 central digits that correspond to the DNI
   const dniFromCuil = digits.slice(2, 10);
   return dniFromCuil === dni;
 };
@@ -60,9 +60,6 @@ const UserBaseSchema = z.object({
 
   cuil: z.string().optional(),
   codSucursal: z.string().optional(),
-  // Opciones para recuperación de contraseña
-  preguntaSeguridad: z.string().optional(),
-  respuestaSeguridad: z.string().optional(),
 });
 
 // Full schema with refinements for validation
@@ -93,8 +90,6 @@ export const UserSchema = UserBaseSchema.refine(
 
 const UserUpdateBaseSchema = UserBaseSchema.extend({
   contraseña: z.string().optional(),
-  preguntaSeguridad: z.string().optional(),
-  respuestaSeguridad: z.string().optional(),
 });
 
 export const UserUpdateSchema = UserUpdateBaseSchema.refine(
@@ -124,8 +119,8 @@ export const UserUpdateSchema = UserUpdateBaseSchema.refine(
 
 export const UserBaseSchemaExport = UserBaseSchema;
 
-// Schema específico para barberos (derivado del base). Exportarlo para que
-// el frontend pueda reutilizar la misma validación y tipos.
+// Schema specific to barbers (derived from the base schema). Export it so
+// the frontend can reuse the same validation and types.
 export const BarberSchema = UserBaseSchema.extend({
   codUsuario: z.string(),
   codSucursal: z.string().optional(),
@@ -145,8 +140,6 @@ export const BarberResponseSchema = z
     email: z.string(),
     cuil: z.string().nullable(),
     codSucursal: z.string().nullable().optional(),
-    preguntaSeguridad: z.string().optional().nullable(),
-    respuestaSeguridad: z.string().optional().nullable(),
     activo: z.union([z.boolean(), z.number()]).transform((val) => Boolean(val)),
   })
   .passthrough(); // Allow extra fields from database
@@ -165,19 +158,24 @@ const CategorySummarySchema = CategorySchema.pick({
 
 const LoyaltyProgressSchema = z.object({}).passthrough();
 
+const AppointmentCountsSchema = z.object({
+  total: z.number(),
+  canceled: z.number(),
+});
+
 export const UserResponseSchema = UserBaseSchemaExport.omit({
   contraseña: true,
-  preguntaSeguridad: true,
-  respuestaSeguridad: true,
 }).extend({
   codUsuario: z.string(),
   cuil: z.string().nullable().optional(),
   codSucursal: z.string().nullable().optional(),
+  emailVerificado: z.boolean().optional(),
   activo: z
     .union([z.boolean(), z.number()])
     .optional()
     .transform((val) => Boolean(val)),
   categoriaActual: CategorySummarySchema.nullable().optional(),
+  appointmentCounts: AppointmentCountsSchema.optional(),
   loyaltyProgress: LoyaltyProgressSchema.nullable().optional(),
 });
 
@@ -186,4 +184,16 @@ export type UserResponse = z.infer<typeof UserResponseSchema>;
 export const LoginSchema = z.object({
   email: z.string().email("Email inválido"),
   contraseña: z.string().min(1, "Contraseña es requerida"),
+});
+
+export const EmailRequestSchema = z.object({
+  email: z.string().email("Email inválido"),
+});
+
+export const TokenValidationSchema = z.object({
+  token: z.string().min(32, "Token inválido"),
+});
+
+export const ResetPasswordByTokenSchema = TokenValidationSchema.extend({
+  nuevaContraseña: UserBaseSchema.shape.contraseña,
 });

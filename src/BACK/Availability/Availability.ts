@@ -1,7 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { prisma, DatabaseError, sanitizeInput } from "../base/Base";
+import logger from "../lib/logger";
 import { z } from "zod";
 import { AvailabilitySchema } from "../Schemas/availabilitySchema";
+import { assertEntityExists } from "../lib/entityChecks";
+import { parseValidatedInput } from "../lib/zodHelpers";
 
 const ensureValidRange = (fechaDesde: Date, fechaHasta: Date) => {
   if (fechaDesde >= fechaHasta) {
@@ -104,7 +107,7 @@ const cancelOverlappingTurnos = async (
   });
 };
 
-// funciones backend para Categorías
+//  backend functions for Categories
 export const store = async (
   codBarbero: string,
   fechaHoraDesde: string,
@@ -112,7 +115,7 @@ export const store = async (
   motivo: string,
 ) => {
   try {
-    // sanitizar de inputs
+    // sanitize inputs
     const sanitizedData = {
       codBarbero: sanitizeInput(codBarbero),
       fechaHoraDesde: sanitizeInput(fechaHoraDesde),
@@ -120,14 +123,15 @@ export const store = async (
       motivo: sanitizeInput(motivo),
     };
 
-    // validacion con zod
-    const validatedData = AvailabilitySchema.omit({
-      codBloqueo: true,
-    }).parse(sanitizedData);
+    // validate with zod
+    const validatedData = parseValidatedInput(
+      AvailabilitySchema.omit({ codBloqueo: true }),
+      sanitizedData,
+    );
 
-    console.log("Creating barber unavailability");
+    logger.info("Creating barber unavailability");
 
-    // convertir strings a DateTime objects para Prisma (forzar UTC para evitar shift horario)
+    // convert strings to DateTime objects for Prisma (forze UTC to avoid shift schedule)
     const fechaDesde = new Date(
       validatedData.fechaHoraDesde.replace(" ", "T") + ".000Z",
     );
@@ -165,15 +169,15 @@ export const store = async (
       return createdBloqueo;
     });
 
-    console.log("Barber unavailability created successfully");
+    logger.info("Barber unavailability created successfully");
     return bloqueo;
   } catch (error) {
-    console.error(
-      "Error creating barber unavailability:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error creating barber unavailability",
     );
 
-    //  de errores de validación
+    //   validation errors
     if (error instanceof DatabaseError) {
       throw error;
     }
@@ -183,7 +187,7 @@ export const store = async (
       throw new DatabaseError(firstError.message);
     }
 
-    //  errores de DB
+    //  errors of DB
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string; message: string };
 
@@ -198,18 +202,18 @@ export const store = async (
 
 export const findAll = async () => {
   try {
-    console.log("Fetching all unavailabilities with Prisma");
+    logger.info("Fetching all unavailabilities");
 
     const unavailabilities = await prisma.bloqueos_barbero.findMany({
       orderBy: { fechaHoraDesde: "asc" },
     });
 
-    console.log(`Retrieved ${unavailabilities.length} unavailabilities`);
+    logger.info({ count: unavailabilities.length }, "Retrieved unavailabilities");
     return unavailabilities;
   } catch (error) {
-    console.error(
-      "Error fetching unavailabilities:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error fetching unavailabilities",
     );
     throw new DatabaseError("Error al obtener lista de bloqueos");
   }
@@ -217,7 +221,7 @@ export const findAll = async () => {
 
 export const findById = async (codBloqueo: string) => {
   try {
-    // sanitizar y validar ID
+    // sanitize and validate ID
     const sanitizedCodBloqueo = sanitizeInput(codBloqueo);
 
     const bloqueo = await prisma.bloqueos_barbero.findUnique({
@@ -230,9 +234,9 @@ export const findById = async (codBloqueo: string) => {
       throw error;
     }
 
-    console.error(
-      "Error finding unavailability:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error finding unavailability",
     );
     throw new DatabaseError("Error al buscar bloqueo");
   }
@@ -246,7 +250,7 @@ export const update = async (
   motivo: string,
 ) => {
   try {
-    // sanitizar datos
+    // sanitize data
     const sanitizedData = {
       codBloqueo: sanitizeInput(codBloqueo),
       codBarbero: sanitizeInput(codBarbero),
@@ -255,15 +259,18 @@ export const update = async (
       motivo: sanitizeInput(motivo),
     };
 
-    // validar (menos codBloqueo)
-    const validatedData = AvailabilitySchema.omit({ codBloqueo: true }).parse({
-      codBarbero: sanitizedData.codBarbero,
-      fechaHoraDesde: sanitizedData.fechaHoraDesde,
-      fechaHoraHasta: sanitizedData.fechaHoraHasta,
-      motivo: sanitizedData.motivo,
-    });
+    // validate (except codBloqueo)
+    const validatedData = parseValidatedInput(
+      AvailabilitySchema.omit({ codBloqueo: true }),
+      {
+        codBarbero: sanitizedData.codBarbero,
+        fechaHoraDesde: sanitizedData.fechaHoraDesde,
+        fechaHoraHasta: sanitizedData.fechaHoraHasta,
+        motivo: sanitizedData.motivo,
+      },
+    );
 
-    // convertir strings a DateTime objects para Prisma (forzar UTC para evitar shift horario)
+    // convert strings to DateTime objects for Prisma (forze UTC to avoid shift schedule)
     const fechaDesde = new Date(
       validatedData.fechaHoraDesde.replace(" ", "T") + ".000Z",
     );
@@ -279,9 +286,7 @@ export const update = async (
         where: { codBloqueo: sanitizedData.codBloqueo },
       });
 
-      if (!existingBloqueo) {
-        throw new DatabaseError("Bloqueo no encontrado");
-      }
+      assertEntityExists(existingBloqueo, "Bloqueo");
 
       ensureNotFinished(existingBloqueo.fechaHoraHasta, "modificar");
 
@@ -313,20 +318,20 @@ export const update = async (
       return updated;
     });
 
-    console.log("Bloqueo updated successfully");
+    logger.info("Bloqueo updated successfully");
     return updatedBloqueo;
   } catch (error) {
-    console.error(
-      "Error updating bloqueo:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error updating bloqueo",
     );
 
-    // Manejo de errores de validación
+    // handle validation errors
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       throw new DatabaseError(firstError.message);
     }
-    // Manejo de errores de DB
+    // handle DB errors
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 
@@ -349,34 +354,32 @@ export const update = async (
 
 export const destroy = async (codBloqueo: string) => {
   try {
-    // sanitizar y validar
+    // sanitize and validate
     const sanitizedCodBloqueo = sanitizeInput(codBloqueo);
 
-    // verificar que el bloqueo existe
+    // verify that the block exists
     const existingBloqueo = await prisma.bloqueos_barbero.findUnique({
       where: { codBloqueo: sanitizedCodBloqueo },
     });
 
-    if (!existingBloqueo) {
-      throw new DatabaseError("Bloqueo no encontrado");
-    }
+    assertEntityExists(existingBloqueo, "Bloqueo");
 
     ensureNotFinished(existingBloqueo.fechaHoraHasta, "eliminar");
 
-    // eliminar bloqueo
+    // eliminate block
     const deletedBloqueo = await prisma.bloqueos_barbero.delete({
       where: { codBloqueo: sanitizedCodBloqueo },
     });
 
-    console.log("Bloqueo deleted successfully");
+    logger.info("Bloqueo deleted successfully");
     return deletedBloqueo;
   } catch (error) {
-    console.error(
-      "Error deleting bloqueo:",
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      "Error deleting bloqueo",
     );
 
-    // manejo de errores de DB
+    // handle DB errors
     if (error && typeof error === "object" && "code" in error) {
       const prismaError = error as { code: string };
 

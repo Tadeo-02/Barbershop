@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from "./TimeSlotPicker.module.css";
+import { apiFetch } from "../../lib/apiFetch.ts";
+import { unwrapArray } from "../../lib/apiResponse";
+import logger from "../../lib/logger";
 
 interface Horario {
   hora: string;
@@ -38,10 +41,10 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 }) => {
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(
-    initialDate || getTomorrowDate()
+    initialDate || getTomorrowDate(),
   );
   const [fechaTurno, setFechaTurno] = useState<string>(
-    (initialDate || getTomorrowDate()).toISOString().split("T")[0]
+    (initialDate || getTomorrowDate()).toISOString().split("T")[0],
   );
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,33 +52,31 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const isFirstRender = useRef(true);
 
-  // Determinar qué endpoint usar basado en los props
+  // Determine endpoint based on the props
   const isBarbero = !!codBarbero;
   const codigo = codBarbero || codSucursal;
 
   useEffect(() => {
-    if (!codigo) {
-      setError("No se encontró el código");
-      setLoading(false);
-      return;
-    }
+    const loadHorarios = async () => {
+      if (!codigo) {
+        setError("No se encontró el código");
+        setLoading(false);
+        return;
+      }
 
-    // Mostrar loading de horarios al cambiar fecha/código
-    if (!isFirstRender.current) {
-      setLoadingHorarios(true);
-    } else {
-      isFirstRender.current = false;
-    }
+      if (!isFirstRender.current) {
+        setLoadingHorarios(true);
+      } else {
+        isFirstRender.current = false;
+      }
 
-    // Ir directamente al endpoint correcto según el tipo
-    const endpoint = isBarbero
-      ? `/turnos/barber/${codigo}/${fechaTurno}`
-      : `/turnos/available/${fechaTurno}/${codigo}`;
+      const endpoint = isBarbero
+        ? `/turnos/barber/${codigo}/${fechaTurno}`
+        : `/turnos/available/${fechaTurno}/${codigo}`;
 
-    console.log("Llamando a endpoint:", endpoint);
+      try {
+        const res = await apiFetch(endpoint);
 
-    fetch(endpoint)
-      .then(async (res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -83,36 +84,26 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
         const contentType = res.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
           const text = await res.text();
-          console.error("Expected JSON but received:", text.substring(0, 100));
+          logger.error("Expected JSON but received:", text.substring(0, 100));
           throw new Error("El servidor no devolvió datos JSON válidos");
         }
 
-        return res.json();
-      })
-      .then((response) => {
-        let horariosData: Horario[] = [];
-
-        if (response.success && Array.isArray(response.data)) {
-          horariosData = response.data.filter(
-            (item: Horario) => item && item.hora
-          );
-        } else if (Array.isArray(response)) {
-          horariosData = response.filter((item: Horario) => item && item.hora);
-        } else {
-          console.error("Unexpected response format:", response);
-          horariosData = [];
-        }
+        const response = await res.json();
+        const horariosData = unwrapArray<Horario>(response, ["data"]).filter(
+          (item) => item && item.hora,
+        );
 
         setHorarios(horariosData);
+      } catch (error) {
+        logger.error("Error fetching horarios:", error);
+        setError(error instanceof Error ? error.message : "Error al obtener horarios");
+      } finally {
         setLoading(false);
         setLoadingHorarios(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching horarios:", error);
-        setError(error.message || "Error al obtener horarios");
-        setLoading(false);
-        setLoadingHorarios(false);
-      });
+      }
+    };
+
+    void loadHorarios();
   }, [codigo, fechaTurno, isBarbero]);
 
   const handleDateChange = (date: Date | null) => {
@@ -143,7 +134,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
     return <div className={styles.errorState}>Error: {error}</div>;
   }
 
-  // Función para agrupar horarios por período del día
+  // function to group timeslots by period of the day
   const groupHorariosByPeriod = () => {
     const manana: Horario[] = [];
     const tarde: Horario[] = [];
@@ -191,7 +182,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
 
   const { manana, tarde, noche } = groupHorariosByPeriod();
 
-  const isWeekday = (date) => {
+  const isWeekday = (date: Date) => {
     return date.getDay() >= 1 && date.getDay() <= 6;
   };
 

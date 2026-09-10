@@ -1,0 +1,191 @@
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import styles from "./ReceiptViewer.module.css";
+import toast from "react-hot-toast";
+import { apiFetch } from "../../lib/apiFetch";
+import { getResponseMessage, readJsonSafely } from "../../lib/apiResponse";
+
+interface BillingData {
+  codTurno: string;
+  estado: string;
+  precioTurno: number | null;
+  metodoPago: string | null;
+  servicio: string;
+  facturado: boolean;
+  cae: string | null;
+  caeFchVto: string | null;
+  voucherNumber: number | null;
+  voucherNumberFormatted: string | null;
+  tipoComprobante: number | null;
+  voucherType: string | null;
+  puntoDeVenta: number;
+}
+
+interface ReceiptViewerProps {
+  /** Ruta a la que se vuelve al presionar "Volver" (ej: "/client/appointments"). */
+  backRoute: string;
+  /** Texto del botón de "volver" que se muestra en el estado de error. */
+  backLabel: string;
+}
+
+/**
+ * Visor de recibo/factura de un turno. Es compartido entre las vistas de
+ * Cliente y Barbero: ambos roles consultan y descargan el mismo recibo,
+ * solo cambia a dónde vuelve el usuario y cómo se lo describe.
+ */
+const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
+  backRoute,
+  backLabel,
+}) => {
+  const { codTurno } = useParams<{ codTurno: string }>();
+  const navigate = useNavigate();
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [billingData, setBillingData] = useState<BillingData | null>(null);
+
+  useEffect(() => {
+    if (!codTurno) {
+      setError("Código de turno no proporcionado");
+      setLoading(false);
+      return;
+    }
+
+    let blobUrl: string | null = null;
+
+    const fetchData = async () => {
+      try {
+        // 1. get billing data from the DB
+        const metaResponse = await apiFetch(
+          `/facturacion/datos-turno/${codTurno}`,
+        );
+        if (!metaResponse.ok) {
+          const errorData = await readJsonSafely(metaResponse);
+          throw new Error(
+            getResponseMessage(
+              errorData,
+              `Error al obtener datos de facturación (${metaResponse.status})`,
+            ),
+          );
+        }
+        const metaJson = await metaResponse.json();
+        setBillingData(metaJson.data);
+
+        // 2. get PDF
+        const pdfResponse = await apiFetch(`/facturacion/recibo/${codTurno}`);
+        if (!pdfResponse.ok) {
+          const errorData = await readJsonSafely(pdfResponse);
+          throw new Error(
+            getResponseMessage(
+              errorData,
+              `Error al obtener el recibo (${pdfResponse.status})`,
+            ),
+          );
+        }
+
+        const blob = await pdfResponse.blob();
+        blobUrl = URL.createObjectURL(blob);
+        setPdfUrl(blobUrl);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Error desconocido";
+        setError(message);
+        toast.error(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [codTurno]);
+
+  const handleDownload = () => {
+    if (!pdfUrl) return;
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.download = `recibo_${codTurno}.pdf`;
+    link.click();
+  };
+
+  const handleBack = () => {
+    navigate(backRoute);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingState}>
+          <p>Cargando recibo...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorState}>
+          <p>{error}</p>
+          <button className={styles.backButton} onClick={handleBack}>
+            {backLabel}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.toolbar}>
+        <button className={styles.backButton} onClick={handleBack}>
+          ← Volver
+        </button>
+        <button className={styles.downloadButton} onClick={handleDownload}>
+          Descargar PDF
+        </button>
+      </div>
+      <div className={styles.titleBlock}>
+        <h2 className={styles.title}>
+          {billingData?.voucherType || "Recibo de Pago"}
+        </h2>
+        <div className={styles.voucherInfoRow}>
+          {billingData?.voucherNumberFormatted && (
+            <span className={styles.voucherInfo}>
+              N° {billingData.voucherNumberFormatted}
+            </span>
+          )}
+          {billingData?.cae && (
+            <span className={styles.voucherInfo}>CAE: {billingData.cae}</span>
+          )}
+          {billingData?.caeFchVto && (
+            <span className={styles.voucherInfo}>
+              Vto. CAE: {billingData.caeFchVto}
+            </span>
+          )}
+          {billingData?.servicio && (
+            <span className={styles.voucherInfo}>
+              Servicio: {billingData.servicio}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className={styles.pdfWrapper}>
+        {pdfUrl && (
+          <iframe
+            src={pdfUrl}
+            className={styles.pdfFrame}
+            title="Recibo de pago"
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ReceiptViewer;

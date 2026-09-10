@@ -1,10 +1,10 @@
 .infoSection {
     max-width: 100%;
-    margin: 20px 0;
+    margin: var(--space-5) 0;
     padding: 15px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    background-color: var(--color-white);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px var(--shadow-sm);
     animation: fadeIn 0.5s ease-out;
     display: flex;
     flex-direction: column;
@@ -12,16 +12,16 @@
 }
 
 .infoSectionTitle {
-    color: #002041;
+    color: var(--color-surface-dark-800);
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0 0 2px 0;
 }
 
 .infoSectionContent {
-    color: rgba(0, 0, 0, 0.85);
+    color: rgba(var(--shadow-color), 0.85);
     font-size: 0.9rem;
-    margin: 0 0 8px 0;
+    margin: 0 0 var(--space-2) 0;
 }
 
 .cardsGrid {
@@ -33,10 +33,10 @@
 
 .sucursalContainer,
 .barberoContainer {
-    background-color: #f0f4f8;
-    border: 1px solid #e2e8f0;
+    background-color: var(--color-surface-light-1);
+    border: 1px solid var(--color-gray-100);
     border-radius: 8px;
-    padding: 12px;
+    padding: var(--space-3);
     margin-bottom: 10px;
     display: flex;
     flex-direction: column;
@@ -49,13 +49,13 @@
 .barberoContainer h3 {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-gray-700);
 }
 
 .sucursalInfo,
 .barberoInfo {
     font-size: 0.95rem;
-    color: #718096;
+    color: var(--color-gray-400);
     font-weight: 500;
 }
 
@@ -72,8 +72,8 @@
     text-align: center;
     padding: 10px;
     border-radius: 8px;
-    background: rgba(252, 252, 252, 0.01);
-    color: rgba(0, 0, 0, 0.85);
+    background: rgba(var(--color-white-rgb), 0.01);
+    color: rgba(var(--shadow-color), 0.85);
 }
 
 @media (min-width: 640px) {
@@ -81,9 +81,9 @@
         margin: 14px auto;
         width: 90%;
         max-width: 900px;
-        padding: 18px 20px;
+        padding: 18px var(--space-5);
         border-radius: 14px;
-        box-shadow: 0 8px 26px rgba(2, 6, 23, 0.5);
+        box-shadow: 0 8px 26px rgba(var(--color-navy-rgb), 0.5);
     }
 
     .infoSectionTitle {
@@ -92,21 +92,21 @@
 
     .cardsGrid {
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 12px;
+        gap: var(--space-3);
     }
 
     .sucursalContainer,
     .barberoContainer {
-        padding: 12px 14px;
-        border-radius: 12px;
+        padding: var(--space-3) 14px;
+        border-radius: var(--radius-md);
         transition: transform 180ms ease, box-shadow 180ms ease;
     }
 
     .sucursalContainer:hover,
     .barberoContainer:hover {
         transform: translateY(-6px) scale(1.03);
-        box-shadow: 0 12px 32px rgba(43, 108, 176, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
-        background-color: #e3eafc;
-        border-color: #2b6cb0;
+        box-shadow: 0 12px 32px rgba(var(--color-primary-rgb), 0.18), 0 2px 8px var(--shadow-sm);
+        background-color: var(--color-surface-light-3);
+        border-color: var(--color-primary);
     }
 }

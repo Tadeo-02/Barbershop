@@ -22,14 +22,10 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "types": ["vitest/globals", "@testing-library/jest-dom"]
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "paths": {
+      "@lib/*": ["./src/FRONT/views/lib/*"]
+    }
   },
-  "include": [
-    "src",
-    "index.ts",
-    "src/BACK/controllers",
-    "src/BACK/models",
-    "src/BACK/routes",
-    "__tests__"
-  ]
+  "include": ["src/FRONT", "src/vite-env.d.ts"]
 }

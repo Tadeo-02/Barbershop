@@ -6,15 +6,17 @@ import {
   CategoryResponseSchema,
 } from "../../Schemas/categoriesSchema";
 import { sanitizeOutput } from "../../middleware/zodValidation";
-// creamos el modelo de controlador de categorias
+import {
+  createDataResponse,
+} from "../../lib/backendResponse";
+
+// Create the category controller model.
 type CategoryEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type CategoryCreateArgs = Parameters<typeof model.store>;
-type CategoryUpdateArgs = Parameters<typeof model.update> extends [
-  string,
-  ...infer Rest
-]
-  ? Rest
-  : never;
+type CategoryUpdateArgs =
+  Parameters<typeof model.update> extends [string, ...infer Rest]
+    ? Rest
+    : never;
 
 class CategoriesController extends BaseController<
   CategoryEntity,
@@ -28,19 +30,10 @@ class CategoriesController extends BaseController<
 
   listClients = async (req: Request, res: Response) => {
     const { codCategoria } = req.params;
-    if (!codCategoria) {
-      res.status(400).json({
-        message: "codCategoria es requerido",
-      });
-      return;
-    }
     try {
       const result = await model.listClientsForCategory(codCategoria);
       const safeResult = sanitizeOutput(CategoryClientsResponseSchema, result);
-      res.status(200).json({
-        success: true,
-        data: safeResult,
-      });
+      res.status(200).json(createDataResponse(safeResult));
     } catch (error) {
       this.handleError(error, res);
     }
@@ -49,12 +42,6 @@ class CategoriesController extends BaseController<
   destroy = async (req: Request, res: Response) => {
     const { codCategoria } = req.params;
     const { action, perClient } = req.body || {};
-    if (!codCategoria) {
-      res.status(400).json({
-        message: "codCategoria es requerido",
-      });
-      return;
-    }
 
     try {
       const result = await model.destroyWithClientReassignment(
@@ -77,10 +64,9 @@ class CategoriesController extends BaseController<
     }
   };
 }
-//creamos la instancia del controlador de categorias
+// Create the category controller instance.
 const categoriesController = new CategoriesController();
-console.log("Categories controller store:", typeof categoriesController.store);
-console.log("Categories model:", typeof model.store);
+
 export const {
   create,
   store,

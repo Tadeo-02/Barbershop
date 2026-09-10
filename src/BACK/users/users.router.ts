@@ -1,12 +1,12 @@
 import * as controller from "./users.controller";
 import createRouter from "../base/base.router";
 import { findByIdWithCategory } from "./Users";
-import { Router } from "express";
+import logger from "../lib/logger";
+import { RequestHandler, Router } from "express";
 import {
   authLimiter,
   sensitiveLimiter,
   userModificationLimiter,
-  userSensitiveLimiter,
   userLimiter,
 } from "../middleware/rateLimiter";
 import {
@@ -15,7 +15,17 @@ import {
 } from "../middleware/deduplication";
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
-import { UserSchema, UserUpdateSchema } from "../Schemas/usersSchema";
+import {
+  EmailRequestSchema,
+  ResetPasswordByTokenSchema,
+  TokenValidationSchema,
+  UserSchema,
+  UserUpdateSchema,
+} from "../Schemas/usersSchema";
+import { authMiddleware } from "../middleware/authMiddleware";
+import { requireRole } from "../middleware/roleMiddleware";
+import { csrfProtection } from "../middleware/csrf";
+import { CSRF_COOKIE } from "../lib/cookieConfig";
 
 const router: Router = Router();
 
@@ -26,7 +36,6 @@ const scheduleParamSchema = z.object({
   fechaTurno: z.string().min(1),
   horaDesde: z.string().min(1),
 });
-const emailParamSchema = z.object({ email: z.string().email() });
 const optionalUserParamSchema = z.object({
   codUsuario: z.string().optional(),
 });
@@ -43,20 +52,27 @@ const loginRequestSchema = z
   .refine((data) => data.contraseña || data.clave, {
     message: "Contraseña es requerida",
   });
-const securityQuestionBodySchema = z.object({
-  preguntaSeguridad: z.string().min(1),
-  respuestaSeguridad: z.string().min(1),
-});
-const verifySecurityAnswerSchema = z.object({
-  email: z.string().email(),
-  respuestaSeguridad: z.string().min(1),
-  nuevaContraseña: z.string().min(1).optional(),
-});
-const resetPasswordSchema = z.object({
-  email: z.string().email(),
-  respuestaSeguridad: z.string().min(1),
-  nuevaContraseña: z.string().min(1),
-});
+const requireAdminForStaffUser: RequestHandler = (req, res, next) => {
+  if (!req.body?.cuil && !req.body?.codSucursal) {
+    next();
+    return;
+  }
+
+  csrfProtection(req, res, (csrfError?: unknown) => {
+    if (csrfError || res.headersSent) {
+      return;
+    }
+
+    authMiddleware(req, res, (authError?: unknown) => {
+      if (authError) {
+        next(authError);
+        return;
+      }
+
+      requireRole("admin")(req, res, next);
+    });
+  });
+};
 
 // ========================================
 // NON-AUTHENTICATED ROUTES (IP-based limiting)
@@ -71,33 +87,49 @@ router.post(
   controller.login,
 );
 
-// Password reset endpoints - IP-based limiting (users not authenticated yet)
-router.get(
-  "/security-question/:email",
-  sensitiveLimiter,
-  validateRequest({ params: emailParamSchema }),
-  controller.getSecurityQuestion,
-);
+// Logout endpoint - clears auth and CSRF cookies
+router.post("/logout", controller.logout);
+
+// Refresh endpoint - exchange valid refresh token for new access + refresh tokens
+// No authMiddleware or csrfProtection — refresh token possession IS the auth proof.
+// Rate-limited to prevent brute-force.
+router.post("/refresh", authLimiter, controller.refresh);
+
+// Email verification and password reset endpoints - IP-based limiting
 router.post(
-  "/verify-security-answer",
+  "/email-verification/request",
   sensitiveLimiter,
   strictDeduplication,
-  validateRequest({ body: verifySecurityAnswerSchema }),
-  controller.verifySecurityAnswer,
+  validateRequest({ body: EmailRequestSchema }),
+  controller.requestEmailVerification,
 );
-// Dedicated password-reset endpoint (separate rate-limit bucket from answer verification)
 router.post(
-  "/reset-password",
+  "/email-verification/confirm",
   sensitiveLimiter,
   strictDeduplication,
-  validateRequest({ body: resetPasswordSchema }),
-  controller.resetPassword,
+  validateRequest({ body: TokenValidationSchema }),
+  controller.confirmEmailVerification,
+);
+router.post(
+  "/password-reset/request",
+  sensitiveLimiter,
+  strictDeduplication,
+  validateRequest({ body: EmailRequestSchema }),
+  controller.requestPasswordReset,
+);
+router.post(
+  "/password-reset/confirm",
+  sensitiveLimiter,
+  strictDeduplication,
+  validateRequest({ body: ResetPasswordByTokenSchema }),
+  controller.resetPasswordWithToken,
 );
 
 // User registration - IP-based limiting for non-authenticated users
 router.post(
   "/",
   authLimiter,
+  requireAdminForStaffUser,
   strictDeduplication,
   validateRequest({ body: UserSchema }),
   controller.store,
@@ -124,32 +156,50 @@ router.get(
 // User profile - standard user limiting
 router.get(
   "/profiles/:codUsuario",
+  authMiddleware,
+  requireRole("client", "barber", "admin"),
   userLimiter,
   validateRequest({ params: codUsuarioParamSchema }),
   async (req, res) => {
-  try {
-    const { codUsuario } = req.params;
+    try {
+      const { codUsuario } = req.params;
 
-    const userWithCategory = await findByIdWithCategory(codUsuario);
+      const userWithCategory = await findByIdWithCategory(codUsuario);
 
-    res.json({
-      success: true,
-      data: userWithCategory,
-    });
-  } catch (error) {
-    console.error("Error getting user profile with category:", error);
-    res.status(500).json({
-      success: false,
-      message:
-        error instanceof Error ? error.message : "Error interno del servidor",
-    });
-  }
+      if (req.user?.rol === "client" && req.user.codUsuario !== codUsuario) {
+        const isBarber =
+          userWithCategory.cuil !== null && userWithCategory.cuil !== "1";
+        if (!isBarber) {
+          res.status(403).json({
+            success: false,
+            message: "Acceso denegado",
+          });
+          return;
+        }
+      }
+
+      res.json({
+        success: true,
+        data: userWithCategory,
+        csrfToken: req.cookies?.[CSRF_COOKIE] ?? null,
+      });
+    } catch (error) {
+      logger.error({ error }, "Error getting user profile with category");
+      res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Error interno del servidor",
+      });
+    }
   },
 );
 
 // Account modification operations - user modification limiting
 router.patch(
   "/:codUsuario/deactivate",
+  authMiddleware,
+  csrfProtection,
+  requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
   validateRequest({ params: codUsuarioParamSchema }),
@@ -157,36 +207,42 @@ router.patch(
 );
 router.patch(
   "/:codUsuario/reactivate",
+  authMiddleware,
+  csrfProtection,
+  requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
   validateRequest({ params: codUsuarioParamSchema }),
   controller.reactivate,
 );
 
-// Security question update - sensitive operation for authenticated users
-router.patch(
-  "/:codUsuario/security-question",
-  userSensitiveLimiter,
-  strictDeduplication,
-  validateRequest({
-    params: codUsuarioParamSchema,
-    body: securityQuestionBodySchema,
-  }),
-  controller.updateSecurityQuestion,
-);
-
-// Ahora aplicamos las rutas base (GET, POST, PUT, DELETE genéricas)
+// apply base routes (generic GET, POST, PUT, DELETE)
 const baseRouter = createRouter(controller, {
   create: "/create",
   idParam: "codUsuario",
   updatePath: "/update",
   middleware: {
-    read: [validateRequest({ params: optionalUserParamSchema })],
+    read: [
+      authMiddleware,
+      requireRole("admin"),
+      validateRequest({ params: optionalUserParamSchema }),
+    ],
     create: [validateRequest({ body: UserSchema })],
     update: [
-      validateRequest({ params: codUsuarioParamSchema, body: UserUpdateSchema }),
+      authMiddleware,
+      csrfProtection,
+      requireRole("admin"),
+      validateRequest({
+        params: codUsuarioParamSchema,
+        body: UserUpdateSchema,
+      }),
     ],
-    delete: [validateRequest({ params: codUsuarioParamSchema })],
+    delete: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("admin"),
+      validateRequest({ params: codUsuarioParamSchema }),
+    ],
   },
 });
 

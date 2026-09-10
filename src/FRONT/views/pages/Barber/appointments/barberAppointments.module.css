@@ -1,0 +1,394 @@
+/* Barber Appointments Styles */
+
+.appointmentsContainer {
+  max-width: 100%;
+  margin: var(--space-3) 0;
+  padding: var(--space-3);
+  background-color: var(--color-white);
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(var(--shadow-color), 0.06);
+  animation: fadeIn 0.35s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: visible;
+  margin-bottom: 60px;
+}
+
+.appointmentList {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+  overflow: visible;
+}
+
+.appointmentItem {
+  background-color: var(--color-surface-light-1);
+  border: 1px solid var(--color-gray-100);
+  border-radius: 8px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.appointmentItem:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(var(--shadow-color), 0.05);
+}
+
+.appointmentDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.95rem;
+}
+
+.detailLabel {
+  font-weight: 600;
+  color: var(--color-gray-450);
+  min-width: 100px;
+}
+
+.detailValue {
+  color: var(--color-gray-700);
+}
+
+.statusBadge {
+  color: var(--color-white);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* different status colors */
+.statusProgramado {
+  background-color: var(--color-primary-hover); /* blue - appointment scheduled and active */
+}
+
+.statusCancelado {
+  background-color: var(--color-danger-bright); /* red - canceled by the client */
+}
+
+.statusCobrado {
+  background-color: var(--color-success-bright); /* green - done and paid */
+}
+
+.statusSinCobrar {
+  background-color: var(--color-warning-alt-2); /* orange - done but not paid */
+}
+
+.statusNoAsistido {
+  background-color: var(--color-gray-400); /* gray - no-show*/
+}
+
+.appointmentActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: var(--space-2);
+}
+
+.deleteButton {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--color-danger-bright);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.updateButton {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--color-primary-hover);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deleteButton:hover:not(:disabled) {
+  background-color: var(--color-danger);
+}
+
+.deleteButton:disabled {
+  background-color: var(--color-gray-150);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.updateButton:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.updateButton:disabled {
+  background-color: var(--color-gray-150);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.receiptButton {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+}
+
+.receiptButton:hover:not(:disabled) {
+  background-color: var(--color-blue-dark);
+  transform: translateY(-1px);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-7);
+  color: var(--color-gray-400);
+  font-size: 1rem;
+}
+
+.loadingState {
+  text-align: center;
+  padding: var(--space-7);
+  color: var(--color-gray-400);
+  font-size: 1rem;
+  font-style: italic;
+}
+
+/* confirmation Modal  */
+.modalContainer {
+  text-align: center;
+}
+
+.modalTitle {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.modalButtons {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  align-items: center;
+}
+
+.buttonCancel {
+  background: var(--color-gray-400);
+  color: var(--color-white);
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  min-width: 120px;
+  transition: all 0.2s ease;
+}
+
+.buttonCancel:hover {
+  background: var(--color-gray-450);
+}
+
+.buttonConfirm {
+  background: var(--color-danger-bright);
+  color: var(--color-white);
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  min-width: 120px;
+  transition: all 0.2s ease;
+}
+
+.buttonConfirm:hover {
+  background: var(--color-danger);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* DESKTOP*/
+@media (min-width: 769px) {
+  .appointmentsContainer {
+    max-width: 500px;
+    margin: var(--space-8) auto;
+    padding: var(--space-7);
+  }
+
+  .appointmentItem {
+    padding: var(--space-5);
+    gap: var(--space-3);
+    margin-bottom: 15px;
+  }
+
+  .detailRow {
+    font-size: 1rem;
+  }
+
+  .detailLabel {
+    min-width: 120px;
+  }
+
+  .appointmentActions {
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .deleteButton {
+    width: auto;
+    padding: 10px var(--space-6);
+    min-width: 150px;
+  }
+
+  .emptyState {
+    padding: var(--space-8);
+    font-size: 1.1rem;
+  }
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--shadow-color), 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modalContent {
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(var(--shadow-color), 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--color-gray-600);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.closeButton:hover {
+  background: var(--color-surface-light-20);
+  color: var(--color-gray-600);
+}
+
+.modalBody {
+  padding: var(--space-5);
+}
+
+.currentAppointmentInfo {
+  background: var(--color-surface-light-1);
+  border-left: 4px solid var(--color-blue-mid);
+  padding: 15px;
+  margin-bottom: var(--space-5);
+  border-radius: 4px;
+  color: var(--color-gray-700);
+  line-height: 1.6;
+}
+
+.currentAppointmentInfo strong {
+  color: var(--color-gray-950);
+}
+
+.filtersContainer {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.filterSelect {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-gray-100);
+  background-color: var(--color-surface-light-21);
+  color: var(--color-gray-700);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filterSelect:focus {
+  border-color: var(--color-primary-hover);
+}
+
+@media (min-width: 769px) {
+  .filtersContainer {
+    margin-bottom: var(--space-6);
+  }
+}

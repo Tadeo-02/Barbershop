@@ -1,23 +1,50 @@
 import * as model from "./Users";
 import { BaseController } from "../base/base.controller";
+import logger from "../lib/logger";
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { randomBytes } from "crypto";
 import { sanitizeOutput } from "../middleware/zodValidation";
+import { deriveRole } from "../lib/roles";
+import {
+  AUTH_COOKIE,
+  CSRF_COOKIE,
+  REFRESH_COOKIE,
+  authCookieOptions,
+  csrfCookieOptions,
+  clearCookieOptions,
+  clearCsrfCookieOptions,
+  refreshCookieOptions,
+  clearRefreshCookieOptions,
+} from "../lib/cookieConfig";
 import {
   BarberResponseSchema,
+  type UserResponse,
   UserResponseSchema,
 } from "../Schemas/usersSchema";
+import {
+  createErrorResponse,
+  createValidationErrorResponse,
+  getErrorMessage,
+} from "../lib/backendResponse";
+import {
+  buildResetPasswordEmail,
+  buildVerificationEmail,
+  sendMail,
+} from "../lib/mailer";
+
+const TOKEN_MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
+const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 type UserEntity = NonNullable<Awaited<ReturnType<typeof model.findById>>>;
 type UserCreateArgs = Parameters<typeof model.store>;
-type UserUpdateArgs = Parameters<typeof model.update> extends [
-  string,
-  ...infer Rest
-]
-  ? Rest
-  : never;
+type UserUpdateArgs =
+  Parameters<typeof model.update> extends [string, ...infer Rest]
+    ? Rest
+    : never;
 
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
+const getAppBaseUrl = () =>
+  process.env.FRONTEND_URL || process.env.APP_BASE_URL || "http://localhost:5173";
 
 class UsersController extends BaseController<
   UserEntity,
@@ -33,8 +60,8 @@ class UsersController extends BaseController<
     try {
       const userType = req.query.type as "client" | "barber" | undefined;
       const entities = await model.findAll(userType);
-  const safeEntities = sanitizeOutput(UserResponseSchema, entities);
-  res.status(200).json(safeEntities);
+      const safeEntities = sanitizeOutput(UserResponseSchema, entities);
+      res.status(200).json(safeEntities);
     } catch (error) {
       this.handleError(error, res);
     }
@@ -42,7 +69,7 @@ class UsersController extends BaseController<
 
   store = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log("store endpoint called. Body:", req.body);
+      logger.debug({ body: req.body }, "store endpoint called");
       const {
         dni,
         nombre,
@@ -53,7 +80,6 @@ class UsersController extends BaseController<
         cuil,
         codSucursal,
       } = req.body;
-      const { preguntaSeguridad, respuestaSeguridad } = req.body;
 
       if (cuil && !codSucursal) {
         res.status(400).json({
@@ -71,21 +97,39 @@ class UsersController extends BaseController<
         contraseña,
         cuil,
         codSucursal,
-        preguntaSeguridad,
-        respuestaSeguridad
       );
 
       const userType = cuil ? "barbero" : "cliente";
       const safeUser = sanitizeOutput(UserResponseSchema, newUser);
 
+      const verificationPayload = await model.createEmailVerificationTokenByUserId(
+        newUser.codUsuario,
+      );
+
+      if (verificationPayload) {
+        const verificationUrl = `${getAppBaseUrl()}/verify-email?token=${encodeURIComponent(
+          verificationPayload.token,
+        )}`;
+        const emailContent = buildVerificationEmail(
+          verificationPayload.name,
+          verificationUrl,
+        );
+        await sendMail({
+          to: verificationPayload.email,
+          subject: emailContent.subject,
+          text: emailContent.text,
+          html: emailContent.html,
+        });
+      }
+
       res.status(201).json({
         message: `${
           userType.charAt(0).toUpperCase() + userType.slice(1)
-        } creado exitosamente`,
+        } creado exitosamente. Revisa tu email para verificar tu cuenta.`,
         user: safeUser,
       });
     } catch (error) {
-      console.error("Error creating user:", error);
+      logger.error({ error }, "Error creating user");
       this.handleError(error, res);
     }
   };
@@ -106,9 +150,11 @@ class UsersController extends BaseController<
       } = req.body;
 
       if (cuil && !codSucursal) {
-        res.status(400).json({
-          message: "Los barberos deben tener una sucursal asignada",
-        });
+        res.status(400).json(
+          createValidationErrorResponse(
+            "Los barberos deben tener una sucursal asignada",
+          ),
+        );
         return;
       }
 
@@ -125,7 +171,7 @@ class UsersController extends BaseController<
 
       const userType = cuil ? "barbero" : "cliente";
 
-  const safeUser = sanitizeOutput(UserResponseSchema, updatedUser);
+      const safeUser = sanitizeOutput(UserResponseSchema, updatedUser);
 
       res.status(200).json({
         message: `${
@@ -134,7 +180,7 @@ class UsersController extends BaseController<
         user: safeUser,
       });
     } catch (error) {
-      console.error("Error updating user:", error);
+      logger.error({ error }, "Error updating user");
       this.handleError(error, res);
     }
   };
@@ -157,6 +203,7 @@ class UsersController extends BaseController<
     const { codUsuario } = req.params;
     try {
       const result = await model.deactivate(codUsuario);
+      await model.revokeRefreshTokens(codUsuario);
       const safeUser = sanitizeOutput(UserResponseSchema, result);
       res.status(200).json({
         message: "Usuario dado de baja correctamente",
@@ -183,46 +230,181 @@ class UsersController extends BaseController<
 
   async login(req: Request, res: Response): Promise<void> {
     try {
-      console.log("Login request received");
-      console.log("Request body:", req.body);
-
       const { email, contraseña, correo, clave } = req.body;
 
-      console.log("Extracted fields:", { email, contraseña, correo, clave });
-
+      // email/correo y contraseña/clave ya fueron validados por loginRequestSchema en el router
       const userEmail = email || correo;
       const userPassword = contraseña || clave;
 
-      console.log("Final values:", { userEmail, userPassword });
+      const usuario = await model.validateLogin(userEmail, userPassword);
+      const safeUser = sanitizeOutput<UserResponse>(
+        UserResponseSchema,
+        usuario,
+      );
+      const jwtSecret = process.env.JWT_SECRET;
 
-      if (!userEmail || !userPassword) {
-        console.log("Missing credentials");
-        res.status(400).json({
-          message: "Email y contraseña son requeridos",
-        });
+      if (!jwtSecret) {
+        res.status(500).json(
+          createErrorResponse("JWT_SECRET no configurado", "server_error"),
+        );
         return;
       }
 
-      const usuario = await model.validateLogin(userEmail, userPassword);
-      const safeUser = sanitizeOutput(UserResponseSchema, usuario);
+      const rol = deriveRole(safeUser.cuil);
+
+      const token = jwt.sign(
+        {
+          codUsuario: safeUser.codUsuario,
+          codSucursal: safeUser.codSucursal ?? null,
+          rol,
+        },
+        jwtSecret,
+        { algorithm: "HS256", expiresIn: "15m" },
+      );
+
+      const csrfToken = randomBytes(32).toString("hex");
+      const { rawToken: refreshToken } = await model.createRefreshToken(
+        safeUser.codUsuario,
+      );
+
+      res.cookie(AUTH_COOKIE, token, authCookieOptions(TOKEN_MAX_AGE_MS));
+      res.cookie(CSRF_COOKIE, csrfToken, csrfCookieOptions(TOKEN_MAX_AGE_MS));
+      res.cookie(
+        REFRESH_COOKIE,
+        refreshToken,
+        refreshCookieOptions(REFRESH_TOKEN_MAX_AGE_MS),
+      );
 
       res.status(200).json({
         message: "Login exitoso",
         user: safeUser,
+        csrfToken,
       });
     } catch (error) {
-      console.error("Login error:", error);
+      const errorMessage = getErrorMessage(error, "Error interno del servidor");
+      let statusCode = 500;
 
-      const errorMessage = getErrorMessage(
-        error,
-        "Error interno del servidor",
+      if (errorMessage.includes("incorrectos")) {
+        statusCode = 401;
+      } else if (
+        error instanceof Error &&
+        "code" in error &&
+        typeof (error as { code?: unknown }).code === "string" &&
+        (error as { code: string }).code === "EMAIL_NOT_VERIFIED"
+      ) {
+        statusCode = 403;
+      }
+
+      res.status(statusCode).json(
+        createErrorResponse(
+          errorMessage,
+          statusCode === 401 ? "unauthorized" : "server_error",
+        ),
+      );
+    }
+  }
+
+  async logout(req: Request, res: Response): Promise<void> {
+    const refreshTokenValue = req.cookies?.[REFRESH_COOKIE] as
+      | string
+      | undefined;
+    if (refreshTokenValue) {
+      const payload = await model.validateRefreshToken(refreshTokenValue);
+      if (payload) {
+        await model.revokeRefreshTokens(payload.codUsuario);
+      }
+    }
+
+    res.cookie(AUTH_COOKIE, "", clearCookieOptions);
+    res.cookie(CSRF_COOKIE, "", clearCsrfCookieOptions);
+    res.cookie(REFRESH_COOKIE, "", clearRefreshCookieOptions);
+    res.status(200).json({ message: "Sesión cerrada" });
+  }
+
+  async refresh(req: Request, res: Response): Promise<void> {
+    try {
+      const refreshTokenValue = req.cookies?.[REFRESH_COOKIE] as
+        | string
+        | undefined;
+
+      if (!refreshTokenValue) {
+        res.status(401).json(
+          createErrorResponse("Refresh token requerido", "unauthorized"),
+        );
+        return;
+      }
+
+      const payload = await model.validateRefreshToken(refreshTokenValue);
+
+      if (!payload) {
+        res.cookie(REFRESH_COOKIE, "", clearRefreshCookieOptions);
+        res.status(401).json(
+          createErrorResponse(
+            "Refresh token inválido o expirado",
+            "unauthorized",
+          ),
+        );
+        return;
+      }
+
+      await model.revokeRefreshTokens(payload.codUsuario);
+
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        res.status(500).json(
+          createErrorResponse("JWT_SECRET no configurado", "server_error"),
+        );
+        return;
+      }
+
+      const usuario = await model.findById(payload.codUsuario);
+      if (!usuario || !usuario.activo) {
+        res.cookie(AUTH_COOKIE, "", clearCookieOptions);
+        res.cookie(CSRF_COOKIE, "", clearCsrfCookieOptions);
+        res.status(401).json(
+          createErrorResponse("Usuario inactivo", "unauthorized"),
+        );
+        return;
+      }
+
+      const rol = deriveRole(usuario.cuil);
+
+      const newAccessToken = jwt.sign(
+        {
+          codUsuario: payload.codUsuario,
+          codSucursal: usuario.codSucursal ?? null,
+          rol,
+        },
+        jwtSecret,
+        { algorithm: "HS256", expiresIn: "15m" },
       );
 
-      const statusCode = errorMessage.includes("incorrectos") ? 401 : 500;
+      const { rawToken: newRefreshToken } =
+        await model.createRefreshToken(payload.codUsuario);
 
-      res.status(statusCode).json({
-        message: errorMessage,
+      const csrfToken = randomBytes(32).toString("hex");
+
+      res.cookie(
+        AUTH_COOKIE,
+        newAccessToken,
+        authCookieOptions(TOKEN_MAX_AGE_MS),
+      );
+      res.cookie(CSRF_COOKIE, csrfToken, csrfCookieOptions(TOKEN_MAX_AGE_MS));
+      res.cookie(
+        REFRESH_COOKIE,
+        newRefreshToken,
+        refreshCookieOptions(REFRESH_TOKEN_MAX_AGE_MS),
+      );
+
+      res.status(200).json({
+        message: "Token refrescado",
+        csrfToken,
       });
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      res.status(500).json(
+        createErrorResponse("Error interno del servidor", "server_error"),
+      );
     }
   }
 }
@@ -231,18 +413,10 @@ const usersController = new UsersController();
 
 export const findByBranchId = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codSucursal } = req.params;
-
-    if (!codSucursal) {
-      res.status(400).json({
-        success: false,
-        message: "codSucursal es requerido",
-      });
-      return;
-    }
 
     const usuarios = await model.findByBranchId(codSucursal);
     const safeUsuarios = sanitizeOutput(BarberResponseSchema, usuarios);
@@ -255,33 +429,22 @@ export const findByBranchId = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al buscar usuarios por sucursal",
-      ),
+      message: getErrorMessage(error, "Error al buscar usuarios por sucursal"),
     });
   }
 };
 
 export const findBySchedule = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { codSucursal, fechaTurno, horaDesde } = req.params;
 
-    if (!codSucursal || !fechaTurno || !horaDesde) {
-      res.status(400).json({
-        success: false,
-        message: "codSucursal, fechaTurno y horaDesde son requeridos",
-      });
-      return;
-    }
-
     const barberosDisponibles = await model.findBySchedule(
       codSucursal,
       fechaTurno,
-      horaDesde
+      horaDesde,
     );
     const safeBarberos = sanitizeOutput(
       BarberResponseSchema,
@@ -296,10 +459,7 @@ export const findBySchedule = async (
   } catch (error: unknown) {
     res.status(500).json({
       success: false,
-      message: getErrorMessage(
-        error,
-        "Error al buscar barberos disponibles",
-      ),
+      message: getErrorMessage(error, "Error al buscar barberos disponibles"),
     });
   }
 };
@@ -309,129 +469,112 @@ export const store = usersController.store.bind(usersController);
 export const index = usersController.index.bind(usersController);
 export const update = usersController.update.bind(usersController);
 export const login = usersController.login.bind(usersController);
+export const logout = usersController.logout.bind(usersController);
 export const deactivate = usersController.deactivate.bind(usersController);
 export const reactivate = usersController.reactivate.bind(usersController);
+export const refresh = usersController.refresh.bind(usersController);
 
-// Obtener pregunta de seguridad por email
-export const getSecurityQuestion = async (req: Request, res: Response) => {
+export const requestEmailVerification = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
-    const { email } = req.params;
-    console.log("getSecurityQuestion called. Param email:", email);
-    if (!email) {
-      res.status(400).json({ success: false, message: "Email es requerido" });
-      return;
+    const { email } = req.body;
+    const payload = await model.requestEmailVerificationForEmail(email);
+
+    if (payload) {
+      const verificationUrl = `${getAppBaseUrl()}/verify-email?token=${encodeURIComponent(
+        payload.token,
+      )}`;
+      const emailContent = buildVerificationEmail(payload.name, verificationUrl);
+      await sendMail({
+        to: payload.email,
+        subject: emailContent.subject,
+        text: emailContent.text,
+        html: emailContent.html,
+      });
     }
-    const pregunta = await model.getSecurityQuestionByEmail(email);
-    console.log("getSecurityQuestion result for", email, "-> pregunta:", pregunta);
-    res.status(200).json({ success: true, pregunta });
-  } catch (error: unknown) {
-    console.error("Error getting security question:", error);
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Si el email existe y necesita verificación, enviamos un enlace para activar la cuenta.",
+    });
+  } catch (error) {
+    logger.error({ error }, "Error requesting email verification");
     res.status(500).json({
       success: false,
-      message: getErrorMessage(error, "Error interno"),
+      message: getErrorMessage(error, "Error interno del servidor"),
     });
   }
 };
 
-// Update security question and answer for a user (requires simple header auth: x-user-id === codUsuario)
-export const updateSecurityQuestion = async (req: Request, res: Response) => {
+export const confirmEmailVerification = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
-    const { codUsuario } = req.params;
-    const headerUser = req.header("x-user-id");
-    console.log("updateSecurityQuestion called for:", codUsuario, "headerUser:", headerUser);
+    const { token } = req.body;
+    await model.verifyEmailByToken(token);
 
-    if (!codUsuario) {
-      res.status(400).json({ success: false, message: "codUsuario es requerido" });
-      return;
+    res.status(200).json({
+      success: true,
+      message: "Email verificado correctamente.",
+    });
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, "Token inválido o expirado");
+    res.status(400).json({ success: false, message: errorMessage });
+  }
+};
+
+export const requestPasswordReset = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+    const payload = await model.createPasswordResetTokenByEmail(email);
+
+    if (payload) {
+      const resetUrl = `${getAppBaseUrl()}/changePassword?token=${encodeURIComponent(
+        payload.token,
+      )}`;
+      const emailContent = buildResetPasswordEmail(payload.name, resetUrl);
+      await sendMail({
+        to: payload.email,
+        subject: emailContent.subject,
+        text: emailContent.text,
+        html: emailContent.html,
+      });
     }
 
-    // Simple protection: require header x-user-id to match param codUsuario
-    if (!headerUser || headerUser !== codUsuario) {
-      res.status(401).json({ success: false, message: "No autorizado" });
-      return;
-    }
-
-    const { preguntaSeguridad, respuestaSeguridad } = req.body;
-    if (!preguntaSeguridad || !respuestaSeguridad) {
-      res.status(400).json({ success: false, message: "Pregunta y respuesta son requeridas" });
-      return;
-    }
-
-    // Delegate to model
-    const updated = await model.updateSecurityQuestion(codUsuario, preguntaSeguridad, respuestaSeguridad);
-
-    res.status(200).json({ success: true, message: "Pregunta de seguridad actualizada", data: { codUsuario: updated.codUsuario } });
-  } catch (error: unknown) {
-    console.error("Error updating security question:", error);
+    res.status(200).json({
+      success: true,
+      message:
+        "Si el email existe en el sistema, enviamos un enlace para restablecer la contraseña.",
+    });
+  } catch (error) {
+    logger.error({ error }, "Error requesting password reset");
     res.status(500).json({
       success: false,
-      message: getErrorMessage(error, "Error interno"),
+      message: getErrorMessage(error, "Error interno del servidor"),
     });
   }
 };
 
-// Verificar respuesta y resetear contraseña
-export const verifySecurityAnswer = async (req: Request, res: Response) => {
+export const resetPasswordWithToken = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
-    console.log("verifySecurityAnswer endpoint called. Body:", req.body);
-    const { email, respuestaSeguridad, nuevaContraseña } = req.body;
-    if (!email || !respuestaSeguridad) {
-      res.status(400).json({ success: false, message: "Email y respuesta son requeridos" });
-      return;
-    }
-
-    if (!nuevaContraseña) {
-      await model.verifySecurityAnswerOnly(email, respuestaSeguridad);
-      res.status(200).json({ success: true, message: "Respuesta verificada correctamente" });
-      return;
-    }
-
-    await model.verifySecurityAnswerAndReset(email, respuestaSeguridad, nuevaContraseña);
-
-    res.status(200).json({ success: true, message: "Contraseña actualizada correctamente" });
-  } catch (error: unknown) {
-    console.error("Error verifying security answer:", error);
-    if (error instanceof Error && error.stack) console.error(error.stack);
-    const errMsg = getErrorMessage(error, "Error interno");
-    let status = 500;
-
-    const lowerMsg = errMsg.toLowerCase();
-    if (lowerMsg.includes("incorrecta")) {
-      status = 401; // incorrect answer -> unauthorized
-    } else if (lowerMsg.includes("usuario no encontrado") || lowerMsg.includes("no user found")) {
-      status = 404; // user not found
-    } else if (lowerMsg.includes("no hay respuesta") || lowerMsg.includes("no hay respuesta de seguridad")) {
-      status = 400; // bad request: no security answer configured
-    }
-
-    res.status(status).json({ success: false, message: errMsg });
-  }
-};
-
-// Resetear contraseña (paso separado, luego de verificar la respuesta de seguridad)
-export const resetPassword = async (req: Request, res: Response) => {
-  try {
-    const { email, respuestaSeguridad, nuevaContraseña } = req.body;
-    if (!email || !respuestaSeguridad || !nuevaContraseña) {
-      res.status(400).json({ success: false, message: "Email, respuesta y nueva contraseña son requeridos" });
-      return;
-    }
-
-    await model.verifySecurityAnswerAndReset(email, respuestaSeguridad, nuevaContraseña);
-
-    res.status(200).json({ success: true, message: "Contraseña actualizada correctamente" });
-  } catch (error: unknown) {
-    console.error("Error resetting password:", error);
-    const errMsg = getErrorMessage(error, "Error interno");
-    let status = 500;
-    const lowerMsg = errMsg.toLowerCase();
-    if (lowerMsg.includes("incorrecta")) {
-      status = 401;
-    } else if (lowerMsg.includes("usuario no encontrado") || lowerMsg.includes("no user found")) {
-      status = 404;
-    } else if (lowerMsg.includes("no hay respuesta")) {
-      status = 400;
-    }
-    res.status(status).json({ success: false, message: errMsg });
+    const { token, nuevaContraseña } = req.body;
+    await model.resetPasswordByToken(token, nuevaContraseña);
+    res.status(200).json({
+      success: true,
+      message: "Contraseña actualizada correctamente",
+    });
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, "Token inválido o expirado");
+    res.status(400).json({ success: false, message: errorMessage });
   }
 };

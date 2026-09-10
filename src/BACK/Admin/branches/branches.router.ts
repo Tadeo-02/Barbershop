@@ -1,3 +1,4 @@
+// branches/branches.router.ts
 import * as controller from "./branches.controller";
 import createRouter from "../../base/base.router";
 import { Router } from "express";
@@ -10,25 +11,56 @@ import {
   strictDeduplication,
   standardDeduplication,
 } from "../../middleware/deduplication";
+import { authMiddleware } from "../../middleware/authMiddleware";
+import { csrfProtection } from "../../middleware/csrf";
+import { requireRole } from "../../middleware/roleMiddleware";
+import { validateRequest } from "../../middleware/zodValidation";
+import { z } from "zod";
 
 const router: Router = Router();
 
-// Read operations - standard user limiting
-router.get("/all", userLimiter, controller.indexAll);
+// GET /all — only admin sees inactive branches
+router.get(
+  "/all",
+  authMiddleware,
+  requireRole("admin"),
+  userLimiter,
+  controller.indexAll,
+);
 
-// Apply security to state changes (deactivate/reactivate)
-// Uses user-based rate limiting for authenticated admin operations
+// PATCH deactivate/reactivate — only admin
 router.patch(
   "/:codSucursal/deactivate",
+  authMiddleware,
+  csrfProtection,
+  requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
   controller.deactivate,
 );
+
 router.patch(
   "/:codSucursal/reactivate",
+  authMiddleware,
+  csrfProtection,
+  requireRole("admin"),
   userModificationLimiter,
   standardDeduplication,
   controller.reactivate,
+);
+
+const rentabilityQuerySchema = z.object({
+  month: z.string().regex(/^\d+$/, "month must be a numeric string"),
+  year: z.string().regex(/^\d+$/, "year must be a numeric string"),
+});
+
+router.get(
+  "/rentability",
+  authMiddleware,
+  requireRole("admin"),
+  userLimiter,
+  validateRequest({ query: rentabilityQuerySchema }),
+  controller.getRevenueByBranch,
 );
 
 const baseRouter = createRouter(controller, {
@@ -36,14 +68,37 @@ const baseRouter = createRouter(controller, {
   idParam: "codSucursal",
   updatePath: "/update",
   middleware: {
-    // Public GET (index / show) uses publicReadLimiter; admin write ops use userModificationLimiter
+    // GET / and /:id — public, anyone can see active branches
     read: [publicReadLimiter],
-    create: [userModificationLimiter, strictDeduplication],
-    update: [userModificationLimiter, standardDeduplication],
-    delete: [userModificationLimiter, standardDeduplication],
+
+    // POST / — only admin creates branches
+    create: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("admin"),
+      userModificationLimiter,
+      strictDeduplication,
+    ],
+
+    // PUT /:id — only admin edits
+    update: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("admin"),
+      userModificationLimiter,
+      standardDeduplication,
+    ],
+
+    // DELETE /:id — only admin deletes
+    delete: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("admin"),
+      userModificationLimiter,
+      standardDeduplication,
+    ],
   },
 });
 
 router.use(baseRouter);
-
 export default router;

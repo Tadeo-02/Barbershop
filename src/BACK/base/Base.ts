@@ -1,9 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
-// instancia de prima universal
+// Universal prisma instance.
 export const prisma = new PrismaClient();
 
-// error universal
+//  universal error
 export class DatabaseError extends Error {
   constructor(message: string, public code?: string) {
     super(message);
@@ -11,19 +11,20 @@ export class DatabaseError extends Error {
   }
 }
 
-// sanitización declarada universal
+// Universal sanitization declaration.
 export const sanitizeInput = (input: string | undefined): string => {
   if (input === undefined || input === null) {
     return "";
   }
   return input.toString().trim();
 };
-// cierre de conexion universal
+
+// Universal connection closure
 export const disconnect = async () => {
   await prisma.$disconnect();
 };
 
-// funciones universales
+//  universal functions
 export interface BaseModel<
   TEntity,
   TCreateArgs extends unknown[] = unknown[],

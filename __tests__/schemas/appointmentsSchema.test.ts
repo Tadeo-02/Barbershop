@@ -25,36 +25,42 @@ describe("AppointmentSchema — required fields", () => {
   });
 
   it("rejects when codCliente is missing", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { codCliente: _, ...rest } = validAppointment;
     const result = AppointmentSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
 
   it("rejects when codBarbero is missing", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { codBarbero: _, ...rest } = validAppointment;
     const result = AppointmentSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
 
   it("rejects when fechaTurno is missing", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { fechaTurno: _, ...rest } = validAppointment;
     const result = AppointmentSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
 
   it("rejects when horaDesde is missing", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { horaDesde: _, ...rest } = validAppointment;
     const result = AppointmentSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
 
-  it("rejects when horaHasta is missing", () => {
+  it("accepts when horaHasta is missing (auto-calculated in backend)", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { horaHasta: _, ...rest } = validAppointment;
     const result = AppointmentSchema.safeParse(rest);
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("rejects when estado is missing", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { estado: _, ...rest } = validAppointment;
     const result = AppointmentSchema.safeParse(rest);
     expect(result.success).toBe(false);

@@ -12,6 +12,9 @@ import {
 import { validateRequest } from "../middleware/zodValidation";
 import { z } from "zod";
 import { AvailabilitySchema } from "../Schemas/availabilitySchema";
+import { authMiddleware } from "../middleware/authMiddleware";
+import { csrfProtection } from "../middleware/csrf";
+import { requireRole } from "../middleware/roleMiddleware";
 
 const router: Router = Router();
 
@@ -24,6 +27,9 @@ const optionalCodBloqueoSchema = z.object({
 // Uses user-based rate limiting for authenticated users
 router.post(
   "/",
+  authMiddleware,
+  csrfProtection,
+  requireRole("barber", "admin"),
   userModificationLimiter,
   strictDeduplication,
   validateRequest({ body: AvailabilitySchema.omit({ codBloqueo: true }) }),
@@ -36,13 +42,24 @@ const baseRouter = createRouter(controller, {
   idParam: "codBloqueo",
   updatePath: "/update",
   middleware: {
-    read: [userLimiter, validateRequest({ params: optionalCodBloqueoSchema })],
+    read: [
+      authMiddleware,
+      requireRole("barber", "admin"),
+      userLimiter,
+      validateRequest({ params: optionalCodBloqueoSchema }),
+    ],
     create: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("barber", "admin"),
       userModificationLimiter,
       strictDeduplication,
       validateRequest({ body: AvailabilitySchema.omit({ codBloqueo: true }) }),
     ],
     update: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("barber", "admin"),
       userModificationLimiter,
       standardDeduplication,
       validateRequest({
@@ -51,6 +68,9 @@ const baseRouter = createRouter(controller, {
       }),
     ],
     delete: [
+      authMiddleware,
+      csrfProtection,
+      requireRole("barber", "admin"),
       userModificationLimiter,
       standardDeduplication,
       validateRequest({ params: codBloqueoParamSchema }),

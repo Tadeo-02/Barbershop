@@ -1,13 +1,14 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { DatabaseError } from "./Base";
+import logger from "../lib/logger";
 import { sanitizeOutput } from "../middleware/zodValidation";
+import {
+  createErrorResponse,
+  createNotFoundResponse,
+} from "../lib/backendResponse";
 // manejo universal de los distintos datos que llegan del front
-export abstract class BaseController<
-  T,
-  TCreateArgs extends unknown[] = unknown[],
-  TUpdateArgs extends unknown[] = unknown[],
-> {
+export abstract class BaseController<T, TCreateArgs extends unknown[] = unknown[], TUpdateArgs extends unknown[] = unknown[],> {
   protected abstract model: {
     store: (...args: TCreateArgs) => Promise<T | T[]>;
     findAll: () => Promise<T[]>;
@@ -16,7 +17,7 @@ export abstract class BaseController<
     destroy: (id: string) => Promise<T>;
   };
   protected responseSchema?: z.ZodTypeAny;
-  // nombre del componente y el id que se utilizan para navegar
+  // name of component and the id that are used to navigate
   protected abstract entityName: string;
   protected abstract idFieldName: string;
   // aplica schema de respuesta si existe
@@ -24,7 +25,8 @@ export abstract class BaseController<
     if (!this.responseSchema) return data;
     return sanitizeOutput(this.responseSchema, data);
   }
-  // los path son generados de acuerdo a los parametros que llegan (nombre del componente e id)
+
+
   create = (_req: Request, res: Response) => {
     res.render(
       `/src/FRONT/views/components/${this.entityName}/create${this.entityName}`,
@@ -32,7 +34,7 @@ export abstract class BaseController<
   };
 
   store = async (req: Request, res: Response) => {
-    // manejo de errores generales en estructura generica
+    // handling of general errors on generic structure 
     try {
       const args = Object.values(req.body) as unknown as TCreateArgs;
       const result = await this.model.store(...args);
@@ -61,10 +63,7 @@ export abstract class BaseController<
     try {
       const entity = await this.model.findById(id);
       if (!entity) {
-        return res.status(404).json({
-          message: `${this.entityName} no encontrado`,
-          type: "not_found",
-        });
+        return res.status(404).json(createNotFoundResponse(this.entityName));
       }
       const safeEntity = this.shapeResponse(entity);
       res.status(200).json(safeEntity);
@@ -78,10 +77,7 @@ export abstract class BaseController<
     try {
       const entity = await this.model.findById(id);
       if (!entity) {
-        return res.status(404).json({
-          message: `${this.entityName} no encontrado`,
-          type: "not_found",
-        });
+        return res.status(404).json(createNotFoundResponse(this.entityName));
       }
       const safeEntity = this.shapeResponse(entity);
       res.json(safeEntity);
@@ -120,21 +116,19 @@ export abstract class BaseController<
   };
 
   protected handleError(error: unknown, res: Response) {
-    console.error(
-      `Error in ${this.entityName}:`,
-      error instanceof Error ? error.message : "Unknown error",
+    logger.error(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      `Error in ${this.entityName}`,
     );
 
     if (error instanceof DatabaseError) {
-      return res.status(400).json({
-        message: error.message,
-        type: "validation_error",
-      });
+      return res.status(400).json(
+        createErrorResponse(error.message, "validation_error"),
+      );
     }
 
-    return res.status(500).json({
-      message: "Error interno del servidor",
-      type: "server_error",
-    });
+    return res.status(500).json(
+      createErrorResponse("Error interno del servidor", "server_error"),
+    );
   }
 }

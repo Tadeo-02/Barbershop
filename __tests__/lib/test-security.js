@@ -5,7 +5,7 @@
  * Run with: node test-security.js
  */
 
-const BASE_URL = "http://localhost:3001"; // Adjust if your server runs on different port
+const BASE_URL = "http://localhost:3001"; 
 
 // Test data
 const validTestUser = {
@@ -15,8 +15,6 @@ const validTestUser = {
   telefono: "1234567890",
   email: `test-${Date.now()}@security.com`,
   contraseña: "TestPassword123!",
-  preguntaSeguridad: "¿Color favorito?",
-  respuestaSeguridad: "Azul",
 };
 
 const loginData = {
@@ -62,7 +60,7 @@ function logInfo(message) {
 
 async function makeRequest(endpoint, data) {
   try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await apiFetch(`${BASE_URL}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

@@ -1,0 +1,214 @@
+.formContainer {
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-3);
+  background: var(--color-white);
+  border-radius: 10px;
+  box-shadow: 0 2px 4px var(--shadow-sm);
+}
+
+.pageTitle {
+  text-align: center;
+  color: var(--color-gray-600);
+  margin-bottom: 18px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.clienteInfo {
+  background: var(--color-surface-light-19);
+  padding: var(--space-3);
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.clienteTitle {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--color-gray-850);
+  margin-bottom: var(--space-3);
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--color-accent-blue);
+}
+
+.profileSection {
+  margin: var(--space-3) 0;
+  padding: 14px;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-surface-light-11);
+  box-shadow: 0 6px 16px rgba(var(--color-slate-rgb), 0.06);
+}
+
+.profileSection h3 {
+  margin: 0 0 var(--space-3) 0;
+  color: var(--color-gray-850);
+  font-size: 1rem;
+  font-weight: 600;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-surface-light-6);
+}
+
+.profileField {
+  margin: var(--space-2) 0;
+  padding: var(--space-2) 0;
+  font-size: 15px;
+  color: var(--color-gray-30);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  border-bottom: 1px dashed var(--color-surface-light-6);
+}
+
+.profileSection .profileField:last-of-type {
+  border-bottom: none;
+}
+
+.profileField strong {
+  color: var(--color-gray-850);
+  margin-bottom: 2px;
+  min-width: 100px;
+  font-weight: 600;
+}
+
+.profileValue {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: var(--space-2);
+  align-items: flex-start;
+}
+
+.actionLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-accent-blue);
+  color: var(--color-white);
+  border-radius: var(--radius-sm);
+  padding: 10px var(--space-4);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.actionLink:hover {
+  background-color: var(--color-accent-teal);
+  transform: translateY(-1px);
+}
+
+.editButton {
+  background-color: var(--color-accent-blue);
+  color: var(--color-white);
+  border: none;
+  padding: 10px 0;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.editButton:hover {
+  background-color: var(--color-accent-teal);
+  transform: translateY(-1px);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--color-gray-500);
+  font-size: 15px;
+}
+
+/* Desktop/tablet styles */
+@media (min-width: 768px) {
+  .formContainer {
+    max-width: 800px;
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 6px var(--shadow-md);
+  }
+  .pageTitle {
+    font-size: 2rem;
+    margin-bottom: var(--space-7);
+  }
+  .clienteInfo {
+    padding: var(--space-5);
+    margin-bottom: var(--space-5);
+  }
+  .clienteTitle {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-5);
+    padding-bottom: 10px;
+  }
+  .profileSection {
+    margin: var(--space-5) 0;
+    padding: 18px;
+  }
+  .profileSection h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
+  .profileField {
+    font-size: var(--font-size-md);
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: start;
+    column-gap: var(--space-3);
+    row-gap: 6px;
+  }
+  .profileField strong {
+    margin-bottom: 0;
+    margin-right: 0;
+    min-width: 0;
+  }
+  .actionButtons {
+    flex-direction: row;
+    gap: var(--space-3);
+    margin-top: 10px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .editButton {
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--font-size-md);
+  }
+  .editButton:hover {
+    transform: translateY(-2px);
+  }
+  .emptyState {
+    padding: var(--space-8);
+    font-size: var(--font-size-lg);
+  }
+}
+
+.categoryDetails {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background-color: var(--color-surface-light-19);
+  border-radius: 8px;
+  border-left: 4px solid var(--color-blue-bright);
+}
+
+.categoryDetails p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--color-gray-500);
+}
+
+.categoryDetails strong {
+  color: var(--color-gray-600);
+}
+

@@ -25,4 +25,10 @@ dist-ssr
 
 # Dependency directories
 node_modules/
-prisma/schema.prisma
+
+
+# Credentias
+.env
+
+# Package manager lock files (project uses pnpm only)
+package-lock.json

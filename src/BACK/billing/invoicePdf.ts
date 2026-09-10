@@ -1,23 +1,24 @@
-﻿import { prisma, DatabaseError } from '../base/Base';
-import { AFIP_PUNTO_VENTA, VOUCHER_TYPES } from './afipConfig';
-import { getVoucherInfo } from './Billing';
+﻿import { prisma, DatabaseError } from "../base/Base";
+import { AFIP_PUNTO_VENTA, VOUCHER_TYPES } from "./afipConfig";
+import { getVoucherInfo } from "./Billing";
 import {
   InvoicePdfData,
   generateInvoicePdf,
-} from './pdfTemplates/invoiceTemplate';
+} from "./pdfTemplates/invoiceTemplate";
 import {
   ReceiptPdfData,
   generateReceiptPdf,
-} from './pdfTemplates/receiptTemplate';
+} from "./pdfTemplates/receiptTemplate";
 
 // ============================================================
-// Re-exportar templates para que otros modulos importen desde aqui
+//Re-export templates so other modules can import them from here.
+
 // ============================================================
 export { generateInvoicePdf, generateReceiptPdf };
 export type { InvoicePdfData, ReceiptPdfData };
 
 // ============================================================
-// Recopiladores de datos (acceso a DB)
+//Data collectors (DB access)
 // ============================================================
 
 const toNumber = (value: unknown): number | undefined => {
@@ -30,7 +31,7 @@ const toNumber = (value: unknown): number | undefined => {
 };
 
 /**
- * Recopilar todos los datos para el PDF a partir de codTurno + datos ARCA.
+ * Gather all the data for the PDF from codTurno + ARCA data.
  */
 export async function gatherInvoiceData(
   codTurno: string,
@@ -45,8 +46,8 @@ export async function gatherInvoiceData(
   );
   if (!voucherInfo) {
     throw new DatabaseError(
-      'Comprobante no encontrado en ARCA',
-      'VOUCHER_NOT_FOUND',
+      "Comprobante no encontrado en ARCA",
+      "VOUCHER_NOT_FOUND",
     );
   }
 
@@ -64,16 +65,22 @@ export async function gatherInvoiceData(
   });
 
   if (!turno) {
-    throw new DatabaseError('Turno no encontrado', 'APPOINTMENT_NOT_FOUND');
+    throw new DatabaseError("Turno no encontrado", "APPOINTMENT_NOT_FOUND");
   }
 
   const cliente = turno.usuarios_turnos_codClienteTousuarios;
   const barbero = turno.usuarios_turnos_codBarberoTousuarios;
   const sucursal = barbero.sucursales;
 
-  const voucherImpTotal = toNumber((voucherInfo as Record<string, unknown>).ImpTotal);
-  const voucherImpNeto = toNumber((voucherInfo as Record<string, unknown>).ImpNeto);
-  const voucherImpIVA = toNumber((voucherInfo as Record<string, unknown>).ImpIVA);
+  const voucherImpTotal = toNumber(
+    (voucherInfo as Record<string, unknown>).ImpTotal,
+  );
+  const voucherImpNeto = toNumber(
+    (voucherInfo as Record<string, unknown>).ImpNeto,
+  );
+  const voucherImpIVA = toNumber(
+    (voucherInfo as Record<string, unknown>).ImpIVA,
+  );
 
   const importeTotal = voucherImpTotal ?? turno.precioTurno ?? 0;
   const importeNeto =
@@ -83,21 +90,21 @@ export async function gatherInvoiceData(
 
   return {
     cae: String(
-      turno.cae || voucherInfo.CodAutorizacion || voucherInfo.CAE || '',
+      turno.cae || voucherInfo.CodAutorizacion || voucherInfo.CAE || "",
     ),
     caeFchVto: String(
-      turno.caeFchVto || voucherInfo.FchVto || voucherInfo.CAEFchVto || '',
+      turno.caeFchVto || voucherInfo.FchVto || voucherInfo.CAEFchVto || "",
     ),
     voucherNumber,
     puntoDeVenta,
     tipoComprobante,
-    fechaEmision: String(voucherInfo.CbteFch || ''),
+    fechaEmision: String(voucherInfo.CbteFch || ""),
     importeTotal,
     importeNeto,
     importeIVA,
     codTurno,
-    servicio: turno.tipos_corte?.nombreCorte || 'Servicio de barberia',
-    fechaTurno: turno.fechaTurno.toISOString().split('T')[0],
+    servicio: turno.tipos_corte?.nombreCorte || "Servicio de barberia",
+    fechaTurno: turno.fechaTurno.toISOString().split("T")[0],
     clienteNombre: `${cliente.nombre} ${cliente.apellido}`,
     clienteDni: cliente.dni,
     barberoNombre: `${barbero.nombre} ${barbero.apellido}`,
@@ -107,7 +114,7 @@ export async function gatherInvoiceData(
 }
 
 /**
- * Recopilar datos del recibo a partir del codTurno (solo DB, sin ARCA).
+ * Collect receipt data from the `codTurno` (DB only, without ARCA).
  */
 export async function gatherReceiptData(
   codTurno: string,
@@ -126,13 +133,13 @@ export async function gatherReceiptData(
   });
 
   if (!turno) {
-    throw new DatabaseError('Turno no encontrado', 'APPOINTMENT_NOT_FOUND');
+    throw new DatabaseError("Turno no encontrado", "APPOINTMENT_NOT_FOUND");
   }
 
-  if (turno.estado !== 'Cobrado') {
+  if (turno.estado !== "Cobrado") {
     throw new DatabaseError(
-      'Solo se pueden generar recibos de turnos cobrados',
-      'APPOINTMENT_NOT_CHARGED',
+      "Solo se pueden generar recibos de turnos cobrados",
+      "APPOINTMENT_NOT_CHARGED",
     );
   }
 
@@ -148,7 +155,7 @@ export async function gatherReceiptData(
     Date.now() - new Date().getTimezoneOffset() * 60000,
   )
     .toISOString()
-    .split('T')[0];
+    .split("T")[0];
 
   return {
     codTurno,
@@ -156,8 +163,8 @@ export async function gatherReceiptData(
     importeTotal,
     importeNeto,
     importeIVA,
-    servicio: turno.tipos_corte?.nombreCorte || 'Servicio de barberia',
-    fechaTurno: turno.fechaTurno.toISOString().split('T')[0],
+    servicio: turno.tipos_corte?.nombreCorte || "Servicio de barberia",
+    fechaTurno: turno.fechaTurno.toISOString().split("T")[0],
     clienteNombre: `${cliente.nombre} ${cliente.apellido}`,
     clienteDni: cliente.dni,
     barberoNombre: `${barbero.nombre} ${barbero.apellido}`,
