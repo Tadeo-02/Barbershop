@@ -36,7 +36,13 @@ export const AutoRedirect = () => {
       return;
     }
 
-    const publicRoutes = ["/", "/login", "/signUp", "/changePassword"];
+    const publicRoutes = [
+      "/",
+      "/login",
+      "/signUp",
+      "/changePassword",
+      "/verify-email",
+    ];
     if (publicRoutes.includes(location.pathname)) {
       setIsRedirecting(false);
       return;

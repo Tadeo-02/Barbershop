@@ -3,6 +3,7 @@ import "./App.css";
 import Login from "./pages/Auth/login.tsx";
 import CreateUser from "./pages/Auth/createUser.tsx";
 import ResetSecurity from "./pages/Auth/resetSecurity.tsx";
+import VerifyEmail from "./pages/Auth/verifyEmail.tsx";
 import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -329,6 +330,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signUp" element={<CreateUser />} />
               <Route path="/changePassword" element={<ResetSecurity />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
               {/*  '*' indicates that it has nested routes */}
             </Routes>
           </main>
