@@ -10,12 +10,6 @@ export const REFRESH_COOKIE = "refresh_token";
 // In development (same-origin), Lax is sufficient and safer.
 const sameSiteValue = isProduction ? ("none" as const) : ("lax" as const);
 
-// In production, frontend and backend are on completely different domains
-// (e.g. vercel.app vs render.com). We rely on the Partitioned (CHIPS) flag
-// so the browser automatically stores cookies partitioned by the top-level
-// site. Do NOT set an explicit domain — Partitioned cookies reject that.
-// The browser will store them under the frontend's origin automatically.
-
 export const authCookieOptions = (maxAgeMs: number) =>
   ({
     httpOnly: true,
